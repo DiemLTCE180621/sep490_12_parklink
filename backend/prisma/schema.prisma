@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ------------------------------------------------------
+// NHÓM HỆ THỐNG & NGƯỜI DÙNG
+// ------------------------------------------------------
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  users       User[]
+}
+
+model User {
+  id                       Int       @id @default(autoincrement())
+  role_id                  Int
+  email                    String    @unique
+  full_name                String
+  phone_number             String
+  password_hash            String?
+  requires_password_change Boolean   @default(true)
+  status                   String    @default("PENDING")
+  created_at               DateTime  @default(now())
+  updated_at               DateTime  @updatedAt
+
+  role                     Role      @relation(fields: [role_id], references: [id])
+  facility                 Facility? // Quan hệ 1-1 với Parking Provider
+  
+  // Quan hệ ngược (Reverse relations)
+  transactions             System_Transaction[]
+  reservations             Reservation_Request[]
+  reviews                  Review[]
+  complaints               Complaint[]
+  notifications            Notification[]
+  chat_rooms_as_customer   Chat_Room[] @relation("CustomerRooms")
+  chat_rooms_as_provider   Chat_Room[] @relation("ProviderRooms")
+  messages                 Message[]
+  favorites Favorite[]
+}
+
+model Facility {
+  id                  Int      @id @default(autoincrement())
+  provider_id         Int      @unique
+  name                String
+  address             String
+  latitude            Float?   
+  longitude           Float?   
+  vehicle_types       Json
+  capacity            Int
+  price_per_month     Decimal
+  system_fee          Decimal?
+  payment_status      String   @default("UNPAID")
+  verification_status String   @default("PENDING_REVIEW")
+  visibility_status   String   @default("VISIBLE")
+  custom_terms        String?  @db.Text
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  provider            User     @relation(fields: [provider_id], references: [id])
+  
+  images              Facility_Image[]
+  update_requests     Facility_Update_Request[]
+  facility_amenities  Facility_Amenity[]
+  transactions        System_Transaction[]
+  reservations        Reservation_Request[]
+  reviews             Review[]
+  complaints          Complaint[]
+  chat_rooms          Chat_Room[]
+  favorites Favorite[]
+}
+
+// ------------------------------------------------------
+// NHÓM CẬP NHẬT CƠ SỞ & GIAO DỊCH
+// ------------------------------------------------------
+model Facility_Image {
+  id          Int      @id @default(autoincrement())
+  facility_id Int
+  image_url   String
+  is_primary  Boolean  @default(false)
+  
+  facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+}
+
+model Facility_Update_Request {
+  id             Int      @id @default(autoincrement())
+  facility_id    Int
+  requested_data Json
+  additional_fee Decimal?
+  status         String   @default("PENDING")
+  admin_note     String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  facility       Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+}
+
+model System_Transaction {
+  id               Int      @id @default(autoincrement())
+  provider_id      Int
+  facility_id      Int
+  amount           Decimal
+  transaction_type String
+  status           String   @default("PENDING")
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  provider         User     @relation(fields: [provider_id], references: [id])
+  facility         Facility @relation(fields: [facility_id], references: [id])
+}
+
+// ------------------------------------------------------
+// NHÓM CHO THUÊ & ĐÁNH GIÁ
+// ------------------------------------------------------
+model Reservation_Request {
+  id                 Int      @id @default(autoincrement())
+  customer_id        Int
+  facility_id        Int
+  vehicle_info       String
+  desired_start_date DateTime @db.Date
+  status             String   @default("PENDING")
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  customer           User     @relation(fields: [customer_id], references: [id])
+  facility           Facility @relation(fields: [facility_id], references: [id])
+  
+  confirmation_record Confirmation_Record? 
+}
+
+model Confirmation_Record {
+  id                   Int      @id @default(autoincrement())
+  contract_code        String   @unique
+  reservation_id       Int      @unique
+  agreed_price         Decimal
+  payment_deadline_day Int?
+  start_date           DateTime @db.Date
+  end_date             DateTime @db.Date
+  contract_snapshot    Json
+  customer_agreed_at   DateTime?
+  provider_agreed_at   DateTime?
+  status               String   @default("PENDING_SIGNATURE")
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  reservation          Reservation_Request @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id              Int      @id @default(autoincrement())
+  customer_id     Int
+  facility_id     Int
+  rating          Int
+  comment         String   @db.Text
+  provider_reply  String?  @db.Text
+  status          String   @default("VISIBLE")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  customer        User     @relation(fields: [customer_id], references: [id])
+  facility        Facility @relation(fields: [facility_id], references: [id])
+}
+
+model Favorite {
+  id          Int      @id @default(autoincrement())
+  customer_id Int
+  facility_id Int
+  created_at  DateTime @default(now())
+
+  customer    User     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+
+  @@unique([customer_id, facility_id]) 
+}
+
+// ------------------------------------------------------
+// NHÓM KHIẾU NẠI, THÔNG BÁO & TIỆN ÍCH
+// ------------------------------------------------------
+model Complaint {
+  id             Int      @id @default(autoincrement())
+  customer_id    Int
+  facility_id    Int
+  title          String
+  description    String   @db.Text
+  status         String   @default("OPEN")
+  admin_response String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  customer       User     @relation(fields: [customer_id], references: [id])
+  facility       Facility @relation(fields: [facility_id], references: [id])
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  title      String
+  content    String   @db.Text
+  is_read    Boolean  @default(false)
+  type       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt 
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Amenity {
+  id                 Int      @id @default(autoincrement())
+  name               String   @unique
+  icon               String?
+  type               String?
+  facility_amenities Facility_Amenity[]
+}
+
+model Facility_Amenity {
+  facility_id Int
+  amenity_id  Int
+
+  facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  amenity     Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
+
+  @@id([facility_id, amenity_id]) 
+}
+
+// ------------------------------------------------------
+// NHÓM CHAT (SOCKET.IO)
+// ------------------------------------------------------
+model Chat_Room {
+  id          Int      @id @default(autoincrement())
+  customer_id Int
+  provider_id Int
+  facility_id Int
+  created_at  DateTime @default(now())
+
+  customer    User     @relation("CustomerRooms", fields: [customer_id], references: [id])
+  provider    User     @relation("ProviderRooms", fields: [provider_id], references: [id])
+  facility    Facility @relation(fields: [facility_id], references: [id])
+  
+  messages    Message[]
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  room_id    Int
+  sender_id  Int
+  content    String?  @db.Text
+  media_url  String?
+  is_read    Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  room       Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  sender     User      @relation(fields: [sender_id], references: [id])
+}
