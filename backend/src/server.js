@@ -11,10 +11,8 @@ app.use(cors());
 
 
 // Khai báo các API route của từng chức năng tại đây
-
-// Connect DB
-// const { connectDB } = require("./config/database");
-// connectDB();
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
 
 // Simple route
 app.get("/", (req, res) => {
