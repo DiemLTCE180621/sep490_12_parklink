@@ -194,41 +194,31 @@ const RegisterProviderPage = () => {
 
           {successResult ? (
             <div className="space-y-6">
-              <div className="p-6 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 space-y-4">
-                <div className="flex items-center gap-3 text-teal-800 font-bold text-lg">
-                  <CheckCircle2 className="w-7 h-7 text-teal-600 shrink-0" />
-                  <span>Đăng Ký Tài Khoản Chủ Bãi Xe Thành Công!</span>
+              <div className="p-6 rounded-2xl bg-orange-50 border border-orange-200 text-orange-900 space-y-4">
+                <div className="flex items-center gap-3 text-orange-800 font-bold text-lg">
+                  <CheckCircle2 className="w-7 h-7 text-orange-600 shrink-0" />
+                  <span>Đã Gửi Yêu Cầu Đăng Ký Thành Công!</span>
                 </div>
 
                 <p className="text-sm leading-relaxed">
-                  Tài khoản của <strong>{formData.full_name}</strong> và thông tin bãi xe <strong>{formData.facility_name}</strong> ({formData.capacity} slots đỗ) đã được khởi tạo thành công.
+                  Yêu cầu đăng ký tài khoản của <strong>{formData.full_name}</strong> và cơ sở bãi xe <strong>{formData.facility_name}</strong> ({formData.capacity} slots đỗ) đã được gửi đến hệ thống và đang chờ Ban quản trị phê duyệt.
                 </p>
 
-                <div className="p-4 bg-white rounded-xl border border-teal-100 space-y-2 text-xs">
-                  <p className="font-bold text-teal-900 flex items-center gap-1.5 text-sm">
-                    <Calculator className="w-4 h-4 text-teal-600" /> Phí Nền Tảng: {Number(successResult.system_fee).toLocaleString('vi-VN')} VNĐ
+                <div className="p-4 bg-white rounded-xl border border-orange-100 space-y-2 text-xs">
+                  <p className="font-bold text-orange-900 flex items-center gap-1.5 text-sm">
+                    <Calculator className="w-4 h-4 text-orange-600" /> Phí Nền Tảng Dự Kiến: {Number(successResult.system_fee).toLocaleString('vi-VN')} VNĐ
                   </p>
                   <p className="text-slate-600">
-                    📧 Mật khẩu ngẫu nhiên để đăng nhập đã được gửi tới email: <strong>{formData.email}</strong>.
+                    📧 Mật khẩu đăng nhập sẽ được gửi tới email <strong>{formData.email}</strong> sau khi cơ sở của bạn được phê duyệt chính thức.
                   </p>
                 </div>
-
-                {successResult.simulatedTempPassword && (
-                  <div className="p-4 bg-slate-900 text-white rounded-xl space-y-1">
-                    <span className="text-xs text-slate-400 font-semibold uppercase block">Mật khẩu ngẫu nhiên của bạn (Thử nghiệm):</span>
-                    <span className="text-xl font-mono font-bold text-teal-300">
-                      {successResult.simulatedTempPassword}
-                    </span>
-                    <p className="text-[11px] text-slate-400">Vui lòng dùng mật khẩu này để đăng nhập lần đầu và đổi mật khẩu mới.</p>
-                  </div>
-                )}
               </div>
 
               <Link
-                to="/login"
-                className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition flex justify-center items-center gap-2"
+                to="/"
+                className="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition flex justify-center items-center gap-2"
               >
-                Đăng Nhập Ngay <ArrowRight className="w-5 h-5" />
+                Trở Về Trang Chủ <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
           ) : (
@@ -443,12 +433,12 @@ const RegisterProviderPage = () => {
                 )}
               </div>
 
-              {/* Thông báo mật khẩu ngẫu nhiên */}
-              <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 text-xs text-teal-900 flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+              {/* Thông báo quy trình phê duyệt */}
+              <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200 text-xs text-orange-900 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold mb-0.5">Tạo tài khoản Chủ bãi đỗ xe:</p>
-                  <p>Hệ thống sẽ tự động tạo mật khẩu ngẫu nhiên an toàn và gửi về Email đăng ký của bạn. Bạn có thể sử dụng ngay để đăng nhập và đổi mật khẩu mới.</p>
+                  <p className="font-bold mb-0.5">Quy trình đăng ký Chủ bãi đỗ xe:</p>
+                  <p>Sau khi gửi yêu cầu, Ban quản trị sẽ tiến hành phê duyệt. Khi cơ sở được duyệt, bạn sẽ nhận được Email chứa mật khẩu đăng nhập để hoàn tất thanh toán phí nền tảng.</p>
                 </div>
               </div>
 

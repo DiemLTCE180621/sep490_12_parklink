@@ -1,17 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin } from 'lucide-react';
+import AdminRegistrationsPanel from '../components/AdminRegistrationsPanel';
+import providerService from '../services/providerService';
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [activeAdminTab, setActiveAdminTab] = useState('registrations'); // Trạng thái chọn menu bên trái cho Admin
+  const [isPaying, setIsPaying] = useState(false);
 
   const roleName = user?.role?.name || 'CUSTOMER';
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handleConfirmPayment = async () => {
+    try {
+      setIsPaying(true);
+      await providerService.confirmPayment(user.facility.id);
+      alert('Thanh toán thành công! Cơ sở đã được hiển thị công khai.');
+      window.location.reload();
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    } finally {
+      setIsPaying(false);
+    }
   };
 
   return (
@@ -44,93 +61,186 @@ const DashboardPage = () => {
         </div>
 
         {/* CONTENT GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* USER PROFILE CARD */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
-            <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
-            </h3>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3 text-slate-600">
-                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="font-medium text-slate-900 truncate">{user?.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="font-medium text-slate-900">{user?.phone_number || 'Chưa cập nhật'}</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <Shield className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                  {roleName === 'PROVIDER' ? 'Owner / Chủ Bãi' : roleName === 'ADMIN' ? 'Admin' : 'Customer / Khách Thuê'}
-                </span>
+        {roleName === 'ADMIN' ? (
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* SIDEBAR ADMIN */}
+            <div className="w-full md:w-64 shrink-0 space-y-4">
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-2">
+                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
+                  Menu Quản Trị
+                </h3>
+                <button 
+                  onClick={() => setActiveAdminTab('registrations')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'registrations' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Building2 className="w-5 h-5" /> Duyệt Bãi Đỗ Xe
+                </button>
+                <button 
+                  onClick={() => setActiveAdminTab('users')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'users' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <User className="w-5 h-5" /> Quản lý Users
+                </button>
+                <button 
+                  onClick={() => setActiveAdminTab('transactions')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'transactions' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Shield className="w-5 h-5" /> Quản lý Giao Dịch
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* DYNAMIC CONTENT PER ROLE */}
-          <div className="md:col-span-2 space-y-6">
-            {/* PANEL DÀNH CHO PROVIDER / OWNER */}
-            {roleName === 'PROVIDER' && user?.facility && (
-              <div className="bg-white p-6 rounded-3xl border border-teal-100 shadow-md space-y-5">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Bãi Đỗ Xe (Facility)
-                  </h3>
+            {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
+            <div className="flex-1">
+              {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
+              
+              {activeAdminTab === 'users' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
+                  <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-400">Đang phát triển chức năng Quản lý Người dùng...</h3>
                 </div>
+              )}
 
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <label className="text-xs text-slate-400 font-semibold uppercase">Tên Bãi Đỗ Xe</label>
-                    <p className="text-base font-bold text-slate-900">{user.facility.name}</p>
+              {activeAdminTab === 'transactions' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
+                  <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold text-slate-400">Đang phát triển chức năng Quản lý Giao dịch...</h3>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* USER PROFILE CARD */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
+              <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
+              </h3>
+
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span className="font-medium text-slate-900 truncate">{user?.email}</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span className="font-medium text-slate-900">{user?.phone_number || 'Chưa cập nhật'}</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-600">
+                  <Shield className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
+                    {roleName === 'PROVIDER' ? 'Owner / Chủ Bãi' : 'Customer / Khách Thuê'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* DYNAMIC CONTENT PER ROLE */}
+            <div className="md:col-span-2 space-y-6">
+              {/* PANEL DÀNH CHO PROVIDER / OWNER */}
+              {roleName === 'PROVIDER' && user?.facility && (
+                <div className="bg-white p-6 rounded-3xl border border-teal-100 shadow-md space-y-5">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Bãi Đỗ Xe (Facility)
+                    </h3>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      user.facility.verification_status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                      user.facility.verification_status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                      'bg-orange-100 text-orange-700'
+                    }`}>
+                      {user.facility.verification_status === 'APPROVED' ? 'Đã Duyệt' :
+                       user.facility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Duyệt'}
+                    </span>
                   </div>
 
-                  <div>
-                    <label className="text-xs text-slate-400 font-semibold uppercase">Địa chỉ chi tiết</label>
-                    <p className="text-slate-700 flex items-center gap-1.5 mt-0.5">
-                      <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {user.facility.address}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                      <span className="text-xs text-slate-500">Sức chứa</span>
-                      <p className="text-lg font-extrabold text-slate-900">{user.facility.capacity} slots</p>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Tên Bãi Đỗ Xe</label>
+                      <p className="text-base font-bold text-slate-900">{user.facility.name}</p>
                     </div>
 
-                    <div className="p-3 bg-teal-50 rounded-2xl border border-teal-100">
-                      <span className="text-xs text-teal-700">Giá thuê / tháng</span>
-                      <p className="text-lg font-extrabold text-teal-900">
-                        {Number(user.facility.price_per_month).toLocaleString('vi-VN')} VNĐ
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Địa chỉ chi tiết</label>
+                      <p className="text-slate-700 flex items-center gap-1.5 mt-0.5">
+                        <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {user.facility.address}
                       </p>
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                        <span className="text-xs text-slate-500">Sức chứa</span>
+                        <p className="text-lg font-extrabold text-slate-900">{user.facility.capacity} slots</p>
+                      </div>
+
+                      <div className="p-3 bg-teal-50 rounded-2xl border border-teal-100">
+                        <span className="text-xs text-teal-700">Giá thuê / tháng</span>
+                        <p className="text-lg font-extrabold text-teal-900">
+                          {Number(user.facility.price_per_month).toLocaleString('vi-VN')} VNĐ
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {user.facility.verification_status === 'APPROVED' && user.facility.visibility_status === 'HIDDEN' && (
+                    <div className="mt-6 p-6 border-2 border-dashed border-teal-200 rounded-3xl bg-teal-50 text-center space-y-4">
+                      <h4 className="font-bold text-teal-900 text-lg">Hoàn Tất Thanh Toán Phí Nền Tảng</h4>
+                      <p className="text-sm text-teal-800">Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.</p>
+                      
+                      <div className="flex justify-center my-4">
+                        <img 
+                          src={`https://img.vietqr.io/image/MB-1234567890-compact2.png?amount=${user.facility.system_fee}&addInfo=${encodeURIComponent('PARKLINK F' + user.facility.id)}&accountName=PARKLINK`} 
+                          alt="QR Code Thanh Toán" 
+                          className="w-48 h-48 rounded-2xl shadow-lg border-2 border-white"
+                        />
+                      </div>
+                      
+                      <button 
+                        disabled={isPaying}
+                        onClick={handleConfirmPayment}
+                        className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50"
+                      >
+                        {isPaying ? 'Đang xử lý...' : 'Tôi đã thanh toán thành công'}
+                      </button>
+                    </div>
+                  )}
+
+                  {user.facility.verification_status === 'APPROVED' && user.facility.visibility_status === 'VISIBLE' && (
+                    <div className="mt-4 p-4 border border-green-200 rounded-2xl bg-green-50 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <span className="text-xl">🚀</span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-green-900">Đang Hoạt Động Công Khai</h4>
+                        <p className="text-xs text-green-800">Cơ sở của bạn đã được thanh toán và đang hiển thị trên nền tảng cho khách hàng tìm kiếm.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* PANEL DÀNH CHO CUSTOMER */}
+              {roleName === 'CUSTOMER' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-4">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <Car className="w-5 h-5 text-teal-600" /> Bãi Đỗ Xe Đã Đặt Thuê
+                  </h3>
+
+                  <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
+                    <Car className="w-10 h-10 text-slate-400 mx-auto" />
+                    <p className="text-slate-600 text-sm">Bạn chưa gửi yêu cầu thuê bãi xe nào.</p>
+                    <Link
+                      to="/#search"
+                      className="inline-block px-5 py-2.5 bg-teal-600 text-white font-bold text-sm rounded-xl shadow hover:bg-teal-700 transition"
+                    >
+                      Tìm Bãi Đỗ Tại Cần Thơ
+                    </Link>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* PANEL DÀNH CHO CUSTOMER HOẶC ADMIN */}
-            {roleName !== 'PROVIDER' && (
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <Car className="w-5 h-5 text-teal-600" /> Bãi Đỗ Xe Đã Đặt Thuê
-                </h3>
-
-                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
-                  <Car className="w-10 h-10 text-slate-400 mx-auto" />
-                  <p className="text-slate-600 text-sm">Bạn chưa gửi yêu cầu thuê bãi xe nào.</p>
-                  <Link
-                    to="/#search"
-                    className="inline-block px-5 py-2.5 bg-teal-600 text-white font-bold text-sm rounded-xl shadow hover:bg-teal-700 transition"
-                  >
-                    Tìm Bãi Đỗ Tại Cần Thơ
-                  </Link>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

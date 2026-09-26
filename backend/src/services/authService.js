@@ -41,6 +41,12 @@ class AuthService {
   async registerCustomer(data) {
     const { email, full_name, phone_number } = data;
 
+    if (!email) {
+      const error = new Error('Thiếu thông tin email!');
+      error.status = 400;
+      throw error;
+    }
+
     const existingUser = await userRepository.findByEmail(email);
     if (existingUser) {
       const error = new Error('Địa chỉ email này đã được sử dụng!');
@@ -102,6 +108,12 @@ class AuthService {
       images
     } = data;
 
+    if (!email) {
+      const error = new Error('Thiếu thông tin email!');
+      error.status = 400;
+      throw error;
+    }
+
     const existingUser = await userRepository.findByEmail(email);
     if (existingUser) {
       const error = new Error('Địa chỉ email này đã được sử dụng!');
@@ -135,7 +147,7 @@ class AuthService {
       phone_number,
       password_hash,
       role_id: providerRole.id,
-      status: 'ACTIVE',
+      status: 'PENDING', // Chờ Admin duyệt
       requires_password_change: true
     };
 
@@ -148,9 +160,9 @@ class AuthService {
       price_per_month: parseFloat(price_per_month),
       system_fee: system_fee,
       vehicle_types: vehicle_types || ['CAR_4_5_SEATER'],
-      verification_status: 'APPROVED',
+      verification_status: 'PENDING_REVIEW', // Chờ Admin duyệt
       payment_status: 'UNPAID',
-      visibility_status: 'VISIBLE'
+      visibility_status: 'HIDDEN' // Ẩn cho đến khi được duyệt
     };
 
     const newProvider = await userRepository.createProviderWithFacility(
@@ -160,19 +172,17 @@ class AuthService {
       images || []
     );
 
-    const emailResult = await emailService.sendProviderApprovalEmail({
+    const emailResult = await emailService.sendProviderPendingEmail({
       toEmail: email,
       fullName: full_name,
       facilityName: facility_name,
-      tempPassword,
       systemFee: system_fee
     });
 
     return {
       user: this.sanitizeUser(newProvider),
       system_fee,
-      tempPasswordMessage: 'Mật khẩu ngẫu nhiên đã được gửi về email của bạn!',
-      simulatedTempPassword: emailResult.simulated ? tempPassword : undefined
+      message: 'Yêu cầu đăng ký đã được tiếp nhận! Vui lòng chờ Ban quản trị phê duyệt.'
     };
   }
 
@@ -186,8 +196,8 @@ class AuthService {
       throw error;
     }
 
-    if (user.status === 'BLOCKED' || user.status === 'INACTIVE') {
-      const error = new Error('Tài khoản của bạn đã bị khóa!');
+    if (user.status === 'BLOCKED' || user.status === 'INACTIVE' || user.status === 'REJECTED') {
+      const error = new Error('Tài khoản của bạn đã bị khóa hoặc bị từ chối!');
       error.status = 403;
       throw error;
     }

@@ -128,14 +128,14 @@ class UserRepository {
   }
 
   /**
-   * Cập nhật mật khẩu mới và hủy cờ yêu cầu đổi mật khẩu
+   * Cập nhật mật khẩu mới và thay đổi cờ yêu cầu đổi mật khẩu
    */
-  async updateUserPassword(userId, newPasswordHash) {
+  async updateUserPassword(userId, newPasswordHash, requiresChange = false) {
     return await prisma.user.update({
       where: { id: userId },
       data: {
         password_hash: newPasswordHash,
-        requires_password_change: false
+        requires_password_change: requiresChange
       },
       include: {
         role: true,
