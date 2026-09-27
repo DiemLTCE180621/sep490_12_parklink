@@ -20,6 +20,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/facilities", facilityRoutes);
+const reservationRoutes = require("./routes/reservationRoutes");
+
+app.use("/api/reservations", reservationRoutes);
 
 // Simple route
 app.get("/", (req, res) => {
