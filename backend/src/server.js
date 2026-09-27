@@ -24,6 +24,9 @@ const reservationRoutes = require("./routes/reservationRoutes");
 
 app.use("/api/reservations", reservationRoutes);
 
+const reviewRoutes = require("./routes/reviewRoutes");
+app.use("/api/reviews", reviewRoutes);
+
 // Simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the ParkLink API!" });

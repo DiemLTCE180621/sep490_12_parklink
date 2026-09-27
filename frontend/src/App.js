@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/SearchPage';
 import CustomerReservationsPage from './pages/CustomerReservationsPage';
 import FacilityListPage from './pages/FacilityListPage';
+import FacilityDetailPage from './pages/FacilityDetailPage';
 import ScrollToTop from './components/ScrollToTop';
 
 // Component bảo vệ Route yêu cầu Đăng nhập
@@ -55,6 +56,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route path="/facility/:id" element={<FacilityDetailPage />} />
           <Route
             path="/dashboard"
             element={
