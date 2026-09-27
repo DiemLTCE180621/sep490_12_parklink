@@ -177,6 +177,69 @@ class FacilityRepository {
       return facility;
     });
   }
+
+  /**
+   * Tìm kiếm bãi đỗ xe ACTIVE dựa theo từ khóa, loại xe và tiện ích
+   */
+  async searchActiveFacilities({ keyword, vehicle_type, amenities }) {
+    let whereClause = {
+      verification_status: 'APPROVED',
+      visibility_status: 'VISIBLE'
+    };
+
+    if (keyword) {
+      whereClause.OR = [
+        { name: { contains: keyword, mode: 'insensitive' } },
+        { address: { contains: keyword, mode: 'insensitive' } }
+      ];
+    }
+
+    let facilities = await prisma.facility.findMany({
+      where: whereClause,
+      include: {
+        images: true,
+        facility_amenities: {
+          include: {
+            amenity: true
+          }
+        }
+      }
+    });
+
+    // Lọc thủ công theo vehicle_type nếu database lưu vehicle_types dưới dạng mảng JSON hoặc String
+    if (vehicle_type) {
+      facilities = facilities.filter(f => {
+        if (!f.vehicle_types) return false;
+        // Kiểm tra xem chuỗi JSON hoặc array có chứa vehicle_type không
+        try {
+          const types = typeof f.vehicle_types === 'string' ? JSON.parse(f.vehicle_types) : f.vehicle_types;
+          return Array.isArray(types) && types.includes(vehicle_type);
+        } catch (e) {
+          // Fallback if it's just a comma separated string or simple string
+          return f.vehicle_types.includes(vehicle_type);
+        }
+      });
+    }
+
+    // Lọc theo tiện ích (Logical AND: phải có tất cả các tiện ích được chọn)
+    if (amenities && Array.isArray(amenities) && amenities.length > 0) {
+      facilities = facilities.filter(f => {
+        const facilityAmenityIds = f.facility_amenities.map(fa => fa.amenity_id);
+        return amenities.every(amenityId => facilityAmenityIds.includes(parseInt(amenityId)));
+      });
+    }
+
+    return facilities;
+  }
+
+  /**
+   * Lấy danh sách tất cả các tiện ích
+   */
+  async getAllAmenities() {
+    return await prisma.amenity.findMany({
+      orderBy: { id: 'asc' }
+    });
+  }
 }
 
 module.exports = new FacilityRepository();

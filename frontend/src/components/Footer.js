@@ -28,7 +28,7 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm tracking-wide">Dành Cho Khách Thuê</h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li><Link to="/#search" className="hover:text-teal-400 transition">Tìm bãi đỗ gần bạn</Link></li>
+              <li><Link to="/search" className="hover:text-teal-400 transition">Tìm bãi đỗ gần bạn</Link></li>
               <li><Link to="/register" className="hover:text-teal-400 transition">Đăng ký tài khoản</Link></li>
               <li><Link to="/#how-it-works" className="hover:text-teal-400 transition">Quy trình thuê tháng</Link></li>
             </ul>

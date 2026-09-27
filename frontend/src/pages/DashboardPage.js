@@ -69,19 +69,19 @@ const DashboardPage = () => {
                 <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
                   Menu Quản Trị
                 </h3>
-                <button 
+                <button
                   onClick={() => setActiveAdminTab('registrations')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'registrations' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <Building2 className="w-5 h-5" /> Duyệt Bãi Đỗ Xe
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveAdminTab('users')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'users' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <User className="w-5 h-5" /> Quản lý Users
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveAdminTab('transactions')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'transactions' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
@@ -93,7 +93,7 @@ const DashboardPage = () => {
             {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
             <div className="flex-1">
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
-              
+
               {activeAdminTab === 'users' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -144,13 +144,12 @@ const DashboardPage = () => {
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                       <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Bãi Đỗ Xe (Facility)
                     </h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      user.facility.verification_status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                      user.facility.verification_status === 'REJECTED' ? 'bg-red-100 text-red-700' :
-                      'bg-orange-100 text-orange-700'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.facility.verification_status === 'APPROVED' ? 'bg-green-100 text-green-700' :
+                        user.facility.verification_status === 'REJECTED' ? 'bg-red-100 text-red-700' :
+                          'bg-orange-100 text-orange-700'
+                      }`}>
                       {user.facility.verification_status === 'APPROVED' ? 'Đã Duyệt' :
-                       user.facility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Duyệt'}
+                        user.facility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Duyệt'}
                     </span>
                   </div>
 
@@ -186,16 +185,16 @@ const DashboardPage = () => {
                     <div className="mt-6 p-6 border-2 border-dashed border-teal-200 rounded-3xl bg-teal-50 text-center space-y-4">
                       <h4 className="font-bold text-teal-900 text-lg">Hoàn Tất Thanh Toán Phí Nền Tảng</h4>
                       <p className="text-sm text-teal-800">Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.</p>
-                      
+
                       <div className="flex justify-center my-4">
-                        <img 
-                          src={`https://img.vietqr.io/image/MB-1234567890-compact2.png?amount=${user.facility.system_fee}&addInfo=${encodeURIComponent('PARKLINK F' + user.facility.id)}&accountName=PARKLINK`} 
-                          alt="QR Code Thanh Toán" 
+                        <img
+                          src={`https://img.vietqr.io/image/MB-1234567890-compact2.png?amount=${user.facility.system_fee}&addInfo=${encodeURIComponent('PARKLINK F' + user.facility.id)}&accountName=PARKLINK`}
+                          alt="QR Code Thanh Toán"
                           className="w-48 h-48 rounded-2xl shadow-lg border-2 border-white"
                         />
                       </div>
-                      
-                      <button 
+
+                      <button
                         disabled={isPaying}
                         onClick={handleConfirmPayment}
                         className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50"
@@ -230,7 +229,7 @@ const DashboardPage = () => {
                     <Car className="w-10 h-10 text-slate-400 mx-auto" />
                     <p className="text-slate-600 text-sm">Bạn chưa gửi yêu cầu thuê bãi xe nào.</p>
                     <Link
-                      to="/#search"
+                      to="/search"
                       className="inline-block px-5 py-2.5 bg-teal-600 text-white font-bold text-sm rounded-xl shadow hover:bg-teal-700 transition"
                     >
                       Tìm Bãi Đỗ Tại Cần Thơ

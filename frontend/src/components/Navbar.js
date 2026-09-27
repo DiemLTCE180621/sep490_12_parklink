@@ -68,7 +68,7 @@ const Navbar = () => {
             <Link to="/" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150">
               Trang Chủ
             </Link>
-            <Link to="/#search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+            <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
               <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
             </Link>
             <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">

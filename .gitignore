@@ -37,6 +37,9 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+.agent/rules
+.agents/
+
 
 # Database files
 *.sql

@@ -3,9 +3,34 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import authService from '../services/authService';
 import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, MapPin, CheckSquare, Square, Phone, Mail } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { VEHICLE_TYPES } from '../constants/vehicleTypes';
-
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../utils/validators';
+
+
+// Fix icon mặc định của leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+const LocationPicker = ({ lat, lng, setFormData }) => {
+  useMapEvents({
+    click(e) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: e.latlng.lat.toString(),
+        longitude: e.latlng.lng.toString()
+      }));
+    },
+  });
+  return lat && lng ? <Marker position={[lat, lng]} /> : null;
+};
+
 
 const RegisterProviderPage = () => {
   const { registerProvider } = useAuth();
@@ -19,9 +44,9 @@ const RegisterProviderPage = () => {
     email: '',
     phone_number: '',
     facility_name: '',
-    address: 'Số 45 Đường Hòa Bình, Phường Ninh Kiều, Cần Thơ',
-    latitude: '10.034185',
-    longitude: '105.788326',
+    address: '',
+    latitude: '',
+    longitude: '',
     capacity: '5',
     price_per_month: '1500000',
     vehicle_types: [VEHICLE_TYPES[0].id],
@@ -31,6 +56,11 @@ const RegisterProviderPage = () => {
   const [errorList, setErrorList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successResult, setSuccessResult] = useState(null);
+
+  const [locationMode, setLocationMode] = useState('auto'); // 'auto' | 'manual'
+  const [geocodeLoading, setGeocodeLoading] = useState(false);
+  const VIETMAP_API_KEY = 'd329419c1873e0887edeb5903e878f2b434e72cde39f574d';
+  const VIETMAP_TILE_KEY = '8ce2ec00f08f39b06ab91ff4857323caddf621faedecc24e';
 
   // Tải danh mục Tiện ích từ Database khi khởi tạo trang
   useEffect(() => {
@@ -68,6 +98,37 @@ const RegisterProviderPage = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (errorList.length > 0) setErrorList([]);
+  };
+
+  const handleGeocode = async () => {
+    if (!formData.address) return;
+    setGeocodeLoading(true);
+    try {
+      const response = await fetch(`https://maps.vietmap.vn/api/search/v3?apikey=${VIETMAP_API_KEY}&text=${encodeURIComponent(formData.address)}`);
+      const data = await response.json();
+      if (data && data.length > 0 && data[0].ref_id) {
+        const placeRes = await fetch(`https://maps.vietmap.vn/api/place/v3?apikey=${VIETMAP_API_KEY}&refid=${data[0].ref_id}`);
+        const placeData = await placeRes.json();
+        
+        if (placeData && placeData.lat && placeData.lng) {
+          setFormData(prev => ({
+            ...prev,
+            latitude: placeData.lat.toString(),
+            longitude: placeData.lng.toString()
+          }));
+          alert(`Đã tìm thấy tọa độ: ${placeData.lat}, ${placeData.lng}`);
+        } else {
+          alert('Không tìm thấy tọa độ chính xác cho địa chỉ này, vui lòng chọn trên bản đồ.');
+        }
+      } else {
+        alert('Không tìm thấy địa chỉ này, vui lòng nhập chi tiết hơn hoặc chọn trên bản đồ.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Lỗi kết nối đến dịch vụ bản đồ VietMap.');
+    } finally {
+      setGeocodeLoading(false);
+    }
   };
 
   const handleVehicleTypeToggle = (typeId) => {
@@ -308,21 +369,62 @@ const RegisterProviderPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">
-                      Địa chỉ chi tiết cơ sở (Cung cấp địa chỉ Google Maps) <span className="text-red-500">*</span>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Địa chỉ chi tiết cơ sở & Tọa độ GPS <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
-                      <MapPin className="w-5 h-5 absolute left-3 top-3.5 text-teal-600" />
-                      <input
-                        type="text"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        placeholder="Số 45 Đường Hòa Bình, Phường Ninh Kiều, Cần Thơ"
-                        className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                        required
-                      />
+
+                    <div className="flex gap-4 mb-4">
+                      <button type="button" onClick={() => setLocationMode('auto')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors border ${locationMode === 'auto' ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>Tự động tìm tọa độ</button>
+                      <button type="button" onClick={() => setLocationMode('manual')} className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors border ${locationMode === 'manual' ? 'bg-teal-600 text-white border-teal-600' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>Chọn trên bản đồ</button>
                     </div>
+
+                    {locationMode === 'auto' ? (
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
+                          <MapPin className="w-5 h-5 absolute left-3 top-3.5 text-teal-600" />
+                          <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Số 45 Đường Hòa Bình, Ninh Kiều, Cần Thơ"
+                            className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                            required
+                          />
+                        </div>
+                        <button type="button" onClick={handleGeocode} disabled={geocodeLoading} className="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition whitespace-nowrap">
+                          {geocodeLoading ? 'Đang tìm...' : 'Tìm Tọa Độ'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <MapPin className="w-5 h-5 absolute left-3 top-3.5 text-teal-600" />
+                          <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Nhập địa chỉ (để hiển thị cho khách)"
+                            className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                            required
+                          />
+                        </div>
+                        <div className="h-72 rounded-xl overflow-hidden border border-slate-300 relative z-0">
+                          <MapContainer center={[formData.latitude || 10.0299, formData.longitude || 105.7706]} zoom={13} style={{ height: '100%', width: '100%' }}>
+                            <TileLayer url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}@2x.png?apikey=${VIETMAP_TILE_KEY}`} />
+                            <LocationPicker lat={formData.latitude} lng={formData.longitude} setFormData={setFormData} />
+                          </MapContainer>
+                        </div>
+                        <p className="text-xs text-slate-500 text-center font-medium">Click trực tiếp vào bản đồ để thả ghim xác định tọa độ chính xác</p>
+                      </div>
+                    )}
+
+                    {formData.latitude && formData.longitude && (
+                      <div className="mt-3 p-3 bg-teal-50 border border-teal-100 rounded-xl text-xs text-teal-800 font-mono">
+                        Tọa độ hiện tại: [{formData.latitude}, {formData.longitude}]
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">

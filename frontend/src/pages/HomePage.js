@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Search, Shield, Calendar, ArrowRight, Clock } from 'lucide-react';
 import { VEHICLE_TYPES } from '../constants/vehicleTypes';
 
 const HomePage = () => {
   const [searchLocation, setSearchLocation] = useState('');
   const [vehicleType, setVehicleType] = useState(VEHICLE_TYPES[0].id);
+  const navigate = useNavigate();
+
+  const handleSearchClick = () => {
+    navigate('/search', { state: { keyword: searchLocation, vehicleType } });
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -62,7 +67,7 @@ const HomePage = () => {
                 {/* Submit Search Button */}
                 <div className="sm:col-span-3 pt-5 sm:pt-0">
                   <button
-                    onClick={() => alert(`Đang tìm kiếm bãi đỗ xe tại: ${searchLocation || 'Tất cả vị trí'}`)}
+                    onClick={handleSearchClick}
                     className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition duration-200"
                   >
                     <Search className="w-5 h-5" /> Tìm Bãi Đỗ

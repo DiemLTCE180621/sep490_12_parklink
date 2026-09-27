@@ -13,9 +13,13 @@ app.use(cors());
 // Khai báo các API route của từng chức năng tại đây
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const facilityRoutes = require("./routes/facilityRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/provider", providerRoutes);
+app.use("/api/facilities", facilityRoutes);
 
 // Simple route
 app.get("/", (req, res) => {
