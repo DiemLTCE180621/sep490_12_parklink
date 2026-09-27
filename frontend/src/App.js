@@ -8,6 +8,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterCustomerPage from './pages/RegisterCustomerPage';
 import RegisterProviderPage from './pages/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
+import CustomerReservationsPage from './pages/CustomerReservationsPage';
+import FacilityListPage from './pages/FacilityListPage';
 import ScrollToTop from './components/ScrollToTop';
 
 // Component bảo vệ Route yêu cầu Đăng nhập
@@ -42,6 +44,15 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterCustomerPage />} />
           <Route path="/register-provider" element={<RegisterProviderPage />} />
+          <Route path="/facilities" element={<FacilityListPage />} />
+          <Route
+            path="/my-reservations"
+            element={
+              <ProtectedRoute>
+                <CustomerReservationsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={

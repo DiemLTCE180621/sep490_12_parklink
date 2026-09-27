@@ -112,20 +112,41 @@ const DashboardPage = () => {
 
             {/* PANEL DÀNH CHO CUSTOMER HOẶC ADMIN */}
             {roleName !== 'PROVIDER' && (
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <Car className="w-5 h-5 text-teal-600" /> Bãi Đỗ Xe Đã Đặt Thuê
-                </h3>
-
-                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-3">
-                  <Car className="w-10 h-10 text-slate-400 mx-auto" />
-                  <p className="text-slate-600 text-sm">Bạn chưa gửi yêu cầu thuê bãi xe nào.</p>
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Car className="w-5 h-5 text-teal-600" /> Quản Lý Yêu Cầu Thuê Bãi Xe
+                  </h3>
                   <Link
-                    to="/#search"
-                    className="inline-block px-5 py-2.5 bg-teal-600 text-white font-bold text-sm rounded-xl shadow hover:bg-teal-700 transition"
+                    to="/my-reservations"
+                    className="text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline flex items-center gap-1"
                   >
-                    Tìm Bãi Đỗ Tại Cần Thơ
+                    Xem tất cả &rarr;
                   </Link>
+                </div>
+
+                <div className="p-6 bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-2xl shadow-inner space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-base font-bold">Thuê Bãi Đỗ Xe Dài Hạn</h4>
+                      <p className="text-xs text-slate-300 mt-0.5">Quản lý và kiểm tra tiến độ duyệt các đăng ký thuê bãi đỗ xe theo tháng</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <Link
+                      to="/my-reservations"
+                      className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-slate-950 font-extrabold text-sm rounded-xl shadow transition"
+                    >
+                      Danh Sách Yêu Cầu Thuê Của Tôi
+                    </Link>
+                    <Link
+                      to="/facilities"
+                      className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-xl transition"
+                    >
+                      Tìm Bãi Đỗ Xe Mới
+                    </Link>
+                  </div>
                 </div>
               </div>
             )}
