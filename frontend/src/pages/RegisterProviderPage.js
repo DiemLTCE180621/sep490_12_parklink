@@ -59,8 +59,8 @@ const RegisterProviderPage = () => {
 
   const [locationMode, setLocationMode] = useState('auto'); // 'auto' | 'manual'
   const [geocodeLoading, setGeocodeLoading] = useState(false);
-  const VIETMAP_API_KEY = 'd329419c1873e0887edeb5903e878f2b434e72cde39f574d';
-  const VIETMAP_TILE_KEY = '8ce2ec00f08f39b06ab91ff4857323caddf621faedecc24e';
+  const VIETMAP_API_KEY = process.env.REACT_APP_VIETMAP_API_KEY;
+  const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
 
   // Tải danh mục Tiện ích từ Database khi khởi tạo trang
   useEffect(() => {

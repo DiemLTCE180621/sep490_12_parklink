@@ -24,7 +24,7 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-const VIETMAP_TILE_KEY = '8ce2ec00f08f39b06ab91ff4857323caddf621faedecc24e';
+const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
 
 // Component để di chuyển Map center
 const MapUpdater = ({ center, zoom }) => {
