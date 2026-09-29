@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { sendReservationRequest } from '../services/reservationService';
-import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2, User, Phone, Mail } from 'lucide-react';
 
 const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
+  const { user } = useAuth();
   const [vehicleInfo, setVehicleInfo] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
     const tomorrow = new Date();
@@ -126,6 +128,29 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
               <div className="flex-1">{successMsg}</div>
+            </div>
+          )}
+
+          {/* USER INFO DISPLAY CARD */}
+          {user && (
+            <div className="p-3.5 bg-teal-50/60 border border-teal-100 rounded-2xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shrink-0 shadow-sm">
+                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900">{user.full_name || 'Khách hàng'}</span>
+                    <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-semibold">
+                      Tài khoản của bạn
+                    </span>
+                  </div>
+                  <p className="text-slate-500 flex items-center gap-3 mt-0.5">
+                    <span> {user.phone_number || 'Chưa cập nhật SĐT'}</span>
+                    <span> {user.email}</span>
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
