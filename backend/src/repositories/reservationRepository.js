@@ -203,7 +203,7 @@ class ReservationRepository {
   }
 
   /**
-   * Cập nhật trạng thái của Yêu cầu thuê xe
+   * Cập nhật trạng thái Yêu cầu thuê xe (APPROVED / REJECTED / CANCELLED) cho Iteration 2
    */
   async updateStatus(id, status) {
     return await prisma.reservation_Request.update({
@@ -214,15 +214,19 @@ class ReservationRepository {
           select: {
             id: true,
             full_name: true,
-            email: true
+            email: true,
+            phone_number: true
           }
         },
         facility: {
           select: {
             id: true,
-            name: true
+            name: true,
+            address: true,
+            price_per_month: true
           }
-        }
+        },
+        confirmation_record: true
       }
     });
   }

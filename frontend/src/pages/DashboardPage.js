@@ -215,6 +215,25 @@ const DashboardPage = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* LINK TỚI TRANG QUẢN LÝ YÊU CẦU THUÊ CỦA KHÁCH HÀNG */}
+                  <div className="mt-6 p-5 bg-gradient-to-r from-slate-900 to-teal-950 rounded-2xl text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md">
+                    <div>
+                      <h4 className="font-extrabold text-base flex items-center gap-2">
+                        <Car className="w-5 h-5 text-teal-400" /> Quản Lý Yêu Cầu Thuê Xe Của Khách Hang
+                      </h4>
+                      <p className="text-xs text-slate-300 mt-1">
+                        Xem danh sách khách hàng gửi yêu cầu đăng ký thuê bãi đỗ xe theo tháng và duyệt/từ chối.
+                      </p>
+                    </div>
+
+                    <Link
+                      to="/provider/reservations"
+                      className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-slate-950 font-extrabold text-xs rounded-xl shadow transition shrink-0"
+                    >
+                      Duyệt Yêu Cầu Thuê &rarr;
+                    </Link>
+                  </div>
                 </div>
               )}
 

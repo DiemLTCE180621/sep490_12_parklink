@@ -45,19 +45,26 @@ router.get(
 );
 
 /**
- * Route: GET /api/reservations/provider-requests
- * [PROVIDER / ADMIN] Xem danh sách Yêu cầu thuê gửi tới bãi của mình
+ * Route: GET /api/reservations/provider-requests & /api/reservations/provider/requests
+ * 1. [PROVIDER] View customer reservation requests (Xem danh sách yêu cầu thuê của khách hàng gửi tới bãi xe)
  */
 router.get(
   '/provider-requests',
   authenticateToken,
-  authorizeRoles('PROVIDER', 'ADMIN'),
+  authorizeRoles('PROVIDER'),
+  reservationController.getProviderReservations
+);
+
+router.get(
+  '/provider/requests',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
   reservationController.getProviderReservations
 );
 
 /**
  * Route: GET /api/reservations/:id
- * 3. [CUSTOMER / PROVIDER / ADMIN] View detail reservation requests (Xem chi tiết 1 yêu cầu thuê)
+ * [CUSTOMER / PROVIDER / ADMIN] View detail reservation requests (Xem chi tiết 1 yêu cầu thuê)
  */
 router.get(
   '/:id',
@@ -67,7 +74,7 @@ router.get(
 
 /**
  * Route: PATCH /api/reservations/:id/cancel & PUT /api/reservations/:id/cancel
- * 4. [CUSTOMER] Cancel pending reservation request (Hủy yêu cầu thuê đang chờ duyệt)
+ * [CUSTOMER] Cancel pending reservation request (Hủy yêu cầu thuê đang chờ duyệt)
  */
 router.patch(
   '/:id/cancel',
@@ -84,13 +91,49 @@ router.put(
 );
 
 /**
+ * Route: PATCH & PUT /api/reservations/:id/accept
+ * 2. [PROVIDER] Accept reservation request (Chấp nhận yêu cầu thuê)
+ */
+router.patch(
+  '/:id/accept',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  reservationController.acceptReservation
+);
+
+router.put(
+  '/:id/accept',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  reservationController.acceptReservation
+);
+
+/**
+ * Route: PATCH & PUT /api/reservations/:id/reject
+ * 3. [PROVIDER] Reject reservation request (Từ chối yêu cầu thuê)
+ */
+router.patch(
+  '/:id/reject',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  reservationController.rejectReservation
+);
+
+router.put(
+  '/:id/reject',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  reservationController.rejectReservation
+);
+
+/**
  * Route: PATCH /api/reservations/:id/status
- * Chủ bãi đỗ xe (PROVIDER / ADMIN) chấp nhận (APPROVED) hoặc từ chối (REJECTED) Yêu cầu thuê
+ * [PROVIDER] Phản hồi yêu cầu thuê tùy chọn (APPROVED / REJECTED)
  */
 router.patch(
   '/:id/status',
   authenticateToken,
-  authorizeRoles('PROVIDER', 'ADMIN'),
+  authorizeRoles('PROVIDER'),
   validateRespondReservation,
   reservationController.respondReservation
 );

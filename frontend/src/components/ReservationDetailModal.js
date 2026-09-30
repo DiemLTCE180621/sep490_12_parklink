@@ -90,7 +90,7 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <div 
+      <div
         className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden transform transition-all duration-300 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -148,7 +148,7 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
                   <Building2 className="w-4 h-4 text-teal-600" /> Thông Tin Bãi Đỗ Xe
                 </h4>
-                
+
                 <div className="space-y-2 text-sm">
                   <div>
                     <span className="text-xs text-slate-500 font-semibold">Tên cơ sở:</span>
@@ -194,7 +194,35 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               </div>
 
-              {/* SECTION 3: PROVIDER CONTACT */}
+              {/* SECTION 3: CUSTOMER CONTACT INFO */}
+              {reservation.customer && (
+                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
+                  <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
+                    <User className="w-4 h-4 text-teal-600" /> Thông Tin Khách Thuê (Customer)
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center gap-2 text-slate-700">
+                      <User className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="font-bold">{reservation.customer.full_name}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-slate-700">
+                      <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                      <a href={`tel:${reservation.customer.phone_number}`} className="font-bold text-teal-700 hover:underline">
+                        {reservation.customer.phone_number || 'Chưa cập nhật'}
+                      </a>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-slate-700 sm:col-span-2">
+                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="font-medium text-xs text-slate-600">{reservation.customer.email}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* SECTION 4: PROVIDER CONTACT */}
               {reservation.facility?.provider && (
                 <div className="bg-teal-50/60 p-5 rounded-2xl border border-teal-100 space-y-3">
                   <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-teal-100 pb-2">

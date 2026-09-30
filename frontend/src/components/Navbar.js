@@ -76,6 +76,11 @@ const Navbar = () => {
                 <Car className="w-4 h-4 text-teal-600" /> Yêu Cầu Thuê Của Tôi
               </Link>
             )}
+            {isAuthenticated && user?.role?.name === 'PROVIDER' && (
+              <Link to="/provider/reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <Car className="w-4 h-4 text-teal-600" /> Duyệt Yêu Cầu Thuê
+              </Link>
+            )}
             <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
               <Building2 className="w-4 h-4 text-teal-600" /> Cho Thuê Bãi Xe
             </Link>

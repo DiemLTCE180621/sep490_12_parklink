@@ -125,6 +125,48 @@ class ReservationController {
   }
 
   /**
+   * [PATCH /api/reservations/:id/accept]
+   * Chủ bãi đỗ xe (Provider) Chấp nhận (Accept / APPROVED) Yêu cầu thuê xe
+   */
+  async acceptReservation(req, res, next) {
+    try {
+      const { id } = req.params;
+      const providerId = req.user.userId;
+
+      const reservation = await reservationService.respondToReservationRequest(id, providerId, 'APPROVED');
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Đã phê duyệt / chấp nhận yêu cầu thuê bãi đỗ xe thành công!',
+        data: { reservation }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * [PATCH /api/reservations/:id/reject]
+   * Chủ bãi đỗ xe (Provider) Từ chối (Reject / REJECTED) Yêu cầu thuê xe
+   */
+  async rejectReservation(req, res, next) {
+    try {
+      const { id } = req.params;
+      const providerId = req.user.userId;
+
+      const reservation = await reservationService.respondToReservationRequest(id, providerId, 'REJECTED');
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Đã từ chối yêu cầu thuê bãi đỗ xe.',
+        data: { reservation }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * [PATCH /api/reservations/:id/status]
    * Chủ bãi đỗ xe chấp nhận (APPROVED) hoặc từ chối (REJECTED) Yêu cầu thuê
    */

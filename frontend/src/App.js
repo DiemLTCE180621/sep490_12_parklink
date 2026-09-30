@@ -10,6 +10,7 @@ import RegisterProviderPage from './pages/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/SearchPage';
 import CustomerReservationsPage from './pages/CustomerReservationsPage';
+import ProviderReservationsPage from './pages/ProviderReservationsPage';
 import FacilityListPage from './pages/FacilityListPage';
 import FacilityDetailPage from './pages/FacilityDetailPage';
 import ScrollToTop from './components/ScrollToTop';
@@ -53,6 +54,22 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <CustomerReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/provider/reservations"
+            element={
+              <ProtectedRoute>
+                <ProviderReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/provider-reservations"
+            element={
+              <ProtectedRoute>
+                <ProviderReservationsPage />
               </ProtectedRoute>
             }
           />
