@@ -233,9 +233,6 @@ const RegisterProviderPage = () => {
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
             Đăng Ký Khai Báo Bãi Đỗ Xe
           </h2>
-          <p className="mt-2 text-base text-slate-600">
-            Khai báo chi tiết thông tin, tiện ích từ Database tại Phường Ninh Kiều, Cần Thơ
-          </p>
         </div>
 
         <div className="bg-white shadow-xl rounded-3xl border border-slate-100 p-8 sm:p-10">
@@ -301,7 +298,7 @@ const RegisterProviderPage = () => {
                       name="full_name"
                       value={formData.full_name}
                       onChange={handleChange}
-                      placeholder="Nguyễn Văn B"
+                      placeholder="Nhập họ và tên"
                       className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                       required
                     />
@@ -318,7 +315,7 @@ const RegisterProviderPage = () => {
                         name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
-                        placeholder="0987654321"
+                        placeholder="Nhập số điện thoại"
                         className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
@@ -336,7 +333,7 @@ const RegisterProviderPage = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="provider@example.com"
+                        placeholder="Nhập địa chỉ email"
                         className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
@@ -362,7 +359,7 @@ const RegisterProviderPage = () => {
                       name="facility_name"
                       value={formData.facility_name}
                       onChange={handleChange}
-                      placeholder="Ví dụ: Bãi đỗ xe Ninh Kiều SafePark"
+                      placeholder="Nhập tên cơ sở bãi đỗ xe"
                       className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                       required
                     />
@@ -387,7 +384,7 @@ const RegisterProviderPage = () => {
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
-                            placeholder="Số 45 Đường Hòa Bình, Ninh Kiều, Cần Thơ"
+                            placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
                             className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                             required
                           />
@@ -405,7 +402,7 @@ const RegisterProviderPage = () => {
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
-                            placeholder="Nhập địa chỉ (để hiển thị cho khách)"
+                            placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
                             className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                             required
                           />

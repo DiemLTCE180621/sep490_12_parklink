@@ -198,7 +198,7 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
               {reservation.customer && (
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
                   <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
-                    <User className="w-4 h-4 text-teal-600" /> Thông Tin Khách Thuê (Customer)
+                    <User className="w-4 h-4 text-teal-600" /> Thông Tin Khách Thuê
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -226,7 +226,7 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
               {reservation.facility?.provider && (
                 <div className="bg-teal-50/60 p-5 rounded-2xl border border-teal-100 space-y-3">
                   <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-teal-100 pb-2">
-                    <User className="w-4 h-4 text-teal-600" /> Liên Hệ Chủ Bãi Đỗ Xe (Parking Provider)
+                    <User className="w-4 h-4 text-teal-600" /> Liên Hệ Chủ Bãi Đỗ Xe
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">

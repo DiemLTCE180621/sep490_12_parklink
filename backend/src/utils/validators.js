@@ -33,9 +33,11 @@ const isValidFacilityName = (facilityName) => {
   return cleaned.length >= 3 && FACILITY_NAME_REGEX.test(cleaned);
 };
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 const isValidPassword = (password) => {
   if (!password) return false;
-  return password.length >= 6;
+  return PASSWORD_REGEX.test(password);
 };
 
 module.exports = {

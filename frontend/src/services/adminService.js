@@ -43,6 +43,22 @@ const adminService = {
    */
   confirmPayment: async (id) => {
     return await api.put(`/admin/registrations/${id}/payment-confirm`);
+  },
+
+  /**
+   * UC-Admin: Lấy danh sách tài khoản người dùng
+   * @param {object} params - { search, role, status, page, limit }
+   */
+  getUsersList: async (params = {}) => {
+    return await api.get('/admin/users', { params });
+  },
+
+  /**
+   * UC-Admin: Lấy chi tiết tài khoản người dùng theo ID
+   * @param {number} id - ID của user
+   */
+  getUserDetails: async (id) => {
+    return await api.get(`/admin/users/${id}`);
   }
 };
 
