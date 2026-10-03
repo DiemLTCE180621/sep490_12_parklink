@@ -240,6 +240,36 @@ class FacilityRepository {
       orderBy: { id: 'asc' }
     });
   }
+
+  /**
+   * Lấy chi tiết đầy đủ nhiều bãi đỗ xe theo danh sách ID để phục vụ so sánh.
+   * Chỉ lấy các bãi có trạng thái APPROVED và VISIBLE (ACTIVE).
+   * @param {number[]} ids - Mảng ID các bãi đỗ xe cần so sánh (2–4 phần tử)
+   */
+  async findByIdsForCompare(ids) {
+    return await prisma.facility.findMany({
+      where: {
+        id: { in: ids },
+        verification_status: 'APPROVED',
+        visibility_status: 'VISIBLE'
+      },
+      include: {
+        images: true,
+        facility_amenities: {
+          include: {
+            amenity: true
+          }
+        },
+        // Lấy reviews để tính rating trung bình
+        reviews: {
+          where: { status: 'VISIBLE' },
+          select: {
+            rating: true
+          }
+        }
+      }
+    });
+  }
 }
 
 module.exports = new FacilityRepository();

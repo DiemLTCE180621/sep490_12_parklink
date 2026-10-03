@@ -41,6 +41,62 @@ class FacilityService {
   async getAllAmenities() {
     return await facilityRepository.getAllAmenities();
   }
+
+  /**
+   * So sánh chi tiết 2–4 bãi đỗ xe.
+   * Validate số lượng ID, gọi repository lấy dữ liệu thô,
+   * rồi xây dựng ma trận so sánh (comparison matrix) chuẩn hóa để trả về frontend.
+   * @param {number[]} ids - Mảng 2–4 ID bãi đỗ xe (đã được parse sang số)
+   */
+  async compareFacilities(ids) {
+    // Validate số lượng: phải từ 2 đến 4 bãi
+    if (!ids || ids.length < 2 || ids.length > 4) {
+      throw new Error('Vui lòng chọn từ 2 đến 4 bãi đỗ xe để so sánh.');
+    }
+
+    // Lấy dữ liệu thô từ repository
+    const facilities = await facilityRepository.findByIdsForCompare(ids);
+
+    // Kiểm tra xem tất cả ID có tồn tại và đang ACTIVE không
+    if (facilities.length !== ids.length) {
+      const foundIds = facilities.map(f => f.id);
+      const notFoundIds = ids.filter(id => !foundIds.includes(id));
+      throw new Error(`Không tìm thấy hoặc bãi đỗ xe không còn hoạt động (ID: ${notFoundIds.join(', ')})`);
+    }
+
+    // Xây dựng comparison matrix: chuẩn hóa dữ liệu từng bãi
+    const comparisonMatrix = facilities.map(facility => {
+      // Tính điểm đánh giá trung bình từ danh sách reviews
+      const ratings = facility.reviews.map(r => r.rating);
+      const avgRating = ratings.length > 0
+        ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+        : null;
+
+      // Lấy ảnh đại diện (primary hoặc ảnh đầu tiên)
+      const primaryImage = facility.images.find(img => img.is_primary) || facility.images[0] || null;
+
+      // Danh sách tên tiện ích
+      const amenities = facility.facility_amenities.map(fa => fa.amenity.name);
+
+      return {
+        id: facility.id,
+        name: facility.name,
+        address: facility.address,
+        price_per_month: parseFloat(facility.price_per_month),
+        capacity: facility.capacity,
+        // Số chỗ còn trống (chức năng này có thể mở rộng sau, hiện tại trả về null)
+        available_slots: null,
+        amenities,
+        latitude: facility.latitude,
+        longitude: facility.longitude,
+        image_url: primaryImage?.image_url || null,
+        avg_rating: avgRating ? parseFloat(avgRating) : null,
+        total_reviews: ratings.length
+      };
+    });
+
+    return comparisonMatrix;
+  }
 }
 
 module.exports = new FacilityService();
