@@ -1,20 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin, KeyRound } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/AdminRegistrationsPanel';
+import AdminFacilitiesPanel from '../components/AdminFacilitiesPanel';
+import Toast from '../components/Toast';
 import AdminUsersPanel from '../components/AdminUsersPanel';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import providerService from '../services/providerService';
+import authService from '../services/authService';
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeAdminTab, setActiveAdminTab] = useState('registrations'); // Trạng thái chọn menu bên trái cho Admin
   const [isPaying, setIsPaying] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const roleName = user?.role?.name || 'CUSTOMER';
+
+  useEffect(() => {
+    let intervalId;
+    if (roleName === 'PROVIDER' && user?.facility?.verification_status === 'APPROVED' && user?.facility?.payment_status !== 'PAID') {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await authService.getCurrentUser();
+          const latestFacility = res.data?.user?.facility;
+          if (latestFacility && latestFacility.payment_status === 'PAID') {
+            clearInterval(intervalId);
+            setPaymentSuccess(true);
+            setTimeout(() => {
+              window.location.reload();
+            }, 3000);
+          }
+        } catch (error) {
+          console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
+        }
+      }, 5000); // Polling mỗi 5 giây
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [roleName, user]);
 
   const handleLogout = async () => {
     await logout();
@@ -25,20 +54,22 @@ const DashboardPage = () => {
     try {
       setIsPaying(true);
       await providerService.confirmPayment(user.facility.id);
-      alert('Thanh toán thành công! Cơ sở đã được hiển thị công khai.');
-      window.location.reload();
+      setPaymentSuccess(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
     } catch (err) {
-      alert(err.response?.data?.message || err.message);
+      setToastInfo({ message: err.response?.data?.message || err.message, type: 'error' });
     } finally {
       setIsPaying(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* WELCOME BANNER */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div className="min-h-screen bg-slate-50 pb-10">
+      {/* WELCOME BANNER FULL WIDTH */}
+      <div className="w-full bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 px-6 sm:px-12 py-10 text-white shadow-xl mb-8">
+        <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md">
@@ -68,7 +99,9 @@ const DashboardPage = () => {
             </button>
           </div>
         </div>
+      </div>
 
+      <div className="px-4 sm:px-6 lg:px-8 w-full mx-auto space-y-8">
         {/* CONTENT GRID */}
         {roleName === 'ADMIN' ? (
           <div className="flex flex-col md:flex-row gap-8">
@@ -91,6 +124,12 @@ const DashboardPage = () => {
                   <User className="w-5 h-5" /> Quản lý Users
                 </button>
                 <button
+                  onClick={() => setActiveAdminTab('facilities')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'facilities' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Building2 className="w-5 h-5" /> Tất cả cơ sở
+                </button>
+                <button
                   onClick={() => setActiveAdminTab('transactions')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'transactions' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
@@ -102,6 +141,7 @@ const DashboardPage = () => {
             {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
             <div className="flex-1">
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
+              {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
 
               {activeAdminTab === 'users' && <AdminUsersPanel />}
 
@@ -192,19 +232,21 @@ const DashboardPage = () => {
 
                       <div className="flex justify-center my-4">
                         <img
-                          src={`https://img.vietqr.io/image/MB-1234567890-compact2.png?amount=${user.facility.system_fee}&addInfo=${encodeURIComponent('PARKLINK F' + user.facility.id)}&accountName=PARKLINK`}
+                          src={`https://img.vietqr.io/image/MB-881666787988-compact2.png?amount=${user.facility.system_fee / 100}&addInfo=${encodeURIComponent('PARKLINK F' + user.facility.id)}&accountName=PARKLINK`}
                           alt="QR Code Thanh Toán"
                           className="w-48 h-48 rounded-2xl shadow-lg border-2 border-white"
                         />
                       </div>
 
-                      <button
-                        disabled={isPaying}
-                        onClick={handleConfirmPayment}
-                        className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50"
-                      >
-                        {isPaying ? 'Đang xử lý...' : 'Tôi đã thanh toán thành công'}
-                      </button>
+                      <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-4">
+                        <button
+                          disabled={isPaying}
+                          onClick={handleConfirmPayment}
+                          className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50 w-full sm:w-auto"
+                        >
+                          {isPaying ? 'Đang xử lý...' : 'Tôi đã thanh toán thủ công'}
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -286,6 +328,40 @@ const DashboardPage = () => {
         )}
       </div>
 
+      {/* POPUP BỰ VUÔNG NGAY GIỮA */}
+      {paymentSuccess && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4 transition-opacity">
+          <div className="bg-white p-10 max-w-md w-full text-center shadow-2xl transform transition-all scale-100 opacity-100" style={{ borderRadius: '16px' }}>
+            <div className="w-24 h-24 bg-teal-50 rounded-xl flex items-center justify-center mx-auto mb-6 border-2 border-teal-100">
+              <svg className="w-12 h-12 text-teal-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 mb-3 uppercase">Thanh Toán Thành Công!</h3>
+            <p className="text-slate-600 font-medium mb-8 text-base">
+              Bãi đỗ xe của bạn đã được kích hoạt và hiển thị công khai trên hệ thống ParkLink.
+            </p>
+            <div className="w-full bg-slate-100 h-2 mb-3 overflow-hidden rounded">
+              <div
+                className="bg-teal-500 h-2 rounded"
+                style={{
+                  width: '100%',
+                  transition: 'width 3s linear'
+                }}
+              ></div>
+            </div>
+            <p className="text-sm text-slate-400 font-bold animate-pulse">Đang tải lại hệ thống...</p>
+          </div>
+        </div>
+      )}
+
+      {toastInfo.message && (
+        <Toast
+          message={toastInfo.message}
+          type={toastInfo.type}
+          onClose={() => setToastInfo({ message: '', type: 'success' })}
+        />
+      )}
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}

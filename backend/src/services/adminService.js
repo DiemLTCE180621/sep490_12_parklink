@@ -119,6 +119,28 @@ class AdminService {
   }
 
   /**
+   * Lấy danh sách tất cả bãi đỗ xe trong hệ thống
+   */
+  async getAllFacilities() {
+    return await facilityRepository.findAllFacilities();
+  }
+
+  /**
+   * Khóa / Mở khóa bãi đỗ xe
+   * @param {number} facilityId 
+   */
+  async toggleLockFacility(facilityId) {
+    return await facilityRepository.toggleLockFacility(facilityId);
+  }
+
+  /**
+   * Cập nhật thông tin cơ sở
+   * @param {number} facilityId 
+   * @param {object} updateData 
+   */
+  async updateFacility(facilityId, updateData) {
+    return await facilityRepository.updateFacility(facilityId, updateData);
+  /**
    * UC-Admin: Lấy danh sách tài khoản người dùng (Customer, Provider, Admin) kèm Phân trang & Bộ lọc
    */
   async getUsersList({ search, role, status, page, limit }) {

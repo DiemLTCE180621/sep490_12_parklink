@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../services/adminService';
-import { Clock, AlertCircle, CheckCircle, XCircle, Building2, MapPin, User, DollarSign, Wrench, ChevronRight } from 'lucide-react';
+import FacilityDetailsModal from './FacilityDetailsModal';
+import { Clock, AlertCircle, CheckCircle, XCircle, Building2, MapPin, User, DollarSign, Wrench, ChevronRight, Eye } from 'lucide-react';
 
 /**
  * AdminRegistrationsPanel: Panel quản lý duyệt bãi đỗ xe theo luồng 2 bước
@@ -15,6 +16,14 @@ const AdminRegistrationsPanel = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+  const [detailsModal, setDetailsModal] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState({
+    path: null,
+    area: null,
+    gate: null,
+    other: null,
+    additional: []
+  });
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -50,8 +59,14 @@ const AdminRegistrationsPanel = () => {
         await adminService.approveRegistration(actionModal.id);
         showToast('success', 'Đã duyệt sơ bộ! Email thông báo đã gửi cho Provider.');
       } else if (actionModal.type === 'FINALIZE') {
+        if (!uploadedFiles.path || !uploadedFiles.area || !uploadedFiles.gate || !uploadedFiles.other) {
+          showToast('error', 'Vui lòng tải lên đầy đủ 4 loại hình ảnh bãi đỗ xe!');
+          setIsSubmitting(false);
+          return;
+        }
+        // TODO: Call API to upload images here before finalizing
         await adminService.finalizeRegistration(actionModal.id);
-        showToast('success', 'Hoàn tất phê duyệt! Email kèm thông tin đăng nhập đã gửi cho Provider.');
+        showToast('success', 'Đã tạo cơ sở thành công! Email kèm mật khẩu đã gửi cho Provider.');
       } else if (actionModal.type === 'REJECT') {
         if (!rejectReason.trim()) { showToast('error', 'Vui lòng nhập lý do từ chối!'); setIsSubmitting(false); return; }
         await adminService.rejectRegistration(actionModal.id, rejectReason);
@@ -59,6 +74,7 @@ const AdminRegistrationsPanel = () => {
       }
       setActionModal(null);
       setRejectReason('');
+      setUploadedFiles({ path: null, area: null, gate: null, other: null, additional: [] });
       fetchRegistrations();
     } catch (err) {
       showToast('error', 'Lỗi: ' + (err.message || 'Không xác định'));
@@ -121,6 +137,13 @@ const AdminRegistrationsPanel = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2 justify-end border-t border-slate-200 pt-4">
+          <button
+            onClick={() => setDetailsModal(facility)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition mr-auto"
+          >
+            <Eye className="w-4 h-4" /> Xem chi tiết
+          </button>
+
           <button
             onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
             className="flex items-center gap-1.5 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-xl transition"
@@ -214,21 +237,95 @@ const AdminRegistrationsPanel = () => {
                 </div>
               </>
             )}
-            {actionModal.type === 'FINALIZE' && (
+            {actionModal.type === 'FINALIZE' && (() => {
+              const selectedFacility = registrations.find(f => f.id === actionModal.id);
+              return (
               <>
                 <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-8 h-8 text-teal-600" />
                 </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Xác nhận Hoàn Tất</h3>
+                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Tạo Cơ Sở Chính Thức</h3>
                 <p className="text-center text-slate-500 text-sm mb-6">
-                  Bạn xác nhận đã <strong>chuẩn bị đầy đủ dữ liệu và hình ảnh</strong> cho cơ sở. Hệ thống sẽ gửi email kèm <strong>thông tin đăng nhập</strong> đến Provider.
+                  Dựa vào thông tin yêu cầu, vui lòng tải lên hình ảnh thực tế để tạo cơ sở và cấp tài khoản.
                 </p>
+
+                {selectedFacility && (
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-5 text-sm space-y-1">
+                    <p><span className="text-slate-500">Tên bãi:</span> <strong className="text-slate-900">{selectedFacility.name}</strong></p>
+                    <p><span className="text-slate-500">Sức chứa:</span> <strong className="text-slate-900">{selectedFacility.capacity} xe</strong></p>
+                    <p><span className="text-slate-500">Giá thuê:</span> <strong className="text-teal-700 font-bold">{Number(selectedFacility.price_per_month).toLocaleString('vi-VN')} VNĐ/tháng</strong></p>
+                  </div>
+                )}
+
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-slate-700 mb-3">Tải lên hình ảnh thực tế (Bắt buộc 4 tấm) <span className="text-red-500">*</span></label>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Hình đường vào */}
+                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+                      <p className="text-xs font-bold text-slate-700 mb-2">1. Hình đường vào bãi</p>
+                      <input 
+                        type="file" accept="image/*"
+                        onChange={(e) => setUploadedFiles({...uploadedFiles, path: e.target.files[0]})}
+                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
+                      />
+                      {uploadedFiles.path && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.path.name}</p>}
+                    </div>
+
+                    {/* Hình toàn cảnh bãi */}
+                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+                      <p className="text-xs font-bold text-slate-700 mb-2">2. Hình toàn cảnh bãi đỗ</p>
+                      <input 
+                        type="file" accept="image/*"
+                        onChange={(e) => setUploadedFiles({...uploadedFiles, area: e.target.files[0]})}
+                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
+                      />
+                      {uploadedFiles.area && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.area.name}</p>}
+                    </div>
+
+                    {/* Hình cổng */}
+                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+                      <p className="text-xs font-bold text-slate-700 mb-2">3. Hình cổng bãi</p>
+                      <input 
+                        type="file" accept="image/*"
+                        onChange={(e) => setUploadedFiles({...uploadedFiles, gate: e.target.files[0]})}
+                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
+                      />
+                      {uploadedFiles.gate && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.gate.name}</p>}
+                    </div>
+
+                    {/* Hình khác */}
+                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+                      <p className="text-xs font-bold text-slate-700 mb-2">4. Hình góc độ khác</p>
+                      <input 
+                        type="file" accept="image/*"
+                        onChange={(e) => setUploadedFiles({...uploadedFiles, other: e.target.files[0]})}
+                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
+                      />
+                      {uploadedFiles.other && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.other.name}</p>}
+                    </div>
+                  </div>
+
+                  {/* Hình bổ sung (Tùy chọn) */}
+                  <div className="mt-4 border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
+                    <p className="text-xs font-bold text-slate-700 mb-2">5. Hình ảnh bổ sung (Tùy chọn)</p>
+                    <input 
+                      type="file" accept="image/*" multiple
+                      onChange={(e) => setUploadedFiles({...uploadedFiles, additional: Array.from(e.target.files)})}
+                      className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
+                    />
+                    {uploadedFiles.additional && uploadedFiles.additional.length > 0 && (
+                      <p className="text-[10px] text-teal-600 mt-1 font-medium">Đã chọn {uploadedFiles.additional.length} hình ảnh bổ sung.</p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex gap-3">
-                  <button onClick={() => setActionModal(null)} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Hủy</button>
-                  <button disabled={isSubmitting} onClick={confirmAction} className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-200 transition disabled:opacity-50">Phê Duyệt &amp; Hoàn Tất</button>
+                  <button onClick={() => { setActionModal(null); setUploadedFiles({ path: null, area: null, gate: null, other: null, additional: [] }); }} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Hủy</button>
+                  <button disabled={isSubmitting || !uploadedFiles.path || !uploadedFiles.area || !uploadedFiles.gate || !uploadedFiles.other} onClick={confirmAction} className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-200 transition disabled:opacity-50">Tạo Cơ Sở &amp; Cấp MK</button>
                 </div>
               </>
-            )}
+            )})()}
             {actionModal.type === 'REJECT' && (
               <>
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -238,7 +335,7 @@ const AdminRegistrationsPanel = () => {
                 <p className="text-center text-slate-500 text-sm mb-4">Vui lòng cung cấp lý do để thông báo cho Provider khắc phục.</p>
                 <div className="flex flex-wrap gap-2 mb-3 justify-center">
                   <button onClick={() => setRejectReason('Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition">Thiếu thông tin</button>
-                  <button onClick={() => setRejectReason('Hình ảnh cung cấp không rõ ràng hoặc không khớp với thực tế.')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition">Hình ảnh mờ/sai</button>
+
                   <button onClick={() => setRejectReason('Vị trí hoặc giá cước không hợp lệ.')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition">Vị trí/Giá sai</button>
                 </div>
                 <textarea
@@ -257,14 +354,19 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
+      {/* Modal Xem Chi Tiết */}
+      <FacilityDetailsModal 
+        facility={detailsModal} 
+        onClose={() => setDetailsModal(null)} 
+      />
+
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-6 right-6 z-[100] transition-all duration-300">
-          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border ${
-            toast.type === 'success' 
-              ? 'bg-teal-50 border-teal-200 text-teal-900' 
+          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border ${toast.type === 'success'
+              ? 'bg-teal-50 border-teal-200 text-teal-900'
               : 'bg-red-50 border-red-200 text-red-900'
-          }`}>
+            }`}>
             {toast.type === 'success' ? (
               <CheckCircle className="w-6 h-6 text-teal-600 shrink-0" />
             ) : (

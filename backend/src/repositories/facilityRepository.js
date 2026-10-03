@@ -242,6 +242,69 @@ class FacilityRepository {
   }
 
   /**
+   * Admin lấy danh sách tất cả các cơ sở bãi đỗ xe trong hệ thống
+   */
+  async findAllFacilities() {
+    return await prisma.facility.findMany({
+      include: {
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone_number: true,
+            status: true
+          }
+        },
+        images: true
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+  }
+
+  /**
+   * Khóa / Mở khóa bãi đỗ xe (Chuyển đổi visibility_status giữa VISIBLE và HIDDEN, 
+   * có thể đi kèm logic đổi trạng thái khác nếu cần, ở đây chỉ đổi VISIBLE <-> HIDDEN cho chức năng Khóa)
+   */
+  async toggleLockFacility(facilityId) {
+    const facility = await prisma.facility.findUnique({ where: { id: facilityId } });
+    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
+    
+    // Nếu đang VISIBLE thì chuyển thành HIDDEN (Khóa)
+    // Nếu đang HIDDEN thì chuyển thành VISIBLE (Mở khóa)
+    // Tuy nhiên chỉ cho phép khóa mở khóa khi bãi đã APPROVED và PAID
+    if (facility.verification_status !== 'APPROVED') {
+        throw Object.assign(new Error('Chỉ có thể khóa/mở khóa bãi đỗ xe đã được phê duyệt!'), { status: 400 });
+    }
+
+    const newVisibility = facility.visibility_status === 'VISIBLE' ? 'HIDDEN' : 'VISIBLE';
+
+    return await prisma.facility.update({
+      where: { id: facilityId },
+      data: {
+        visibility_status: newVisibility
+      }
+    });
+  }
+
+  /**
+   * Cập nhật thông tin cơ bản của bãi đỗ xe
+   */
+  async updateFacility(facilityId, updateData) {
+    const facility = await prisma.facility.findUnique({ where: { id: facilityId } });
+    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
+    
+    return await prisma.facility.update({
+      where: { id: facilityId },
+      data: {
+        name: updateData.name !== undefined ? updateData.name : undefined,
+        address: updateData.address !== undefined ? updateData.address : undefined,
+        capacity: updateData.capacity !== undefined ? parseInt(updateData.capacity, 10) : undefined,
+        price_per_month: updateData.price_per_month !== undefined ? parseFloat(updateData.price_per_month) : undefined,
+        system_fee: updateData.system_fee !== undefined ? parseFloat(updateData.system_fee) : undefined
+   /**
    * Lấy chi tiết đầy đủ nhiều bãi đỗ xe theo danh sách ID để phục vụ so sánh.
    * Chỉ lấy các bãi có trạng thái APPROVED và VISIBLE (ACTIVE).
    * @param {number[]} ids - Mảng ID các bãi đỗ xe cần so sánh (2–4 phần tử)
