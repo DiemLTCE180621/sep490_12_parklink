@@ -1,7 +1,7 @@
 import api from './api';
 
 /**
- * Service giao tiếp API quản lý đánh giá (Review) phía Frontend
+ * Service giao tiếp API quản lý đánh giá của fe
  */
 const reviewService = {
   /**
