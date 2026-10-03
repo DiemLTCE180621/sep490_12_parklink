@@ -36,4 +36,19 @@ router.put('/registrations/:id/finalize', adminController.finalizeRegistration);
  */
 router.put('/registrations/:id/payment-confirm', adminController.confirmPayment);
 
+/**
+ * Lấy danh sách tất cả các bãi đỗ xe trên hệ thống
+ */
+router.get('/facilities', adminController.getAllFacilities);
+
+/**
+ * Khóa / Mở khóa bãi đỗ xe (Chuyển đổi visibility_status VISIBLE <-> HIDDEN)
+ */
+router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
+
+/**
+ * Cập nhật thông tin cơ bản của bãi đỗ xe
+ */
+router.put('/facilities/:id', adminController.updateFacility);
+
 module.exports = router;

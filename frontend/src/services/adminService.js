@@ -43,6 +43,30 @@ const adminService = {
    */
   confirmPayment: async (id) => {
     return await api.put(`/admin/registrations/${id}/payment-confirm`);
+  },
+
+  /**
+   * Lấy danh sách tất cả bãi đỗ xe trên hệ thống (dành cho Admin)
+   */
+  getAllFacilities: async () => {
+    return await api.get('/admin/facilities');
+  },
+
+  /**
+   * Khóa / Mở khóa bãi đỗ xe
+   * @param {number} id - ID của bãi đỗ xe
+   */
+  toggleLockFacility: async (id) => {
+    return await api.put(`/admin/facilities/${id}/toggle-lock`);
+  },
+
+  /**
+   * Cập nhật thông tin cơ sở
+   * @param {number} id 
+   * @param {object} data 
+   */
+  updateFacility: async (id, data) => {
+    return await api.put(`/admin/facilities/${id}`, data);
   }
 };
 

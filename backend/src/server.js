@@ -21,8 +21,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/facilities", facilityRoutes);
 const reservationRoutes = require("./routes/reservationRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
 
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/webhook", webhookRoutes);
 
 const reviewRoutes = require("./routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
