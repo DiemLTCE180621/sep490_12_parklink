@@ -1,7 +1,7 @@
-const facilityRepository = require('../repositories/facilityRepository');
-const userRepository = require('../repositories/userRepository');
-const emailService = require('../utils/emailService');
-const bcrypt = require('bcryptjs');
+const facilityRepository = require("../repositories/facilityRepository");
+const userRepository = require("../repositories/userRepository");
+const emailService = require("../utils/emailService");
+const bcrypt = require("bcryptjs");
 /**
  * Service xử lý logic nghiệp vụ dành riêng cho Admin
  */
@@ -21,18 +21,27 @@ class AdminService {
    */
   async approveRegistration(facilityId) {
     const facility = await facilityRepository.findById(facilityId);
-    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
-    if (facility.verification_status !== 'PENDING_REVIEW') {
-      throw Object.assign(new Error('Bãi đỗ xe không ở trạng thái chờ phê duyệt!'), { status: 400 });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+    if (facility.verification_status !== "PENDING_REVIEW") {
+      throw Object.assign(
+        new Error("Bãi đỗ xe không ở trạng thái chờ phê duyệt!"),
+        { status: 400 },
+      );
     }
 
-    const updatedFacility = await facilityRepository.prepareFacility(facilityId, facility.provider_id);
+    const updatedFacility = await facilityRepository.prepareFacility(
+      facilityId,
+      facility.provider_id,
+    );
 
     // Gửi mail thông báo "đang chuẩn bị"
     await emailService.sendFacilityPreparingEmail({
       toEmail: facility.provider.email,
       fullName: facility.provider.full_name,
-      facilityName: facility.name
+      facilityName: facility.name,
     });
 
     return updatedFacility;
@@ -45,18 +54,31 @@ class AdminService {
    */
   async finalizeRegistration(facilityId) {
     const facility = await facilityRepository.findById(facilityId);
-    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
-    if (facility.verification_status !== 'PREPARING') {
-      throw Object.assign(new Error('Bãi đỗ xe phải ở trạng thái PREPARING để hoàn tất!'), { status: 400 });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+    if (facility.verification_status !== "PREPARING") {
+      throw Object.assign(
+        new Error("Bãi đỗ xe phải ở trạng thái PREPARING để hoàn tất!"),
+        { status: 400 },
+      );
     }
 
-    const updatedFacility = await facilityRepository.approveFacility(facilityId, facility.provider_id);
+    const updatedFacility = await facilityRepository.approveFacility(
+      facilityId,
+      facility.provider_id,
+    );
 
     // Tạo mật khẩu mới cho Provider
     const tempPassword = emailService.generateRandomPassword();
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(tempPassword, salt);
-    await userRepository.updateUserPassword(facility.provider_id, password_hash, true);
+    await userRepository.updateUserPassword(
+      facility.provider_id,
+      password_hash,
+      true,
+    );
 
     // Gửi mail kèm QR VietQR thanh toán và mật khẩu
     await emailService.sendFacilityApprovedWithQREmail({
@@ -65,7 +87,7 @@ class AdminService {
       facilityName: facility.name,
       systemFee: facility.system_fee,
       facilityId: facility.id,
-      tempPassword: tempPassword
+      tempPassword: tempPassword,
     });
 
     return updatedFacility;
@@ -78,20 +100,33 @@ class AdminService {
    */
   async rejectRegistration(facilityId, reason) {
     const facility = await facilityRepository.findById(facilityId);
-    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
-    if (!['PENDING_REVIEW', 'PREPARING'].includes(facility.verification_status)) {
-      throw Object.assign(new Error('Bãi đỗ xe không ở trạng thái có thể từ chối!'), { status: 400 });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+    if (
+      !["PENDING_REVIEW", "PREPARING"].includes(facility.verification_status)
+    ) {
+      throw Object.assign(
+        new Error("Bãi đỗ xe không ở trạng thái có thể từ chối!"),
+        { status: 400 },
+      );
     }
 
-    const rejectReason = reason || 'Hồ sơ bãi đỗ xe không đạt yêu cầu của ParkLink.';
-    const updatedFacility = await facilityRepository.rejectFacility(facilityId, facility.provider_id, rejectReason);
+    const rejectReason =
+      reason || "Hồ sơ bãi đỗ xe không đạt yêu cầu của ParkLink.";
+    const updatedFacility = await facilityRepository.rejectFacility(
+      facilityId,
+      facility.provider_id,
+      rejectReason,
+    );
 
     // Gửi mail từ chối kèm lý do
     await emailService.sendFacilityRejectedEmail({
       toEmail: facility.provider.email,
       fullName: facility.provider.full_name,
       facilityName: facility.name,
-      reason: rejectReason
+      reason: rejectReason,
     });
 
     return updatedFacility;
@@ -104,15 +139,25 @@ class AdminService {
    */
   async confirmPayment(facilityId, providerId) {
     const facility = await facilityRepository.findById(facilityId);
-    if (!facility) throw Object.assign(new Error('Bãi đỗ xe không tồn tại!'), { status: 404 });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
     if (facility.provider_id !== providerId) {
-      throw Object.assign(new Error('Bạn không có quyền thực hiện thao tác này!'), { status: 403 });
+      throw Object.assign(
+        new Error("Bạn không có quyền thực hiện thao tác này!"),
+        { status: 403 },
+      );
     }
-    if (facility.verification_status !== 'APPROVED') {
-      throw Object.assign(new Error('Bãi đỗ xe chưa được phê duyệt!'), { status: 400 });
+    if (facility.verification_status !== "APPROVED") {
+      throw Object.assign(new Error("Bãi đỗ xe chưa được phê duyệt!"), {
+        status: 400,
+      });
     }
-    if (facility.payment_status === 'PAID') {
-      throw Object.assign(new Error('Bãi đỗ xe đã được thanh toán rồi!'), { status: 400 });
+    if (facility.payment_status === "PAID") {
+      throw Object.assign(new Error("Bãi đỗ xe đã được thanh toán rồi!"), {
+        status: 400,
+      });
     }
 
     return await facilityRepository.confirmPayment(facilityId, providerId);
@@ -127,7 +172,7 @@ class AdminService {
 
   /**
    * Khóa / Mở khóa bãi đỗ xe
-   * @param {number} facilityId 
+   * @param {number} facilityId
    */
   async toggleLockFacility(facilityId) {
     return await facilityRepository.toggleLockFacility(facilityId);
@@ -135,11 +180,12 @@ class AdminService {
 
   /**
    * Cập nhật thông tin cơ sở
-   * @param {number} facilityId 
-   * @param {object} updateData 
+   * @param {number} facilityId
+   * @param {object} updateData
    */
   async updateFacility(facilityId, updateData) {
     return await facilityRepository.updateFacility(facilityId, updateData);
+  }
   /**
    * UC-Admin: Lấy danh sách tài khoản người dùng (Customer, Provider, Admin) kèm Phân trang & Bộ lọc
    */
@@ -147,11 +193,11 @@ class AdminService {
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
     return await userRepository.findUsersPaginated({
-      search: search ? search.trim() : '',
-      role: role || 'ALL',
-      status: status || 'ALL',
+      search: search ? search.trim() : "",
+      role: role || "ALL",
+      status: status || "ALL",
       page: pageNum,
-      limit: limitNum
+      limit: limitNum,
     });
   }
 
@@ -161,7 +207,9 @@ class AdminService {
   async getUserDetails(userId) {
     const user = await userRepository.findUserDetailById(userId);
     if (!user) {
-      throw Object.assign(new Error('Tài khoản người dùng không tồn tại!'), { status: 404 });
+      throw Object.assign(new Error("Tài khoản người dùng không tồn tại!"), {
+        status: 404,
+      });
     }
     return user;
   }

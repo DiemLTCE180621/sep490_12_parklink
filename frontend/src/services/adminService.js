@@ -67,6 +67,7 @@ const adminService = {
    */
   updateFacility: async (id, data) => {
     return await api.put(`/admin/facilities/${id}`, data);
+  },
   /**
    * UC-Admin: Lấy danh sách tài khoản người dùng
    * @param {object} params - { search, role, status, page, limit }
