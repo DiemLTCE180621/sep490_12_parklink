@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -13,6 +14,7 @@ import CustomerReservationsPage from './pages/CustomerReservationsPage';
 import ProviderReservationsPage from './pages/ProviderReservationsPage';
 import FacilityListPage from './pages/FacilityListPage';
 import FacilityDetailPage from './pages/FacilityDetailPage';
+import ChatPage from './pages/ChatPage';
 import ScrollToTop from './components/ScrollToTop';
 
 // Component bảo vệ Route yêu cầu Đăng nhập
@@ -82,6 +84,14 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/chat"
+            element={
+              <ProtectedRoute>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -95,7 +105,9 @@ function App() {
     <Router>
       <ScrollToTop />
       <AuthProvider>
-        <AppContent />
+        <SocketProvider>
+          <AppContent />
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

@@ -27,6 +27,12 @@ app.use("/api/reservations", reservationRoutes);
 const reviewRoutes = require("./routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
 
+const chatRoutes = require("./routes/chatRoutes");
+app.use("/api/chats", chatRoutes);
+
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/uploads", uploadRoutes);
+
 // Simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the ParkLink API!" });
@@ -47,6 +53,10 @@ const port = process.env.PORT || 5000;
 const server = app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+// Initialize Socket.io
+const { initSocket } = require("./config/socket");
+initSocket(server);
 
 // Handle unhandled Promise rejection
 process.on("unhandledRejection", (err) => {
