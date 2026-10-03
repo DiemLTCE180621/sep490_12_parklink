@@ -4,12 +4,13 @@ import ReviewSection from '../components/ReviewSection';
 import SendReservationModal from '../components/SendReservationModal';
 import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
-import { Send, MapPin, ArrowLeft, ShieldCheck, Car } from 'lucide-react';
+import chatService from '../services/chatService';
+import { Send, MapPin, ArrowLeft, ShieldCheck, Car, MessageCircle } from 'lucide-react';
 
 const FacilityDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, token } = useAuth();
   const facilityId = parseInt(id, 10);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,12 +24,42 @@ const FacilityDetailPage = () => {
     address: 'Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ',
     price_per_month: 1500000,
     price: '1.500.000 VNĐ / tháng',
-    capacity: '10 slot'
+    capacity: '10 slot',
+    provider_id: 2 // Mock provider
+  };
+
+  const handleChatClick = async () => {
+    if (!isAuthenticated) {
+      setToastMsg('Vui lòng đăng nhập để nhắn tin!');
+      setToastType('error');
+      setTimeout(() => navigate('/login'), 1500);
+      return;
+    }
+    if (user?.role?.name === 'PROVIDER') {
+      setToastMsg('Chủ bãi không thể tự nhắn cho mình!');
+      setToastType('error');
+      return;
+    }
+
+    try {
+      // Dùng tạm provider_id = 28 và facility_id = 18 vì đây là ID có thật trong DB test
+      const providerId = 28;
+      const testFacilityId = 18; 
+      const res = await chatService.getOrCreateRoom(user.id, providerId, testFacilityId, token);
+      if (res.success) {
+        navigate('/chat', { state: { activeRoomId: res.data.id } });
+      }
+    } catch (error) {
+      console.error(error);
+      const errorMsg = error.response?.data?.message || error.message;
+      setToastMsg('Lỗi khi tạo phòng chat: ' + errorMsg);
+      setToastType('error');
+    }
   };
 
   const handleOpenModal = () => {
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng (Customer) để gửi yêu cầu thuê!');
+      setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
       setToastType('error');
       setTimeout(() => {
         navigate('/login');
@@ -37,7 +68,7 @@ const FacilityDetailPage = () => {
     }
 
     if (user?.role?.name === 'PROVIDER') {
-      setToastMsg('Tài khoản Chủ bãi xe (Provider) không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
+      setToastMsg('Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
       setToastType('error');
       return;
     }
@@ -123,12 +154,20 @@ const FacilityDetailPage = () => {
               </p>
             </div>
 
-            <button
-              onClick={handleOpenModal}
-              className="w-full sm:w-auto px-7 py-3.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-            >
-              <Send className="w-4 h-4" /> Yêu Cầu Đặt Chỗ Ngay
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                onClick={handleChatClick}
+                className="w-full sm:w-auto px-5 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl border border-slate-700 transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4" /> Nhắn Chủ Bãi
+              </button>
+              <button
+                onClick={handleOpenModal}
+                className="w-full sm:w-auto px-7 py-3.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+              >
+                <Send className="w-4 h-4" /> Yêu Cầu Đặt Chỗ
+              </button>
+            </div>
           </div>
         </div>
 

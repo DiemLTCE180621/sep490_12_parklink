@@ -7,7 +7,8 @@ const {
   isValidName,
   isValidPhone,
   isValidEmail,
-  isValidFacilityName
+  isValidFacilityName,
+  isValidPassword
 } = require('../utils/validators');
 
 const validateRegisterCustomer = (req, res, next) => {
@@ -123,8 +124,8 @@ const validateChangePassword = (req, res, next) => {
   const { newPassword } = req.body;
   const errors = [];
 
-  if (!newPassword || newPassword.length < 6) {
-    errors.push('Mật khẩu mới phải có ít nhất 6 ký tự.');
+  if (!isValidPassword(newPassword)) {
+    errors.push('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số.');
   }
 
   if (errors.length > 0) {
@@ -138,9 +139,61 @@ const validateChangePassword = (req, res, next) => {
   next();
 };
 
+const validateForgotPasswordRequest = (req, res, next) => {
+  const { email } = req.body;
+  const errors = [];
+  const cleanedEmail = (email || '').trim();
+
+  if (!isValidEmail(cleanedEmail)) {
+    errors.push('Vui lòng nhập địa chỉ email hợp lệ.');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Yêu cầu không hợp lệ',
+      errors
+    });
+  }
+
+  req.body.email = cleanedEmail;
+  next();
+};
+
+const validateVerifyResetPassword = (req, res, next) => {
+  const { email, otpCode, newPassword } = req.body;
+  const errors = [];
+  const cleanedEmail = (email || '').trim();
+  const cleanedOtp = (otpCode || '').trim();
+
+  if (!isValidEmail(cleanedEmail)) {
+    errors.push('Vui lòng nhập địa chỉ email hợp lệ.');
+  }
+  if (!cleanedOtp || cleanedOtp.length !== 6 || isNaN(cleanedOtp)) {
+    errors.push('Mã OTP phải bao gồm đúng 6 chữ số.');
+  }
+  if (!isValidPassword(newPassword)) {
+    errors.push('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số.');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Dữ liệu xác nhận không hợp lệ',
+      errors
+    });
+  }
+
+  req.body.email = cleanedEmail;
+  req.body.otpCode = cleanedOtp;
+  next();
+};
+
 module.exports = {
   validateRegisterCustomer,
   validateRegisterProvider,
   validateLogin,
-  validateChangePassword
+  validateChangePassword,
+  validateForgotPasswordRequest,
+  validateVerifyResetPassword
 };

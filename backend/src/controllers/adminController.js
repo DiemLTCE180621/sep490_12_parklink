@@ -93,6 +93,13 @@ class AdminController {
     try {
       const facilities = await adminService.getAllFacilities();
       res.json({ status: 'success', data: facilities });
+  /**
+   * UC-Admin: Xem danh sách tài khoản người dùng
+   */
+  async getUsers(req, res, next) {
+    try {
+      const data = await adminService.getUsersList(req.query);
+      res.json({ status: 'success', data });
     } catch (error) {
       next(error);
     }
@@ -127,6 +134,17 @@ class AdminController {
       }
       const updatedFacility = await adminService.updateFacility(facilityId, req.body);
       res.json({ status: 'success', message: 'Cập nhật bãi đỗ xe thành công.', data: updatedFacility });
+  /**
+   * UC-Admin: Xem chi tiết tài khoản người dùng theo ID
+   */
+  async getUserById(req, res, next) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (isNaN(userId)) {
+        return res.status(400).json({ status: 'fail', message: 'ID tài khoản không hợp lệ' });
+      }
+      const user = await adminService.getUserDetails(userId);
+      res.json({ status: 'success', data: { user } });
     } catch (error) {
       if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
       next(error);

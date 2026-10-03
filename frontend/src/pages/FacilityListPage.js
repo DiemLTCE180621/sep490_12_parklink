@@ -37,13 +37,13 @@ const FacilityListPage = () => {
 
   const handleOpenModal = (facility) => {
     if (!isAuthenticated) {
-      alert('Vui lòng đăng nhập tài khoản Khách hàng (Customer) để gửi yêu cầu thuê!');
+      alert('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
       navigate('/login');
       return;
     }
 
     if (user?.role?.name === 'PROVIDER') {
-      alert('Tài khoản Chủ bãi xe (Provider) không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
+      alert('Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
       return;
     }
 

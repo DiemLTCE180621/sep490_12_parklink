@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Key, CheckCircle2 } from 'lucide-react';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
+
+import { isValidPassword } from '../utils/validators';
 
 const LoginPage = () => {
   const { login, changePassword } = useAuth();
@@ -22,6 +25,8 @@ const LoginPage = () => {
     newPassword: '',
     confirmNewPassword: ''
   });
+
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,8 +78,8 @@ const LoginPage = () => {
       return;
     }
 
-    if (passwordChangeData.newPassword.length < 6) {
-      setError('Mật khẩu mới phải từ 6 ký tự trở lên!');
+    if (!isValidPassword(passwordChangeData.newPassword)) {
+      setError('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số!');
       return;
     }
 
@@ -105,11 +110,11 @@ const LoginPage = () => {
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
           {requirePasswordChange ? 'Đổi Mật Khẩu Lần Đầu' : 'Đăng Nhập Tài Khoản'}
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          {requirePasswordChange
-            ? 'Tài khoản của bạn đang sử dụng mật khẩu ngẫu nhiên. Vui lòng tạo mật khẩu mới.'
-            : 'Dành cho Khách thuê, Chủ bãi đỗ xe & Ban quản trị ParkLink'}
-        </p>
+        {requirePasswordChange && (
+          <p className="mt-2 text-sm text-slate-600">
+            Tài khoản của bạn đang sử dụng mật khẩu ngẫu nhiên. Vui lòng tạo mật khẩu mới.
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -145,7 +150,7 @@ const LoginPage = () => {
                   name="newPassword"
                   value={passwordChangeData.newPassword}
                   onChange={handlePasswordChangeInput}
-                  placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
+                  placeholder="Tối thiểu 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số"
                   className="block w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
                   required
                 />
@@ -190,7 +195,7 @@ const LoginPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="email@example.com"
+                    placeholder="Nhập địa chỉ email"
                     className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
                   />
@@ -198,9 +203,18 @@ const LoginPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  Mật khẩu
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Mật khẩu
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPasswordOpen(true)}
+                    className="text-xs font-bold text-teal-600 hover:text-teal-800 hover:underline transition"
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
                 <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Lock className="w-5 h-5" />
@@ -210,7 +224,7 @@ const LoginPage = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Nhập mật khẩu ngẫu nhiên hoặc cá nhân"
+                    placeholder="Nhập mật khẩu"
                     className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
                   />
@@ -256,6 +270,12 @@ const LoginPage = () => {
           )}
         </div>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+        initialEmail={formData.email}
+      />
     </div>
   );
 };

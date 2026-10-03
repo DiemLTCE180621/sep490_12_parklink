@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin, KeyRound } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/AdminFacilitiesPanel';
 import Toast from '../components/Toast';
+import AdminUsersPanel from '../components/AdminUsersPanel';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 import providerService from '../services/providerService';
 import authService from '../services/authService';
 
@@ -15,6 +17,7 @@ const DashboardPage = () => {
   const [isPaying, setIsPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const roleName = user?.role?.name || 'CUSTOMER';
 
@@ -81,10 +84,16 @@ const DashboardPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setIsChangePasswordModalOpen(true)}
+              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
+            >
+              <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
+            </button>
             <button
               onClick={handleLogout}
-              className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow transition flex items-center gap-2"
+              className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" /> Đăng Xuất
             </button>
@@ -134,12 +143,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
 
-              {activeAdminTab === 'users' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
-                  <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-400">Đang phát triển chức năng Quản lý Người dùng...</h3>
-                </div>
-              )}
+              {activeAdminTab === 'users' && <AdminUsersPanel />}
 
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
@@ -169,7 +173,7 @@ const DashboardPage = () => {
                 <div className="flex items-center gap-3 text-slate-600">
                   <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                    {roleName === 'PROVIDER' ? 'Owner / Chủ Bãi' : 'Customer / Khách Thuê'}
+                    {roleName === 'ADMIN' ? 'Quản Trị Viên' : roleName === 'PROVIDER' ? 'Chủ Bãi Xe' : 'Khách Thuê'}
                   </span>
                 </div>
               </div>
@@ -358,6 +362,10 @@ const DashboardPage = () => {
           onClose={() => setToastInfo({ message: '', type: 'success' })}
         />
       )}
+      <ChangePasswordModal
+        isOpen={isChangePasswordModalOpen}
+        onClose={() => setIsChangePasswordModalOpen(false)}
+      />
     </div>
   );
 };

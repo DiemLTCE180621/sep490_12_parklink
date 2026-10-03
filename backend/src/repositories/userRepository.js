@@ -145,8 +145,82 @@ class UserRepository {
   }
 
   /**
-   * Lấy danh sách các bãi đỗ xe chờ phê duyệt cho Admin kèm Tiện ích và Hình ảnh
+   * UC-Admin: Lấy danh sách tài khoản người dùng có tìm kiếm, lọc theo Role, Status và Phân trang
    */
+  async findUsersPaginated({ search, role, status, page = 1, limit = 10 }) {
+    const where = {};
+
+    if (search) {
+      where.OR = [
+        { full_name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phone_number: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    if (role && role !== 'ALL') {
+      where.role = {
+        name: { equals: role, mode: 'insensitive' }
+      };
+    }
+
+    if (status && status !== 'ALL') {
+      where.status = { equals: status, mode: 'insensitive' };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [users, totalCount] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { id: 'desc' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true
+        }
+      }),
+      prisma.user.count({ where })
+    ]);
+
+    return {
+      users,
+      pagination: {
+        totalItems: totalCount,
+        currentPage: page,
+        totalPages: Math.ceil(totalCount / limit) || 1,
+        limit
+      }
+    };
+  }
+
+  /**
+   * UC-Admin: Lấy chi tiết thông tin tài khoản người dùng theo ID (không kèm thông tin nhạy cảm như password_hash)
+   */
+  async findUserDetailById(id) {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        phone_number: true,
+        status: true,
+        requires_password_change: true,
+        created_at: true,
+        updated_at: true,
+        role: true
+      }
+    });
+  }
 }
 
 module.exports = new UserRepository();

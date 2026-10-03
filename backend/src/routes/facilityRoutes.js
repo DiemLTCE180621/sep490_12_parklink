@@ -8,4 +8,8 @@ router.get('/search', facilityController.searchFacilities);
 // API Public: Lấy danh sách tiện ích để filter
 router.get('/amenities', facilityController.getAllAmenities);
 
+// API Public: So sánh 2–4 bãi đỗ xe (Function 3.41)
+// Query param: ?ids=1,2,3
+router.get('/compare', facilityController.compareFacilities);
+
 module.exports = router;
