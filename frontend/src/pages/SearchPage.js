@@ -151,6 +151,28 @@ const SearchPage = () => {
     } finally {
       setLoading(false);
     }
+  }, [keyword, vehicleType, radius, selectedAmenities, userLocation]);
+
+  useEffect(() => {
+    // Khởi tạo lấy params từ state (nếu từ HomePage chuyển qua)
+    if (location.state) {
+      if (location.state.keyword) setKeyword(location.state.keyword);
+      if (location.state.vehicleType) setVehicleType(location.state.vehicleType);
+    }
+    fetchAmenities();
+    fetchFacilities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchAmenities = async () => {
+    try {
+      const res = await facilityService.getAllAmenities();
+      if (res.status === 'success') {
+        setAmenitiesList(res.data);
+      }
+    } catch (err) {
+      console.error('Lỗi khi lấy danh sách tiện ích', err);
+    }
   };
 
   const handleSearch = (e) => {
@@ -173,6 +195,7 @@ const SearchPage = () => {
       return;
     }
     fetchFacilities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAmenities, vehicleType, radius]);
 
   const handleLocateMe = () => {

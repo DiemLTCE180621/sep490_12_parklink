@@ -91,9 +91,6 @@ const RegisterCustomerPage = () => {
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
           Đăng Ký Khách Thuê
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Mật khẩu ngẫu nhiên sẽ được sinh tự động & gửi tới email của bạn
-        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -172,7 +169,7 @@ const RegisterCustomerPage = () => {
                     name="full_name"
                     value={formData.full_name}
                     onChange={handleChange}
-                    placeholder="Ví dụ: Nguyễn Văn A"
+                    placeholder="Nhập họ và tên"
                     className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
                   />
@@ -193,7 +190,7 @@ const RegisterCustomerPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="name@example.com"
+                    placeholder="Nhập địa chỉ email"
                     className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
                   />
@@ -213,7 +210,7 @@ const RegisterCustomerPage = () => {
                     name="phone_number"
                     value={formData.phone_number}
                     onChange={handleChange}
-                    placeholder="0912345678"
+                    placeholder="Nhập số điện thoại"
                     maxLength={10}
                     className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
@@ -235,7 +232,7 @@ const RegisterCustomerPage = () => {
                 disabled={loading}
                 className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-200 disabled:opacity-50"
               >
-                {loading ? 'Đang khởi tạo tài khoản...' : (
+                {loading ? 'Đang tạo tài khoản...' : (
                   <span className="flex items-center gap-2">
                     Đăng Ký Ngay <ArrowRight className="w-5 h-5" />
                   </span>

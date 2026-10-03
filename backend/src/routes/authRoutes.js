@@ -5,7 +5,9 @@ const {
   validateRegisterCustomer,
   validateRegisterProvider,
   validateLogin,
-  validateChangePassword
+  validateChangePassword,
+  validateForgotPasswordRequest,
+  validateVerifyResetPassword
 } = require('../validations/authValidation');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
@@ -24,6 +26,12 @@ router.post('/register/provider', validateRegisterProvider, authController.regis
 
 // UC03: Đăng nhập
 router.post('/login', validateLogin, authController.login);
+
+// Quên mật khẩu: Yêu cầu mã OTP qua Email
+router.post('/forgot-password/request', validateForgotPasswordRequest, authController.requestPasswordReset);
+
+// Quên mật khẩu: Xác nhận mã OTP & Đặt lại mật khẩu mới
+router.post('/forgot-password/verify-reset', validateVerifyResetPassword, authController.verifyAndResetPassword);
 
 // Đổi mật khẩu lần đầu hoặc theo cá nhân
 router.post('/change-password', authenticateToken, validateChangePassword, authController.changePassword);
