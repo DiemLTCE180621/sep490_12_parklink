@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation, CarFront, Shield, Star, Info, List, X } from 'lucide-react';
+import { Search, MapPin, Navigation, CarFront, Shield, Star, Info, List, X, GitCompareArrows, CheckSquare, Square } from 'lucide-react';
 import facilityService from '../services/facilityService';
 import { VEHICLE_TYPES } from '../constants/vehicleTypes';
+import CompareModal from '../components/CompareModal';
+import Toast from '../components/Toast';
 
 // Fix icon lỗi mặc định của leaflet khi dùng React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -56,6 +58,45 @@ const SearchPage = () => {
 
   const [amenitiesList, setAmenitiesList] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
+
+  // ─── State cho chức năng So sánh (Function 3.41) ───
+  const [compareIds, setCompareIds] = useState([]);         // Danh sách ID bãi đang chọn so sánh
+  const [isCompareOpen, setIsCompareOpen] = useState(false); // Trạng thái mở modal so sánh
+  const [toastMsg, setToastMsg] = useState('');              // Toast thông báo lỗi giới hạn
+  const [toastType, setToastType] = useState('error');
+
+  /**
+   * Toggle checkbox so sánh của một bãi đỗ xe.
+   * Giới hạn tối đa 4 bãi — hiển thị toast cảnh báo nếu vượt quá (EX-01).
+   */
+  const handleToggleCompare = useCallback((e, facId) => {
+    e.stopPropagation(); // Không trigger sự kiện click card bên dưới
+    setCompareIds(prev => {
+      if (prev.includes(facId)) {
+        // Bỏ chọn
+        return prev.filter(id => id !== facId);
+      }
+      if (prev.length >= 4) {
+        // EX-01: Đã đủ 4 bãi, hiển thị toast cảnh báo
+        setToastMsg('Tối đa 4 bãi đỗ xe để so sánh!');
+        setToastType('error');
+        return prev;
+      }
+      return [...prev, facId];
+    });
+  }, []);
+
+  /**
+   * Xóa 1 bãi khỏi danh sách so sánh (Case A.1: Remove item from matrix)
+   */
+  const handleRemoveFromCompare = useCallback((facId) => {
+    setCompareIds(prev => {
+      const updated = prev.filter(id => id !== facId);
+      // Nếu còn lại < 2, tự đóng modal
+      if (updated.length < 2) setIsCompareOpen(false);
+      return updated;
+    });
+  }, []);
 
   useEffect(() => {
     // Khởi tạo lấy params từ state (nếu từ HomePage chuyển qua)
@@ -161,6 +202,16 @@ const SearchPage = () => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
+      {/* Toast thông báo giới hạn so sánh */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg('')} />
+
+      {/* Modal so sánh (Function 3.41) */}
+      <CompareModal
+        selectedIds={compareIds}
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+        onRemove={handleRemoveFromCompare}
+      />
       {/* HEADER / FILTER BAR */}
       <header className="bg-white border-b border-slate-200 shadow-sm z-10 px-4 py-3 shrink-0">
         <form onSubmit={handleSearch} className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3">
@@ -275,61 +326,97 @@ const SearchPage = () => {
                 <p className="text-sm mt-1">Hãy thử mở rộng bán kính hoặc đổi từ khóa.</p>
               </div>
             ) : (
-              facilities.map((fac) => (
-                <div key={fac.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 hover:shadow-md hover:border-teal-300 transition cursor-pointer" onClick={() => {
-                  if(fac.latitude && fac.longitude) {
-                    setMapCenter([fac.latitude, fac.longitude]);
-                    setMapZoom(16); // Zoom lên
-                  }
-                }}>
-                  <div className="flex gap-4">
-                    {/* Thumbnail */}
-                    <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
-                      {fac.images && fac.images.length > 0 ? (
-                        <img src={fac.images[0].image_url} alt={fac.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400">
-                          <CarFront className="w-8 h-8" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex gap-1">
-                          <MapPin className="w-3.5 h-3.5 shrink-0" /> {fac.address}
-                        </p>
-                      </div>
-
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
-                          <Star className="w-3.5 h-3.5 fill-current" />
-                          <span>4.8</span> {/* Mặc định demo */}
-                        </div>
-                        {fac.distance !== null && fac.distance !== undefined && (
-                          <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100">
-                            Cách bạn: {(fac.distance).toFixed(1)} km
+              facilities.map((fac) => {
+                const isSelected = compareIds.includes(fac.id);
+                return (
+                  <div
+                    key={fac.id}
+                    className={`bg-white rounded-2xl p-4 shadow-sm border transition cursor-pointer ${
+                      isSelected
+                        ? 'border-teal-400 shadow-teal-100 ring-2 ring-teal-300/50'
+                        : 'border-slate-200 hover:shadow-md hover:border-teal-300'
+                    }`}
+                    onClick={() => {
+                      if (fac.latitude && fac.longitude) {
+                        setMapCenter([fac.latitude, fac.longitude]);
+                        setMapZoom(16);
+                      }
+                    }}
+                  >
+                    <div className="flex gap-4">
+                      {/* Thumbnail */}
+                      <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
+                        {fac.images && fac.images.length > 0 ? (
+                          <img src={fac.images[0].image_url} alt={fac.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400">
+                            <CarFront className="w-8 h-8" />
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-slate-500 uppercase font-semibold">Giá thuê trọn gói</div>
-                      <div className="text-lg font-bold text-teal-600">
-                        {fac.price_per_month ? fac.price_per_month.toLocaleString('vi-VN') : '0'} đ <span className="text-xs text-slate-400 font-normal">/ tháng</span>
+                      {/* Info */}
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex gap-1">
+                            <MapPin className="w-3.5 h-3.5 shrink-0" /> {fac.address}
+                          </p>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
+                            <Star className="w-3.5 h-3.5 fill-current" />
+                            <span>4.8</span>
+                          </div>
+                          {fac.distance !== null && fac.distance !== undefined && (
+                            <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100">
+                              Cách bạn: {(fac.distance).toFixed(1)} km
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); navigate(`/facility/${fac.id}`); }} className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition">
-                      Chi tiết
-                    </button>
+
+                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div>
+                        <div className="text-xs text-slate-500 uppercase font-semibold">Giá thuê trọn gói</div>
+                        <div className="text-lg font-bold text-teal-600">
+                          {fac.price_per_month ? fac.price_per_month.toLocaleString('vi-VN') : '0'} đ <span className="text-xs text-slate-400 font-normal">/ tháng</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {/* Checkbox So sánh */}
+                        <button
+                          id={`compare-checkbox-${fac.id}`}
+                          onClick={(e) => handleToggleCompare(e, fac.id)}
+                          title={isSelected ? 'Bỏ chọn so sánh' : 'Thêm vào so sánh'}
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition ${
+                            isSelected
+                              ? 'bg-teal-100 border-teal-300 text-teal-700'
+                              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-600'
+                          }`}
+                        >
+                          {isSelected
+                            ? <CheckSquare className="w-3.5 h-3.5" />
+                            : <Square className="w-3.5 h-3.5" />
+                          }
+                          So sánh
+                        </button>
+
+                        {/* Nút Chi tiết */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); navigate(`/facility/${fac.id}`); }}
+                          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl transition"
+                        >
+                          Chi tiết
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -392,6 +479,54 @@ const SearchPage = () => {
           </div>
         </div>
       </main>
+
+      {/* ═══ FLOATING COMPARE BAR ═══
+           Hiển thị khi có ít nhất 2 bãi được chọn
+           Cho phép người dùng xem lại danh sách và mở modal so sánh */}
+      {compareIds.length >= 2 && (
+        <div
+          id="floating-compare-bar"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-auto max-w-xl px-5 py-3 bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700/50 flex items-center gap-4 animate-slideUp"
+        >
+          {/* Thông tin bãi đã chọn */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
+              <GitCompareArrows className="w-3.5 h-3.5 text-teal-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-white font-bold text-xs">
+                Đã chọn <span className="text-teal-400">{compareIds.length}</span>/4 bãi xe để so sánh
+              </p>
+              <p className="text-slate-400 text-[10px] truncate">
+                {facilities
+                  .filter(f => compareIds.includes(f.id))
+                  .map(f => f.name)
+                  .join(' · ')}
+              </p>
+            </div>
+          </div>
+
+          {/* Nút xóa tất cả */}
+          <button
+            id="compare-bar-clear-btn"
+            onClick={() => setCompareIds([])}
+            title="Bỏ chọn tất cả"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Nút So Sánh */}
+          <button
+            id="compare-bar-submit-btn"
+            onClick={() => setIsCompareOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 text-sm font-extrabold rounded-xl transition shrink-0 shadow-lg"
+          >
+            <GitCompareArrows className="w-4 h-4" />
+            So Sánh ({compareIds.length} bãi xe)
+          </button>
+        </div>
+      )}
     </div>
   );
 };

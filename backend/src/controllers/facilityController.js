@@ -38,3 +38,29 @@ exports.getAllAmenities = async (req, res) => {
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
+
+/**
+ * So sánh 2–4 bãi đỗ xe theo danh sách ID.
+ * Query param: ids=1,2,3 (chuỗi ID cách nhau bằng dấu phẩy)
+ */
+exports.compareFacilities = async (req, res) => {
+  try {
+    const { ids } = req.query;
+
+    // Parse chuỗi '1,2,3' thành mảng số [1, 2, 3]
+    const parsedIds = ids
+      ? ids.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id))
+      : [];
+
+    const data = await facilityService.compareFacilities(parsedIds);
+
+    res.json({
+      status: 'success',
+      data
+    });
+  } catch (error) {
+    // Lỗi validation nghiệp vụ trả về 400, lỗi server trả về 500
+    const statusCode = error.message.includes('Vui lòng chọn') || error.message.includes('Không tìm thấy') ? 400 : 500;
+    res.status(statusCode).json({ status: 'error', message: error.message });
+  }
+};
