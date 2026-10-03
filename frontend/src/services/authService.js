@@ -38,9 +38,19 @@ const authService = {
   async changePassword(passwordData) {
     return await api.post('/auth/change-password', passwordData);
   },
+  /**
+   * Quên mật khẩu: Yêu cầu gửi mã OTP qua Email
+   */
+  async requestPasswordReset(email) {
+    return await api.post('/auth/forgot-password/request', { email });
+  },
 
-
-
+  /**
+   * Quên mật khẩu: Xác thực OTP và đặt lại mật khẩu mới
+   */
+  async verifyAndResetPassword({ email, otpCode, newPassword }) {
+    return await api.post('/auth/forgot-password/verify-reset', { email, otpCode, newPassword });
+  },
   /**
    * UC05: Đăng xuất
    */

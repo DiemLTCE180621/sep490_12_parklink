@@ -104,6 +104,37 @@ class AuthController {
   }
 
   /**
+   * Yêu cầu gửi mã OTP quên mật khẩu
+   */
+  async requestPasswordReset(req, res, next) {
+    try {
+      const result = await authService.requestPasswordReset(req.body.email);
+      return res.status(200).json({
+        status: 'success',
+        message: result.message,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Xác nhận mã OTP và đổi mật khẩu mới
+   */
+  async verifyAndResetPassword(req, res, next) {
+    try {
+      const result = await authService.verifyAndResetPassword(req.body);
+      return res.status(200).json({
+        status: 'success',
+        message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * UC05: Đăng xuất
    */
   async logout(req, res, next) {

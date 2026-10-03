@@ -36,4 +36,14 @@ router.put('/registrations/:id/finalize', adminController.finalizeRegistration);
  */
 router.put('/registrations/:id/payment-confirm', adminController.confirmPayment);
 
+/**
+ * UC-Admin: View user accounts list (Xem danh sách tài khoản người dùng)
+ */
+router.get('/users', adminController.getUsers);
+
+/**
+ * UC-Admin: View user account details (Xem chi tiết tài khoản người dùng)
+ */
+router.get('/users/:id', adminController.getUserById);
+
 module.exports = router;

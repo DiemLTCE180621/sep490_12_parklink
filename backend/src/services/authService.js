@@ -7,6 +7,9 @@ const emailService = require('../utils/emailService');
 const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
+// In-memory Cache lưu trữ OTP Quên mật khẩu để không bị phụ thuộc permissions của DB PostgreSQL
+const otpStore = new Map();
+
 /**
  * Service xử lý toàn bộ Business Logic liên quan đến Xác thực (Auth) & Nghiệp vụ Thí điểm Ninh Kiều, Cần Thơ
  */
@@ -244,6 +247,120 @@ class AuthService {
 
     const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash);
     return this.sanitizeUser(updatedUser);
+  }
+
+  /**
+   * Bước 1: Yêu cầu đặt lại mật khẩu - Sinh và gửi mã OTP qua Email
+   */
+  async requestPasswordReset(email) {
+    if (!email) {
+      const error = new Error('Vui lòng nhập email!');
+      error.status = 400;
+      throw error;
+    }
+
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      const error = new Error('Không tìm thấy tài khoản với email này trong hệ thống!');
+      error.status = 404;
+      throw error;
+    }
+
+    if (user.status === 'BLOCKED' || user.status === 'REJECTED') {
+      const error = new Error('Tài khoản đã bị khóa hoặc bị từ chối!');
+      error.status = 403;
+      throw error;
+    }
+
+    // Sinh mã OTP 6 chữ số
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 phút
+
+    // Lưu thông tin OTP vào RAM Cache (otpStore)
+    otpStore.set(user.email, {
+      code: otpCode,
+      expiresAt,
+      attempts: 0
+    });
+
+    const emailResult = await emailService.sendPasswordResetOTPEmail({
+      toEmail: user.email,
+      fullName: user.full_name,
+      otpCode
+    });
+
+    return {
+      message: 'Mã OTP xác thực đặt lại mật khẩu đã được gửi đến email của bạn!',
+      simulatedOtp: emailResult.simulated ? otpCode : undefined
+    };
+  }
+
+  /**
+   * Bước 2: Xác nhận mã OTP và đặt lại mật khẩu mới (Giới hạn nhập sai tối đa 5 lần)
+   */
+  async verifyAndResetPassword({ email, otpCode, newPassword }) {
+    if (!email || !otpCode || !newPassword) {
+      const error = new Error('Vui lòng nhập đầy đủ email, mã OTP và mật khẩu mới!');
+      error.status = 400;
+      throw error;
+    }
+
+    const user = await userRepository.findByEmail(email);
+    if (!user) {
+      const error = new Error('Không tìm thấy tài khoản!');
+      error.status = 404;
+      throw error;
+    }
+
+    const MAX_ATTEMPTS = 5;
+    const otpRecord = otpStore.get(user.email);
+
+    if (!otpRecord) {
+      const error = new Error('Không tìm thấy mã OTP đặt lại mật khẩu hoặc mã đã bị hủy! Vui lòng bấm gửi yêu cầu mã OTP mới.');
+      error.status = 400;
+      throw error;
+    }
+
+    if (otpRecord.expiresAt < Date.now()) {
+      otpStore.delete(user.email);
+      const error = new Error('Mã OTP đã hết hạn (15 phút)! Vui lòng bấm gửi yêu cầu mã OTP mới.');
+      error.status = 400;
+      throw error;
+    }
+
+    if (otpRecord.attempts >= MAX_ATTEMPTS) {
+      otpStore.delete(user.email);
+      const error = new Error('Bạn đã nhập sai OTP quá 5 lần! Mã OTP cũ đã bị hủy. Vui lòng bấm yêu cầu mã OTP mới.');
+      error.status = 400;
+      throw error;
+    }
+
+    if (otpRecord.code !== otpCode) {
+      otpRecord.attempts += 1;
+
+      if (otpRecord.attempts >= MAX_ATTEMPTS) {
+        otpStore.delete(user.email);
+        const error = new Error('Bạn đã nhập sai OTP quá 5 lần! Mã OTP đã bị hủy để bảo mật. Vui lòng bấm yêu cầu mã OTP mới.');
+        error.status = 400;
+        throw error;
+      }
+
+      const remaining = MAX_ATTEMPTS - otpRecord.attempts;
+      const error = new Error(`Mã OTP không chính xác! Bạn còn ${remaining} lần thử trước khi mã bị hủy.`);
+      error.status = 400;
+      throw error;
+    }
+
+    // Xác thực thành công -> tiến hành đổi mật khẩu và xóa OTP khỏi RAM Cache
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    await userRepository.updateUserPassword(user.id, newPasswordHash, false);
+    otpStore.delete(user.email);
+
+    return {
+      message: 'Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.'
+    };
   }
 
   async getCurrentUser(userId) {
