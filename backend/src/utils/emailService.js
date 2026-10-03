@@ -22,12 +22,12 @@ class EmailService {
   }
 
   /**
-   * Sinh Mật Khẩu Ngẫu Nhiên dạng "PL@<random_digits>"
+   * Sinh Mật Khẩu Ngẫu Nhiên dạng "Pl@<random_digits>" (đạt chuẩn >= 8 ký tự, 1 hoa, 1 thường, 1 số)
    * @returns {string} Mật khẩu ngẫu nhiên
    */
   generateRandomPassword() {
     const randomDigits = Math.floor(100000 + Math.random() * 900000);
-    return `PL@${randomDigits}`;
+    return `Pl@${randomDigits}`;
   }
 
   /**
@@ -55,6 +55,37 @@ class EmailService {
     `;
 
     return await this.sendEmail(toEmail, subject, htmlContent, tempPassword, 'CUSTOMER');
+  }
+
+  /**
+   * Gửi Mã OTP xác thực Quên mật khẩu
+   */
+  async sendPasswordResetOTPEmail({ toEmail, fullName, otpCode }) {
+    const subject = '[ParkLink] 🔑 MÃ OTP ĐẶT LẠI MẬT KHẨU TÀI KHOẢN';
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="display: inline-block; background-color: #f0fdfa; border-radius: 50%; width: 64px; height: 64px; line-height: 64px; font-size: 32px;">🔑</div>
+          <h2 style="color: #0d9488; margin-top: 12px;">Yêu Cầu Đặt Lại Mật Khẩu</h2>
+        </div>
+
+        <p>Xin chào <strong>${fullName}</strong>,</p>
+        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ParkLink gắn liền với địa chỉ email: <strong>${toEmail}</strong>.</p>
+        
+        <div style="background-color: #f0fdfa; padding: 20px; border-radius: 12px; text-align: center; border: 1px dashed #0d9488; margin: 24px 0;">
+          <p style="margin: 0 0 8px 0; color: #0f766e; font-size: 14px;">Mã xác thực OTP của bạn là:</p>
+          <span style="font-size: 36px; font-weight: 900; letter-spacing: 6px; color: #0d9488; background: #ccfbf1; padding: 6px 18px; border-radius: 8px; display: inline-block;">${otpCode}</span>
+          <p style="margin: 12px 0 0 0; color: #e11d48; font-size: 13px;">⚠️ Mã này có hiệu lực trong vòng <strong>15 phút</strong>. Không chia sẻ mã này cho bất kỳ ai!</p>
+        </div>
+
+        <p style="color: #64748b; font-size: 14px;">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này hoặc liên hệ hỗ trợ ParkLink để bảo vệ tài khoản.</p>
+
+        <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b; text-align: center;">Đội ngũ Hỗ trợ Hệ thống ParkLink.</p>
+      </div>
+    `;
+
+    return await this.sendEmail(toEmail, subject, htmlContent, otpCode, 'FORGOT_PASSWORD_OTP');
   }
 
   /**

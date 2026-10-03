@@ -28,7 +28,7 @@ const FacilityDetailPage = () => {
 
   const handleOpenModal = () => {
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng (Customer) để gửi yêu cầu thuê!');
+      setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
       setToastType('error');
       setTimeout(() => {
         navigate('/login');
@@ -37,7 +37,7 @@ const FacilityDetailPage = () => {
     }
 
     if (user?.role?.name === 'PROVIDER') {
-      setToastMsg('Tài khoản Chủ bãi xe (Provider) không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
+      setToastMsg('Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
       setToastType('error');
       return;
     }
