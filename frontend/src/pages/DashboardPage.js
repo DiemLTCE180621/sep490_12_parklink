@@ -81,7 +81,13 @@ const DashboardPage = () => {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">Xin chào, {user?.full_name}!</h1>
                 <p className="text-teal-300 text-sm font-medium">
-                  {roleName === 'PROVIDER' ? 'Chủ Bãi Đỗ Xe' : roleName === 'ADMIN' ? 'Ban Quản Trị Hệ Thống' : 'Khách Thuê Bãi Xe'}
+                  {roleName === 'PROVIDER'
+                    ? 'Chủ Bãi Đỗ Xe'
+                    : roleName === 'ADMIN'
+                    ? 'Ban Quản Trị Hệ Thống'
+                    : roleName === 'FIELD_INSPECTOR'
+                    ? 'Nhân Viên Khảo Sát'
+                    : 'Khách Thuê Bãi Xe'}
                 </p>
               </div>
             </div>
@@ -198,7 +204,13 @@ const DashboardPage = () => {
                 <div className="flex items-center gap-3 text-slate-600">
                   <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                    {roleName === 'ADMIN' ? 'Quản Trị Viên' : roleName === 'PROVIDER' ? 'Chủ Bãi Xe' : 'Khách Thuê'}
+                    {roleName === 'ADMIN'
+                      ? 'Quản Trị Viên'
+                      : roleName === 'PROVIDER'
+                      ? 'Chủ Bãi Xe'
+                      : roleName === 'FIELD_INSPECTOR'
+                      ? 'Nhân Viên Khảo Sát'
+                      : 'Khách Thuê'}
                   </span>
                 </div>
               </div>
@@ -308,8 +320,25 @@ const DashboardPage = () => {
                 </div>
               )}
 
-              {/* PANEL DÀNH CHO CUSTOMER HOẶC ADMIN */}
-              {roleName !== 'PROVIDER' && (
+              {/* PANEL DÀNH CHO FIELD INSPECTOR */}
+              {roleName === 'FIELD_INSPECTOR' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <UserCheck className="w-5 h-5 text-teal-600" />
+                    <h3 className="text-lg font-bold text-slate-900">Bảng Làm Việc Nhân Viên Khảo Sát</h3>
+                  </div>
+
+                  <div className="p-6 bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-2xl shadow-inner space-y-3">
+                    <h4 className="text-base font-bold text-teal-300">Tài Khoản Nhân Viên Khảo Sát Thực Địa</h4>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Chào mừng bạn đến với hệ thống ParkLink. Tài khoản của bạn hiện đang ở trạng thái hoạt động. Các công việc khảo sát thực địa sẽ được cập nhật tại đây.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PANEL DÀNH CHO CUSTOMER HOẶC ROLE KHÁC */}
+              {roleName !== 'PROVIDER' && roleName !== 'FIELD_INSPECTOR' && roleName !== 'ADMIN' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
