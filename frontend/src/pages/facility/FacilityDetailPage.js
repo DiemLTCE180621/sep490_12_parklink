@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import ReviewSection from '../components/ReviewSection';
-import SendReservationModal from '../components/SendReservationModal';
-import Toast from '../components/Toast';
-import { useAuth } from '../context/AuthContext';
-import chatService from '../services/chatService';
+import ReviewSection from '../../components/common/ReviewSection';
+import SendReservationModal from '../../components/modals/SendReservationModal';
+import Toast from '../../components/common/Toast';
+import { useAuth } from '../../context/AuthContext';
+import chatService from '../../services/chatService';
 import { Send, MapPin, ArrowLeft, ShieldCheck, Car, MessageCircle } from 'lucide-react';
 
 const FacilityDetailPage = () => {

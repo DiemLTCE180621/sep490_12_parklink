@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { sendReservationRequest } from '../services/reservationService';
-import { useAuth } from '../context/AuthContext';
+import { sendReservationRequest } from '../../services/reservationService';
+import { useAuth } from '../../context/AuthContext';
 import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2 } from 'lucide-react';
 
 const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {

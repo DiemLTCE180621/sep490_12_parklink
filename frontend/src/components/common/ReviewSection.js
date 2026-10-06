@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import reviewService from '../services/reviewService';
-import { validateReviewForm } from '../validations/reviewValidation';
+import { useAuth } from '../../context/AuthContext';
+import reviewService from '../../services/reviewService';
+import { validateReviewForm } from '../../validations/reviewValidation';
 import StarRating from './StarRating';
 import { Edit, Trash2, Send } from 'lucide-react';
 

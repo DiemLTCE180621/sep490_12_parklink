@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Lock, KeyRound, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
-import authService from '../services/authService';
-import { isValidPassword } from '../utils/validators';
+import authService from '../../services/authService';
+import { isValidPassword } from '../../utils/validators';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({

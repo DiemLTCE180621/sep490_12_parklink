@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, KeyRound, Lock, AlertCircle, CheckCircle2, ArrowRight, RefreshCw } from 'lucide-react';
-import authService from '../services/authService';
-import { isValidPassword } from '../utils/validators';
+import authService from '../../services/authService';
+import { isValidPassword } from '../../utils/validators';
 
 const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '' }) => {
   const [step, setStep] = useState(1); // 1: Yêu cầu OTP, 2: Nhập OTP & Đổi mật khẩu

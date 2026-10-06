@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Building2, User, Phone, CheckCircle, XCircle, Lock, Unlock, Eye, EyeOff, Edit } from 'lucide-react';
-import adminService from '../services/adminService';
-import Toast from './Toast';
+import adminService from '../../services/adminService';
+import Toast from '../common/Toast';
 
 const AdminFacilitiesPanel = () => {
   const [facilities, setFacilities] = useState([]);

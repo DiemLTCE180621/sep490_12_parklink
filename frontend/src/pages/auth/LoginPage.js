@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Key, CheckCircle2 } from 'lucide-react';
-import ForgotPasswordModal from '../components/ForgotPasswordModal';
+import ForgotPasswordModal from '../../components/modals/ForgotPasswordModal';
 
-import { isValidPassword } from '../utils/validators';
+import { isValidPassword } from '../../utils/validators';
 
 const LoginPage = () => {
   const { login, changePassword } = useAuth();

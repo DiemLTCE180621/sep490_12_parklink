@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle } from 'lucide-react';
 
 const Navbar = () => {
@@ -74,11 +74,6 @@ const Navbar = () => {
             {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
               <Link to="/my-reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <Car className="w-4 h-4 text-teal-600" /> Yêu Cầu Thuê Của Tôi
-              </Link>
-            )}
-            {isAuthenticated && user?.role?.name === 'PROVIDER' && (
-              <Link to="/provider/reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                <Car className="w-4 h-4 text-teal-600" /> Duyệt Yêu Cầu Thuê
               </Link>
             )}
             {isAuthenticated && (
