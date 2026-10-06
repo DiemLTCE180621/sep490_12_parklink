@@ -58,6 +58,33 @@ class EmailService {
   }
 
   /**
+   * UC-86: Gửi email cấp tài khoản cho Nhân viên khảo sát thực địa (Field Inspector)
+   */
+  async sendFieldInspectorWelcomeEmail({ toEmail, fullName, tempPassword }) {
+    const subject = '[ParkLink] 📋 TÀI KHOẢN NHÂN VIÊN KHẢO SÁT THỰC ĐỊA & MẬT KHẨU ĐĂNG NHẬP';
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0d9488; text-align: center;">Chào mừng bạn đến với Đội ngũ Thực địa ParkLink!</h2>
+        <p>Xin chào <strong>${fullName}</strong>,</p>
+        <p>Tài khoản dành cho <strong>Nhân viên khảo sát thực địa (Field Inspector)</strong> của bạn đã được khởi tạo bởi Quản trị viên hệ thống ParkLink.</p>
+        
+        <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; border-left: 4px solid #0d9488; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0;"><strong>Thông tin đăng nhập tài khoản của bạn:</strong></p>
+          <p style="margin: 4px 0;">📧 Email đăng nhập: <strong>${toEmail}</strong></p>
+          <p style="margin: 4px 0;">🔑 Mật khẩu tạm thời: <strong style="font-size: 18px; color: #0f766e; background: #ccfbf1; padding: 2px 8px; border-radius: 4px;">${tempPassword}</strong></p>
+        </div>
+
+        <p style="color: #e11d48; font-size: 13px;">⚠️ <em>Lưu ý: Bạn vui lòng Đổi mật khẩu cá nhân ngay trong lần đăng nhập đầu tiên để bảo mật tài khoản.</em></p>
+        
+        <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b; text-align: center;">Ban Quản Trị Hệ Thống ParkLink Cần Thơ.</p>
+      </div>
+    `;
+
+    return await this.sendEmail(toEmail, subject, htmlContent, tempPassword, 'FIELD_INSPECTOR');
+  }
+
+  /**
    * Gửi Mã OTP xác thực Quên mật khẩu
    */
   async sendPasswordResetOTPEmail({ toEmail, fullName, otpCode }) {

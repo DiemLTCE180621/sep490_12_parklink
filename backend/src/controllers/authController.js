@@ -89,7 +89,7 @@ class AuthController {
   }
 
   /**
-   * Lấy thông tin tài khoản hiện tại
+   * UC07: Lấy thông tin tài khoản cá nhân hiện tại
    */
   async getMe(req, res, next) {
     try {
@@ -99,6 +99,25 @@ class AuthController {
         data: { user }
       });
     } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * UC08: Cập nhật thông tin tài khoản cá nhân
+   */
+  async updateProfile(req, res, next) {
+    try {
+      const user = await authService.updateProfile(req.user.userId, req.body);
+      return res.status(200).json({
+        status: 'success',
+        message: 'Cập nhật thông tin cá nhân thành công!',
+        data: { user }
+      });
+    } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({ status: 'fail', message: error.message });
+      }
       next(error);
     }
   }

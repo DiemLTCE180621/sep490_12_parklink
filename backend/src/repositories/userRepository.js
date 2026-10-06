@@ -36,6 +36,18 @@ class UserRepository {
   }
 
   /**
+   * Tìm user theo số điện thoại ngoại trừ ID hiện tại (dùng cho kiểm tra trùng lặp khi cập nhật thông tin)
+   */
+  async findByPhoneExceptId(phone_number, userId) {
+    return await prisma.user.findFirst({
+      where: {
+        phone_number,
+        id: { not: userId }
+      }
+    });
+  }
+
+  /**
    * Tìm user theo ID
    */
   async findById(id) {
@@ -208,6 +220,27 @@ class UserRepository {
   async findUserDetailById(id) {
     return await prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        phone_number: true,
+        status: true,
+        requires_password_change: true,
+        created_at: true,
+        updated_at: true,
+        role: true
+      }
+    });
+  }
+
+  /**
+   * Cập nhật thông tin tài khoản người dùng theo ID
+   */
+  async updateUser(id, data) {
+    return await prisma.user.update({
+      where: { id },
+      data,
       select: {
         id: true,
         email: true,

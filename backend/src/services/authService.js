@@ -372,6 +372,14 @@ class AuthService {
     }
     return this.sanitizeUser(user);
   }
+
+  /**
+   * UC08: Cập nhật thông tin cá nhân (Họ tên, SĐT)
+   */
+  async updateProfile(userId, { full_name, phone_number }) {
+    const userService = require('./userService');
+    return await userService.updateUserProfile(userId, { full_name, phone_number });
+  }
 }
 
 module.exports = new AuthService();

@@ -1,5 +1,6 @@
 const facilityRepository = require("../repositories/facilityRepository");
 const userRepository = require("../repositories/userRepository");
+const roleRepository = require("../repositories/roleRepository");
 const emailService = require("../utils/emailService");
 const bcrypt = require("bcryptjs");
 /**
@@ -185,33 +186,6 @@ class AdminService {
    */
   async updateFacility(facilityId, updateData) {
     return await facilityRepository.updateFacility(facilityId, updateData);
-  }
-  /**
-   * UC-Admin: Lấy danh sách tài khoản người dùng (Customer, Provider, Admin) kèm Phân trang & Bộ lọc
-   */
-  async getUsersList({ search, role, status, page, limit }) {
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 10;
-    return await userRepository.findUsersPaginated({
-      search: search ? search.trim() : "",
-      role: role || "ALL",
-      status: status || "ALL",
-      page: pageNum,
-      limit: limitNum,
-    });
-  }
-
-  /**
-   * UC-Admin: Lấy chi tiết tài khoản người dùng theo ID
-   */
-  async getUserDetails(userId) {
-    const user = await userRepository.findUserDetailById(userId);
-    if (!user) {
-      throw Object.assign(new Error("Tài khoản người dùng không tồn tại!"), {
-        status: 404,
-      });
-    }
-    return user;
   }
 }
 
