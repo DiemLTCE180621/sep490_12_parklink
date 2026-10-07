@@ -6,6 +6,7 @@ import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
 import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
+import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
@@ -17,15 +18,16 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const [activeAdminTab, setActiveAdminTab] = useState('registrations'); // Menu bên trái cho Admin
   const [activeProviderTab, setActiveProviderTab] = useState('facility'); // Menu bên trái cho Provider
+  const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(null);
 
-  const roleName = user?.role?.name || 'CUSTOMER';
+  const roleName = user?.role?.name || "CUSTOMER";
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -36,18 +38,20 @@ const DashboardPage = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md">
-                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">Xin chào, {user?.full_name}!</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">
+                  Xin chào, {user?.full_name}!
+                </h1>
                 <p className="text-teal-300 text-sm font-medium">
                   {roleName === 'PROVIDER'
                     ? 'Chủ Bãi Đỗ Xe'
                     : roleName === 'ADMIN'
-                    ? 'Ban Quản Trị Hệ Thống'
-                    : roleName === 'FIELD_INSPECTOR'
-                    ? 'Nhân Viên Khảo Sát'
-                    : 'Khách Thuê Bãi Xe'}
+                      ? 'Ban Quản Trị Hệ Thống'
+                      : roleName === 'FIELD_INSPECTOR'
+                        ? 'Nhân Viên Khảo Sát'
+                        : 'Khách Thuê Bãi Xe'}
                 </p>
               </div>
             </div>
@@ -87,14 +91,14 @@ const DashboardPage = () => {
                   Menu Quản Trị
                 </h3>
                 <button
-                  onClick={() => setActiveAdminTab('registrations')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'registrations' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                  onClick={() => setActiveAdminTab("registrations")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "registrations" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
                   <Building2 className="w-5 h-5" /> Duyệt Bãi Đỗ Xe
                 </button>
                 <button
-                  onClick={() => setActiveAdminTab('users')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'users' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                  onClick={() => setActiveAdminTab("users")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "users" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
                   <User className="w-5 h-5" /> Quản lý Users
                 </button>
@@ -111,8 +115,8 @@ const DashboardPage = () => {
                   <Building2 className="w-5 h-5" /> Tất cả cơ sở
                 </button>
                 <button
-                  onClick={() => setActiveAdminTab('transactions')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'transactions' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                  onClick={() => setActiveAdminTab("transactions")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "transactions" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
                   <Shield className="w-5 h-5" /> Quản lý Giao Dịch
                 </button>
@@ -128,7 +132,9 @@ const DashboardPage = () => {
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-400">Đang phát triển chức năng Quản lý Giao dịch...</h3>
+                  <h3 className="text-xl font-bold text-slate-400">
+                    Đang phát triển chức năng Quản lý Giao dịch...
+                  </h3>
                 </div>
               )}
             </div>
@@ -217,6 +223,68 @@ const DashboardPage = () => {
               )}
             </div>
           </div>
+        ) : roleName === 'FIELD_INSPECTOR' ? (
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* SIDEBAR FIELD INSPECTOR */}
+            <div className="w-full md:w-64 shrink-0 space-y-4">
+              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-2">
+                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
+                  Nhân Viên Khảo Sát
+                </h3>
+                <button
+                  onClick={() => setActiveInspectorTab('inspections')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeInspectorTab === 'inspections' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Building2 className="w-5 h-5" /> Khảo Sát Thực Địa
+                </button>
+                <button
+                  onClick={() => setActiveInspectorTab('profile')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeInspectorTab === 'profile' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <User className="w-5 h-5" /> Thông Tin Cá Nhân
+                </button>
+              </div>
+            </div>
+
+            {/* NỘI DUNG FIELD INSPECTOR TƯƠNG ỨNG */}
+            <div className="flex-1">
+              {activeInspectorTab === 'inspections' && <FieldInspectorRegistrationsPanel />}
+              {activeInspectorTab === 'profile' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
+                  <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
+                    <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
+                  </h3>
+
+                  <div className="space-y-4 text-sm">
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Họ và Tên</label>
+                      <p className="text-base font-bold text-slate-900">{user?.full_name}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Email</label>
+                      <p className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-slate-400" /> {user?.email}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Số Điện Thoại</label>
+                      <p className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-slate-400" /> {user?.phone_number || 'Chưa cập nhật'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Vai Trò</label>
+                      <p className="mt-1">
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
+                          Nhân Viên Khảo Sát
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         ) : (
           /* CUSTOMER VIEW */
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -238,53 +306,35 @@ const DashboardPage = () => {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-3 text-slate-600">
                   <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span className="font-medium text-slate-900 truncate">{user?.email}</span>
+                  <span className="font-medium text-slate-900 truncate">
+                    {user?.email}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600">
                   <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span className="font-medium text-slate-900">{user?.phone_number || 'Chưa cập nhật'}</span>
+                  <span className="font-medium text-slate-900">
+                    {user?.phone_number || "Chưa cập nhật"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600">
                   <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                    {roleName === 'ADMIN'
-                      ? 'Quản Trị Viên'
-                      : roleName === 'PROVIDER'
-                      ? 'Chủ Bãi Xe'
-                      : roleName === 'FIELD_INSPECTOR'
-                      ? 'Nhân Viên Khảo Sát'
-                      : 'Khách Thuê'}
+                    Khách Thuê
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* DYNAMIC CONTENT FOR CUSTOMER / INSPECTOR */}
+            {/* DYNAMIC CONTENT FOR CUSTOMER */}
             <div className="md:col-span-2 space-y-6">
-
-              {/* PANEL DÀNH CHO FIELD INSPECTOR */}
-              {roleName === 'FIELD_INSPECTOR' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <UserCheck className="w-5 h-5 text-teal-600" />
-                    <h3 className="text-lg font-bold text-slate-900">Bảng Làm Việc Nhân Viên Khảo Sát</h3>
-                  </div>
-
-                  <div className="p-6 bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-2xl shadow-inner space-y-3">
-                    <h4 className="text-base font-bold text-teal-300">Tài Khoản Nhân Viên Khảo Sát Thực Địa</h4>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      Chào mừng bạn đến với hệ thống ParkLink. Tài khoản của bạn hiện đang ở trạng thái hoạt động. Các công việc khảo sát thực địa sẽ được cập nhật tại đây.
-                    </p>
-                  </div>
-                </div>
-              )}
 
               {/* PANEL DÀNH CHO CUSTOMER HOẶC ROLE KHÁC */}
               {roleName !== 'PROVIDER' && roleName !== 'FIELD_INSPECTOR' && roleName !== 'ADMIN' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Car className="w-5 h-5 text-teal-600" /> Quản Lý Yêu Cầu Thuê Bãi Xe
+                      <Car className="w-5 h-5 text-teal-600" /> Quản Lý Yêu Cầu
+                      Thuê Bãi Xe
                     </h3>
                     <Link
                       to="/my-reservations"
@@ -297,8 +347,13 @@ const DashboardPage = () => {
                   <div className="p-6 bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-2xl shadow-inner space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-base font-bold">Thuê Bãi Đỗ Xe Dài Hạn</h4>
-                        <p className="text-xs text-slate-300 mt-0.5">Quản lý và kiểm tra tiến độ duyệt các đăng ký thuê bãi đỗ xe theo tháng</p>
+                        <h4 className="text-base font-bold">
+                          Thuê Bãi Đỗ Xe Dài Hạn
+                        </h4>
+                        <p className="text-xs text-slate-300 mt-0.5">
+                          Quản lý và kiểm tra tiến độ duyệt các đăng ký thuê bãi
+                          đỗ xe theo tháng
+                        </p>
                       </div>
                     </div>
 

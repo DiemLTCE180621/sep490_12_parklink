@@ -50,7 +50,7 @@ class AdminService {
 
   /**
    * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED
-   * Admin đã chuẩn bị xong dữ liệu, gửi mail kèm QR VietQR thanh toán cho Provider.
+   * Admin xem xét kết quả khảo sát, duyệt chính thức, gửi mail kèm QR VietQR thanh toán cho Provider.
    * @param {number} facilityId
    */
   async finalizeRegistration(facilityId) {
@@ -59,9 +59,9 @@ class AdminService {
       throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
         status: 404,
       });
-    if (facility.verification_status !== "PREPARING") {
+    if (facility.verification_status !== "INSPECTED") {
       throw Object.assign(
-        new Error("Bãi đỗ xe phải ở trạng thái PREPARING để hoàn tất!"),
+        new Error("Bãi đỗ xe phải ở trạng thái Đã Khảo Sát (INSPECTED) để hoàn tất!"),
         { status: 400 },
       );
     }

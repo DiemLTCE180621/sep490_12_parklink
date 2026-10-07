@@ -48,6 +48,7 @@ class AdminController {
   async finalizeRegistration(req, res, next) {
     try {
       const facilityId = parseInt(req.params.id, 10);
+
       if (isNaN(facilityId)) {
         return res
           .status(400)

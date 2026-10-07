@@ -48,6 +48,11 @@ const Navbar = () => {
     }
   };
 
+  // Ẩn Navbar (Header) đối với Admin và Nhân viên khảo sát
+  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR')) {
+    return null;
+  }
+
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">

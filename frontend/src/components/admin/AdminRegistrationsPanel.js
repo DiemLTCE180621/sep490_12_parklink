@@ -1,29 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../../services/adminService';
+import uploadService from '../../services/uploadService';
 import FacilityDetailsModal from '../modals/FacilityDetailsModal';
 import { Clock, AlertCircle, CheckCircle, XCircle, Building2, MapPin, User, DollarSign, Wrench, ChevronRight, Eye } from 'lucide-react';
 
 /**
- * AdminRegistrationsPanel: Panel quản lý duyệt bãi đỗ xe theo luồng 2 bước
- * - PENDING_REVIEW → "Duyệt sơ bộ" → PREPARING → "Xác nhận hoàn tất" → APPROVED
+ * AdminRegistrationsPanel: Panel quản lý duyệt bãi đỗ xe theo luồng mới
+ * - PENDING_REVIEW → Admin Duyệt sơ bộ & Giao khảo sát → PREPARING
+ * - PREPARING → Nhân viên khảo sát thực địa làm việc → INSPECTED
+ * - INSPECTED → Admin duyệt chính thức & Cấp mật khẩu → APPROVED
  * - Từ chối có thể ở bất kỳ bước nào
  */
 const AdminRegistrationsPanel = () => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [actionModal, setActionModal] = useState(null); // { type: 'PREPARE' | 'FINALIZE' | 'REJECT', id: number }
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectReason, setRejectReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
   const [detailsModal, setDetailsModal] = useState(null);
-  const [uploadedFiles, setUploadedFiles] = useState({
-    path: null,
-    area: null,
-    gate: null,
-    other: null,
-    additional: []
-  });
 
   const showToast = (type, message) => {
     setToast({ type, message });
@@ -34,14 +30,14 @@ const AdminRegistrationsPanel = () => {
     try {
       setLoading(true);
       const res = await adminService.getPendingRegistrations();
-      if (res && res.status === 'success') {
+      if (res && res.status === "success") {
         setRegistrations(res.data);
       } else if (Array.isArray(res)) {
         setRegistrations(res);
       }
     } catch (err) {
       console.error(err);
-      setError('Lỗi khi tải danh sách chờ duyệt');
+      setError("Lỗi khi tải danh sách chờ duyệt");
     } finally {
       setLoading(false);
     }
@@ -55,37 +51,48 @@ const AdminRegistrationsPanel = () => {
     if (!actionModal || isSubmitting) return;
     try {
       setIsSubmitting(true);
-      if (actionModal.type === 'PREPARE') {
+      if (actionModal.type === "PREPARE") {
         await adminService.approveRegistration(actionModal.id);
-        showToast('success', 'Đã duyệt sơ bộ! Email thông báo đã gửi cho Provider.');
-      } else if (actionModal.type === 'FINALIZE') {
-        if (!uploadedFiles.path || !uploadedFiles.area || !uploadedFiles.gate || !uploadedFiles.other) {
-          showToast('error', 'Vui lòng tải lên đầy đủ 4 loại hình ảnh bãi đỗ xe!');
+        showToast(
+          "success",
+          "Đã duyệt sơ bộ! Email thông báo đã gửi cho Provider.",
+        );
+      } else if (actionModal.type === "FINALIZE") {
+        await adminService.finalizeRegistration(actionModal.id);
+        showToast(
+          "success",
+          "Đã duyệt chính thức! Email kèm mật khẩu đã được gửi cho Provider.",
+        );
+      } else if (actionModal.type === "REJECT") {
+        if (!rejectReason.trim()) {
+          showToast("error", "Vui lòng nhập lý do từ chối!");
           setIsSubmitting(false);
           return;
         }
-        // TODO: Call API to upload images here before finalizing
-        await adminService.finalizeRegistration(actionModal.id);
-        showToast('success', 'Đã tạo cơ sở thành công! Email kèm mật khẩu đã gửi cho Provider.');
-      } else if (actionModal.type === 'REJECT') {
-        if (!rejectReason.trim()) { showToast('error', 'Vui lòng nhập lý do từ chối!'); setIsSubmitting(false); return; }
         await adminService.rejectRegistration(actionModal.id, rejectReason);
-        showToast('success', 'Từ chối thành công!');
+        showToast("success", "Từ chối thành công!");
       }
       setActionModal(null);
-      setRejectReason('');
-      setUploadedFiles({ path: null, area: null, gate: null, other: null, additional: [] });
+      setRejectReason("");
       fetchRegistrations();
     } catch (err) {
-      showToast('error', 'Lỗi: ' + (err.message || 'Không xác định'));
+      const backendMessage = err.response?.data?.message || err.response?.data?.errors?.[0] || err.message;
+      showToast("error", "Lỗi: " + backendMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Pending review và đang chuẩn bị
-  const pendingList = registrations.filter(f => f.verification_status === 'PENDING_REVIEW');
-  const preparingList = registrations.filter(f => f.verification_status === 'PREPARING');
+  // Danh sách theo trạng thái
+  const pendingList = registrations.filter(
+    (f) => f.verification_status === "PENDING_REVIEW",
+  );
+  const preparingList = registrations.filter(
+    (f) => f.verification_status === "PREPARING",
+  );
+  const inspectedList = registrations.filter(
+    (f) => f.verification_status === "INSPECTED",
+  );
 
   if (loading) {
     return (
@@ -96,20 +103,33 @@ const AdminRegistrationsPanel = () => {
   }
 
   const renderCard = (facility) => {
-    const isPending = facility.verification_status === 'PENDING_REVIEW';
+    const isPending = facility.verification_status === "PENDING_REVIEW";
     return (
-      <div key={facility.id} className={`rounded-2xl border p-4 md:p-5 space-y-4 ${isPending ? 'border-amber-200 bg-amber-50/50' : 'border-blue-200 bg-blue-50/50'}`}>
+      <div
+        key={facility.id}
+        className={`rounded-2xl border p-4 md:p-5 space-y-4 ${isPending ? "border-amber-200 bg-amber-50/50" : "border-blue-200 bg-blue-50/50"}`}
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              {isPending
-                ? <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">⏳ Chờ duyệt sơ bộ</span>
-                : <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">🔧 Đang chuẩn bị</span>
-              }
+              {isPending ? (
+                <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                  ⏳ Chờ duyệt sơ bộ
+                </span>
+              ) : facility.verification_status === "PREPARING" ? (
+                <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                  🚶‍♂️ Đang khảo sát thực địa
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                  ✅ Đã khảo sát - Chờ duyệt
+                </span>
+              )}
             </div>
             <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-teal-600 shrink-0" /> {facility.name}
+              <Building2 className="w-5 h-5 text-teal-600 shrink-0" />{" "}
+              {facility.name}
             </h4>
             <p className="text-slate-500 text-sm flex items-center gap-1.5 mt-1">
               <MapPin className="w-3.5 h-3.5 shrink-0" /> {facility.address}
@@ -120,18 +140,34 @@ const AdminRegistrationsPanel = () => {
         {/* Info Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
           <div className="bg-white rounded-xl p-3 border border-slate-100">
-            <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex items-center gap-1"><User className="w-3 h-3" /> Provider</p>
-            <p className="font-bold text-slate-800 truncate">{facility.provider?.full_name}</p>
-            <p className="text-slate-500 text-xs truncate">{facility.provider?.email}</p>
-            <p className="text-slate-500 text-xs">{facility.provider?.phone_number}</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex items-center gap-1">
+              <User className="w-3 h-3" /> Provider
+            </p>
+            <p className="font-bold text-slate-800 truncate">
+              {facility.provider?.full_name}
+            </p>
+            <p className="text-slate-500 text-xs truncate">
+              {facility.provider?.email}
+            </p>
+            <p className="text-slate-500 text-xs">
+              {facility.provider?.phone_number}
+            </p>
           </div>
           <div className="bg-white rounded-xl p-3 border border-slate-100">
-            <p className="text-xs text-slate-400 font-semibold uppercase mb-1">Sức chứa</p>
-            <p className="font-bold text-slate-800 text-lg">{facility.capacity} xe</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase mb-1">
+              Sức chứa
+            </p>
+            <p className="font-bold text-slate-800 text-lg">
+              {facility.capacity} xe
+            </p>
           </div>
           <div className="bg-white rounded-xl p-3 border border-teal-100 col-span-2 md:col-span-1">
-            <p className="text-xs text-teal-600 font-semibold uppercase mb-1 flex items-center gap-1"><DollarSign className="w-3 h-3" /> Phí nền tảng</p>
-            <p className="font-extrabold text-teal-800">{Number(facility.system_fee || 0).toLocaleString('vi-VN')} VNĐ</p>
+            <p className="text-xs text-teal-600 font-semibold uppercase mb-1 flex items-center gap-1">
+              <DollarSign className="w-3 h-3" /> Phí nền tảng
+            </p>
+            <p className="font-extrabold text-teal-800">
+              {Number(facility.system_fee || 0).toLocaleString("vi-VN")} VNĐ
+            </p>
           </div>
         </div>
 
@@ -144,24 +180,36 @@ const AdminRegistrationsPanel = () => {
             <Eye className="w-4 h-4" /> Xem chi tiết
           </button>
 
-          <button
-            onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
-            className="flex items-center gap-1.5 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-xl transition"
-          >
-            <XCircle className="w-4 h-4" /> Từ chối
-          </button>
+          {isPending && (
+            <button
+              onClick={() => setActionModal({ type: "REJECT", id: facility.id })}
+              className="flex items-center gap-1.5 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-xl transition"
+            >
+              <XCircle className="w-4 h-4" /> Từ chối
+            </button>
+          )}
 
           {isPending ? (
             <button
-              onClick={() => setActionModal({ type: 'PREPARE', id: facility.id })}
+              onClick={() =>
+                setActionModal({ type: "PREPARE", id: facility.id })
+              }
               className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow transition"
             >
-              <Wrench className="w-4 h-4" /> Duyệt sơ bộ &amp; Chuẩn bị
+              <Wrench className="w-4 h-4" /> Duyệt sơ bộ &amp; Giao khảo sát
             </button>
           ) : (
             <button
-              onClick={() => setActionModal({ type: 'FINALIZE', id: facility.id })}
-              className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl shadow transition"
+              onClick={() =>
+                setActionModal({ type: "FINALIZE", id: facility.id })
+              }
+              disabled={facility.verification_status === "PREPARING"}
+              title={facility.verification_status === "PREPARING" ? "Chờ nhân viên khảo sát hoàn tất thực địa" : "Có thể phê duyệt"}
+              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-xl shadow transition ${
+                facility.verification_status === "PREPARING" 
+                  ? "bg-slate-300 text-slate-500 cursor-not-allowed opacity-70"
+                  : "bg-teal-600 hover:bg-teal-700 text-white"
+              }`}
             >
               <CheckCircle className="w-4 h-4" /> Hoàn tất phê duyệt &amp; Cấp mật khẩu
             </button>
@@ -176,15 +224,22 @@ const AdminRegistrationsPanel = () => {
       {/* Tiến trình duyệt */}
       <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md">
         <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-amber-500" /> Quản Lý Phê Duyệt Bãi Đỗ Xe
+          <Clock className="w-5 h-5 text-amber-500" /> Quản Lý Phê Duyệt Bãi Đỗ
+          Xe
         </h3>
         {/* Workflow steps */}
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-2">
-          <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full">⏳ Chờ duyệt ({pendingList.length})</span>
+          <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full">
+            ⏳ Chờ duyệt sơ bộ ({pendingList.length})
+          </span>
           <ChevronRight className="w-4 h-4" />
-          <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">🔧 Đang chuẩn bị ({preparingList.length})</span>
+          <span className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-full">
+            🚶‍♂️ Đang khảo sát ({preparingList.length})
+          </span>
           <ChevronRight className="w-4 h-4" />
-          <span className="px-3 py-1.5 bg-teal-100 text-teal-700 rounded-full">✅ Phê duyệt &amp; Cấp mật khẩu</span>
+          <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full">
+            ✅ Đã khảo sát ({inspectedList.length})
+          </span>
         </div>
       </div>
 
@@ -197,22 +252,37 @@ const AdminRegistrationsPanel = () => {
       {registrations.length === 0 ? (
         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md text-center">
           <CheckCircle className="w-12 h-12 text-teal-400 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">Hiện tại không có yêu cầu nào cần xử lý.</p>
+          <p className="text-slate-500 font-medium">
+            Hiện tại không có yêu cầu nào cần xử lý.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           {/* Chờ duyệt sơ bộ */}
           {pendingList.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wide px-1">⏳ Chờ duyệt sơ bộ ({pendingList.length})</h4>
+              <h4 className="text-sm font-bold text-amber-700 uppercase tracking-wide px-1">
+                ⏳ Chờ duyệt sơ bộ ({pendingList.length})
+              </h4>
               {pendingList.map(renderCard)}
             </div>
           )}
-          {/* Đang chuẩn bị */}
+          {/* Đang khảo sát */}
           {preparingList.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wide px-1">🔧 Đang chuẩn bị thực địa ({preparingList.length})</h4>
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide px-1 mt-6">
+                🚶‍♂️ Đang khảo sát thực địa ({preparingList.length})
+              </h4>
               {preparingList.map(renderCard)}
+            </div>
+          )}
+          {/* Đã khảo sát, chờ cấp mật khẩu */}
+          {inspectedList.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold text-blue-700 uppercase tracking-wide px-1 mt-6">
+                ✅ Đã khảo sát - Chờ phê duyệt chính thức ({inspectedList.length})
+              </h4>
+              {inspectedList.map(renderCard)}
             </div>
           )}
         </div>
@@ -222,121 +292,130 @@ const AdminRegistrationsPanel = () => {
       {actionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl">
-            {actionModal.type === 'PREPARE' && (
+            {actionModal.type === "PREPARE" && (
               <>
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Wrench className="w-8 h-8 text-amber-600" />
                 </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Xác nhận Duyệt Sơ Bộ</h3>
+                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
+                  Xác nhận Duyệt Sơ Bộ
+                </h3>
                 <p className="text-center text-slate-500 text-sm mb-6">
-                  Bạn cam kết sẽ <strong>đến thực địa và chuẩn bị dữ liệu</strong> cho cơ sở này. Email thông báo sẽ được gửi đến Provider ngay lập tức.
+                  Bạn cam kết sẽ{" "}
+                  <strong>đến thực địa và chuẩn bị dữ liệu</strong> cho cơ sở
+                  này. Email thông báo sẽ được gửi đến Provider ngay lập tức.
                 </p>
                 <div className="flex gap-3">
-                  <button onClick={() => setActionModal(null)} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Hủy</button>
-                  <button disabled={isSubmitting} onClick={confirmAction} className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 transition disabled:opacity-50">Xác nhận</button>
+                  <button
+                    onClick={() => setActionModal(null)}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    disabled={isSubmitting}
+                    onClick={confirmAction}
+                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-200 transition disabled:opacity-50"
+                  >
+                    Xác nhận
+                  </button>
                 </div>
               </>
             )}
-            {actionModal.type === 'FINALIZE' && (() => {
-              const selectedFacility = registrations.find(f => f.id === actionModal.id);
-              return (
-              <>
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-teal-600" />
-                </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Tạo Cơ Sở Chính Thức</h3>
-                <p className="text-center text-slate-500 text-sm mb-6">
-                  Dựa vào thông tin yêu cầu, vui lòng tải lên hình ảnh thực tế để tạo cơ sở và cấp tài khoản.
-                </p>
-
-                {selectedFacility && (
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-5 text-sm space-y-1">
-                    <p><span className="text-slate-500">Tên bãi:</span> <strong className="text-slate-900">{selectedFacility.name}</strong></p>
-                    <p><span className="text-slate-500">Sức chứa:</span> <strong className="text-slate-900">{selectedFacility.capacity} xe</strong></p>
-                    <p><span className="text-slate-500">Giá thuê:</span> <strong className="text-teal-700 font-bold">{Number(selectedFacility.price_per_month).toLocaleString('vi-VN')} VNĐ/tháng</strong></p>
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">Tải lên hình ảnh thực tế (Bắt buộc 4 tấm) <span className="text-red-500">*</span></label>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Hình đường vào */}
-                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                      <p className="text-xs font-bold text-slate-700 mb-2">1. Hình đường vào bãi</p>
-                      <input 
-                        type="file" accept="image/*"
-                        onChange={(e) => setUploadedFiles({...uploadedFiles, path: e.target.files[0]})}
-                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
-                      />
-                      {uploadedFiles.path && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.path.name}</p>}
+            {actionModal.type === "FINALIZE" &&
+              (() => {
+                const selectedFacility = registrations.find(
+                  (f) => f.id === actionModal.id,
+                );
+                return (
+                  <>
+                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-teal-600" />
                     </div>
+                    <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
+                      Phê Duyệt Chính Thức
+                    </h3>
+                    <p className="text-center text-slate-500 text-sm mb-6">
+                      Nhân viên khảo sát đã hoàn tất báo cáo và hình ảnh. Bạn có chắc chắn muốn duyệt và cấp mật khẩu cho bãi đỗ xe này?
+                    </p>
 
-                    {/* Hình toàn cảnh bãi */}
-                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                      <p className="text-xs font-bold text-slate-700 mb-2">2. Hình toàn cảnh bãi đỗ</p>
-                      <input 
-                        type="file" accept="image/*"
-                        onChange={(e) => setUploadedFiles({...uploadedFiles, area: e.target.files[0]})}
-                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
-                      />
-                      {uploadedFiles.area && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.area.name}</p>}
-                    </div>
-
-                    {/* Hình cổng */}
-                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                      <p className="text-xs font-bold text-slate-700 mb-2">3. Hình cổng bãi</p>
-                      <input 
-                        type="file" accept="image/*"
-                        onChange={(e) => setUploadedFiles({...uploadedFiles, gate: e.target.files[0]})}
-                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
-                      />
-                      {uploadedFiles.gate && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.gate.name}</p>}
-                    </div>
-
-                    {/* Hình khác */}
-                    <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                      <p className="text-xs font-bold text-slate-700 mb-2">4. Hình góc độ khác</p>
-                      <input 
-                        type="file" accept="image/*"
-                        onChange={(e) => setUploadedFiles({...uploadedFiles, other: e.target.files[0]})}
-                        className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
-                      />
-                      {uploadedFiles.other && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.other.name}</p>}
-                    </div>
-                  </div>
-
-                  {/* Hình bổ sung (Tùy chọn) */}
-                  <div className="mt-4 border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                    <p className="text-xs font-bold text-slate-700 mb-2">5. Hình ảnh bổ sung (Tùy chọn)</p>
-                    <input 
-                      type="file" accept="image/*" multiple
-                      onChange={(e) => setUploadedFiles({...uploadedFiles, additional: Array.from(e.target.files)})}
-                      className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer" 
-                    />
-                    {uploadedFiles.additional && uploadedFiles.additional.length > 0 && (
-                      <p className="text-[10px] text-teal-600 mt-1 font-medium">Đã chọn {uploadedFiles.additional.length} hình ảnh bổ sung.</p>
+                    {selectedFacility && (
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-5 text-sm space-y-1">
+                        <p>
+                          <span className="text-slate-500">Tên bãi:</span>{" "}
+                          <strong className="text-slate-900">
+                            {selectedFacility.name}
+                          </strong>
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Sức chứa thực tế:</span>{" "}
+                          <strong className="text-slate-900">
+                            {selectedFacility.capacity} xe
+                          </strong>
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Giá thuê:</span>{" "}
+                          <strong className="text-teal-700 font-bold">
+                            {Number(
+                              selectedFacility.price_per_month,
+                            ).toLocaleString("vi-VN")}{" "}
+                            VNĐ/tháng
+                          </strong>
+                        </p>
+                      </div>
                     )}
-                  </div>
-                </div>
 
-                <div className="flex gap-3">
-                  <button onClick={() => { setActionModal(null); setUploadedFiles({ path: null, area: null, gate: null, other: null, additional: [] }); }} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Hủy</button>
-                  <button disabled={isSubmitting || !uploadedFiles.path || !uploadedFiles.area || !uploadedFiles.gate || !uploadedFiles.other} onClick={confirmAction} className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-200 transition disabled:opacity-50">Tạo Cơ Sở &amp; Cấp MK</button>
-                </div>
-              </>
-            )})()}
-            {actionModal.type === 'REJECT' && (
+                    <div className="flex gap-3 mt-6">
+                      <button
+                        onClick={() => {
+                          setActionModal(null);
+                        }}
+                        className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        disabled={isSubmitting}
+                        onClick={confirmAction}
+                        className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-200 transition disabled:opacity-50"
+                      >
+                        Duyệt &amp; Cấp Mật Khẩu
+                      </button>
+                    </div>
+                  </>
+                );
+              })()}
+            {actionModal.type === "REJECT" && (
               <>
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <XCircle className="w-8 h-8 text-red-600" />
                 </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Từ chối đăng ký</h3>
-                <p className="text-center text-slate-500 text-sm mb-4">Vui lòng cung cấp lý do để thông báo cho Provider khắc phục.</p>
+                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
+                  Từ chối đăng ký
+                </h3>
+                <p className="text-center text-slate-500 text-sm mb-4">
+                  Vui lòng cung cấp lý do để thông báo cho Provider khắc phục.
+                </p>
                 <div className="flex flex-wrap gap-2 mb-3 justify-center">
-                  <button onClick={() => setRejectReason('Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition">Thiếu thông tin</button>
+                  <button
+                    onClick={() =>
+                      setRejectReason(
+                        "Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.",
+                      )
+                    }
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition"
+                  >
+                    Thiếu thông tin
+                  </button>
 
-                  <button onClick={() => setRejectReason('Vị trí hoặc giá cước không hợp lệ.')} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition">Vị trí/Giá sai</button>
+                  <button
+                    onClick={() =>
+                      setRejectReason("Vị trí hoặc giá cước không hợp lệ.")
+                    }
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition"
+                  >
+                    Vị trí/Giá sai
+                  </button>
                 </div>
                 <textarea
                   value={rejectReason}
@@ -345,8 +424,22 @@ const AdminRegistrationsPanel = () => {
                   className="w-full p-4 border border-slate-200 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none h-24 text-sm"
                 />
                 <div className="flex gap-3">
-                  <button onClick={() => { setActionModal(null); setRejectReason(''); }} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">Hủy</button>
-                  <button disabled={isSubmitting} onClick={confirmAction} className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition disabled:opacity-50">Xác nhận Từ chối</button>
+                  <button
+                    onClick={() => {
+                      setActionModal(null);
+                      setRejectReason("");
+                    }}
+                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    disabled={isSubmitting}
+                    onClick={confirmAction}
+                    className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-200 transition disabled:opacity-50"
+                  >
+                    Xác nhận Từ chối
+                  </button>
                 </div>
               </>
             )}
@@ -355,19 +448,21 @@ const AdminRegistrationsPanel = () => {
       )}
 
       {/* Modal Xem Chi Tiết */}
-      <FacilityDetailsModal 
-        facility={detailsModal} 
-        onClose={() => setDetailsModal(null)} 
+      <FacilityDetailsModal
+        facility={detailsModal}
+        onClose={() => setDetailsModal(null)}
       />
 
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-6 right-6 z-[100] transition-all duration-300">
-          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border ${toast.type === 'success'
-              ? 'bg-teal-50 border-teal-200 text-teal-900'
-              : 'bg-red-50 border-red-200 text-red-900'
-            }`}>
-            {toast.type === 'success' ? (
+          <div
+            className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border ${toast.type === "success"
+              ? "bg-teal-50 border-teal-200 text-teal-900"
+              : "bg-red-50 border-red-200 text-red-900"
+              }`}
+          >
+            {toast.type === "success" ? (
               <CheckCircle className="w-6 h-6 text-teal-600 shrink-0" />
             ) : (
               <AlertCircle className="w-6 h-6 text-red-600 shrink-0" />

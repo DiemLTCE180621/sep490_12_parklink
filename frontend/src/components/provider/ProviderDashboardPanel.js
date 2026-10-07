@@ -35,16 +35,23 @@ const ProviderDashboardPanel = () => {
     };
   }, [user]);
 
-  const handleConfirmPayment = async () => {
+  const handleCheckPayment = async () => {
     try {
       setIsPaying(true);
-      await providerService.confirmPayment(user.facility.id);
-      setPaymentSuccess(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      const res = await authService.getCurrentUser();
+      const latestFacility = res.data?.user?.facility;
+      
+      if (latestFacility && latestFacility.payment_status === 'PAID') {
+        setPaymentSuccess(true);
+        setToastInfo({ message: "Thanh toán thành công! Bãi đỗ xe đã được kích hoạt.", type: 'success' });
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else {
+        setToastInfo({ message: "Hệ thống chưa nhận được thanh toán. Vui lòng đợi thêm hoặc kiểm tra lại.", type: 'error' });
+      }
     } catch (err) {
-      setToastInfo({ message: err.response?.data?.message || err.message, type: 'error' });
+      setToastInfo({ message: "Không thể kiểm tra trạng thái thanh toán.", type: 'error' });
     } finally {
       setIsPaying(false);
     }
@@ -120,10 +127,10 @@ const ProviderDashboardPanel = () => {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-4">
             <button
               disabled={isPaying}
-              onClick={handleConfirmPayment}
+              onClick={handleCheckPayment}
               className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50 w-full sm:w-auto"
             >
-              {isPaying ? 'Đang xử lý...' : 'Tôi đã thanh toán thủ công'}
+              {isPaying ? 'Đang xử lý...' : 'Kiểm tra thanh toán'}
             </button>
           </div>
         </div>
