@@ -48,12 +48,14 @@ class AdminController {
   async finalizeRegistration(req, res, next) {
     try {
       const facilityId = parseInt(req.params.id, 10);
+      const { images } = req.body;
+
       if (isNaN(facilityId)) {
         return res
           .status(400)
           .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
-      await adminService.finalizeRegistration(facilityId);
+      await adminService.finalizeRegistration(facilityId, images);
       res.json({
         status: "success",
         message:

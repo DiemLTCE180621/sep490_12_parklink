@@ -12,7 +12,7 @@ router.use(authenticateToken);
 // Route xử lý upload NHIỀU file cùng lúc 
 router.post(
     '/',
-    upload.array('files', 4),
+    upload.array('files', 10),
     uploadValidation.checkFilesExist,
     uploadController.uploadFile.bind(uploadController)
 );

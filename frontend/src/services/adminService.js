@@ -23,9 +23,10 @@ const adminService = {
   /**
    * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED (gửi QR thanh toán)
    * @param {number} id - ID của bãi đỗ xe
+   * @param {object} data - Dữ liệu kèm theo (VD: images)
    */
-  finalizeRegistration: async (id) => {
-    return await api.put(`/admin/registrations/${id}/finalize`);
+  finalizeRegistration: async (id, data) => {
+    return await api.put(`/admin/registrations/${id}/finalize`, data);
   },
 
   /**

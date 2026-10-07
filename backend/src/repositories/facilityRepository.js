@@ -83,7 +83,7 @@ class FacilityRepository {
    * @param {number} facilityId
    * @param {number} providerId
    */
-  async approveFacility(facilityId, providerId) {
+  async approveFacility(facilityId, providerId, images = []) {
     return await prisma.$transaction(async (tx) => {
       const facility = await tx.facility.update({
         where: { id: facilityId },
@@ -99,6 +99,17 @@ class FacilityRepository {
         where: { id: providerId },
         data: { status: "ACTIVE" },
       });
+
+      // Thêm ảnh nếu có
+      if (images && images.length > 0) {
+        await tx.facility_Image.createMany({
+          data: images.map((url, idx) => ({
+            facility_id: facilityId,
+            image_url: url,
+            is_primary: idx === 0, // Ảnh đầu tiên làm ảnh đại diện
+          })),
+        });
+      }
 
       // Tạo Notification cho Provider
       await tx.notification.create({

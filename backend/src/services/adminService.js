@@ -51,8 +51,9 @@ class AdminService {
    * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED
    * Admin đã chuẩn bị xong dữ liệu, gửi mail kèm QR VietQR thanh toán cho Provider.
    * @param {number} facilityId
+   * @param {string[]} images - Mảng URL ảnh của bãi đỗ xe
    */
-  async finalizeRegistration(facilityId) {
+  async finalizeRegistration(facilityId, images = []) {
     const facility = await facilityRepository.findById(facilityId);
     if (!facility)
       throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
@@ -68,6 +69,7 @@ class AdminService {
     const updatedFacility = await facilityRepository.approveFacility(
       facilityId,
       facility.provider_id,
+      images,
     );
 
     // Tạo mật khẩu mới cho Provider
