@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation, CarFront, Shield, Star, Info, List, X, GitCompareArrows, CheckSquare, Square } from 'lucide-react';
+import { Search, MapPin, Navigation, CarFront, Star, Info, List, X, GitCompareArrows, CheckSquare, Square } from 'lucide-react';
 import facilityService from '../../services/facilityService';
 import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import CompareModal from '../../components/modals/CompareModal';
@@ -106,6 +106,7 @@ const SearchPage = () => {
     }
     fetchAmenities();
     fetchFacilities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAmenities = async () => {

@@ -27,9 +27,11 @@ app.use("/api/inspector", inspectorRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/facilities", facilityRoutes);
 const reservationRoutes = require("./routes/reservationRoutes");
+const confirmationRecordRoutes = require("./routes/confirmationRecordRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/confirmation-records", confirmationRecordRoutes);
 app.use("/api/webhook", webhookRoutes);
 
 const reviewRoutes = require("./routes/reviewRoutes");

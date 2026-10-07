@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin, KeyRound, UserCheck, Edit } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -9,6 +9,7 @@ import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
+import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import EditProfileModal from '../components/EditProfileModal';
 import Toast from '../components/common/Toast';
@@ -160,6 +161,12 @@ const DashboardPage = () => {
                   <Car className="w-5 h-5" /> Duyệt Yêu Cầu Thuê
                 </button>
                 <button
+                  onClick={() => setActiveProviderTab('contracts')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'contracts' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <FileText className="w-5 h-5" /> Quản Lý Hợp Đồng
+                </button>
+                <button
                   onClick={() => setActiveProviderTab('profile')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'profile' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
@@ -177,7 +184,10 @@ const DashboardPage = () => {
             {/* NỘI DUNG PROVIDER TƯƠNG ỨNG */}
             <div className="flex-1">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
-              {activeProviderTab === 'reservations' && <ProviderReservationsPanel />}
+              {activeProviderTab === 'reservations' && (
+                <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
+              )}
+              {activeProviderTab === 'contracts' && <ProviderContractsPanel />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">

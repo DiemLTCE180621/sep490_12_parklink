@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getProviderReservations, acceptReservation, rejectReservation } from '../../services/reservationService';
 import ReservationDetailModal from '../modals/ReservationDetailModal';
 import ConfirmModal from '../modals/ConfirmModal';
+import CreateConfirmationRecordModal from '../CreateConfirmationRecordModal';
+import ContractDetailModal from '../ContractDetailModal';
 import Toast from '../common/Toast';
 import {
   Car,
@@ -20,10 +22,11 @@ import {
   Mail,
   Building2,
   Check,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 
-const ProviderReservationsPanel = () => {
+const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,6 +36,14 @@ const ProviderReservationsPanel = () => {
   // Selected reservation for Detail Modal
   const [selectedReservationId, setSelectedReservationId] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // States for Contract creation modal
+  const [selectedReservationForContract, setSelectedReservationForContract] = useState(null);
+  const [isCreateContractOpen, setIsCreateContractOpen] = useState(false);
+
+  // States for Contract detail modal
+  const [selectedContractId, setSelectedContractId] = useState(null);
+  const [isContractDetailOpen, setIsContractDetailOpen] = useState(false);
 
   // States for Confirm Modal (Accept / Reject)
   const [confirmModalState, setConfirmModalState] = useState({
@@ -454,6 +465,34 @@ const ProviderReservationsPanel = () => {
                   <Eye className="w-4 h-4" /> Chi Tiết
                 </button>
 
+                {item.status === 'APPROVED' && (
+                  item.confirmation_record ? (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContractId(item.confirmation_record.id);
+                        setIsContractDetailOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
+                    >
+                      <FileText className="w-4 h-4" /> Xem Hợp Đồng
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedReservationForContract(item);
+                        setIsCreateContractOpen(true);
+                      }}
+                      className="px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
+                    >
+                      <FileText className="w-4 h-4 text-slate-950" /> Tạo Hợp Đồng
+                    </button>
+                  )
+                )}
+
                 {item.status === 'PENDING' && (
                   <>
                     <button
@@ -504,6 +543,34 @@ const ProviderReservationsPanel = () => {
         onClose={() => {
           setIsDetailOpen(false);
           setSelectedReservationId(null);
+        }}
+        onRefresh={fetchProviderReservations}
+      />
+
+      {/* CREATE CONTRACT MODAL */}
+      <CreateConfirmationRecordModal
+        isOpen={isCreateContractOpen}
+        onClose={() => {
+          setIsCreateContractOpen(false);
+          setSelectedReservationForContract(null);
+        }}
+        reservation={selectedReservationForContract}
+        onSuccess={() => {
+          setToastInfo({ message: 'Tạo và gửi hợp đồng điện tử thành công!', type: 'success' });
+          fetchProviderReservations();
+          if (onNavigateToContracts) {
+            onNavigateToContracts();
+          }
+        }}
+      />
+
+      {/* CONTRACT DETAIL MODAL */}
+      <ContractDetailModal
+        contractId={selectedContractId}
+        isOpen={isContractDetailOpen}
+        onClose={() => {
+          setIsContractDetailOpen(false);
+          setSelectedContractId(null);
         }}
         onRefresh={fetchProviderReservations}
       />
