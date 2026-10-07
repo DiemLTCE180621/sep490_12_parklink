@@ -1,4 +1,5 @@
 import api from './api';
+import userService from './userService';
 
 /**
  * Service gọi các API Admin trên Frontend
@@ -74,15 +75,36 @@ const adminService = {
    * @param {object} params - { search, role, status, page, limit }
    */
   getUsersList: async (params = {}) => {
-    return await api.get('/admin/users', { params });
+    return await userService.getUsersList(params);
+  },
+
+  getUserDetails: async (id) => {
+    return await userService.getUserDetails(id);
   },
 
   /**
-   * UC-Admin: Lấy chi tiết tài khoản người dùng theo ID
-   * @param {number} id - ID của user
+   * UC-86: Tạo tài khoản Nhân viên khảo sát thực địa
+   * @param {object} data - { email, full_name, phone_number }
    */
-  getUserDetails: async (id) => {
-    return await api.get(`/admin/users/${id}`);
+  createFieldInspector: async (data) => {
+    return await api.post('/admin/field-inspectors', data);
+  },
+
+  /**
+   * UC-87: Lấy danh sách tài khoản Nhân viên khảo sát thực địa
+   * @param {object} params - { search, page, limit }
+   */
+  getFieldInspectors: async (params = {}) => {
+    return await api.get('/admin/field-inspectors', { params });
+  },
+
+  /**
+   * UC-88: Cập nhật thông tin Nhân viên khảo sát thực địa
+   * @param {number} id 
+   * @param {object} data - { full_name, phone_number, status }
+   */
+  updateFieldInspector: async (id, data) => {
+    return await api.put(`/admin/field-inspectors/${id}`, data);
   }
 };
 

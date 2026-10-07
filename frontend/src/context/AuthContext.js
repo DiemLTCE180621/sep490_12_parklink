@@ -59,6 +59,25 @@ export const AuthProvider = ({ children }) => {
     return response;
   };
 
+  const updateProfile = async (profileData) => {
+    const response = await authService.updateProfile(profileData);
+    if (response?.data?.user) {
+      setUser(prev => ({ ...prev, ...response.data.user }));
+    }
+    return response;
+  };
+
+  const refreshUser = async () => {
+    try {
+      const res = await authService.getCurrentUser();
+      if (res?.data?.user) {
+        setUser(res.data.user);
+      }
+    } catch (e) {
+      console.error("Lỗi làm mới thông tin user:", e);
+    }
+  };
+
   const logout = async () => {
     await authService.logout();
     setToken(null);
@@ -74,6 +93,8 @@ export const AuthProvider = ({ children }) => {
     registerCustomer,
     registerProvider,
     changePassword,
+    updateProfile,
+    refreshUser,
     logout
   };
 

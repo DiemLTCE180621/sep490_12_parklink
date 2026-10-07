@@ -1,5 +1,6 @@
 const facilityRepository = require("../repositories/facilityRepository");
 const userRepository = require("../repositories/userRepository");
+const roleRepository = require("../repositories/roleRepository");
 const emailService = require("../utils/emailService");
 const bcrypt = require("bcryptjs");
 /**
@@ -49,19 +50,18 @@ class AdminService {
 
   /**
    * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED
-   * Admin đã chuẩn bị xong dữ liệu, gửi mail kèm QR VietQR thanh toán cho Provider.
+   * Admin xem xét kết quả khảo sát, duyệt chính thức, gửi mail kèm QR VietQR thanh toán cho Provider.
    * @param {number} facilityId
-   * @param {string[]} images - Mảng URL ảnh của bãi đỗ xe
    */
-  async finalizeRegistration(facilityId, images = []) {
+  async finalizeRegistration(facilityId) {
     const facility = await facilityRepository.findById(facilityId);
     if (!facility)
       throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
         status: 404,
       });
-    if (facility.verification_status !== "PREPARING") {
+    if (facility.verification_status !== "INSPECTED") {
       throw Object.assign(
-        new Error("Bãi đỗ xe phải ở trạng thái PREPARING để hoàn tất!"),
+        new Error("Bãi đỗ xe phải ở trạng thái Đã Khảo Sát (INSPECTED) để hoàn tất!"),
         { status: 400 },
       );
     }
@@ -69,7 +69,6 @@ class AdminService {
     const updatedFacility = await facilityRepository.approveFacility(
       facilityId,
       facility.provider_id,
-      images,
     );
 
     // Tạo mật khẩu mới cho Provider
@@ -187,33 +186,6 @@ class AdminService {
    */
   async updateFacility(facilityId, updateData) {
     return await facilityRepository.updateFacility(facilityId, updateData);
-  }
-  /**
-   * UC-Admin: Lấy danh sách tài khoản người dùng (Customer, Provider, Admin) kèm Phân trang & Bộ lọc
-   */
-  async getUsersList({ search, role, status, page, limit }) {
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 10;
-    return await userRepository.findUsersPaginated({
-      search: search ? search.trim() : "",
-      role: role || "ALL",
-      status: status || "ALL",
-      page: pageNum,
-      limit: limitNum,
-    });
-  }
-
-  /**
-   * UC-Admin: Lấy chi tiết tài khoản người dùng theo ID
-   */
-  async getUserDetails(userId) {
-    const user = await userRepository.findUserDetailById(userId);
-    if (!user) {
-      throw Object.assign(new Error("Tài khoản người dùng không tồn tại!"), {
-        status: 404,
-      });
-    }
-    return user;
   }
 }
 

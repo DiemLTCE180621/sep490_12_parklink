@@ -12,7 +12,7 @@ class FacilityRepository {
     return await prisma.facility.findMany({
       where: {
         verification_status: {
-          in: ["PENDING_REVIEW", "PREPARING"],
+          in: ["PENDING_REVIEW", "PREPARING", "INSPECTED"],
         },
       },
       include: {
@@ -83,7 +83,7 @@ class FacilityRepository {
    * @param {number} facilityId
    * @param {number} providerId
    */
-  async approveFacility(facilityId, providerId, images = []) {
+  async approveFacility(facilityId, providerId) {
     return await prisma.$transaction(async (tx) => {
       const facility = await tx.facility.update({
         where: { id: facilityId },
@@ -99,17 +99,6 @@ class FacilityRepository {
         where: { id: providerId },
         data: { status: "ACTIVE" },
       });
-
-      // Thêm ảnh nếu có
-      if (images && images.length > 0) {
-        await tx.facility_Image.createMany({
-          data: images.map((url, idx) => ({
-            facility_id: facilityId,
-            image_url: url,
-            is_primary: idx === 0, // Ảnh đầu tiên làm ảnh đại diện
-          })),
-        });
-      }
 
       // Tạo Notification cho Provider
       await tx.notification.create({
@@ -151,6 +140,58 @@ class FacilityRepository {
       });
 
       return facility;
+    });
+  }
+
+  /**
+   * Nhân viên khảo sát thực địa gửi dữ liệu hình ảnh và số chỗ (capacity)
+   * @param {number} facilityId
+   * @param {number} capacity
+   * @param {string[]} images
+   */
+  async inspectFacility(facilityId, capacity, images = []) {
+    return await prisma.$transaction(async (tx) => {
+      const facility = await tx.facility.update({
+        where: { id: facilityId },
+        data: {
+          capacity: parseInt(capacity, 10),
+          verification_status: "INSPECTED",
+        },
+      });
+
+      if (images && images.length > 0) {
+        await tx.facility_Image.createMany({
+          data: images.map((url, idx) => ({
+            facility_id: facilityId,
+            image_url: url,
+            is_primary: idx === 0,
+          })),
+        });
+      }
+
+      return facility;
+    });
+  }
+
+  /**
+   * Lấy danh sách bãi đỗ xe đang PREPARING cho Field Inspector
+   */
+  async findPreparingFacilities() {
+    return await prisma.facility.findMany({
+      where: {
+        verification_status: "PREPARING",
+      },
+      include: {
+        provider: {
+          select: {
+            full_name: true,
+            phone_number: true,
+          },
+        },
+      },
+      orderBy: {
+        updated_at: "desc",
+      },
     });
   }
 
