@@ -97,6 +97,12 @@ class FacilityService {
 
     return comparisonMatrix;
   }
+
+  async getFacilityById(id) {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) return null;
+    return await facilityRepository.findById(parsedId);
+  }
 }
 
 module.exports = new FacilityService();

@@ -64,3 +64,19 @@ exports.compareFacilities = async (req, res) => {
     res.status(statusCode).json({ status: 'error', message: error.message });
   }
 };
+
+exports.getFacilityById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await facilityService.getFacilityById(id);
+    if (!data) {
+      return res.status(404).json({ status: 'error', message: 'Không tìm thấy bãi đỗ xe' });
+    }
+    res.json({
+      status: 'success',
+      data
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
