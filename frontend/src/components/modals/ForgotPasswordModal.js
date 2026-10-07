@@ -36,7 +36,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '' }) => {
       }
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Gửi mã OTP thất bại! Vui lòng kiểm tra lại email.');
+      setError(err.errors?.[0] || err.message || 'Gửi mã OTP thất bại! Vui lòng kiểm tra lại email.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '' }) => {
         handleClose();
       }, 1800);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Xác thực mã OTP thất bại!');
+      setError(err.errors?.[0] || err.message || 'Xác thực mã OTP thất bại!');
     } finally {
       setLoading(false);
     }

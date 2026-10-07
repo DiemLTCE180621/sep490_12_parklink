@@ -26,11 +26,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const message =
-      error.response?.data?.message ||
-      'Đã xảy ra lỗi kết nối tới máy chủ!';
-    const errObj = new Error(message);
-    errObj.errors = error.response?.data?.errors || [];
+    const resData = error.response?.data;
+    const errorsList = resData?.errors && Array.isArray(resData.errors) && resData.errors.length > 0
+      ? resData.errors
+      : [];
+
+    const primaryMessage = errorsList.length > 0
+      ? errorsList[0]
+      : (resData?.message || 'Đã xảy ra lỗi kết nối tới máy chủ!');
+
+    const errObj = new Error(primaryMessage);
+    errObj.response = error.response;
+    errObj.errors = errorsList;
+    errObj.status = error.response?.status;
     return Promise.reject(errObj);
   }
 );
