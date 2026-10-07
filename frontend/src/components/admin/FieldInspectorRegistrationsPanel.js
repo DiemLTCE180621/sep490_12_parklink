@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import inspectorService from '../../services/inspectorService';
 import uploadService from '../../services/uploadService';
 import FacilityDetailsModal from '../modals/FacilityDetailsModal';
-import { Clock, AlertCircle, CheckCircle, XCircle, Building2, MapPin, User, DollarSign, ChevronRight, Eye, Wrench } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, Building2, MapPin, User, Eye, Wrench } from 'lucide-react';
 
 const FieldInspectorRegistrationsPanel = () => {
   const [registrations, setRegistrations] = useState([]);

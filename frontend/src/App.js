@@ -11,6 +11,7 @@ import RegisterProviderPage from './pages/auth/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/facility/SearchPage';
 import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
+import CustomerContractsPage from './pages/CustomerContractsPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
@@ -56,6 +57,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <CustomerReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-contracts"
+            element={
+              <ProtectedRoute>
+                <CustomerContractsPage />
               </ProtectedRoute>
             }
           />

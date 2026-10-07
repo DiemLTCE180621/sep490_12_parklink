@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import providerService from '../../services/providerService';
 import authService from '../../services/authService';
 import Toast from '../common/Toast';
 

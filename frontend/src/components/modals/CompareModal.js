@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Star, MapPin, CarFront, ShieldCheck, Loader2, CheckCircle, AlertCircle, ArrowRight, Plus } from 'lucide-react';
+import { X, Star, MapPin, CarFront, Loader2, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
 import facilityService from '../../services/facilityService';
 
 /**
