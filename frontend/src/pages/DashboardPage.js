@@ -259,20 +259,8 @@ const DashboardPage = () => {
               </div>
             </div>
 
-            {/* DYNAMIC CONTENT FOR CUSTOMER */}
+            {/* DYNAMIC CONTENT FOR CUSTOMER / INSPECTOR */}
             <div className="md:col-span-2 space-y-6">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
-                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Car className="w-5 h-5 text-teal-600" /> Quản Lý Yêu Cầu Thuê Bãi Xe
-                  </h3>
-                  <Link
-                    to="/my-reservations"
-                    className="text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline flex items-center gap-1"
-                  >
-                    Xem tất cả &rarr;
-                  </Link>
-                </div>
 
               {/* PANEL DÀNH CHO FIELD INSPECTOR */}
               {roleName === 'FIELD_INSPECTOR' && (
@@ -330,8 +318,8 @@ const DashboardPage = () => {
                     </div>
                   </div>
                 </div>
-              )}
             </div>
+          </div>
         )}
       </div>
 
