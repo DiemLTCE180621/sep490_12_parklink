@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getAvailableFacilities } from '../services/reservationService';
-import SendReservationModal from '../components/SendReservationModal';
-import { useAuth } from '../context/AuthContext';
+import { getAvailableFacilities } from '../../services/reservationService';
+import SendReservationModal from '../../components/modals/SendReservationModal';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Search, Building2, Shield, Send, AlertCircle, CheckCircle2, User, Loader2, ArrowLeft } from 'lucide-react';
 

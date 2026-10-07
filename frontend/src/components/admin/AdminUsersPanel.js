@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, RotateCcw, Eye, User, RefreshCw, ChevronLeft, ChevronRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
-import userService from '../services/userService';
-import UserDetailModal from './UserDetailModal';
+import userService from '../../services/userService';
+import UserDetailModal from '../modals/UserDetailModal';
 
 const AdminUsersPanel = () => {
   const [users, setUsers] = useState([]);

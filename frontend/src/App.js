@@ -2,20 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterCustomerPage from './pages/RegisterCustomerPage';
-import RegisterProviderPage from './pages/RegisterProviderPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterCustomerPage from './pages/auth/RegisterCustomerPage';
+import RegisterProviderPage from './pages/auth/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
-import SearchPage from './pages/SearchPage';
-import CustomerReservationsPage from './pages/CustomerReservationsPage';
-import ProviderReservationsPage from './pages/ProviderReservationsPage';
-import FacilityListPage from './pages/FacilityListPage';
-import FacilityDetailPage from './pages/FacilityDetailPage';
+import SearchPage from './pages/facility/SearchPage';
+import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
+import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
+import FacilityListPage from './pages/facility/FacilityListPage';
+import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
-import ScrollToTop from './components/ScrollToTop';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Component bảo vệ Route yêu cầu Đăng nhập
 const ProtectedRoute = ({ children }) => {

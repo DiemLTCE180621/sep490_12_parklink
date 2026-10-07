@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Star, MapPin, CarFront, ShieldCheck, Loader2, CheckCircle, AlertCircle, ArrowRight, Plus } from 'lucide-react';
-import facilityService from '../services/facilityService';
+import facilityService from '../../services/facilityService';
 
 /**
  * CompareModal – Modal so sánh 2–4 bãi đỗ xe theo bảng tiêu chí (Function 3.41)

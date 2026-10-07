@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { User, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Copy, Key, ShieldCheck } from 'lucide-react';
 
-import { cleanText, isValidName, isValidPhone, isValidEmail } from '../utils/validators';
+import { cleanText, isValidName, isValidPhone, isValidEmail } from '../../utils/validators';
 
 const RegisterCustomerPage = () => {
   const { registerCustomer } = useAuth();

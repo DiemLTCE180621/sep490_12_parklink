@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getMyReservations, cancelReservationRequest } from '../services/reservationService';
-import ReservationDetailModal from '../components/ReservationDetailModal';
-import ConfirmModal from '../components/ConfirmModal';
-import Toast from '../components/Toast';
+import { getMyReservations, cancelReservationRequest } from '../../services/reservationService';
+import ReservationDetailModal from '../../components/modals/ReservationDetailModal';
+import ConfirmModal from '../../components/modals/ConfirmModal';
+import Toast from '../../components/common/Toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { Car, Calendar, MapPin, Building2, Clock, CheckCircle2, Ban, Eye, Search, AlertCircle, RefreshCw, PlusCircle, Loader2, ArrowLeft } from 'lucide-react';
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import AdminRegistrationsPanel from '../components/AdminRegistrationsPanel';
+import AdminRegistrationsPanel from '../../components/admin/AdminRegistrationsPanel';
 
 const AdminRegistrationsPage = () => {
   const { user } = useAuth();

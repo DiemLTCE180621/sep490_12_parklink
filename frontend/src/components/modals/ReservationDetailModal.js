@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { getReservationDetail, cancelReservationRequest } from '../services/reservationService';
+import { getReservationDetail, cancelReservationRequest } from '../../services/reservationService';
 import ConfirmModal from './ConfirmModal';
 import { X, Calendar, Car, MapPin, Building2, User, Phone, Mail, FileText, Ban, AlertCircle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 
