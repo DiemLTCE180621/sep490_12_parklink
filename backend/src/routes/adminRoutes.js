@@ -50,14 +50,5 @@ router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
  * Cập nhật thông tin cơ bản của bãi đỗ xe
  */
 router.put('/facilities/:id', adminController.updateFacility);
- /**
- * UC-Admin: View user accounts list (Xem danh sách tài khoản người dùng)
- */
-router.get('/users', adminController.getUsers);
-
-/**
- * UC-Admin: View user account details (Xem chi tiết tài khoản người dùng)
- */
-router.get('/users/:id', adminController.getUserById);
 
 module.exports = router;

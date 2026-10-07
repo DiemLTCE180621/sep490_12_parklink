@@ -12,7 +12,8 @@ async function seedAll() {
     const roles = [
       { name: 'CUSTOMER', description: 'Khách hàng thuê bãi đỗ xe' },
       { name: 'PROVIDER', description: 'Chủ bãi đỗ xe (Parking Provider)' },
-      { name: 'ADMIN', description: 'Quản trị viên hệ thống' }
+      { name: 'ADMIN', description: 'Quản trị viên hệ thống' },
+      { name: 'FIELD_INSPECTOR', description: 'Nhân viên khảo sát thực địa' }
     ];
 
     for (const role of roles) {

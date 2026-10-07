@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, RotateCcw, Eye, User, RefreshCw, ChevronLeft, ChevronRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
-import adminService from '../services/adminService';
+import userService from '../services/userService';
 import UserDetailModal from './UserDetailModal';
 
 const AdminUsersPanel = () => {
@@ -27,7 +27,7 @@ const AdminUsersPanel = () => {
     try {
       setLoading(true);
       setError('');
-      const res = await adminService.getUsersList({
+      const res = await userService.getUsersList({
         search,
         role: role === 'ALL' ? '' : role,
         status: status === 'ALL' ? '' : status,
@@ -61,7 +61,7 @@ const AdminUsersPanel = () => {
   const handleViewUserDetail = async (userId) => {
     try {
       setLoadingDetail(true);
-      const res = await adminService.getUserDetails(userId);
+      const res = await userService.getUserDetails(userId);
       const payload = res?.data || res;
       if (payload && payload.user) {
         setSelectedUser(payload.user);
@@ -81,6 +81,8 @@ const AdminUsersPanel = () => {
         return <span className="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Quản trị viên</span>;
       case 'PROVIDER':
         return <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Chủ bãi xe</span>;
+      case 'FIELD_INSPECTOR':
+        return <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Nhân viên khảo sát</span>;
       case 'CUSTOMER':
       default:
         return <span className="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-0.5 rounded-full">Khách hàng</span>;

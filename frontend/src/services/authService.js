@@ -65,10 +65,21 @@ const authService = {
   },
 
   /**
-   * Lấy thông tin tài khoản hiện tại từ backend
+   * UC07: Lấy thông tin tài khoản hiện tại từ backend
    */
   async getCurrentUser() {
     return await api.get('/auth/me');
+  },
+
+  async getProfile() {
+    return await api.get('/auth/profile');
+  },
+
+  /**
+   * UC08: Cập nhật thông tin cá nhân (Họ tên, SĐT)
+   */
+  async updateProfile(profileData) {
+    return await api.put('/auth/profile', profileData);
   }
 };
 

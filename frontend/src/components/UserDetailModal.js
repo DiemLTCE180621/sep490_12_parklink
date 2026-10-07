@@ -43,79 +43,83 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden relative transform transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden relative transform transition-all">
         {/* Modal Header */}
-        <div className="bg-slate-900 text-white p-6 relative">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white px-8 py-6 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition"
+            className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-teal-500/20 text-teal-400 flex items-center justify-center font-bold text-xl border border-teal-500/30">
+            <div className="w-14 h-14 rounded-2xl bg-teal-500 text-slate-950 font-black flex items-center justify-center text-2xl shadow-md border border-teal-400/30">
               {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
-              <h3 className="text-xl font-bold">{user.full_name || 'Người dùng ParkLink'}</h3>
-              <p className="text-slate-400 text-xs mt-0.5">Mã ID tài khoản: #{user.id}</p>
+              <h3 className="text-2xl font-bold">{user.full_name || 'Người dùng ParkLink'}</h3>
+              <p className="text-teal-300 text-xs font-medium mt-0.5">Mã ID tài khoản: #{user.id}</p>
             </div>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-4 text-slate-700 text-sm">
-          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+        <div className="p-8 space-y-6 text-slate-700 text-sm">
+          <div className="grid grid-cols-2 gap-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
             <div>
-              <span className="text-xs font-semibold text-slate-400 block mb-1">Vai trò hệ thống</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Vai trò hệ thống</span>
               {getRoleBadge(user.role?.name)}
             </div>
             <div>
-              <span className="text-xs font-semibold text-slate-400 block mb-1">Trạng thái tài khoản</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Trạng thái tài khoản</span>
               {getStatusBadge(user.status)}
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-100">
-              <Mail className="w-5 h-5 text-teal-600 shrink-0" />
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-100">
+                <Mail className="w-5 h-5" />
+              </div>
               <div>
-                <span className="text-xs text-slate-400 block">Địa chỉ Email</span>
-                <span className="font-medium text-slate-900">{user.email}</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Địa chỉ Email</span>
+                <span className="font-semibold text-slate-900 text-sm">{user.email}</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-100">
-              <Phone className="w-5 h-5 text-teal-600 shrink-0" />
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 border border-teal-100">
+                <Phone className="w-5 h-5" />
+              </div>
               <div>
-                <span className="text-xs text-slate-400 block">Số điện thoại liên hệ</span>
-                <span className="font-medium text-slate-900">{user.phone_number || 'Chưa cập nhật'}</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Số điện thoại liên hệ</span>
+                <span className="font-semibold text-slate-900 text-sm">{user.phone_number || 'Chưa cập nhật'}</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-                <span className="text-slate-400 block mb-1 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" /> Ngày tạo tài khoản
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
+                <span className="text-slate-400 font-bold uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-teal-600" /> Ngày tạo tài khoản
                 </span>
-                <span className="font-medium text-slate-800">{formatDate(user.created_at)}</span>
+                <span className="font-semibold text-slate-800 text-sm">{formatDate(user.created_at)}</span>
               </div>
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-                <span className="text-slate-400 block mb-1 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" /> Lần cập nhật cuối
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
+                <span className="text-slate-400 font-bold uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-teal-600" /> Lần cập nhật cuối
                 </span>
-                <span className="font-medium text-slate-800">{formatDate(user.updated_at)}</span>
+                <span className="font-semibold text-slate-800 text-sm">{formatDate(user.updated_at)}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-end">
+        <div className="bg-slate-50 px-8 py-4 border-t border-slate-100 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition"
+            className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs shadow transition"
           >
             Đóng
           </button>

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin, KeyRound } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, MapPin, KeyRound, UserCheck, Edit } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/AdminFacilitiesPanel';
 import Toast from '../components/Toast';
 import AdminUsersPanel from '../components/AdminUsersPanel';
+import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
 import ChangePasswordModal from '../components/ChangePasswordModal';
+import EditProfileModal from '../components/EditProfileModal';
 import providerService from '../services/providerService';
 import authService from '../services/authService';
 
@@ -18,6 +20,7 @@ const DashboardPage = () => {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   const roleName = user?.role?.name || 'CUSTOMER';
 
@@ -78,13 +81,25 @@ const DashboardPage = () => {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">Xin chào, {user?.full_name}!</h1>
                 <p className="text-teal-300 text-sm font-medium">
-                  {roleName === 'PROVIDER' ? 'Chủ Bãi Đỗ Xe' : roleName === 'ADMIN' ? 'Ban Quản Trị Hệ Thống' : 'Khách Thuê Bãi Xe'}
+                  {roleName === 'PROVIDER'
+                    ? 'Chủ Bãi Đỗ Xe'
+                    : roleName === 'ADMIN'
+                    ? 'Ban Quản Trị Hệ Thống'
+                    : roleName === 'FIELD_INSPECTOR'
+                    ? 'Nhân Viên Khảo Sát'
+                    : 'Khách Thuê Bãi Xe'}
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setIsEditProfileModalOpen(true)}
+              className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" /> Sửa Hồ Sơ
+            </button>
             <button
               onClick={() => setIsChangePasswordModalOpen(true)}
               className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
@@ -124,6 +139,12 @@ const DashboardPage = () => {
                   <User className="w-5 h-5" /> Quản lý Users
                 </button>
                 <button
+                  onClick={() => setActiveAdminTab('inspectors')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'inspectors' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <UserCheck className="w-5 h-5" /> Nhân Viên Khảo Sát
+                </button>
+                <button
                   onClick={() => setActiveAdminTab('facilities')}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'facilities' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
@@ -144,6 +165,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
 
               {activeAdminTab === 'users' && <AdminUsersPanel />}
+              {activeAdminTab === 'inspectors' && <AdminFieldInspectorsPanel />}
 
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
@@ -157,9 +179,18 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* USER PROFILE CARD */}
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
-              <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
-              </h3>
+              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
+                </h3>
+                <button
+                  onClick={() => setIsEditProfileModalOpen(true)}
+                  className="p-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition flex items-center gap-1"
+                  title="Chỉnh sửa thông tin cá nhân"
+                >
+                  <Edit className="w-4 h-4" /> Sửa
+                </button>
+              </div>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center gap-3 text-slate-600">
@@ -173,7 +204,13 @@ const DashboardPage = () => {
                 <div className="flex items-center gap-3 text-slate-600">
                   <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                    {roleName === 'ADMIN' ? 'Quản Trị Viên' : roleName === 'PROVIDER' ? 'Chủ Bãi Xe' : 'Khách Thuê'}
+                    {roleName === 'ADMIN'
+                      ? 'Quản Trị Viên'
+                      : roleName === 'PROVIDER'
+                      ? 'Chủ Bãi Xe'
+                      : roleName === 'FIELD_INSPECTOR'
+                      ? 'Nhân Viên Khảo Sát'
+                      : 'Khách Thuê'}
                   </span>
                 </div>
               </div>
@@ -283,8 +320,25 @@ const DashboardPage = () => {
                 </div>
               )}
 
-              {/* PANEL DÀNH CHO CUSTOMER HOẶC ADMIN */}
-              {roleName !== 'PROVIDER' && (
+              {/* PANEL DÀNH CHO FIELD INSPECTOR */}
+              {roleName === 'FIELD_INSPECTOR' && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <UserCheck className="w-5 h-5 text-teal-600" />
+                    <h3 className="text-lg font-bold text-slate-900">Bảng Làm Việc Nhân Viên Khảo Sát</h3>
+                  </div>
+
+                  <div className="p-6 bg-gradient-to-br from-slate-900 to-teal-950 text-white rounded-2xl shadow-inner space-y-3">
+                    <h4 className="text-base font-bold text-teal-300">Tài Khoản Nhân Viên Khảo Sát Thực Địa</h4>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      Chào mừng bạn đến với hệ thống ParkLink. Tài khoản của bạn hiện đang ở trạng thái hoạt động. Các công việc khảo sát thực địa sẽ được cập nhật tại đây.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PANEL DÀNH CHO CUSTOMER HOẶC ROLE KHÁC */}
+              {roleName !== 'PROVIDER' && roleName !== 'FIELD_INSPECTOR' && roleName !== 'ADMIN' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
@@ -365,6 +419,11 @@ const DashboardPage = () => {
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}
+      />
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
+        onSuccess={(msg) => setToastInfo({ message: msg, type: 'success' })}
       />
     </div>
   );
