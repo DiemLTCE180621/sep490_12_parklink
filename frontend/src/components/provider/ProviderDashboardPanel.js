@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, Edit3, X, Minus, Plus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
+import providerService from '../../services/providerService';
 import Toast from '../common/Toast';
 
 const ProviderDashboardPanel = () => {
