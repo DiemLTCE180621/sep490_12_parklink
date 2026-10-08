@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReviewSection from '../components/ReviewSection';
 import SendReservationModal from '../components/SendReservationModal';
 import Toast from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import chatService from '../services/chatService';
-import { Send, MapPin, ArrowLeft, ShieldCheck, Car, MessageCircle } from 'lucide-react';
+import facilityService from '../services/facilityService';
+import { Send, MapPin, ArrowLeft, ShieldCheck, Car, MessageCircle, Loader2 } from 'lucide-react';
 
 const FacilityDetailPage = () => {
   const { id } = useParams();
@@ -17,16 +18,31 @@ const FacilityDetailPage = () => {
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  // Mock dữ liệu bãi đỗ xe cho đến khi có API Facility thật
-  const mockFacility = {
-    id: facilityId,
-    name: 'Bãi đỗ xe Đại học Cần Thơ',
-    address: 'Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ',
-    price_per_month: 1500000,
-    price: '1.500.000 VNĐ / tháng',
-    capacity: '10 slot',
-    provider_id: 2 // Mock provider
-  };
+  const [facility, setFacility] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFacility = async () => {
+      try {
+        const res = await facilityService.getFacilityById(facilityId);
+        if (res && res.status === 'success') {
+          setFacility(res.data);
+        } else {
+          setFacility(null);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chi tiết bãi đỗ:", error);
+        setFacility(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (!isNaN(facilityId)) {
+      fetchFacility();
+    } else {
+      setLoading(false);
+    }
+  }, [facilityId]);
 
   const handleChatClick = async () => {
     if (!isAuthenticated) {
@@ -42,10 +58,9 @@ const FacilityDetailPage = () => {
     }
 
     try {
-      // Dùng tạm provider_id = 28 và facility_id = 18 vì đây là ID có thật trong DB test
-      const providerId = 28;
-      const testFacilityId = 18; 
-      const res = await chatService.getOrCreateRoom(user.id, providerId, testFacilityId, token);
+      // Truyền null cho provider_id (backend sẽ tự động lấy từ DB) 
+      // và truyền ID thực tế của bãi đỗ xe lấy từ URL
+      const res = await chatService.getOrCreateRoom(user.id, null, facilityId, token);
       if (res.success) {
         navigate('/chat', { state: { activeRoomId: res.data.id } });
       }
@@ -85,7 +100,15 @@ const FacilityDetailPage = () => {
     }, 1500);
   };
 
-  if (isNaN(facilityId)) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
+  if (isNaN(facilityId) || !facility) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -123,23 +146,35 @@ const FacilityDetailPage = () => {
               <span className="inline-block px-3 py-1 bg-teal-50 text-teal-700 border border-teal-100 rounded-full text-xs font-bold uppercase tracking-wider">
                 Cho thuê theo tháng
               </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{mockFacility.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{facility.name}</h1>
               <p className="text-slate-600 flex items-center gap-2 text-sm font-medium">
-                <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {mockFacility.address}
+                <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {facility.address}
               </p>
             </div>
             <div className="text-left sm:text-right space-y-1">
-              <span className="block text-2xl font-extrabold text-teal-700">{mockFacility.price}</span>
+              <span className="block text-2xl font-extrabold text-teal-700">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(facility.price_per_month)} / tháng
+              </span>
               <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
-                Sức chứa: {mockFacility.capacity}
+                Sức chứa: {facility.capacity} slot
               </span>
             </div>
           </div>
 
           {/* BANNER ẢNH BÃI ĐỖ XE */}
-          <div className="w-full h-64 sm:h-80 bg-slate-100 rounded-2xl border border-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2 font-semibold">
-            <Car className="w-12 h-12 text-slate-300" />
-            <span>[Hình ảnh bãi đỗ xe]</span>
+          <div className="w-full h-64 sm:h-80 bg-slate-100 rounded-2xl border border-slate-200 flex flex-col items-center justify-center text-slate-400 gap-2 font-semibold overflow-hidden">
+            {facility.images && facility.images.length > 0 ? (
+              <img 
+                src={facility.images.find(img => img.is_primary)?.image_url || facility.images[0].image_url} 
+                alt={facility.name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <>
+                <Car className="w-12 h-12 text-slate-300" />
+                <span>[Chưa có hình ảnh]</span>
+              </>
+            )}
           </div>
 
           {/* KHỐI NÚT YÊU CẦU ĐẶT CHỖ */}
@@ -177,7 +212,11 @@ const FacilityDetailPage = () => {
 
       {/* MODAL GỬI YÊU CẦU THUÊ */}
       <SendReservationModal
-        facility={mockFacility}
+        facility={{
+          ...facility,
+          price: `${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(facility.price_per_month)} / tháng`,
+          capacity_str: `${facility.capacity} slot`
+        }}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleReservationSuccess}

@@ -11,10 +11,17 @@ cloudinary.config({
 // Cấu hình storage cho Multer (tự động đẩy lên Cloudinary)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'ParkLink/Chat',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'mp4'],
-    resource_type: 'auto'
+  params: async (req, file) => {
+    // Nếu là PDF hoặc Word thì upload dạng 'raw' (file thô)
+    const isDocument = file.mimetype === 'application/pdf' || 
+                       file.mimetype === 'application/msword' || 
+                       file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                       
+    return {
+      folder: 'ParkLink/Chat',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'mp4', 'doc', 'docx'],
+      resource_type: isDocument ? 'raw' : 'auto'
+    };
   },
 });
 

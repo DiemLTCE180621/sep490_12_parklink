@@ -97,6 +97,11 @@ class FacilityService {
 
     return comparisonMatrix;
   }
+
+  async getFacilityById(id) {
+    const facilityRepository = require('../repositories/facilityRepository');
+    return await facilityRepository.findById(id);
+  }
 }
 
 module.exports = new FacilityService();

@@ -32,6 +32,10 @@ const initSocket = (server) => {
                     mediaUrl
                 );
 
+                if (data.tempId) {
+                    newMessage.tempId = data.tempId;
+                }
+
                 io.to(roomId.toString()).emit('receive_message', newMessage);
 
                 console.log(`[Socket] Đã phát tin nhắn vào phòng ${roomId}`);

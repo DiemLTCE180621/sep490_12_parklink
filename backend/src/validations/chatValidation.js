@@ -1,11 +1,11 @@
 class ChatValidation {
     // Kiểm tra dữ liệu đầu vào khi tạo phòng chat
     validateCreateRoom(req, res, next) {
-        const { customerId, providerId, facilityId } = req.body;
-        if (!customerId || !providerId || !facilityId) {
+        const { customerId, facilityId } = req.body;
+        if (!customerId || !facilityId) {
             return res.status(400).json({
                 success: false,
-                message: 'Thiếu thông tin customerId, providerId hoặc facilityId'
+                message: 'Thiếu thông tin customerId hoặc facilityId'
             });
         }
         next();
