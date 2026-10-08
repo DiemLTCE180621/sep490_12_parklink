@@ -87,7 +87,7 @@ const ChatInput = ({ onSendMessage }) => {
                     ref={docInputRef}
                     className="hidden"
                     onChange={handleFileChange}
-                    accept="application/pdf"
+                    accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 />
                 
                 <input

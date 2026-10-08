@@ -3,7 +3,7 @@ const facilityService = require('../services/facilityService');
 exports.searchFacilities = async (req, res) => {
   try {
     const { keyword, vehicle_type, amenities, lat, lng, radius } = req.query;
-    
+
     // Parse amenities string to array if provided (e.g., '1,2,3' -> [1,2,3])
     let parsedAmenities = [];
     if (amenities) {

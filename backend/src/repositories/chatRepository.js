@@ -39,6 +39,16 @@ class ChatRepository {
                 messages: {
                     orderBy: { created_at: 'desc' },
                     take: 1
+                },
+                _count: {
+                    select: {
+                        messages: {
+                            where: {
+                                is_read: false,
+                                sender_id: { not: userId }
+                            }
+                        }
+                    }
                 }
             },
             orderBy: {

@@ -203,8 +203,6 @@ const FacilityDetailPage = () => {
           </button>
         </div>
       </div>
-    );
-  }
 
   const images = facility.images || [];
   const currentImage = images[activeImage] || images[0];
