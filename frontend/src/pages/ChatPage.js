@@ -13,16 +13,16 @@ const ChatPage = () => {
     const [rooms, setRooms] = useState([]);
     const [activeRoomId, setActiveRoomId] = useState(null);
     const [messages, setMessages] = useState([]);
-    
+
     const location = useLocation();
     const initialRoomId = location.state?.activeRoomId;
 
-    // Tự động chọn phòng nếu có truyền state từ trang khác sang
+    // Tự động chọn phòng nếu có truyền state từ trang khác sang (chỉ chọn lần đầu tiên)
     useEffect(() => {
-        if (initialRoomId && rooms.length > 0) {
+        if (initialRoomId && rooms.length > 0 && !activeRoomId) {
             setActiveRoomId(initialRoomId);
         }
-    }, [initialRoomId, rooms]);
+    }, [initialRoomId, rooms, activeRoomId]);
 
     // 1. Lấy danh sách phòng chat khi vừa vào trang
     useEffect(() => {
@@ -54,29 +54,85 @@ const ChatPage = () => {
             }
         };
         fetchMessages();
+
+        // Xóa số đếm tin nhắn chưa đọc khi mở phòng này
+        setRooms(prevRooms => prevRooms.map(r => {
+            if (Number(r.id) === Number(activeRoomId)) {
+                return { ...r, _count: { ...r._count, messages: 0 } };
+            }
+            return r;
+        }));
     }, [activeRoomId, token]);
+
+    // Ref để lưu danh sách phòng mới nhất cho socket (tránh re-render liên tục làm rớt sự kiện)
+    const roomsRef = React.useRef(rooms);
+    useEffect(() => {
+        roomsRef.current = rooms;
+    }, [rooms]);
 
     // 3. Lắng nghe tin nhắn mới tới qua màng nhĩ Socket
     useEffect(() => {
         if (!socket) return;
 
-        // Báo cho Server biết mình muốn tham gia nhận tin nhắn của tất cả các phòng mình có
-        rooms.forEach(room => socket.emit('join_room', room.id));
+        const joinRooms = () => {
+            roomsRef.current.forEach(room => socket.emit('join_room', room.id));
+        };
 
+        // Chạy ngay lần đầu
+        if (socket.connected) joinRooms();
+
+        // Chạy mỗi khi socket bị rớt và kết nối lại
+        socket.on('connect', joinRooms);
         const handleReceiveMessage = (newMessage) => {
-            // Nếu tin nhắn thuộc về phòng MÌNH ĐANG MỞ -> Cập nhật hiển thị lên màn hình
             if (activeRoomId && Number(newMessage.room_id) === Number(activeRoomId)) {
-                setMessages(prev => [...prev, newMessage]);
-                
+                // Xóa đúng tin nhắn giả (is_sending) dựa vào tempId trước khi thêm tin thật
+                setMessages(prev => {
+                    let wasRead = false;
+                    const filtered = prev.filter(m => {
+                        const isMatch = (newMessage.tempId && m.id === newMessage.tempId) || 
+                                        (m.is_sending && m.content === newMessage.content);
+                        if (isMatch) {
+                            if (m.is_read) wasRead = true; // Lưu lại trạng thái Đã xem nếu bị chênh lệch nhịp Socket
+                            return false;
+                        }
+                        return true;
+                    });
+                    return [...filtered, { ...newMessage, is_read: wasRead || newMessage.is_read }];
+                });
+
                 // Nếu mình đang mở phòng và đối phương gửi tới -> Đánh dấu Đã xem ngay lập tức
                 if (newMessage.sender_id !== user.id) {
                     chatService.markMessagesAsRead(activeRoomId, token).catch(console.error);
                     socket.emit('mark_read', { roomId: activeRoomId, readerId: user.id });
                 }
-            } else {
-                // Nếu tin nhắn nằm ở phòng khác -> Có thể làm hiệu ứng nháy đỏ thông báo chưa đọc ở đây
-                console.log("Có tin nhắn mới từ phòng khác", newMessage.room_id);
             }
+
+            // Cập nhật lại danh sách phòng bên trái (Nhảy lên đầu + hiển thị tin nhắn mới nhất)
+            setRooms(prevRooms => {
+                const updatedRooms = prevRooms.map(r => {
+                    if (Number(r.id) === Number(newMessage.room_id)) {
+                        const isMe = newMessage.sender_id === user.id;
+                        // Nếu đối phương gửi và mình ĐANG KHÔNG mở phòng đó -> Tăng số tin chưa đọc lên 1
+                        const currentCount = r._count?.messages || 0;
+                        const newCount = (!isMe && Number(newMessage.room_id) !== Number(activeRoomId)) 
+                                         ? currentCount + 1 : currentCount;
+                        
+                        return {
+                            ...r,
+                            messages: [newMessage], // Cập nhật tin nhắn mới nhất
+                            _count: { ...r._count, messages: newCount }
+                        };
+                    }
+                    return r;
+                });
+                
+                // Sắp xếp lại: Phòng nào có tin nhắn mới nhất thì đưa lên đầu tiên
+                return updatedRooms.sort((a, b) => {
+                    const timeA = a.messages?.[0]?.created_at || a.created_at;
+                    const timeB = b.messages?.[0]?.created_at || b.created_at;
+                    return new Date(timeB) - new Date(timeA);
+                });
+            });
         };
 
         const handleMessagesRead = ({ roomId, readerId }) => {
@@ -90,52 +146,74 @@ const ChatPage = () => {
 
         // Cleanup function: Tắt lắng nghe khi tắt trang
         return () => {
+            socket.off('connect', joinRooms);
             socket.off('receive_message', handleReceiveMessage);
             socket.off('messages_read', handleMessagesRead);
         };
-    }, [socket, rooms, activeRoomId, user?.id, token]);
+    }, [socket, activeRoomId, user?.id, token]);
 
-    // 4. Xử lý hành động bấm nút GỬI (chữ hoặc file)
+    // 4. Xử lý hành động bấm nút GỬI (chữ hoặc file) theo kiểu Optimistic UI
     const handleSendMessage = async (text, files) => {
         if (!activeRoomId || !socket) return;
 
-        let mediaUrls = [];
-        
-        // BƯỚC A: NẾU CÓ FILE -> Đẩy lên mây qua API Upload trước
+        // BƯỚC 1: TẠO FAKE MESSAGE CHO GIAO DIỆN (CHẠY TỨC THÌ)
+        let localPreviewUrls = [];
         if (files && files.length > 0) {
-            const uploadRes = await uploadService.uploadFiles(files, token);
-            if (uploadRes.success) {
-                mediaUrls = uploadRes.data.mediaUrls;
-            }
+            localPreviewUrls = Array.from(files).map(file => URL.createObjectURL(file));
         }
 
-        // BƯỚC B: Bắn tin nhắn (chữ + link mây) qua Socket
-        // Backend đang nhận chuỗi, nên mình ghép mảng URL thành chuỗi cách nhau bởi dấu phẩy
-        const finalMediaUrl = mediaUrls.length > 0 ? mediaUrls.join(',') : null;
-        
-        socket.emit('send_message', {
-            roomId: activeRoomId,
-            senderId: user.id,
+        const tempId = 'temp_' + Date.now();
+        const fakeMessage = {
+            id: tempId,
+            room_id: activeRoomId,
+            sender_id: user.id,
             content: text,
-            mediaUrl: finalMediaUrl
-        });
+            media_url: localPreviewUrls.length > 0 ? localPreviewUrls.join(',') : null,
+            created_at: new Date().toISOString(),
+            is_sending: true // Đánh dấu tin nhắn đang được gửi
+        };
+
+        // Đẩy ra màn hình ngay lập tức
+        setMessages(prev => [...prev, fakeMessage]);
+
+        // BƯỚC 2: ÂM THẦM CHẠY BACKGROUND ĐỂ UP LÊN SERVER
+        try {
+            let finalMediaUrl = null;
+            if (files && files.length > 0) {
+                const uploadRes = await uploadService.uploadFiles(files, token);
+                if (uploadRes.success) {
+                    finalMediaUrl = uploadRes.data.mediaUrls.join(',');
+                }
+            }
+
+            // Gửi qua Socket khi đã có link thật
+            socket.emit('send_message', {
+                roomId: activeRoomId,
+                senderId: user.id,
+                content: text,
+                mediaUrl: finalMediaUrl,
+                tempId: tempId
+            });
+        } catch (error) {
+            console.error("Lỗi gửi tin nhắn:", error);
+        }
     };
 
     // Tìm thông tin phòng đang mở để truyền cho ChatWindow
     const activeRoom = rooms.find(r => r.id === activeRoomId);
 
     return (
-        <div className="max-w-7xl mx-auto py-8 h-[calc(100vh-64px)] px-4 sm:px-6 lg:px-8">
-            <div className="flex h-[calc(100vh-140px)] bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
-                <ChatList 
-                    rooms={rooms} 
-                    activeRoomId={activeRoomId} 
-                    onSelectRoom={setActiveRoomId} 
+        <div className="w-full bg-white border-b border-slate-200">
+            <div className="flex w-full h-[75vh] min-h-[600px]">
+                <ChatList
+                    rooms={rooms}
+                    activeRoomId={activeRoomId}
+                    onSelectRoom={setActiveRoomId}
                 />
-                <ChatWindow 
-                    room={activeRoom} 
-                    messages={messages} 
-                    onSendMessage={handleSendMessage} 
+                <ChatWindow
+                    room={activeRoom}
+                    messages={messages}
+                    onSendMessage={handleSendMessage}
                 />
             </div>
         </div>

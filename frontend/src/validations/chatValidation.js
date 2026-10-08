@@ -10,7 +10,9 @@ export const validateChatFiles = (files) => {
     const MAX_SIZE = 5 * 1024 * 1024; // 5MB
     const ALLOWED_TYPES = [
         'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-        'application/pdf', 'video/mp4'
+        'application/pdf', 'video/mp4',
+        'application/msword', // .doc
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
     ];
 
     // Kiểm tra từng file

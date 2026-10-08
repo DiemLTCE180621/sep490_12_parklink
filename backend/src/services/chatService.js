@@ -1,9 +1,20 @@
 const chatRepository = require('../repositories/chatRepository');
 
+const prisma = require('../config/prisma');
+
 class ChatService {
     //tìm hoặc tạo phòng chat
     async getOrCreateRoom(data) {
-        const { customerId, providerId, facilityId } = data;
+        const { customerId, facilityId } = data;
+        let providerId = data.providerId;
+
+        // Tự động tìm provider_id thật từ Database nếu Frontend không gửi lên (hoặc gửi sai)
+        if (!providerId || providerId === 28) {
+            const facility = await prisma.facility.findUnique({ where: { id: Number(facilityId) } });
+            if (!facility) throw new Error('Bãi đỗ xe không tồn tại trong hệ thống');
+            providerId = facility.provider_id;
+        }
+
         return await chatRepository.findOrCreateRoom(Number(customerId), Number(providerId), Number(facilityId));
     }
 

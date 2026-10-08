@@ -30,6 +30,10 @@ const facilityService = {
     return await api.get('/facilities/compare', {
       params: { ids: ids.join(',') }
     });
+  },
+
+  async getFacilityById(id) {
+    return await api.get(`/facilities/${id}`);
   }
 };
 

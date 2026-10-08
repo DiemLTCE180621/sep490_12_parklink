@@ -12,7 +12,7 @@ router.get('/amenities', facilityController.getAllAmenities);
 // Query param: ?ids=1,2,3
 router.get('/compare', facilityController.compareFacilities);
 
-// API Public: Lấy chi tiết bãi đỗ xe theo ID
+// API Public: Lấy chi tiết 1 bãi đỗ xe
 router.get('/:id', facilityController.getFacilityById);
 
 module.exports = router;
