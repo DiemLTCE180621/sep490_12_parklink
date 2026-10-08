@@ -48,6 +48,15 @@ class FacilityRepository {
   }
 
   /**
+   * Lấy facility theo provider_id
+   */
+  async getFacilityByProviderId(providerId) {
+    return await prisma.facility.findUnique({
+      where: { provider_id: providerId },
+    });
+  }
+
+  /**
    * Bước 1: Duyệt sơ bộ → PREPARING
    * Admin xác nhận sẽ đến thực địa chuẩn bị. Provider nhận mail thông báo.
    * @param {number} facilityId
@@ -410,6 +419,10 @@ class FacilityRepository {
         system_fee:
           updateData.system_fee !== undefined
             ? parseFloat(updateData.system_fee)
+            : undefined,
+        visibility_status:
+          updateData.visibility_status !== undefined
+            ? updateData.visibility_status
             : undefined,
       },
     });
