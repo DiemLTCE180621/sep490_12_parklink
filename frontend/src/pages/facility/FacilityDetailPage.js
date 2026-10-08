@@ -5,6 +5,7 @@ import SendReservationModal from '../../components/modals/SendReservationModal';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
 import chatService from '../../services/chatService';
+import facilityService from '../../services/facilityService';
 import { Send, MapPin, ArrowLeft, ShieldCheck, Car, MessageCircle } from 'lucide-react';
 
 const FacilityDetailPage = () => {
@@ -17,16 +18,27 @@ const FacilityDetailPage = () => {
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  // Mock dữ liệu bãi đỗ xe cho đến khi có API Facility thật
-  const mockFacility = {
-    id: facilityId,
-    name: 'Bãi đỗ xe Đại học Cần Thơ',
-    address: 'Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ',
-    price_per_month: 1500000,
-    price: '1.500.000 VNĐ / tháng',
-    capacity: '10 slot',
-    provider_id: 2 // Mock provider
-  };
+  const [facility, setFacility] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchFacility = async () => {
+      try {
+        setLoading(true);
+        const res = await facilityService.getFacilityById(facilityId);
+        if (res?.data) {
+          setFacility(res.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải chi tiết bãi đỗ xe:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (!isNaN(facilityId)) {
+      fetchFacility();
+    }
+  }, [facilityId]);
 
   const handleChatClick = async () => {
     if (!isAuthenticated) {
@@ -42,9 +54,9 @@ const FacilityDetailPage = () => {
     }
 
     try {
-      // Dùng tạm provider_id = 28 và facility_id = 18 vì đây là ID có thật trong DB test
-      const providerId = 28;
-      const testFacilityId = 18; 
+      // Dùng tạm provider_id = facility.provider_id
+      const providerId = facility.provider_id;
+      const testFacilityId = facility.id; 
       const res = await chatService.getOrCreateRoom(user.id, providerId, testFacilityId, token);
       if (res.success) {
         navigate('/chat', { state: { activeRoomId: res.data.id } });
@@ -85,7 +97,15 @@ const FacilityDetailPage = () => {
     }, 1500);
   };
 
-  if (isNaN(facilityId)) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-teal-600 font-bold animate-pulse">Đang tải thông tin...</div>
+      </div>
+    );
+  }
+
+  if (!facility || isNaN(facilityId)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -123,15 +143,15 @@ const FacilityDetailPage = () => {
               <span className="inline-block px-3 py-1 bg-teal-50 text-teal-700 border border-teal-100 rounded-full text-xs font-bold uppercase tracking-wider">
                 Cho thuê theo tháng
               </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{mockFacility.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{facility.name}</h1>
               <p className="text-slate-600 flex items-center gap-2 text-sm font-medium">
-                <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {mockFacility.address}
+                <MapPin className="w-4 h-4 text-teal-600 shrink-0" /> {facility.address}
               </p>
             </div>
             <div className="text-left sm:text-right space-y-1">
-              <span className="block text-2xl font-extrabold text-teal-700">{mockFacility.price}</span>
+              <span className="block text-2xl font-extrabold text-teal-700">{Number(facility.price_per_month).toLocaleString('vi-VN')} VNĐ / tháng</span>
               <span className="inline-block px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-bold">
-                Sức chứa: {mockFacility.capacity}
+                Sức chứa: {facility.capacity}
               </span>
             </div>
           </div>
@@ -177,7 +197,7 @@ const FacilityDetailPage = () => {
 
       {/* MODAL GỬI YÊU CẦU THUÊ */}
       <SendReservationModal
-        facility={mockFacility}
+        facility={facility}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleReservationSuccess}

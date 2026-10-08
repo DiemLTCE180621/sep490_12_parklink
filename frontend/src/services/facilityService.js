@@ -9,6 +9,13 @@ const facilityService = {
   },
 
   /**
+   * Lấy chi tiết một bãi đỗ xe
+   */
+  async getFacilityById(id) {
+    return await api.get(`/facilities/${id}`);
+  },
+
+  /**
    * Lấy danh sách tiện ích
    */
   async getAllAmenities() {
