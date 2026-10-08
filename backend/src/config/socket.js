@@ -10,6 +10,32 @@ const initSocket = (server) => {
         }
     });
 
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
+
+    // Middleware bảo mật Socket
+    io.use((socket, next) => {
+        const token = socket.handshake.auth?.token;
+        if (!token) {
+            return next(new Error('Authentication error: Token missing'));
+        }
+
+        jwt.verify(token, JWT_SECRET, (err, decodedUser) => {
+            if (err) {
+                return next(new Error('Authentication error: Invalid token'));
+            }
+
+            // Kiểm tra phân quyền: Chỉ cho phép CUSTOMER và PROVIDER
+            const role = decodedUser.role;
+            if (role !== 'CUSTOMER' && role !== 'PROVIDER') {
+                return next(new Error('Authorization error: You do not have permission to chat'));
+            }
+
+            socket.user = decodedUser;
+            next();
+        });
+    });
+
     // Lắng nghe kết nối từ client
     io.on('connection', (socket) => {
         console.log(`[Socket] Client kết nối: ${socket.id}`);

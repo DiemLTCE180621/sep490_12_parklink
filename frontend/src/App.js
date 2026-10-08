@@ -19,9 +19,9 @@ import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
 import ScrollToTop from './components/common/ScrollToTop';
 
-// Component bảo vệ Route yêu cầu Đăng nhập
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+// Component bảo vệ Route yêu cầu Đăng nhập và Quyền
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
@@ -36,6 +36,11 @@ const ProtectedRoute = ({ children }) => {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Nếu route có yêu cầu quyền cụ thể, kiểm tra xem user có quyền đó không
+  if (allowedRoles && (!user?.role?.name || !allowedRoles.includes(user.role.name))) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -105,7 +110,7 @@ function AppContent() {
           <Route
             path="/chat"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
                 <ChatPage />
               </ProtectedRoute>
             }

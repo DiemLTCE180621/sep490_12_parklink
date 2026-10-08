@@ -22,8 +22,11 @@ export const SocketProvider = ({ children }) => {
             return;
         }
 
-        // Tạo kết nối một lần duy nhất
+        // Tạo kết nối một lần duy nhất, gửi kèm Token
         const newSocket = io('http://localhost:5000', {
+            auth: {
+                token: localStorage.getItem('parklink_token') // Gửi token lên backend để bảo mật
+            },
             query: { userId: user.id }
         });
 

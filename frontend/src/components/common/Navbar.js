@@ -86,7 +86,7 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && (
+            {isAuthenticated && (user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
               <Link to="/chat" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
               </Link>
@@ -204,13 +204,15 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/chat"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-slate-700 font-medium hover:text-teal-600"
-              >
-                Tin nhắn
-              </Link>
+              {(user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
+                <Link
+                  to="/chat"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-slate-700 font-medium hover:text-teal-600"
+                >
+                  Tin nhắn
+                </Link>
+              )}
               <Link
                 to="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
