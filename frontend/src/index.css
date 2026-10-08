@@ -11,3 +11,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.parklink-facility-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.parklink-facility-popup .leaflet-popup-content {
+  width: auto !important;
+  margin: 0;
+}
+
+.parklink-facility-popup .leaflet-popup-tip {
+  background: #ffffff;
+}

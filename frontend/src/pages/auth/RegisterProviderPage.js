@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
-import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, MapPin, CheckSquare, Square, Phone, Mail } from 'lucide-react';
+import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, CheckSquare, Square, Phone, Mail } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../../utils/validators';
+import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
 
 
 // Fix icon mặc định của leaflet
@@ -126,6 +127,41 @@ const RegisterProviderPage = () => {
     } catch (err) {
       console.error(err);
       alert('Lỗi kết nối đến dịch vụ bản đồ VietMap.');
+    } finally {
+      setGeocodeLoading(false);
+    }
+  };
+
+  const handleAddressSelect = async (suggestion, label) => {
+    setFormData(prev => ({
+      ...prev,
+      address: label,
+      latitude: '',
+      longitude: ''
+    }));
+
+    if (!suggestion?.ref_id) return;
+
+    setGeocodeLoading(true);
+    try {
+      const placeResponse = await fetch(
+        `https://maps.vietmap.vn/api/place/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&refid=${encodeURIComponent(suggestion.ref_id)}`
+      );
+      if (!placeResponse.ok) {
+        throw new Error(`Vietmap place lookup failed with status ${placeResponse.status}`);
+      }
+
+      const placeData = await placeResponse.json();
+      if (placeData?.lat && placeData?.lng) {
+        setFormData(prev => ({
+          ...prev,
+          address: label,
+          latitude: String(placeData.lat),
+          longitude: String(placeData.lng)
+        }));
+      }
+    } catch (error) {
+      console.error('Lỗi lấy tọa độ địa chỉ Vietmap:', error);
     } finally {
       setGeocodeLoading(false);
     }
@@ -378,14 +414,12 @@ const RegisterProviderPage = () => {
                     {locationMode === 'auto' ? (
                       <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
-                          <MapPin className="w-5 h-5 absolute left-3 top-3.5 text-teal-600" />
-                          <input
-                            type="text"
-                            name="address"
+                          <VietmapAddressAutocomplete
                             value={formData.address}
-                            onChange={handleChange}
+                            onChange={(value) => setFormData(prev => ({ ...prev, address: value, latitude: '', longitude: '' }))}
+                            onSelect={handleAddressSelect}
                             placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
-                            className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                            inputClassName="py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                             required
                           />
                         </div>
@@ -395,15 +429,13 @@ const RegisterProviderPage = () => {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="relative">
-                          <MapPin className="w-5 h-5 absolute left-3 top-3.5 text-teal-600" />
-                          <input
-                            type="text"
-                            name="address"
+                        <div>
+                          <VietmapAddressAutocomplete
                             value={formData.address}
-                            onChange={handleChange}
+                            onChange={(value) => setFormData(prev => ({ ...prev, address: value, latitude: '', longitude: '' }))}
+                            onSelect={handleAddressSelect}
                             placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
-                            className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                            inputClassName="py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                             required
                           />
                         </div>

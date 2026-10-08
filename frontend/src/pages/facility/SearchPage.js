@@ -3,11 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation, CarFront, Star, Info, List, X, GitCompareArrows, CheckSquare, Square } from 'lucide-react';
+import { Search, MapPin, Navigation, CarFront, Star, Info, List, X, GitCompareArrows, CheckSquare, Square, Heart } from 'lucide-react';
 import facilityService from '../../services/facilityService';
+import { addFavorite, removeFavorite, getFavorites } from '../../services/favoriteService';
+import { useAuth } from '../../context/AuthContext';
 import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import CompareModal from '../../components/modals/CompareModal';
 import Toast from '../../components/common/Toast';
+import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
 
 // Fix icon lỗi mặc định của leaflet khi dùng React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -27,6 +30,7 @@ const userIcon = new L.Icon({
 });
 
 const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
+const VIETMAP_API_KEY = process.env.REACT_APP_VIETMAP_API_KEY;
 
 // Component để di chuyển Map center
 const MapUpdater = ({ center, zoom }) => {
@@ -42,6 +46,7 @@ const MapUpdater = ({ center, zoom }) => {
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
 
   // Trạng thái tìm kiếm
   const [keyword, setKeyword] = useState('');
@@ -64,6 +69,54 @@ const SearchPage = () => {
   const [isCompareOpen, setIsCompareOpen] = useState(false); // Trạng thái mở modal so sánh
   const [toastMsg, setToastMsg] = useState('');              // Toast thông báo lỗi giới hạn
   const [toastType, setToastType] = useState('error');
+
+  const [favoriteIds, setFavoriteIds] = useState([]);
+
+  // Load favorites sau khi auth đã sẵn sàng (không phải đang loading)
+  useEffect(() => {
+    // Chứ nhận isAuthenticated và user từ AuthContext
+    if (isAuthenticated && user?.role?.name === 'CUSTOMER') {
+      loadFavorites();
+    } else if (!isAuthenticated) {
+      // User đăng xuất hoặc không có phân quyền, xóa favorites
+      setFavoriteIds([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user?.id, user?.role?.name]);
+
+  const loadFavorites = async () => {
+    try {
+      const favs = await getFavorites();
+      setFavoriteIds(favs.map(f => Number(f.id ?? f.facility_id ?? f.facility?.id)).filter(Number.isFinite));
+    } catch (err) {
+      console.error('Lỗi khi tải danh sách bãi yêu thích:', err);
+    }
+  };
+
+  const handleToggleFavorite = async (e, facilityId) => {
+    e.stopPropagation();
+    const normalizedFacilityId = Number(facilityId);
+    if (!isAuthenticated || user?.role?.name !== 'CUSTOMER') {
+      setToastMsg('Vui lòng đăng nhập bằng tài khoản Khách hàng để lưu bãi xe!');
+      setToastType('error');
+      return;
+    }
+    try {
+      if (favoriteIds.includes(normalizedFacilityId)) {
+        await removeFavorite(normalizedFacilityId);
+        setFavoriteIds(prev => prev.filter(id => id !== normalizedFacilityId));
+        setToastMsg('Đã xóa khỏi danh sách yêu thích');
+      } else {
+        await addFavorite(normalizedFacilityId);
+        setFavoriteIds(prev => [...prev, normalizedFacilityId]);
+        setToastMsg('Đã thêm vào danh sách yêu thích');
+      }
+      setToastType('success');
+    } catch (err) {
+      setToastMsg(err.message || 'Lỗi khi cập nhật danh sách yêu thích');
+      setToastType('error');
+    }
+  };
 
   /**
    * Toggle checkbox so sánh của một bãi đỗ xe.
@@ -120,13 +173,18 @@ const SearchPage = () => {
     }
   };
 
-  const fetchFacilities = async (currentLat = null, currentLng = null) => {
+  const fetchFacilities = async (
+    currentLat = null,
+    currentLng = null,
+    searchKeyword = keyword,
+    useUserLocation = true
+  ) => {
     try {
       setLoading(true);
       setError('');
 
       const params = {
-        keyword,
+        keyword: searchKeyword,
         vehicle_type: vehicleType,
         radius,
       };
@@ -135,8 +193,13 @@ const SearchPage = () => {
         params.amenities = selectedAmenities.join(',');
       }
 
-      const lat = currentLat || (userLocation ? userLocation[0] : null);
-      const lng = currentLng || (userLocation ? userLocation[1] : null);
+      const hasExplicitLocation = currentLat !== null && currentLng !== null;
+      const lat = hasExplicitLocation
+        ? currentLat
+        : (useUserLocation && userLocation ? userLocation[0] : null);
+      const lng = hasExplicitLocation
+        ? currentLng
+        : (useUserLocation && userLocation ? userLocation[1] : null);
 
       if (lat && lng) {
         params.lat = lat;
@@ -156,7 +219,57 @@ const SearchPage = () => {
 
   const handleSearch = (e) => {
     e?.preventDefault();
-    fetchFacilities();
+    resolveSearchLocation(keyword);
+    fetchFacilities(null, null, keyword, false);
+  };
+
+  const resolveSearchLocation = async (query, suggestion = null) => {
+    if (!VIETMAP_API_KEY) return;
+
+    try {
+      let coordinates = suggestion;
+
+      if ((!coordinates?.lat || !coordinates?.lng) && coordinates?.ref_id) {
+        const placeResponse = await fetch(
+          `https://maps.vietmap.vn/api/place/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&refid=${encodeURIComponent(coordinates.ref_id)}`
+        );
+        if (placeResponse.ok) {
+          coordinates = await placeResponse.json();
+        }
+      }
+
+      if ((!coordinates?.lat || !coordinates?.lng) && query.trim()) {
+        const searchResponse = await fetch(
+          `https://maps.vietmap.vn/api/search/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&text=${encodeURIComponent(query)}`
+        );
+        if (searchResponse.ok) {
+          const data = await searchResponse.json();
+          const firstResult = Array.isArray(data) ? data[0] : data?.data?.[0];
+          if (firstResult?.lat && firstResult?.lng) {
+            coordinates = firstResult;
+          } else if (firstResult?.ref_id) {
+            const placeResponse = await fetch(
+              `https://maps.vietmap.vn/api/place/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&refid=${encodeURIComponent(firstResult.ref_id)}`
+            );
+            if (placeResponse.ok) coordinates = await placeResponse.json();
+          }
+        }
+      }
+
+      if (coordinates?.lat && coordinates?.lng) {
+        setMapCenter([Number(coordinates.lat), Number(coordinates.lng)]);
+        setMapZoom(16);
+      }
+    } catch (error) {
+      // Search results remain usable even if map geocoding is unavailable.
+      console.error('Lỗi định vị địa điểm tìm kiếm trên bản đồ:', error);
+    }
+  };
+
+  const handleAddressSelect = (suggestion, label) => {
+    setKeyword(label);
+    resolveSearchLocation(label, suggestion);
+    fetchFacilities(null, null, label, false);
   };
 
   const toggleAmenity = (id) => {
@@ -215,17 +328,16 @@ const SearchPage = () => {
         onRemove={handleRemoveFromCompare}
       />
       {/* HEADER / FILTER BAR */}
-      <header className="bg-white border-b border-slate-200 shadow-sm z-10 px-4 py-3 shrink-0">
+      <header className="relative bg-white border-b border-slate-200 shadow-sm z-[600] px-4 py-3 shrink-0">
         <form onSubmit={handleSearch} className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3">
 
           <div className="relative flex-1 w-full">
-            <Search className="w-5 h-5 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
+            <VietmapAddressAutocomplete
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={setKeyword}
+              onSelect={handleAddressSelect}
               placeholder="Nhập tên bãi đỗ, địa chỉ..."
-              className="w-full pl-10 pr-10 py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              inputClassName="py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             />
             {keyword && (
               <button type="button" onClick={clearKeyword} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
@@ -290,8 +402,8 @@ const SearchPage = () => {
                   type="button"
                   onClick={() => toggleAmenity(amenity.id)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${isSelected
-                      ? 'bg-teal-100 border-teal-300 text-teal-800 shadow-sm'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-teal-100 border-teal-300 text-teal-800 shadow-sm'
+                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                 >
                   {amenity.name}
@@ -333,8 +445,8 @@ const SearchPage = () => {
                   <div
                     key={fac.id}
                     className={`bg-white rounded-2xl p-4 shadow-sm border transition cursor-pointer ${isSelected
-                        ? 'border-teal-400 shadow-teal-100 ring-2 ring-teal-300/50'
-                        : 'border-slate-200 hover:shadow-md hover:border-teal-300'
+                      ? 'border-teal-400 shadow-teal-100 ring-2 ring-teal-300/50'
+                      : 'border-slate-200 hover:shadow-md hover:border-teal-300'
                       }`}
                     onClick={() => {
                       if (fac.latitude && fac.longitude) {
@@ -356,8 +468,24 @@ const SearchPage = () => {
                       </div>
 
                       {/* Info */}
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
+                      <div className="flex-1 flex flex-col justify-between relative">
+                        <button
+                          type="button"
+                          id={`compare-checkbox-${fac.id}`}
+                          onClick={(e) => handleToggleCompare(e, fac.id)}
+                          title={isSelected ? 'Bỏ chọn so sánh' : 'Thêm vào so sánh'}
+                          className={`absolute -top-1 -right-1 z-10 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition ${isSelected
+                            ? 'bg-teal-100 border-teal-300 text-teal-700'
+                            : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-600'
+                            }`}
+                        >
+                          {isSelected
+                            ? <CheckSquare className="w-3.5 h-3.5" />
+                            : <Square className="w-3.5 h-3.5" />
+                          }
+                          So sánh
+                        </button>
+                        <div className="pr-20">
                           <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex gap-1">
                             <MapPin className="w-3.5 h-3.5 shrink-0" /> {fac.address}
@@ -387,23 +515,15 @@ const SearchPage = () => {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* Checkbox So sánh */}
                         <button
-                          id={`compare-checkbox-${fac.id}`}
-                          onClick={(e) => handleToggleCompare(e, fac.id)}
-                          title={isSelected ? 'Bỏ chọn so sánh' : 'Thêm vào so sánh'}
-                          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition ${isSelected
-                              ? 'bg-teal-100 border-teal-300 text-teal-700'
-                              : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-600'
-                            }`}
+                          type="button"
+                          onClick={(e) => handleToggleFavorite(e, fac.id)}
+                          aria-label={favoriteIds.includes(Number(fac.id)) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+                          title={favoriteIds.includes(Number(fac.id)) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+                          className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 transition-colors"
                         >
-                          {isSelected
-                            ? <CheckSquare className="w-3.5 h-3.5" />
-                            : <Square className="w-3.5 h-3.5" />
-                          }
-                          So sánh
+                          <Heart className={`w-4 h-4 ${favoriteIds.includes(Number(fac.id)) ? 'text-rose-500 fill-rose-500' : 'text-slate-400'}`} />
                         </button>
-
                         {/* Nút Chi tiết */}
                         <button
                           onClick={(e) => { e.stopPropagation(); navigate(`/facility/${fac.id}`); }}
@@ -448,15 +568,91 @@ const SearchPage = () => {
             {/* Các bãi đỗ xe */}
             {facilities.map(fac => {
               if (fac.latitude && fac.longitude) {
+                const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
+                const facilityRating = fac.avg_rating || fac.rating;
+                const amenityNames = (fac.facility_amenities || [])
+                  .map(item => item.amenity?.name || item.name)
+                  .filter(Boolean)
+                  .slice(0, 3);
+
                 return (
                   <Marker key={fac.id} position={[fac.latitude, fac.longitude]}>
-                    <Popup>
-                      <div className="w-48">
-                        <h4 className="font-bold text-slate-900">{fac.name}</h4>
-                        <p className="text-teal-600 font-bold my-1">{fac.price_per_month?.toLocaleString('vi-VN')} đ/tháng</p>
-                        <button onClick={() => navigate(`/facility/${fac.id}`)} className="mt-2 w-full text-center py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition">
-                          Xem chi tiết
-                        </button>
+                    <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
+                      <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
+                        <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">
+                          {primaryImage ? (
+                            <img
+                              src={primaryImage.image_url}
+                              alt={fac.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                              <CarFront className="w-8 h-8" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent" />
+                          <span className="absolute left-2.5 bottom-2 px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
+                            Đã xác thực
+                          </span>
+                        </div>
+
+                        <div className="p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                #{String(fac.id).padStart(4, '0')}
+                              </p>
+                              <h4 className="mt-0.5 text-sm font-bold leading-tight text-slate-900 line-clamp-2">
+                                {fac.name}
+                              </h4>
+                            </div>
+                            {facilityRating && (
+                              <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-1 text-[11px] font-bold text-amber-700">
+                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                {facilityRating}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">
+                            <MapPin className="mt-0.5 w-3.5 h-3.5 shrink-0 text-teal-600" />
+                            <span className="line-clamp-2">{fac.address || 'Chưa cập nhật địa chỉ'}</span>
+                          </p>
+
+                          <div className="mt-3 grid grid-cols-2 gap-2">
+                            <div className="rounded-lg bg-teal-50 px-2 py-1.5">
+                              <p className="text-[10px] text-teal-700">Giá thuê tháng</p>
+                              <p className="mt-0.5 text-xs font-bold text-teal-800">
+                                {Number(fac.price_per_month || 0).toLocaleString('vi-VN')} đ
+                              </p>
+                            </div>
+                            <div className="rounded-lg bg-slate-50 px-2 py-1.5">
+                              <p className="text-[10px] text-slate-500">Sức chứa</p>
+                              <p className="mt-0.5 text-xs font-bold text-slate-800">
+                                {fac.capacity || '—'} chỗ
+                              </p>
+                            </div>
+                          </div>
+
+                          {amenityNames.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {amenityNames.map((amenity, index) => (
+                                <span key={`${amenity}-${index}`} className="rounded bg-slate-100 px-1.5 py-1 text-[10px] text-slate-600">
+                                  {amenity}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/facility/${fac.id}`)}
+                            className="mt-3 w-full rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-teal-700"
+                          >
+                            Xem chi tiết bãi xe
+                          </button>
+                        </div>
                       </div>
                     </Popup>
                   </Marker>

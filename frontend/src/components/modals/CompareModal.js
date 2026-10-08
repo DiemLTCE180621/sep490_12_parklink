@@ -95,7 +95,7 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove }) => {
       />
 
       {/* Modal container */}
-      <div className="relative w-full max-w-6xl max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+      <div className="relative w-full max-w-8xl max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
 
         {/* ═══ HEADER ═══ */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-teal-900 shrink-0">

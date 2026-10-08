@@ -64,3 +64,31 @@ exports.compareFacilities = async (req, res) => {
     res.status(statusCode).json({ status: 'error', message: error.message });
   }
 };
+
+exports.getFacilityDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await facilityService.getFacilityDetails(id);
+    res.json({
+      status: 'success',
+      data
+    });
+  } catch (error) {
+    const statusCode = error.message.includes('Không tìm thấy') ? 404 : 500;
+    res.status(statusCode).json({ status: 'error', message: error.message });
+  }
+};
+
+exports.getFacilityAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await facilityService.getFacilityAvailability(id);
+    res.json({
+      status: 'success',
+      data
+    });
+  } catch (error) {
+    const statusCode = error.message.includes('Không tìm thấy') ? 404 : 500;
+    res.status(statusCode).json({ status: 'error', message: error.message });
+  }
+};

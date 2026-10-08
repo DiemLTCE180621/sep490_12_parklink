@@ -18,6 +18,7 @@ const fieldInspectorRoutes = require("./routes/fieldInspectorRoutes");
 const inspectorRoutes = require("./routes/inspectorRoutes");
 const providerRoutes = require("./routes/providerRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/users", userRoutes);
@@ -26,6 +27,7 @@ app.use("/api/admin/field-inspectors", fieldInspectorRoutes);
 app.use("/api/inspector", inspectorRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/facilities", facilityRoutes);
+app.use("/api/favorites", favoriteRoutes);
 const reservationRoutes = require("./routes/reservationRoutes");
 const confirmationRecordRoutes = require("./routes/confirmationRecordRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");

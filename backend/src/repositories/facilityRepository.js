@@ -244,9 +244,29 @@ class FacilityRepository {
     };
 
     if (keyword) {
+      const normalizedKeyword = keyword.trim().replace(/\s+/g, " ");
+      const locationVariants = new Set([normalizedKeyword]);
+      const cityPrefixPattern = /^(?:thành phố|tp\.?|t\.p\.?)\s+/i;
+      const withoutCityPrefix = normalizedKeyword.replace(cityPrefixPattern, "").trim();
+
+      if (withoutCityPrefix && withoutCityPrefix !== normalizedKeyword) {
+        locationVariants.add(withoutCityPrefix);
+      }
+
+      const cityMatches = normalizedKeyword.matchAll(
+        /(?:thành phố|tp\.?|t\.p\.?)\s+([^,]+)/gi,
+      );
+      for (const match of cityMatches) {
+        const cityName = match[1].trim();
+        if (cityName) locationVariants.add(cityName);
+      }
+
+      const keywordVariants = [...locationVariants];
       whereClause.OR = [
-        { name: { contains: keyword, mode: "insensitive" } },
-        { address: { contains: keyword, mode: "insensitive" } },
+        ...keywordVariants.flatMap((variant) => [
+          { name: { contains: variant, mode: "insensitive" } },
+          { address: { contains: variant, mode: "insensitive" } },
+        ]),
       ];
     }
 
@@ -422,6 +442,47 @@ class FacilityRepository {
           },
         },
       },
+    });
+  }
+
+  /**
+   * UC-41: Lấy thông tin chi tiết của bãi đỗ xe
+   */
+  async getFacilityDetails(id) {
+    return await prisma.facility.findUnique({
+      where: { 
+        id,
+        verification_status: "APPROVED",
+        visibility_status: "VISIBLE"
+      },
+      include: {
+        provider: {
+          select: { id: true, full_name: true, email: true, phone_number: true }
+        },
+        images: true,
+        facility_amenities: {
+          include: { amenity: true }
+        },
+        reviews: {
+          where: { status: "VISIBLE" },
+          include: {
+            customer: { select: { full_name: true } }
+          },
+          orderBy: { created_at: "desc" }
+        }
+      }
+    });
+  }
+
+  /**
+   * UC-42: Đếm số lượng hợp đồng (xe) đang gửi tại bãi
+   */
+  async getActiveContractsCount(facilityId) {
+    return await prisma.confirmation_Record.count({
+      where: {
+        reservation: { facility_id: facilityId },
+        status: "ACTIVE"
+      }
     });
   }
 }
