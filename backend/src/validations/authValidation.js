@@ -34,7 +34,7 @@ const validateRegisterCustomer = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Dữ liệu đăng ký không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -82,7 +82,7 @@ const validateRegisterProvider = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Dữ liệu khai báo bãi đỗ xe không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -111,7 +111,7 @@ const validateLogin = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Dữ liệu đăng nhập không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -131,7 +131,7 @@ const validateChangePassword = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Mật khẩu mới không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -151,7 +151,7 @@ const validateForgotPasswordRequest = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Yêu cầu không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -179,7 +179,7 @@ const validateVerifyResetPassword = (req, res, next) => {
   if (errors.length > 0) {
     return res.status(400).json({
       status: 'fail',
-      message: 'Dữ liệu xác nhận không hợp lệ',
+      message: errors[0],
       errors
     });
   }
@@ -189,11 +189,41 @@ const validateVerifyResetPassword = (req, res, next) => {
   next();
 };
 
+const validateUpdateProfile = (req, res, next) => {
+  const { full_name, phone_number } = req.body;
+  const errors = [];
+
+  const cleanedName = cleanText(full_name);
+  const cleanedPhone = (phone_number || '').trim();
+
+  if (!isValidName(cleanedName)) {
+    errors.push('Họ và tên chỉ được chứa chữ cái, tối thiểu 2 ký tự và không chứa số hay ký tự đặc biệt.');
+  }
+
+  if (!isValidPhone(cleanedPhone)) {
+    errors.push('Số điện thoại phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: errors[0],
+      errors
+    });
+  }
+
+  req.body.full_name = cleanedName;
+  req.body.phone_number = cleanedPhone;
+
+  next();
+};
+
 module.exports = {
   validateRegisterCustomer,
   validateRegisterProvider,
   validateLogin,
   validateChangePassword,
   validateForgotPasswordRequest,
-  validateVerifyResetPassword
+  validateVerifyResetPassword,
+  validateUpdateProfile
 };

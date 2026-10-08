@@ -1,4 +1,4 @@
-const adminService = require('../services/adminService');
+const adminService = require("../services/adminService");
 
 /**
  * Controller xử lý các HTTP Request dành cho Admin
@@ -10,7 +10,7 @@ class AdminController {
   async getPendingRegistrations(req, res, next) {
     try {
       const registrations = await adminService.getPendingRegistrations();
-      res.json({ status: 'success', data: registrations });
+      res.json({ status: "success", data: registrations });
     } catch (error) {
       next(error);
     }
@@ -23,12 +23,21 @@ class AdminController {
     try {
       const facilityId = parseInt(req.params.id, 10);
       if (isNaN(facilityId)) {
-        return res.status(400).json({ status: 'fail', message: 'ID bãi đỗ xe không hợp lệ' });
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
       await adminService.approveRegistration(facilityId);
-      res.json({ status: 'success', message: 'Duyệt sơ bộ thành công. Email thông báo đã được gửi cho Provider.' });
+      res.json({
+        status: "success",
+        message:
+          "Duyệt sơ bộ thành công. Email thông báo đã được gửi cho Provider.",
+      });
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       next(error);
     }
   }
@@ -39,13 +48,23 @@ class AdminController {
   async finalizeRegistration(req, res, next) {
     try {
       const facilityId = parseInt(req.params.id, 10);
+
       if (isNaN(facilityId)) {
-        return res.status(400).json({ status: 'fail', message: 'ID bãi đỗ xe không hợp lệ' });
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
       await adminService.finalizeRegistration(facilityId);
-      res.json({ status: 'success', message: 'Hoàn tất phê duyệt. Email kèm QR thanh toán đã được gửi cho Provider.' });
+      res.json({
+        status: "success",
+        message:
+          "Hoàn tất phê duyệt. Email kèm QR thanh toán đã được gửi cho Provider.",
+      });
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       next(error);
     }
   }
@@ -58,12 +77,17 @@ class AdminController {
       const facilityId = parseInt(req.params.id, 10);
       const { reason } = req.body;
       if (isNaN(facilityId)) {
-        return res.status(400).json({ status: 'fail', message: 'ID bãi đỗ xe không hợp lệ' });
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
       await adminService.rejectRegistration(facilityId, reason);
-      res.json({ status: 'success', message: 'Từ chối bãi đỗ xe thành công' });
+      res.json({ status: "success", message: "Từ chối bãi đỗ xe thành công" });
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       next(error);
     }
   }
@@ -76,41 +100,89 @@ class AdminController {
       const facilityId = parseInt(req.params.id, 10);
       const providerId = req.user.userId;
       if (isNaN(facilityId)) {
-        return res.status(400).json({ status: 'fail', message: 'ID bãi đỗ xe không hợp lệ' });
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
       await adminService.confirmPayment(facilityId, providerId);
-      res.json({ status: 'success', message: 'Thanh toán thành công! Cơ sở của bạn đã được hiển thị công khai.' });
+      res.json({
+        status: "success",
+        message:
+          "Thanh toán thành công! Cơ sở của bạn đã được hiển thị công khai.",
+      });
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       next(error);
     }
   }
 
   /**
-   * UC-Admin: Xem danh sách tài khoản người dùng
+   * Lấy danh sách tất cả các bãi đỗ xe trong hệ thống
    */
-  async getUsers(req, res, next) {
+  async getAllFacilities(req, res, next) {
     try {
-      const data = await adminService.getUsersList(req.query);
-      res.json({ status: 'success', data });
+      const facilities = await adminService.getAllFacilities();
+      res.json({ status: "success", data: facilities });
     } catch (error) {
       next(error);
     }
   }
-
   /**
-   * UC-Admin: Xem chi tiết tài khoản người dùng theo ID
+   * Khóa / Mở khóa bãi đỗ xe
    */
-  async getUserById(req, res, next) {
+  async toggleLockFacility(req, res, next) {
     try {
-      const userId = parseInt(req.params.id, 10);
-      if (isNaN(userId)) {
-        return res.status(400).json({ status: 'fail', message: 'ID tài khoản không hợp lệ' });
+      const facilityId = parseInt(req.params.id, 10);
+      if (isNaN(facilityId)) {
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
-      const user = await adminService.getUserDetails(userId);
-      res.json({ status: 'success', data: { user } });
+      const updatedFacility = await adminService.toggleLockFacility(facilityId);
+      const action =
+        updatedFacility.visibility_status === "HIDDEN" ? "Khóa" : "Mở khóa";
+      res.json({
+        status: "success",
+        message: `${action} bãi đỗ xe thành công.`,
+        data: updatedFacility,
+      });
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ status: 'fail', message: error.message });
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
+      next(error);
+    }
+  }
+
+  /**
+   * Cập nhật thông tin bãi đỗ xe
+   */
+  async updateFacility(req, res, next) {
+    try {
+      const facilityId = parseInt(req.params.id, 10);
+      if (isNaN(facilityId)) {
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
+      }
+      const updatedFacility = await adminService.updateFacility(
+        facilityId,
+        req.body,
+      );
+      res.json({
+        status: "success",
+        message: "Cập nhật bãi đỗ xe thành công.",
+        data: updatedFacility,
+      });
+    } catch (error) {
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       next(error);
     }
   }

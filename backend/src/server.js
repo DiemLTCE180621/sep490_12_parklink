@@ -13,16 +13,26 @@ app.use(cors());
 // Khai báo các API route của từng chức năng tại đây
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
+const fieldInspectorRoutes = require("./routes/fieldInspectorRoutes");
+const inspectorRoutes = require("./routes/inspectorRoutes");
 const providerRoutes = require("./routes/providerRoutes");
 const facilityRoutes = require("./routes/facilityRoutes");
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin/users", userRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/field-inspectors", fieldInspectorRoutes);
+app.use("/api/inspector", inspectorRoutes);
 app.use("/api/provider", providerRoutes);
 app.use("/api/facilities", facilityRoutes);
 const reservationRoutes = require("./routes/reservationRoutes");
+const confirmationRecordRoutes = require("./routes/confirmationRecordRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
 
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/confirmation-records", confirmationRecordRoutes);
+app.use("/api/webhook", webhookRoutes);
 
 const reviewRoutes = require("./routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);

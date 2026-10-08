@@ -37,13 +37,18 @@ router.put('/registrations/:id/finalize', adminController.finalizeRegistration);
 router.put('/registrations/:id/payment-confirm', adminController.confirmPayment);
 
 /**
- * UC-Admin: View user accounts list (Xem danh sách tài khoản người dùng)
+ * Lấy danh sách tất cả các bãi đỗ xe trên hệ thống
  */
-router.get('/users', adminController.getUsers);
+router.get('/facilities', adminController.getAllFacilities);
 
 /**
- * UC-Admin: View user account details (Xem chi tiết tài khoản người dùng)
+ * Khóa / Mở khóa bãi đỗ xe (Chuyển đổi visibility_status VISIBLE <-> HIDDEN)
  */
-router.get('/users/:id', adminController.getUserById);
+router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
+
+/**
+ * Cập nhật thông tin cơ bản của bãi đỗ xe
+ */
+router.put('/facilities/:id', adminController.updateFacility);
 
 module.exports = router;

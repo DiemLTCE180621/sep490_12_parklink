@@ -7,7 +7,8 @@ const {
   validateLogin,
   validateChangePassword,
   validateForgotPasswordRequest,
-  validateVerifyResetPassword
+  validateVerifyResetPassword,
+  validateUpdateProfile
 } = require('../validations/authValidation');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
@@ -36,8 +37,12 @@ router.post('/forgot-password/verify-reset', validateVerifyResetPassword, authCo
 // Đổi mật khẩu lần đầu hoặc theo cá nhân
 router.post('/change-password', authenticateToken, validateChangePassword, authController.changePassword);
 
-// Lấy thông tin user hiện tại
+// UC07: Xem thông tin tài khoản cá nhân
+router.get('/profile', authenticateToken, authController.getMe);
 router.get('/me', authenticateToken, authController.getMe);
+
+// UC08: Cập nhật thông tin tài khoản cá nhân
+router.put('/profile', authenticateToken, validateUpdateProfile, authController.updateProfile);
 
 // UC05: Đăng xuất
 router.post('/logout', authenticateToken, authController.logout);

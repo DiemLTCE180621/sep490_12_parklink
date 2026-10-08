@@ -1,4 +1,4 @@
-const prisma = require('../config/prisma');
+const prisma = require("../config/prisma");
 
 /**
  * Repository thao tác trực tiếp với bảng Facility trong Database
@@ -12,8 +12,8 @@ class FacilityRepository {
     return await prisma.facility.findMany({
       where: {
         verification_status: {
-          in: ['PENDING_REVIEW', 'PREPARING']
-        }
+          in: ["PENDING_REVIEW", "PREPARING", "INSPECTED"],
+        },
       },
       include: {
         provider: {
@@ -22,14 +22,14 @@ class FacilityRepository {
             email: true,
             full_name: true,
             phone_number: true,
-            status: true
-          }
+            status: true,
+          },
         },
-        images: true
+        images: true,
       },
       orderBy: {
-        created_at: 'desc'
-      }
+        created_at: "desc",
+      },
     });
   }
 
@@ -42,8 +42,17 @@ class FacilityRepository {
       where: { id },
       include: {
         provider: true,
-        images: true
-      }
+        images: true,
+      },
+    });
+  }
+
+  /**
+   * Lấy facility theo provider_id
+   */
+  async getFacilityByProviderId(providerId) {
+    return await prisma.facility.findUnique({
+      where: { provider_id: providerId },
     });
   }
 
@@ -58,19 +67,19 @@ class FacilityRepository {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
-          verification_status: 'PREPARING',
-          visibility_status: 'HIDDEN'
-        }
+          verification_status: "PREPARING",
+          visibility_status: "HIDDEN",
+        },
       });
 
       // Tạo Notification cho Provider
       await tx.notification.create({
         data: {
           user_id: providerId,
-          title: 'Cơ sở đang được chuẩn bị',
+          title: "Cơ sở đang được chuẩn bị",
           content: `Yêu cầu đăng ký cơ sở "${facility.name}" đã được duyệt sơ bộ. Đội ngũ ParkLink sẽ liên hệ và đến chuẩn bị dữ liệu cho cơ sở của bạn trong thời gian sớm nhất.`,
-          type: 'SYSTEM'
-        }
+          type: "SYSTEM",
+        },
       });
 
       return facility;
@@ -88,26 +97,26 @@ class FacilityRepository {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
-          verification_status: 'APPROVED',
-          visibility_status: 'HIDDEN', // Ẩn đến khi Provider thanh toán
-          payment_status: 'UNPAID'
-        }
+          verification_status: "APPROVED",
+          visibility_status: "HIDDEN", // Ẩn đến khi Provider thanh toán
+          payment_status: "UNPAID",
+        },
       });
 
       // Kích hoạt tài khoản Provider
       await tx.user.update({
         where: { id: providerId },
-        data: { status: 'ACTIVE' }
+        data: { status: "ACTIVE" },
       });
 
       // Tạo Notification cho Provider
       await tx.notification.create({
         data: {
           user_id: providerId,
-          title: 'Cơ sở đã được phê duyệt - Vui lòng thanh toán',
+          title: "Cơ sở đã được phê duyệt - Vui lòng thanh toán",
           content: `Cơ sở "${facility.name}" đã được phê duyệt! Vui lòng đăng nhập và hoàn tất thanh toán phí nền tảng để cơ sở được hiển thị công khai.`,
-          type: 'SYSTEM'
-        }
+          type: "SYSTEM",
+        },
       });
 
       return facility;
@@ -124,22 +133,74 @@ class FacilityRepository {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
-          payment_status: 'PAID',
-          visibility_status: 'VISIBLE'
-        }
+          payment_status: "PAID",
+          visibility_status: "VISIBLE",
+        },
       });
 
       // Tạo Notification cho Provider
       await tx.notification.create({
         data: {
           user_id: providerId,
-          title: 'Thanh toán thành công - Cơ sở đã được công khai!',
+          title: "Thanh toán thành công - Cơ sở đã được công khai!",
           content: `Cơ sở "${facility.name}" đã được thanh toán và hiện đang hiển thị công khai trên nền tảng ParkLink. Chúc bạn kinh doanh thuận lợi!`,
-          type: 'SYSTEM'
-        }
+          type: "SYSTEM",
+        },
       });
 
       return facility;
+    });
+  }
+
+  /**
+   * Nhân viên khảo sát thực địa gửi dữ liệu hình ảnh và số chỗ (capacity)
+   * @param {number} facilityId
+   * @param {number} capacity
+   * @param {string[]} images
+   */
+  async inspectFacility(facilityId, capacity, images = []) {
+    return await prisma.$transaction(async (tx) => {
+      const facility = await tx.facility.update({
+        where: { id: facilityId },
+        data: {
+          capacity: parseInt(capacity, 10),
+          verification_status: "INSPECTED",
+        },
+      });
+
+      if (images && images.length > 0) {
+        await tx.facility_Image.createMany({
+          data: images.map((url, idx) => ({
+            facility_id: facilityId,
+            image_url: url,
+            is_primary: idx === 0,
+          })),
+        });
+      }
+
+      return facility;
+    });
+  }
+
+  /**
+   * Lấy danh sách bãi đỗ xe đang PREPARING cho Field Inspector
+   */
+  async findPreparingFacilities() {
+    return await prisma.facility.findMany({
+      where: {
+        verification_status: "PREPARING",
+      },
+      include: {
+        provider: {
+          select: {
+            full_name: true,
+            phone_number: true,
+          },
+        },
+      },
+      orderBy: {
+        updated_at: "desc",
+      },
     });
   }
 
@@ -150,28 +211,32 @@ class FacilityRepository {
    * @param {number} providerId - ID của chủ bãi (User)
    * @param {string} reason - Lý do từ chối
    */
-  async rejectFacility(facilityId, providerId, reason = 'Hồ sơ bãi đỗ xe không đạt yêu cầu của ParkLink.') {
+  async rejectFacility(
+    facilityId,
+    providerId,
+    reason = "Hồ sơ bãi đỗ xe không đạt yêu cầu của ParkLink.",
+  ) {
     return await prisma.$transaction(async (tx) => {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
-          verification_status: 'REJECTED',
-          visibility_status: 'HIDDEN'
-        }
+          verification_status: "REJECTED",
+          visibility_status: "HIDDEN",
+        },
       });
 
       await tx.user.update({
         where: { id: providerId },
-        data: { status: 'REJECTED' }
+        data: { status: "REJECTED" },
       });
 
       await tx.notification.create({
         data: {
           user_id: providerId,
-          title: 'Đăng ký bãi đỗ xe bị từ chối',
+          title: "Đăng ký bãi đỗ xe bị từ chối",
           content: `Yêu cầu đăng ký cơ sở "${facility.name}" của bạn đã bị từ chối. Lý do: ${reason}`,
-          type: 'SYSTEM'
-        }
+          type: "SYSTEM",
+        },
       });
 
       return facility;
@@ -183,14 +248,14 @@ class FacilityRepository {
    */
   async searchActiveFacilities({ keyword, vehicle_type, amenities }) {
     let whereClause = {
-      verification_status: 'APPROVED',
-      visibility_status: 'VISIBLE'
+      verification_status: "APPROVED",
+      visibility_status: "VISIBLE",
     };
 
     if (keyword) {
       whereClause.OR = [
-        { name: { contains: keyword, mode: 'insensitive' } },
-        { address: { contains: keyword, mode: 'insensitive' } }
+        { name: { contains: keyword, mode: "insensitive" } },
+        { address: { contains: keyword, mode: "insensitive" } },
       ];
     }
 
@@ -200,19 +265,22 @@ class FacilityRepository {
         images: true,
         facility_amenities: {
           include: {
-            amenity: true
-          }
-        }
-      }
+            amenity: true,
+          },
+        },
+      },
     });
 
     // Lọc thủ công theo vehicle_type nếu database lưu vehicle_types dưới dạng mảng JSON hoặc String
     if (vehicle_type) {
-      facilities = facilities.filter(f => {
+      facilities = facilities.filter((f) => {
         if (!f.vehicle_types) return false;
         // Kiểm tra xem chuỗi JSON hoặc array có chứa vehicle_type không
         try {
-          const types = typeof f.vehicle_types === 'string' ? JSON.parse(f.vehicle_types) : f.vehicle_types;
+          const types =
+            typeof f.vehicle_types === "string"
+              ? JSON.parse(f.vehicle_types)
+              : f.vehicle_types;
           return Array.isArray(types) && types.includes(vehicle_type);
         } catch (e) {
           // Fallback if it's just a comma separated string or simple string
@@ -223,9 +291,13 @@ class FacilityRepository {
 
     // Lọc theo tiện ích (Logical AND: phải có tất cả các tiện ích được chọn)
     if (amenities && Array.isArray(amenities) && amenities.length > 0) {
-      facilities = facilities.filter(f => {
-        const facilityAmenityIds = f.facility_amenities.map(fa => fa.amenity_id);
-        return amenities.every(amenityId => facilityAmenityIds.includes(parseInt(amenityId)));
+      facilities = facilities.filter((f) => {
+        const facilityAmenityIds = f.facility_amenities.map(
+          (fa) => fa.amenity_id,
+        );
+        return amenities.every((amenityId) =>
+          facilityAmenityIds.includes(parseInt(amenityId)),
+        );
       });
     }
 
@@ -237,7 +309,102 @@ class FacilityRepository {
    */
   async getAllAmenities() {
     return await prisma.amenity.findMany({
-      orderBy: { id: 'asc' }
+      orderBy: { id: "asc" },
+    });
+  }
+
+  /**
+   * Admin lấy danh sách tất cả các cơ sở bãi đỗ xe trong hệ thống
+   */
+  async findAllFacilities() {
+    return await prisma.facility.findMany({
+      include: {
+        provider: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone_number: true,
+            status: true,
+          },
+        },
+        images: true,
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
+  }
+
+  /**
+   * Khóa / Mở khóa bãi đỗ xe (Chuyển đổi visibility_status giữa VISIBLE và HIDDEN,
+   * có thể đi kèm logic đổi trạng thái khác nếu cần, ở đây chỉ đổi VISIBLE <-> HIDDEN cho chức năng Khóa)
+   */
+  async toggleLockFacility(facilityId) {
+    const facility = await prisma.facility.findUnique({
+      where: { id: facilityId },
+    });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+
+    // Nếu đang VISIBLE thì chuyển thành HIDDEN (Khóa)
+    // Nếu đang HIDDEN thì chuyển thành VISIBLE (Mở khóa)
+    // Tuy nhiên chỉ cho phép khóa mở khóa khi bãi đã APPROVED và PAID
+    if (facility.verification_status !== "APPROVED") {
+      throw Object.assign(
+        new Error("Chỉ có thể khóa/mở khóa bãi đỗ xe đã được phê duyệt!"),
+        { status: 400 },
+      );
+    }
+
+    const newVisibility =
+      facility.visibility_status === "VISIBLE" ? "HIDDEN" : "VISIBLE";
+
+    return await prisma.facility.update({
+      where: { id: facilityId },
+      data: {
+        visibility_status: newVisibility,
+      },
+    });
+  }
+
+  /**
+   * Cập nhật thông tin cơ bản của bãi đỗ xe
+   */
+  async updateFacility(facilityId, updateData) {
+    const facility = await prisma.facility.findUnique({
+      where: { id: facilityId },
+    });
+    if (!facility)
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+
+    return await prisma.facility.update({
+      where: { id: facilityId },
+      data: {
+        name: updateData.name !== undefined ? updateData.name : undefined,
+        address:
+          updateData.address !== undefined ? updateData.address : undefined,
+        capacity:
+          updateData.capacity !== undefined
+            ? parseInt(updateData.capacity, 10)
+            : undefined,
+        price_per_month:
+          updateData.price_per_month !== undefined
+            ? parseFloat(updateData.price_per_month)
+            : undefined,
+        system_fee:
+          updateData.system_fee !== undefined
+            ? parseFloat(updateData.system_fee)
+            : undefined,
+        visibility_status:
+          updateData.visibility_status !== undefined
+            ? updateData.visibility_status
+            : undefined,
+      },
     });
   }
 
@@ -250,24 +417,24 @@ class FacilityRepository {
     return await prisma.facility.findMany({
       where: {
         id: { in: ids },
-        verification_status: 'APPROVED',
-        visibility_status: 'VISIBLE'
+        verification_status: "APPROVED",
+        visibility_status: "VISIBLE",
       },
       include: {
         images: true,
         facility_amenities: {
           include: {
-            amenity: true
-          }
+            amenity: true,
+          },
         },
         // Lấy reviews để tính rating trung bình
         reviews: {
-          where: { status: 'VISIBLE' },
+          where: { status: "VISIBLE" },
           select: {
-            rating: true
-          }
-        }
-      }
+            rating: true,
+          },
+        },
+      },
     });
   }
 }

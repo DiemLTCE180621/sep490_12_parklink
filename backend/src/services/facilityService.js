@@ -14,7 +14,7 @@ class FacilityService {
     // Tính khoảng cách nếu có tọa độ GPS
     const facilitiesWithDistance = facilities.map(facility => {
       if (!facility.latitude || !facility.longitude) return { ...facility, distance: null };
-      
+
       const distance = this.calculateDistance(lat, lng, facility.latitude, facility.longitude);
       return { ...facility, distance };
     });
@@ -30,11 +30,11 @@ class FacilityService {
     const R = 6371; // Bán kính trái đất tính bằng km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
 
@@ -99,8 +99,9 @@ class FacilityService {
   }
 
   async getFacilityById(id) {
-    const facilityRepository = require('../repositories/facilityRepository');
-    return await facilityRepository.findById(id);
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) return null;
+    return await facilityRepository.findById(parsedId);
   }
 }
 

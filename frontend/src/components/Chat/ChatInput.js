@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Paperclip, Image as ImageIcon, Send, X, Loader2 } from 'lucide-react';
+import { Paperclip, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
 import { validateChatFiles } from '../../validations/chatValidation';
 
 const ChatInput = ({ onSendMessage }) => {
