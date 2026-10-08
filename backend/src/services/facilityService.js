@@ -98,10 +98,51 @@ class FacilityService {
     return comparisonMatrix;
   }
 
-  async getFacilityById(id) {
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) return null;
-    return await facilityRepository.findById(parsedId);
+  async getFacilityDetails(id) {
+    const facilityId = parseInt(id, 10);
+    if (isNaN(facilityId)) {
+      throw new Error('ID bãi đỗ xe không hợp lệ');
+    }
+    
+    const facility = await facilityRepository.getFacilityDetails(facilityId);
+    if (!facility) {
+      throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
+    }
+
+    // Format data
+    const ratings = facility.reviews.map(r => r.rating);
+    const avgRating = ratings.length > 0
+      ? parseFloat((ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1))
+      : null;
+
+    return {
+      ...facility,
+      avg_rating: avgRating,
+      total_reviews: ratings.length,
+      vehicle_types: typeof facility.vehicle_types === 'string' ? JSON.parse(facility.vehicle_types) : facility.vehicle_types
+    };
+  }
+
+  async getFacilityAvailability(id) {
+    const facilityId = parseInt(id, 10);
+    if (isNaN(facilityId)) {
+      throw new Error('ID bãi đỗ xe không hợp lệ');
+    }
+
+    const facility = await facilityRepository.getFacilityDetails(facilityId);
+    if (!facility) {
+      throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
+    }
+
+    const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
+    const availableSlots = facility.capacity - activeContractsCount;
+
+    return {
+      facility_id: facilityId,
+      capacity: facility.capacity,
+      active_contracts: activeContractsCount,
+      available_slots: availableSlots >= 0 ? availableSlots : 0
+    };
   }
 }
 

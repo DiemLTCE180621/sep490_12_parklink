@@ -32,8 +32,12 @@ const facilityService = {
     });
   },
 
-  async getFacilityById(id) {
+  async getFacilityDetails(id) {
     return await api.get(`/facilities/${id}`);
+  },
+
+  async getFacilityAvailability(id) {
+    return await api.get(`/facilities/${id}/availability`);
   }
 };
 

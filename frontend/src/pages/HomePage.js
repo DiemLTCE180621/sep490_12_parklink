@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, Search, Shield, Calendar, ArrowRight, Clock } from 'lucide-react';
+import { Search, Shield, Calendar, ArrowRight, Clock } from 'lucide-react';
 import { VEHICLE_TYPES } from '../constants/vehicleTypes';
+import VietmapAddressAutocomplete from '../components/common/VietmapAddressAutocomplete';
 
 const HomePage = () => {
   const [searchLocation, setSearchLocation] = useState('');
@@ -39,13 +40,11 @@ const HomePage = () => {
                 <div className="sm:col-span-6 relative">
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Địa điểm / Vị trí</label>
                   <div className="relative">
-                    <MapPin className="w-5 h-5 absolute left-3 top-3 text-teal-600" />
-                    <input
-                      type="text"
+                    <VietmapAddressAutocomplete
                       value={searchLocation}
-                      onChange={(e) => setSearchLocation(e.target.value)}
+                      onChange={setSearchLocation}
                       placeholder="Nhập quận, tên đường hoặc tọa độ..."
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      inputClassName="py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </div>

@@ -65,18 +65,30 @@ exports.compareFacilities = async (req, res) => {
   }
 };
 
-exports.getFacilityById = async (req, res) => {
+exports.getFacilityDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await facilityService.getFacilityById(id);
-    if (!data) {
-      return res.status(404).json({ status: 'error', message: 'Không tìm thấy bãi đỗ xe' });
-    }
+    const data = await facilityService.getFacilityDetails(id);
     res.json({
       status: 'success',
       data
     });
   } catch (error) {
-    res.status(500).json({ status: 'error', message: error.message });
+    const statusCode = error.message.includes('Không tìm thấy') ? 404 : 500;
+    res.status(statusCode).json({ status: 'error', message: error.message });
+  }
+};
+
+exports.getFacilityAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await facilityService.getFacilityAvailability(id);
+    res.json({
+      status: 'success',
+      data
+    });
+  } catch (error) {
+    const statusCode = error.message.includes('Không tìm thấy') ? 404 : 500;
+    res.status(statusCode).json({ status: 'error', message: error.message });
   }
 };

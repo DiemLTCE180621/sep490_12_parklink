@@ -12,7 +12,11 @@ router.get('/amenities', facilityController.getAllAmenities);
 // Query param: ?ids=1,2,3
 router.get('/compare', facilityController.compareFacilities);
 
-// API Public: Lấy chi tiết 1 bãi đỗ xe
-router.get('/:id', facilityController.getFacilityById);
+// API Public: Lấy chi tiết bãi đỗ xe
+router.get('/:id', facilityController.getFacilityDetails);
+
+// API Protected: Lấy thông tin số chỗ còn trống (yêu cầu Customer login)
+const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
+router.get('/:id/availability', authenticateToken, authorizeRoles('CUSTOMER'), facilityController.getFacilityAvailability);
 
 module.exports = router;

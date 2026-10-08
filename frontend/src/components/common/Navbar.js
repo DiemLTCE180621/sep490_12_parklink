@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText } from 'lucide-react';
+import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart } from 'lucide-react';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -135,6 +135,16 @@ const Navbar = () => {
                       {getDashboardIcon(user?.role?.name)}
                       {getDashboardLinkLabel(user?.role?.name)}
                     </Link>
+
+                    {user?.role?.name === 'CUSTOMER' && (
+                      <Link
+                        to="/my-favorites"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                      >
+                        <Heart className="w-4 h-4 mr-2.5 text-rose-500" /> Bãi xe yêu thích
+                      </Link>
+                    )}
 
                     <button
                       onClick={handleLogout}
