@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const chatController = require('../controllers/chatController');
-const { authenticateToken } = require('../middlewares/authMiddleware');
+const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 const chatValidation = require('../validations/chatValidation');
 
 router.use(authenticateToken);
+router.use(authorizeRoles('CUSTOMER', 'PROVIDER'));
+
 router.get('/', chatController.getUserRooms.bind(chatController));
 
 // Lấy lịch sử tin nhắn của cuộc trò chuyện

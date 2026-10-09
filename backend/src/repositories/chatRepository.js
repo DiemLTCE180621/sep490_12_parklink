@@ -96,6 +96,22 @@ class ChatRepository {
             }
         });
     }
+
+    // Lấy tổng số tin nhắn chưa đọc của một user
+    async getUnreadCount(userId) {
+        return await prisma.message.count({
+            where: {
+                is_read: false,
+                sender_id: { not: userId },
+                room: {
+                    OR: [
+                        { customer_id: userId },
+                        { provider_id: userId }
+                    ]
+                }
+            }
+        });
+    }
 }
 
 module.exports = new ChatRepository();

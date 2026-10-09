@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
 import ContractDetailModal from '../components/ContractDetailModal';
+import SubmitComplaintModal from '../components/common/SubmitComplaintModal';
 import Toast from '../components/common/Toast';
 import { Link } from 'react-router-dom';
 import {
@@ -29,6 +30,8 @@ const CustomerContractsPage = () => {
 
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
+  const [selectedFacilityId, setSelectedFacilityId] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const fetchContracts = useCallback(async () => {
@@ -52,6 +55,12 @@ const CustomerContractsPage = () => {
   const handleOpenDetail = (id) => {
     setSelectedContractId(id);
     setIsDetailOpen(true);
+  };
+
+  const handleOpenComplaint = (facilityId, e) => {
+    e.stopPropagation();
+    setSelectedFacilityId(facilityId);
+    setIsComplaintModalOpen(true);
   };
 
   const filteredContracts = contracts.filter((item) => {
@@ -305,16 +314,25 @@ const CustomerContractsPage = () => {
                       <PenTool className="w-4 h-4 text-slate-950" /> Xem & Ký Hợp Đồng
                     </button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenDetail(item.id);
-                      }}
-                      className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5"
-                    >
-                      <Eye className="w-4 h-4" /> Xem Chi Tiết
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
+                        className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5"
+                      >
+                        <AlertCircle className="w-4 h-4" /> Khiếu nại
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetail(item.id);
+                        }}
+                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5"
+                      >
+                        <Eye className="w-4 h-4" /> Xem Chi Tiết
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -332,6 +350,16 @@ const CustomerContractsPage = () => {
           setSelectedContractId(null);
         }}
         onRefresh={fetchContracts}
+      />
+
+      {/* SUBMIT COMPLAINT MODAL */}
+      <SubmitComplaintModal 
+        isOpen={isComplaintModalOpen}
+        onClose={() => {
+          setIsComplaintModalOpen(false);
+          setSelectedFacilityId(null);
+        }}
+        facilityId={selectedFacilityId}
       />
     </div>
   );

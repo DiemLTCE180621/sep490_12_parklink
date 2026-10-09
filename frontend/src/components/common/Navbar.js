@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart } from 'lucide-react';
+import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -86,7 +86,7 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && (
+            {isAuthenticated && (user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
               <Link to="/chat" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
               </Link>
@@ -137,13 +137,22 @@ const Navbar = () => {
                     </Link>
 
                     {user?.role?.name === 'CUSTOMER' && (
-                      <Link
-                        to="/my-favorites"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
-                      >
-                        <Heart className="w-4 h-4 mr-2.5 text-rose-500" /> Bãi xe yêu thích
-                      </Link>
+                      <>
+                        <Link
+                          to="/my-favorites"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                        >
+                          <Heart className="w-4 h-4 mr-2.5 text-rose-500" /> Bãi xe yêu thích
+                        </Link>
+                        <Link
+                          to="/my-complaints"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                        >
+                          <AlertCircle className="w-4 h-4 mr-2.5 text-amber-500" /> Khiếu nại của tôi
+                        </Link>
+                      </>
                     )}
 
                     <button
@@ -204,13 +213,15 @@ const Navbar = () => {
           </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/chat"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-slate-700 font-medium hover:text-teal-600"
-              >
-                Tin nhắn
-              </Link>
+              {(user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
+                <Link
+                  to="/chat"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-slate-700 font-medium hover:text-teal-600"
+                >
+                  Tin nhắn
+                </Link>
+              )}
               <Link
                 to="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}

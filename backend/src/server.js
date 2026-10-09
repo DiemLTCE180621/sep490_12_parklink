@@ -45,6 +45,9 @@ app.use("/api/chats", chatRoutes);
 const uploadRoutes = require("./routes/uploadRoutes");
 app.use("/api/uploads", uploadRoutes);
 
+const complaintRoutes = require("./routes/complaintRoutes");
+app.use("/api/complaints", complaintRoutes);
+
 // Simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the ParkLink API!" });

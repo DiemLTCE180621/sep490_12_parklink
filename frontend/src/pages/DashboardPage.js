@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
 import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
+import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
+import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import EditProfileModal from '../components/EditProfileModal';
 import Toast from '../components/common/Toast';
@@ -121,6 +123,12 @@ const DashboardPage = () => {
                 >
                   <Shield className="w-5 h-5" /> Quản lý Giao Dịch
                 </button>
+                <button
+                  onClick={() => setActiveAdminTab("complaints")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "complaints" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <AlertCircle className="w-5 h-5 text-red-500" /> Quản lý Khiếu Nại
+                </button>
               </div>
             </div>
 
@@ -130,6 +138,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
               {activeAdminTab === 'users' && <AdminUsersPanel />}
               {activeAdminTab === 'inspectors' && <AdminFieldInspectorsPanel />}
+              {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -178,6 +187,12 @@ const DashboardPage = () => {
                 >
                   <Shield className="w-5 h-5" /> Quản Lý Giao Dịch
                 </button>
+                <button
+                  onClick={() => setActiveProviderTab('complaints')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'complaints' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <AlertCircle className="w-5 h-5 text-amber-500" /> Quản Lý Khiếu Nại
+                </button>
               </div>
             </div>
 
@@ -188,6 +203,7 @@ const DashboardPage = () => {
                 <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
               )}
               {activeProviderTab === 'contracts' && <ProviderContractsPanel />}
+              {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
