@@ -319,6 +319,16 @@ const CustomerReservationsPage = () => {
                     <Eye className="w-4 h-4" /> Xem Chi Tiết
                   </button>
 
+                  {item.status === 'APPROVED' && (
+                    <Link
+                      to={`/submit-complaint/${item.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl transition border border-red-200 flex items-center gap-1.5"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" /> Khiếu Nại
+                    </Link>
+                  )}
+
                   {item.status === 'PENDING' && (
                     <button
                       onClick={(e) => handleRequestCancelConfirm(item.id, e)}

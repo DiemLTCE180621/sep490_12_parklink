@@ -68,7 +68,10 @@ const ChatPage = () => {
     const roomsRef = React.useRef(rooms);
     useEffect(() => {
         roomsRef.current = rooms;
-    }, [rooms]);
+        if (socket && socket.connected && rooms.length > 0) {
+            rooms.forEach(room => socket.emit('join_room', room.id));
+        }
+    }, [rooms, socket]);
 
     // 3. Lắng nghe tin nhắn mới tới qua màng nhĩ Socket
     useEffect(() => {
@@ -78,10 +81,11 @@ const ChatPage = () => {
             roomsRef.current.forEach(room => socket.emit('join_room', room.id));
         };
 
-        // Chạy ngay lần đầu
-        if (socket.connected) joinRooms();
+        // Đảm bảo join room khi socket connect hoặc khi có danh sách phòng
+        if (socket.connected && roomsRef.current.length > 0) {
+            joinRooms();
+        }
 
-        // Chạy mỗi khi socket bị rớt và kết nối lại
         socket.on('connect', joinRooms);
         const handleReceiveMessage = (newMessage) => {
             if (activeRoomId && Number(newMessage.room_id) === Number(activeRoomId)) {
@@ -89,8 +93,8 @@ const ChatPage = () => {
                 setMessages(prev => {
                     let wasRead = false;
                     const filtered = prev.filter(m => {
-                        const isMatch = (newMessage.tempId && m.id === newMessage.tempId) || 
-                                        (m.is_sending && m.content === newMessage.content);
+                        const isMatch = (newMessage.tempId && m.id === newMessage.tempId) ||
+                            (m.is_sending && m.content === newMessage.content);
                         if (isMatch) {
                             if (m.is_read) wasRead = true; // Lưu lại trạng thái Đã xem nếu bị chênh lệch nhịp Socket
                             return false;
@@ -114,9 +118,9 @@ const ChatPage = () => {
                         const isMe = newMessage.sender_id === user.id;
                         // Nếu đối phương gửi và mình ĐANG KHÔNG mở phòng đó -> Tăng số tin chưa đọc lên 1
                         const currentCount = r._count?.messages || 0;
-                        const newCount = (!isMe && Number(newMessage.room_id) !== Number(activeRoomId)) 
-                                         ? currentCount + 1 : currentCount;
-                        
+                        const newCount = (!isMe && Number(newMessage.room_id) !== Number(activeRoomId))
+                            ? currentCount + 1 : currentCount;
+
                         return {
                             ...r,
                             messages: [newMessage], // Cập nhật tin nhắn mới nhất
@@ -125,7 +129,7 @@ const ChatPage = () => {
                     }
                     return r;
                 });
-                
+
                 // Sắp xếp lại: Phòng nào có tin nhắn mới nhất thì đưa lên đầu tiên
                 return updatedRooms.sort((a, b) => {
                     const timeA = a.messages?.[0]?.created_at || a.created_at;

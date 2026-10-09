@@ -13,6 +13,8 @@ import SearchPage from './pages/facility/SearchPage';
 import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
 import CustomerContractsPage from './pages/CustomerContractsPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
+import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
+import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
@@ -79,6 +81,22 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <FavoriteFacilitiesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/submit-complaint/:reservationId"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <SubmitComplaintPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-complaints"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <CustomerComplaintsPage />
               </ProtectedRoute>
             }
           />

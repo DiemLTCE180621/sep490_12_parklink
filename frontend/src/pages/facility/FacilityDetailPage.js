@@ -24,6 +24,7 @@ const FacilityDetailPage = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -122,6 +123,7 @@ const FacilityDetailPage = () => {
   };
 
   const handleChatClick = async () => {
+    if (isChatLoading) return;
     if (!isAuthenticated) {
       setToastMsg('Vui lòng đăng nhập để nhắn tin!');
       setToastType('error');
@@ -135,6 +137,7 @@ const FacilityDetailPage = () => {
     }
 
     try {
+      setIsChatLoading(true);
       const providerId = facility.provider_id;
       const res = await chatService.getOrCreateRoom(user.id, providerId, facilityId, token);
       if (res.success) {
@@ -145,6 +148,8 @@ const FacilityDetailPage = () => {
       const errorMsg = error.response?.data?.message || error.message;
       setToastMsg('Lỗi khi tạo phòng chat: ' + errorMsg);
       setToastType('error');
+    } finally {
+      setIsChatLoading(false);
     }
   };
 
@@ -338,7 +343,9 @@ const FacilityDetailPage = () => {
             </div>
             <p className="text-xs text-slate-500 leading-relaxed mt-4">Gửi yêu cầu kèm thông tin xe và ngày bắt đầu thuê. Chủ bãi sẽ phản hồi và xác nhận trực tiếp trên hệ thống.</p>
             <div className="flex flex-wrap gap-2 mt-auto pt-5">
-              <button onClick={handleChatClick} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition"><MessageCircle className="w-4 h-4" /> Nhắn chủ bãi</button>
+              <button onClick={handleChatClick} disabled={isChatLoading} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed">
+                {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Nhắn chủ bãi
+              </button>
               <button onClick={handleOpenModal} disabled={availability && availability.available_slots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
             </div>
           </section>
