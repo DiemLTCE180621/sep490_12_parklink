@@ -254,6 +254,23 @@ class UserRepository {
       }
     });
   }
+
+  /**
+   * Lấy thông tin liên hệ của Admin (email, số điện thoại) phục vụ hiển thị Hotline
+   */
+  async findAdminContact() {
+    return await prisma.user.findFirst({
+      where: {
+        role: { name: 'ADMIN' },
+        status: 'ACTIVE'
+      },
+      select: {
+        email: true,
+        phone_number: true
+      },
+      orderBy: { id: 'asc' }
+    });
+  }
 }
 
 module.exports = new UserRepository();
