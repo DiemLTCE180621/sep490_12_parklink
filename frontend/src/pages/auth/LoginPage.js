@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Key, CheckCircle2 } from 'lucide-react';
+import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Key, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import ForgotPasswordModal from '../../components/modals/ForgotPasswordModal';
 
 import { isValidPassword } from '../../utils/validators';
 
 const LoginPage = () => {
-  const { login, changePassword } = useAuth();
+  const { login, changePassword, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/dashboard';
+  // Trang trước đó nếu user bị redirect về /login
+  const fromPath = location.state?.from?.pathname || null;
 
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // State hỗ trợ đổi mật khẩu lần đầu khi requires_password_change = true
   const [requirePasswordChange, setRequirePasswordChange] = useState(false);
@@ -55,12 +60,13 @@ const LoginPage = () => {
       setLoading(true);
       const res = await login(formData);
 
-      // Kiểm tra xem tài khoản có yêu cầu Đổi mật khẩu lần đầu không
       if (res?.data?.user?.requires_password_change) {
         setRequirePasswordChange(true);
         setPasswordChangeData(prev => ({ ...prev, oldPassword: formData.password }));
       } else {
-        navigate(from, { replace: true });
+        const role = res?.data?.user?.role?.name;
+        const redirectTo = fromPath || (role === 'CUSTOMER' ? '/' : '/dashboard');
+        navigate(redirectTo, { replace: true });
       }
     } catch (err) {
       setError(err.message || 'Email hoặc mật khẩu không chính xác!');
@@ -92,7 +98,9 @@ const LoginPage = () => {
 
       setPasswordChangedSuccess(true);
       setTimeout(() => {
-        navigate(from, { replace: true });
+        const role = user?.role?.name;
+        const redirectTo = fromPath || (role === 'CUSTOMER' ? '/' : '/dashboard');
+        navigate(redirectTo, { replace: true });
       }, 1200);
     } catch (err) {
       setError(err.message || 'Đổi mật khẩu thất bại!');
@@ -145,30 +153,48 @@ const LoginPage = () => {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
                   Mật khẩu mới <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwordChangeData.newPassword}
-                  onChange={handlePasswordChangeInput}
-                  placeholder="Tối thiểu 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số"
-                  className="block w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                  required
-                />
+                <div className="relative rounded-xl shadow-sm">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    name="newPassword"
+                    value={passwordChangeData.newPassword}
+                    onChange={handlePasswordChangeInput}
+                    placeholder="Tối thiểu 8 ký tự, 1 chữ hoa, 1 chữ thường và 1 số"
+                    className="block w-full pl-4 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
                   Xác nhận mật khẩu mới <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  name="confirmNewPassword"
-                  value={passwordChangeData.confirmNewPassword}
-                  onChange={handlePasswordChangeInput}
-                  placeholder="Nhập lại mật khẩu mới"
-                  className="block w-full px-4 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                  required
-                />
+                <div className="relative rounded-xl shadow-sm">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmNewPassword"
+                    value={passwordChangeData.confirmNewPassword}
+                    onChange={handlePasswordChangeInput}
+                    placeholder="Nhập lại mật khẩu mới"
+                    className="block w-full pl-4 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <button
@@ -220,14 +246,21 @@ const LoginPage = () => {
                     <Lock className="w-5 h-5" />
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Nhập mật khẩu"
-                    className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                    className="block w-full pl-10 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
                 </div>
               </div>
 

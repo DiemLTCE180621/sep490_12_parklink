@@ -39,6 +39,17 @@ class AuthService {
   }
 
   /**
+   * Lấy thông tin liên hệ công khai của hệ thống (Email, Hotline Admin)
+   */
+  async getContactInfo() {
+    const admin = await userRepository.findAdminContact();
+    return {
+      email: admin?.email || 'parklink.service@gmail.com',
+      phone_number: admin?.phone_number || '0900000000'
+    };
+  }
+
+  /**
    * UC01: Đăng ký Khách hàng (Customer) - Sinh mật khẩu ngẫu nhiên gửi qua Email
    */
   async registerCustomer(data) {
@@ -260,7 +271,9 @@ class AuthService {
     }
 
     const user = await userRepository.findByEmail(email);
-    if (!user) {
+    // Chặn reset mật khẩu với tài khoản ADMIN qua flow OTP công khai nhằm bảo mật cấp cao,
+    // đồng thời trả về lỗi 404 hệt như email không tồn tại để tránh rò rỉ thông tin (User Enumeration Attack)
+    if (!user || user.role?.name === 'ADMIN') {
       const error = new Error('Không tìm thấy tài khoản với email này trong hệ thống!');
       error.status = 404;
       throw error;
@@ -306,7 +319,7 @@ class AuthService {
     }
 
     const user = await userRepository.findByEmail(email);
-    if (!user) {
+    if (!user || user.role?.name === 'ADMIN') {
       const error = new Error('Không tìm thấy tài khoản!');
       error.status = 404;
       throw error;

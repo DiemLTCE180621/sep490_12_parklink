@@ -19,6 +19,9 @@ const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddle
 // Lấy danh mục tiện ích hệ thống (Bảng Amenity)
 router.get('/amenities', authController.getAmenities);
 
+// Lấy thông tin liên hệ hệ thống (Email, Hotline Admin)
+router.get('/contact-info', authController.getContactInfo);
+
 // UC01: Đăng ký Khách hàng (Sinh mật khẩu ngẫu nhiên gửi email)
 router.post('/register/customer', validateRegisterCustomer, authController.registerCustomer);
 

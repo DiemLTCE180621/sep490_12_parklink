@@ -20,6 +20,21 @@ class AuthController {
   }
 
   /**
+   * Lấy thông tin liên hệ hệ thống (Email, Hotline Admin)
+   */
+  async getContactInfo(req, res, next) {
+    try {
+      const contactInfo = await authService.getContactInfo();
+      return res.status(200).json({
+        status: 'success',
+        data: contactInfo
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * UC01: Đăng ký Khách hàng (Sinh mật khẩu ngẫu nhiên gửi email)
    */
   async registerCustomer(req, res, next) {
