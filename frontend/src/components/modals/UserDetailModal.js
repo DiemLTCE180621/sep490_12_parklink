@@ -22,6 +22,8 @@ const UserDetailModal = ({ isOpen, onClose, user }) => {
         return <span className="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full border border-purple-200">Quản trị viên</span>;
       case 'PROVIDER':
         return <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200">Chủ bãi đỗ xe</span>;
+      case 'FIELD_INSPECTOR':
+        return <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">Nhân viên khảo sát</span>;
       case 'CUSTOMER':
       default:
         return <span className="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full border border-teal-200">Khách thuê</span>;

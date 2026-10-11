@@ -112,7 +112,7 @@ const AdminUsersPanel = () => {
             <User className="w-6 h-6 text-teal-600" /> Quản Lý Tài Khoản Người Dùng
           </h2>
           <p className="text-slate-500 text-xs mt-1">
-            Danh sách toàn bộ Khách hàng, Chủ bãi đỗ xe và Admin trong hệ thống ParkLink
+            Danh sách toàn bộ Khách hàng, Chủ bãi đỗ xe, Nhân viên khảo sát và Admin trong hệ thống ParkLink
           </p>
         </div>
         <div className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
@@ -146,6 +146,7 @@ const AdminUsersPanel = () => {
             <option value="ALL">Tất cả Vai trò</option>
             <option value="CUSTOMER">Khách hàng</option>
             <option value="PROVIDER">Chủ bãi xe</option>
+            <option value="FIELD_INSPECTOR">Nhân viên khảo sát</option>
             <option value="ADMIN">Quản trị viên</option>
           </select>
         </div>

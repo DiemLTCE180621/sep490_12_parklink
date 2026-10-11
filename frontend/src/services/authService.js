@@ -12,6 +12,13 @@ const authService = {
   },
 
   /**
+   * Lấy thông tin liên hệ hệ thống (Hotline Admin, Email)
+   */
+  async getContactInfo() {
+    return await api.get('/auth/contact-info');
+  },
+
+  /**
    * UC01: Đăng ký Khách hàng (Sinh mật khẩu ngẫu nhiên gửi email)
    */
   async registerCustomer(customerData) {

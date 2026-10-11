@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, KeyRound, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { X, Lock, KeyRound, AlertCircle, CheckCircle2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import authService from '../../services/authService';
 import { isValidPassword } from '../../utils/validators';
 
@@ -9,6 +9,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -69,6 +73,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setShowOldPassword(false);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
     setError('');
     setSuccessMessage('');
     onClose();
@@ -130,14 +137,21 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   <Lock className="w-4 h-4 text-teal-600" />
                 </div>
                 <input
-                  type="password"
+                  type={showOldPassword ? 'text' : 'password'}
                   name="oldPassword"
                   value={formData.oldPassword}
                   onChange={handleChange}
                   placeholder="Nhập mật khẩu hiện tại"
-                  className="block w-full pl-11 pr-4 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowOldPassword(!showOldPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -150,14 +164,21 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   <Lock className="w-4 h-4 text-teal-600" />
                 </div>
                 <input
-                  type="password"
+                  type={showNewPassword ? 'text' : 'password'}
                   name="newPassword"
                   value={formData.newPassword}
                   onChange={handleChange}
                   placeholder="Tối thiểu 8 ký tự, 1 hoa, 1 thường, 1 số"
-                  className="block w-full pl-11 pr-4 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -170,14 +191,21 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   <Lock className="w-4 h-4 text-teal-600" />
                 </div>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Nhập lại mật khẩu mới"
-                  className="block w-full pl-11 pr-4 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

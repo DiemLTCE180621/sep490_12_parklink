@@ -91,9 +91,11 @@ const Navbar = () => {
                 <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
               </Link>
             )}
-            <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-teal-600" /> Cho Thuê Bãi Xe
-            </Link>
+            {!isAuthenticated && (
+              <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <Building2 className="w-4 h-4 text-teal-600" /> Cho Thuê Bãi Xe
+              </Link>
+            )}
           </div>
 
           {/* User Auth Controls */}
@@ -204,13 +206,15 @@ const Navbar = () => {
           >
             Trang Chủ
           </Link>
-          <Link
-            to="/register-provider"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-teal-600 font-medium hover:underline"
-          >
-            Cho Thuê Bãi Xe (Chủ Bãi Đỗ)
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              to="/register-provider"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block py-2 text-teal-600 font-medium hover:underline"
+            >
+              Cho Thuê Bãi Xe (Chủ Bãi Đỗ)
+            </Link>
+          )}
           {isAuthenticated ? (
             <>
               {(user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
