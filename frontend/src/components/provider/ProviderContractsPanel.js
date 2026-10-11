@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getProviderConfirmationRecords } from '../../services/confirmationRecordService';
-import ContractDetailModal from '../ContractDetailModal';
 import Toast from '../common/Toast';
 import {
   FileText,
@@ -22,14 +22,13 @@ import {
 } from 'lucide-react';
 
 const ProviderContractsPanel = () => {
+  const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [selectedContractId, setSelectedContractId] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const fetchContracts = useCallback(async () => {
@@ -51,8 +50,7 @@ const ProviderContractsPanel = () => {
   }, [fetchContracts]);
 
   const handleOpenDetail = (id) => {
-    setSelectedContractId(id);
-    setIsDetailOpen(true);
+    navigate(`/contracts/${id}`);
   };
 
   const filteredContracts = contracts.filter((item) => {
@@ -354,16 +352,6 @@ const ProviderContractsPanel = () => {
         </div>
       )}
 
-      {/* CONTRACT DETAIL MODAL */}
-      <ContractDetailModal
-        contractId={selectedContractId}
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setSelectedContractId(null);
-        }}
-        onRefresh={fetchContracts}
-      />
     </div>
   );
 };

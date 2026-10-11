@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getProviderReservations, acceptReservation, rejectReservation } from '../../services/reservationService';
-import ReservationDetailModal from '../modals/ReservationDetailModal';
 import ConfirmModal from '../modals/ConfirmModal';
 import CreateConfirmationRecordModal from '../CreateConfirmationRecordModal';
-import ContractDetailModal from '../ContractDetailModal';
 import Toast from '../common/Toast';
 import {
   Car,
@@ -27,23 +26,16 @@ import {
 } from 'lucide-react';
 
 const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
+  const navigate = useNavigate();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING, APPROVED, REJECTED, CANCELLED
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Selected reservation for Detail Modal
-  const [selectedReservationId, setSelectedReservationId] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
-
   // States for Contract creation modal
   const [selectedReservationForContract, setSelectedReservationForContract] = useState(null);
   const [isCreateContractOpen, setIsCreateContractOpen] = useState(false);
-
-  // States for Contract detail modal
-  const [selectedContractId, setSelectedContractId] = useState(null);
-  const [isContractDetailOpen, setIsContractDetailOpen] = useState(false);
 
   // States for Confirm Modal (Accept / Reject)
   const [confirmModalState, setConfirmModalState] = useState({
@@ -76,10 +68,9 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
     fetchProviderReservations();
   }, [fetchProviderReservations]);
 
-  // Open Detail Modal
+  // Open Detail Page
   const handleOpenDetail = (id) => {
-    setSelectedReservationId(id);
-    setIsDetailOpen(true);
+    navigate(`/provider/reservations/${id}`);
   };
 
   // Open Confirm Modal for Accept or Reject
@@ -471,8 +462,7 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContractId(item.confirmation_record.id);
-                        setIsContractDetailOpen(true);
+                        navigate(`/contracts/${item.confirmation_record.id}`);
                       }}
                       className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
                     >
@@ -536,17 +526,6 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
         </div>
       )}
 
-      {/* DETAIL MODAL */}
-      <ReservationDetailModal
-        reservationId={selectedReservationId}
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setSelectedReservationId(null);
-        }}
-        onRefresh={fetchProviderReservations}
-      />
-
       {/* CREATE CONTRACT MODAL */}
       <CreateConfirmationRecordModal
         isOpen={isCreateContractOpen}
@@ -562,17 +541,6 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
             onNavigateToContracts();
           }
         }}
-      />
-
-      {/* CONTRACT DETAIL MODAL */}
-      <ContractDetailModal
-        contractId={selectedContractId}
-        isOpen={isContractDetailOpen}
-        onClose={() => {
-          setIsContractDetailOpen(false);
-          setSelectedContractId(null);
-        }}
-        onRefresh={fetchProviderReservations}
       />
 
       {/* CONFIRMATION MODAL FOR ACCEPT / REJECT */}

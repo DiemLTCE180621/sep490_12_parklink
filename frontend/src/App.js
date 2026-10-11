@@ -11,9 +11,14 @@ import RegisterProviderPage from './pages/auth/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/facility/SearchPage';
 import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
+import CustomerReservationDetailPage from './pages/customer/CustomerReservationDetailPage';
 import CustomerContractsPage from './pages/CustomerContractsPage';
+import ContractDetailPage from './pages/ContractDetailPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
+import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
+import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
+import ProviderReservationDetailPage from './pages/provider/ProviderReservationDetailPage';
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
@@ -98,14 +103,39 @@ function AppContent() {
               <CustomerReservationsPage />
             </RoleProtectedRoute>
           } />
+          <Route path="/my-reservations/:id" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerReservationDetailPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/my-contracts" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerContractsPage />
             </RoleProtectedRoute>
           } />
+          <Route path="/my-contracts/:id" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <ContractDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/:id" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <ContractDetailPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/my-favorites" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <FavoriteFacilitiesPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/submit-complaint/:reservationId" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <SubmitComplaintPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/my-complaints" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerComplaintsPage />
             </RoleProtectedRoute>
           } />
 
@@ -115,9 +145,19 @@ function AppContent() {
               <ProviderReservationsPage />
             </RoleProtectedRoute>
           } />
+          <Route path="/provider/reservations/:id" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderReservationDetailPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/provider-reservations" element={
             <RoleProtectedRoute allowedRoles={['PROVIDER']}>
               <ProviderReservationsPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/provider-reservations/:id" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderReservationDetailPage />
             </RoleProtectedRoute>
           } />
 

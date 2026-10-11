@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
-import ContractDetailModal from '../components/ContractDetailModal';
 import SubmitComplaintModal from '../components/common/SubmitComplaintModal';
 import Toast from '../components/common/Toast';
-import { Link } from 'react-router-dom';
 import {
   FileText,
   Calendar,
@@ -22,14 +21,13 @@ import {
 } from 'lucide-react';
 
 const CustomerContractsPage = () => {
+  const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [selectedContractId, setSelectedContractId] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [selectedFacilityId, setSelectedFacilityId] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
@@ -53,8 +51,7 @@ const CustomerContractsPage = () => {
   }, [fetchContracts]);
 
   const handleOpenDetail = (id) => {
-    setSelectedContractId(id);
-    setIsDetailOpen(true);
+    navigate(`/my-contracts/${id}`);
   };
 
   const handleOpenComplaint = (facilityId, e) => {
@@ -340,17 +337,6 @@ const CustomerContractsPage = () => {
           </div>
         )}
       </div>
-
-      {/* CONTRACT DETAIL & SIGN MODAL */}
-      <ContractDetailModal
-        contractId={selectedContractId}
-        isOpen={isDetailOpen}
-        onClose={() => {
-          setIsDetailOpen(false);
-          setSelectedContractId(null);
-        }}
-        onRefresh={fetchContracts}
-      />
 
       {/* SUBMIT COMPLAINT MODAL */}
       <SubmitComplaintModal 

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getMyReservations, cancelReservationRequest } from '../../services/reservationService';
-import ReservationDetailModal from '../../components/modals/ReservationDetailModal';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import Toast from '../../components/common/Toast';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,8 +10,6 @@ const CustomerReservationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING, APPROVED, CANCELLED
-  const [selectedReservationId, setSelectedReservationId] = useState(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
 
   // States cho Confirm Modal & Toast
@@ -41,8 +38,7 @@ const CustomerReservationsPage = () => {
   }, [fetchMyReservations]);
 
   const handleOpenDetail = (id) => {
-    setSelectedReservationId(id);
-    setIsDetailOpen(true);
+    navigate(`/my-reservations/${id}`);
   };
 
   // Mở Confirm Modal thay cho window.confirm
@@ -352,14 +348,6 @@ const CustomerReservationsPage = () => {
           </div>
         )}
       </div>
-
-      {/* DETAIL MODAL */}
-      <ReservationDetailModal
-        reservationId={selectedReservationId}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        onRefresh={fetchMyReservations}
-      />
 
       {/* CONFIRMATION MODAL DÀNH CHO THAO TÁC HỦY */}
       <ConfirmModal
