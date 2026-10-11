@@ -11,11 +11,14 @@ import RegisterProviderPage from './pages/auth/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
 import SearchPage from './pages/facility/SearchPage';
 import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
+import CustomerReservationDetailPage from './pages/customer/CustomerReservationDetailPage';
 import CustomerContractsPage from './pages/CustomerContractsPage';
+import ContractDetailPage from './pages/ContractDetailPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
 import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
 import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
+import ProviderReservationDetailPage from './pages/provider/ProviderReservationDetailPage';
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
@@ -69,10 +72,34 @@ function AppContent() {
             }
           />
           <Route
+            path="/my-reservations/:id"
+            element={
+              <ProtectedRoute>
+                <CustomerReservationDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/my-contracts"
             element={
               <ProtectedRoute>
                 <CustomerContractsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-contracts/:id"
+            element={
+              <ProtectedRoute>
+                <ContractDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contracts/:id"
+            element={
+              <ProtectedRoute>
+                <ContractDetailPage />
               </ProtectedRoute>
             }
           />
@@ -109,10 +136,26 @@ function AppContent() {
             }
           />
           <Route
+            path="/provider/reservations/:id"
+            element={
+              <ProtectedRoute>
+                <ProviderReservationDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/provider-reservations"
             element={
               <ProtectedRoute>
                 <ProviderReservationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/provider-reservations/:id"
+            element={
+              <ProtectedRoute>
+                <ProviderReservationDetailPage />
               </ProtectedRoute>
             }
           />
