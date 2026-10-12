@@ -22,6 +22,7 @@ import ProviderReservationDetailPage from './pages/provider/ProviderReservationD
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
+import AdminFacilityEditPage from './pages/admin/AdminFacilityEditPage';
 import ScrollToTop from './components/common/ScrollToTop';
 
 const LoadingScreen = () => (
@@ -96,6 +97,11 @@ function AppContent() {
 
           {/* Mọi role đã login */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/facilities/:id/edit" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminFacilityEditPage />
+            </RoleProtectedRoute>
+          } />
 
           {/* Customer only */}
           <Route path="/my-reservations" element={

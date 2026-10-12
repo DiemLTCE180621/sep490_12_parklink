@@ -29,8 +29,37 @@ const userIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const searchedLocationIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
 const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
 const VIETMAP_API_KEY = process.env.REACT_APP_VIETMAP_API_KEY;
+
+const getFacilityRating = (facility) => {
+  if (facility.avg_rating !== null && facility.avg_rating !== undefined && Number.isFinite(Number(facility.avg_rating))) {
+    return {
+      average: Number(facility.avg_rating),
+      count: Number(facility.total_reviews) || 0,
+    };
+  }
+
+  const ratings = Array.isArray(facility.reviews)
+    ? facility.reviews.map((review) => Number(review.rating)).filter(Number.isFinite)
+    : [];
+
+  return {
+    average: ratings.length > 0
+      ? Number((ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1))
+      : null,
+    count: ratings.length,
+  };
+};
 
 // Component để di chuyển Map center
 const MapUpdater = ({ center, zoom }) => {
@@ -58,6 +87,7 @@ const SearchPage = () => {
   const [error, setError] = useState('');
 
   const [userLocation, setUserLocation] = useState(null); // [lat, lng]
+  const [searchedLocation, setSearchedLocation] = useState(null); // [lat, lng]
   const [mapCenter, setMapCenter] = useState([10.0299, 105.7706]); // Mặc định Cần Thơ
   const [mapZoom, setMapZoom] = useState(13);
 
@@ -208,7 +238,13 @@ const SearchPage = () => {
 
       const res = await facilityService.searchFacilities(params);
       if (res.status === 'success') {
-        setFacilities(res.data);
+        setFacilities(res.data.map((facility) => ({
+          ...facility,
+          ...(() => {
+            const rating = getFacilityRating(facility);
+            return { avg_rating: rating.average, total_reviews: rating.count };
+          })(),
+        })));
       }
     } catch (err) {
       setError(err.message || 'Lỗi khi lấy dữ liệu bãi đỗ xe');
@@ -217,10 +253,15 @@ const SearchPage = () => {
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e?.preventDefault();
-    resolveSearchLocation(keyword);
-    fetchFacilities(null, null, keyword, false);
+    setSearchedLocation(null);
+    const location = await resolveSearchLocation(keyword);
+    if (location) {
+      await fetchFacilities(location[0], location[1], keyword, false);
+    } else {
+      await fetchFacilities(null, null, keyword, false);
+    }
   };
 
   const resolveSearchLocation = async (query, suggestion = null) => {
@@ -257,19 +298,27 @@ const SearchPage = () => {
       }
 
       if (coordinates?.lat && coordinates?.lng) {
-        setMapCenter([Number(coordinates.lat), Number(coordinates.lng)]);
+        const location = [Number(coordinates.lat), Number(coordinates.lng)];
+        setSearchedLocation(location);
+        setMapCenter(location);
         setMapZoom(16);
+        return location;
       }
     } catch (error) {
       // Search results remain usable even if map geocoding is unavailable.
       console.error('Lỗi định vị địa điểm tìm kiếm trên bản đồ:', error);
     }
+    return null;
   };
 
-  const handleAddressSelect = (suggestion, label) => {
+  const handleAddressSelect = async (suggestion, label) => {
     setKeyword(label);
-    resolveSearchLocation(label, suggestion);
-    fetchFacilities(null, null, label, false);
+    const location = await resolveSearchLocation(label, suggestion);
+    if (location) {
+      await fetchFacilities(location[0], location[1], label, false);
+    } else {
+      await fetchFacilities(null, null, label, false);
+    }
   };
 
   const toggleAmenity = (id) => {
@@ -286,7 +335,11 @@ const SearchPage = () => {
       isFirstRender.current = false;
       return;
     }
-    fetchFacilities();
+    if (searchedLocation) {
+      fetchFacilities(searchedLocation[0], searchedLocation[1], keyword, false);
+    } else {
+      fetchFacilities();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAmenities, vehicleType, radius]);
 
@@ -312,11 +365,12 @@ const SearchPage = () => {
 
   const clearKeyword = () => {
     setKeyword('');
+    setSearchedLocation(null);
     fetchFacilities();
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
+    <div className="flex flex-col overflow-hidden bg-slate-50">
       {/* Toast thông báo giới hạn so sánh */}
       <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg('')} />
 
@@ -328,13 +382,16 @@ const SearchPage = () => {
         onRemove={handleRemoveFromCompare}
       />
       {/* HEADER / FILTER BAR */}
-      <header className="relative bg-white border-b border-slate-200 shadow-sm z-[600] px-4 py-3 shrink-0">
+      <header className="relative bg-white border-b border-slate-200 shadow-sm z-[30] px-4 py-3 shrink-0">
         <form onSubmit={handleSearch} className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3">
 
           <div className="relative flex-1 w-full">
             <VietmapAddressAutocomplete
               value={keyword}
-              onChange={setKeyword}
+              onChange={(value) => {
+                setKeyword(value);
+                setSearchedLocation(null);
+              }}
               onSelect={handleAddressSelect}
               placeholder="Nhập tên bãi đỗ, địa chỉ..."
               inputClassName="py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
@@ -415,9 +472,9 @@ const SearchPage = () => {
       </header>
 
       {/* MAIN SPLIT VIEW */}
-      <main className="flex-1 flex flex-col-reverse md:flex-row overflow-hidden relative">
+      <main className="flex-none h-[700px] md:h-[calc(100vh-180px)] md:max-h-[800px] min-h-0 flex flex-col-reverse md:flex-row overflow-hidden relative">
         {/* LEFT PANEL: LIST OF RESULTS */}
-        <div className="w-full md:w-[450px] lg:w-[500px] h-1/2 md:h-full bg-slate-50 border-r border-slate-200 flex flex-col shadow-xl z-20">
+        <div className="w-full md:w-[450px] lg:w-[500px] h-1/2 md:h-full min-h-0 bg-slate-50 border-r border-slate-200 flex flex-col shadow-xl z-20">
           <div className="p-4 bg-white border-b border-slate-200 flex justify-between items-center shrink-0">
             <h2 className="text-lg font-bold text-slate-900">
               Tìm thấy <span className="text-teal-600">{facilities.length}</span> bãi xe phù hợp
@@ -427,7 +484,7 @@ const SearchPage = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             {loading ? (
               <div className="text-center py-10 text-slate-500">Đang tìm kiếm...</div>
             ) : error ? (
@@ -495,7 +552,8 @@ const SearchPage = () => {
                         <div className="mt-3 flex items-center justify-between">
                           <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
                             <Star className="w-3.5 h-3.5 fill-current" />
-                            <span>4.8</span>
+                          <span>{getFacilityRating(fac).average ?? 'Chưa có'}</span>
+                          {getFacilityRating(fac).count > 0 && <span className="font-normal">({getFacilityRating(fac).count})</span>}
                           </div>
                           {fac.distance !== null && fac.distance !== undefined && (
                             <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100">
@@ -541,22 +599,38 @@ const SearchPage = () => {
         </div>
 
         {/* RIGHT PANEL: INTERACTIVE MAP */}
-        <div className="flex-1 h-1/2 md:h-full relative z-0">
+        <div className="flex-1 h-1/2 md:h-full min-h-0 relative z-0">
           <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }} zoomControl={false}>
             <MapUpdater center={mapCenter} zoom={mapZoom} />
             <TileLayer
               attribution='&copy; Vietmap'
-              url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}@2x.png?apikey=${VIETMAP_TILE_KEY}`}
+              url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILE_KEY}`}
+              keepBuffer={1}
+              updateWhenIdle
+              updateWhenZooming={false}
             />
+
+            {/* Phạm vi tìm kiếm, ưu tiên tâm là địa điểm được search bằng chữ */}
+            {(searchedLocation || userLocation) && (
+              <Circle
+                center={searchedLocation || userLocation}
+                radius={radius * 1000}
+                pathOptions={{ color: '#0d9488', fillColor: '#0d9488', fillOpacity: 0.1, weight: 1 }}
+              />
+            )}
+
+            {/* Vị trí địa chỉ được tìm kiếm bằng chữ */}
+            {searchedLocation && (
+              <Marker position={searchedLocation} icon={searchedLocationIcon}>
+                <Popup>
+                  <div className="font-bold text-red-600">Địa điểm tìm kiếm</div>
+                </Popup>
+              </Marker>
+            )}
 
             {/* Vị trí của user */}
             {userLocation && (
               <>
-                <Circle
-                  center={userLocation}
-                  radius={radius * 1000}
-                  pathOptions={{ color: '#0d9488', fillColor: '#0d9488', fillOpacity: 0.1, weight: 1 }}
-                />
                 <Marker position={userLocation} icon={userIcon}>
                   <Popup>
                     <div className="font-bold text-teal-600">Vị trí của bạn</div>
@@ -569,7 +643,7 @@ const SearchPage = () => {
             {facilities.map(fac => {
               if (fac.latitude && fac.longitude) {
                 const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
-                const facilityRating = fac.avg_rating || fac.rating;
+                const facilityRating = getFacilityRating(fac).average;
                 const amenityNames = (fac.facility_amenities || [])
                   .map(item => item.amenity?.name || item.name)
                   .filter(Boolean)
@@ -607,12 +681,12 @@ const SearchPage = () => {
                                 {fac.name}
                               </h4>
                             </div>
-                            {facilityRating && (
+                            {facilityRating !== null && facilityRating !== undefined ? (
                               <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-1 text-[11px] font-bold text-amber-700">
                                 <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
                                 {facilityRating}
                               </span>
-                            )}
+                            ) : null}
                           </div>
 
                           <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">

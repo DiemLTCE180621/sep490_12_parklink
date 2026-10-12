@@ -68,25 +68,21 @@ const FavoriteFacilitiesPage = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen py-8 md:py-10">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8 xl:px-10 space-y-7">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 font-medium">
             <Link to="/" className="hover:text-teal-700 transition-colors">Trang chủ</Link>
             <span className="text-slate-300">/</span>
             <Link to="/dashboard" className="hover:text-teal-700 transition-colors">Tài khoản của tôi</Link>
             <span className="text-slate-300">/</span>
-            <span className="text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded">Bãi xe yêu thích</span>
+            <span className="text-teal-700 font-semibold">Bãi xe yêu thích</span>
           </nav>
-          <div className="inline-flex items-center gap-2 self-start md:self-auto text-xs font-medium text-slate-600 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Danh sách được đồng bộ từ máy chủ
-          </div>
         </div>
 
-        <section className="relative overflow-hidden rounded-2xl bg-white border border-slate-200 p-6 md:p-8 shadow-sm">
+        <section className="relative overflow-hidden border-b border-slate-200 pb-7">
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="max-w-2xl flex flex-col gap-2.5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-100 text-xs font-semibold w-max">
+              <div className="inline-flex items-center gap-2 text-teal-700 text-xs font-semibold w-max">
                 <Bookmark className="w-4 h-4 fill-current" /> ƯU TIÊN THEO DÕI BÃI XE
               </div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
@@ -95,13 +91,13 @@ const FavoriteFacilitiesPage = () => {
               <p className="text-sm text-slate-600 leading-relaxed">Quản lý danh sách các bãi đỗ xe bạn đã lưu để theo dõi và truy cập nhanh.</p>
             </div>
             <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 min-w-[130px]">
+              <div className="px-3.5 py-1.5 min-w-[130px] border-l border-slate-200">
                 <span className="text-xs text-slate-500 font-medium">Đã lưu</span>
                 <span className="block text-2xl font-bold text-slate-900 mt-0.5">{favorites.length}</span>
                 <span className="text-[11px] text-slate-500">bãi xe cá nhân</span>
               </div>
-              <div className="bg-teal-50/60 border border-teal-100 rounded-xl p-3.5 min-w-[130px]">
-                <span className="text-xs text-teal-700 font-medium flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Đang theo dõi</span>
+              <div className="px-3.5 py-1.5 min-w-[130px] border-l border-teal-200">
+                <span className="text-xs text-teal-700 font-medium flex items-center gap-1">Đang theo dõi</span>
                 <span className="block text-2xl font-bold text-teal-700 mt-0.5">{favorites.length}</span>
                 <span className="text-[11px] text-slate-500">bãi trong danh sách</span>
               </div>
@@ -109,7 +105,7 @@ const FavoriteFacilitiesPage = () => {
           </div>
         </section>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        <div className="border-b border-slate-200 pb-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
           <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -123,7 +119,7 @@ const FavoriteFacilitiesPage = () => {
               <option value="rating">Đánh giá cao nhất</option>
             </select>
           </div>
-          <Link to="/search" className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-teal-50 text-slate-700 hover:text-teal-700 rounded-lg text-xs font-bold transition-all shrink-0">
+          <Link to="/search" className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-teal-700 hover:text-teal-900 text-xs font-bold transition-all shrink-0">
             <MapPin className="w-4 h-4" /> Tìm thêm bãi xe
           </Link>
         </div>
@@ -136,14 +132,14 @@ const FavoriteFacilitiesPage = () => {
         )}
 
         {favorites.length === 0 && !error ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-sm">
+          <div className="py-16 text-center border-y border-slate-200">
             <Heart className="w-16 h-16 text-slate-200 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-700 mb-2">Chưa có bãi xe nào</h3>
             <p className="text-slate-500 max-w-md mx-auto mb-6">Bạn chưa lưu bãi xe nào. Hãy tìm và lưu các bãi xe bạn quan tâm để truy cập nhanh.</p>
             <Link to="/search" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition-colors inline-flex items-center gap-2"><Search className="w-4 h-4" /> Tìm bãi đỗ xe ngay</Link>
           </div>
         ) : filteredFavorites.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-slate-300 shadow-sm">
+          <div className="py-16 text-center border-y border-dashed border-slate-300">
             <Heart className="w-14 h-14 text-slate-200 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-slate-800">Không tìm thấy bãi xe phù hợp</h3>
             <p className="text-sm text-slate-500 mt-1 mb-5">Thử thay đổi từ khóa tìm kiếm của bạn.</p>
@@ -154,7 +150,7 @@ const FavoriteFacilitiesPage = () => {
             {filteredFavorites.map((facility) => (
               <article
                 key={facility.id} 
-                className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group border border-slate-100"
+                className="bg-white rounded-xl overflow-hidden shadow-none hover:shadow-md transition-all duration-300 flex flex-col justify-between group border border-slate-200"
               >
                 <div>
                 <div className="relative h-52 w-full overflow-hidden bg-slate-100">
@@ -197,7 +193,7 @@ const FavoriteFacilitiesPage = () => {
                     <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-teal-600" />
                     {facility.address}
                   </p>
-                  <div className="bg-teal-50 rounded-lg p-2.5 flex items-center gap-2 border border-teal-100">
+                  <div className="py-2 border-y border-teal-100 flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                     <span className="text-xs font-bold text-teal-800">Đang được theo dõi</span>
                   </div>
@@ -208,7 +204,7 @@ const FavoriteFacilitiesPage = () => {
                 </div>
                 </div>
                 <div className="p-5 pt-0 mt-2 flex flex-col gap-3">
-                  <div className="flex items-baseline justify-between pt-3 bg-slate-50/60 -mx-5 px-5 py-2.5">
+                  <div className="flex items-baseline justify-between pt-3 border-t border-slate-100">
                     <span className="text-xs text-slate-500">Giá thuê tháng niêm yết:</span>
                     <div className="text-right"><span className="text-lg font-bold text-teal-700">{Number(facility.price_per_month || 0).toLocaleString('vi-VN')} đ</span><span className="text-[11px] text-slate-500">/tháng</span></div>
                   </div>
