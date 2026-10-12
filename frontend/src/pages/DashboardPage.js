@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
@@ -19,7 +20,8 @@ import Toast from '../components/common/Toast';
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeAdminTab, setActiveAdminTab] = useState('registrations'); // Menu bên trái cho Admin
+  const location = useLocation();
+  const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations'); // Menu bên trái cho Admin
   const [activeProviderTab, setActiveProviderTab] = useState('facility'); // Menu bên trái cho Provider
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);

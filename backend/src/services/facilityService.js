@@ -6,13 +6,25 @@ class FacilityService {
    */
   async searchFacilities({ keyword, vehicle_type, amenities, lat, lng, radius }) {
     const facilities = await facilityRepository.searchActiveFacilities({ keyword, vehicle_type, amenities });
+    const facilitiesWithRatings = facilities.map((facility) => {
+      const ratings = facility.reviews || [];
+      const avgRating = ratings.length > 0
+        ? parseFloat((ratings.reduce((sum, review) => sum + review.rating, 0) / ratings.length).toFixed(1))
+        : null;
+
+      return {
+        ...facility,
+        avg_rating: avgRating,
+        total_reviews: ratings.length,
+      };
+    });
 
     if (!lat || !lng) {
-      return facilities;
+      return facilitiesWithRatings;
     }
 
     // Tính khoảng cách nếu có tọa độ GPS
-    const facilitiesWithDistance = facilities.map(facility => {
+    const facilitiesWithDistance = facilitiesWithRatings.map(facility => {
       if (!facility.latitude || !facility.longitude) return { ...facility, distance: null };
 
       const distance = this.calculateDistance(lat, lng, facility.latitude, facility.longitude);

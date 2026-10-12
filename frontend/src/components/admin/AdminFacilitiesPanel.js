@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Building2, User, Phone, XCircle, Lock, Unlock, Eye, EyeOff, Edit } from 'lucide-react';
+import { Search, MapPin, Building2, User, Phone, Lock, Unlock, Eye, EyeOff, Edit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import Toast from '../common/Toast';
 
@@ -9,11 +10,7 @@ const AdminFacilitiesPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
-  // States cho tính năng Cập nhật (Edit)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingFacility, setEditingFacility] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', address: '', capacity: '', price_per_month: '', system_fee: '' });
-  const [isSaving, setIsSaving] = useState(false);
+  const navigate = useNavigate();
 
   const fetchFacilities = async () => {
     try {
@@ -60,35 +57,6 @@ const AdminFacilitiesPanel = () => {
     } catch (error) {
       console.error('Lỗi khi thay đổi trạng thái:', error);
       setToast({ show: true, message: error.message || 'Lỗi khi thay đổi trạng thái', type: 'error' });
-    }
-  };
-
-  const handleEditClick = (facility) => {
-    setEditingFacility(facility);
-    setEditForm({
-      name: facility.name,
-      address: facility.address,
-      capacity: facility.capacity,
-      price_per_month: facility.price_per_month,
-      system_fee: facility.system_fee || 0
-    });
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      setIsSaving(true);
-      const res = await adminService.updateFacility(editingFacility.id, editForm);
-      if (res.status === 'success') {
-        setToast({ show: true, message: 'Cập nhật bãi đỗ xe thành công!', type: 'success' });
-        setFacilities(prev => prev.map(f => f.id === editingFacility.id ? { ...f, ...editForm } : f));
-        setIsEditModalOpen(false);
-      }
-    } catch (error) {
-      console.error('Lỗi cập nhật:', error);
-      setToast({ show: true, message: error.message || 'Lỗi khi cập nhật cơ sở', type: 'error' });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -200,7 +168,7 @@ const AdminFacilitiesPanel = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
                     <button
-                      onClick={() => handleEditClick(facility)}
+                      onClick={() => navigate(`/admin/facilities/${facility.id}/edit`)}
                       className="inline-flex items-center px-3 py-2 border border-transparent text-xs leading-4 font-bold rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
                     >
                       <Edit className="w-4 h-4 mr-1" /> Cập nhật
@@ -237,97 +205,6 @@ const AdminFacilitiesPanel = () => {
         />
       )}
 
-      {/* MODAL CẬP NHẬT CƠ SỞ */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center">
-                <Edit className="w-5 h-5 mr-2 text-indigo-600" /> Cập Nhật Thông Tin Cơ Sở
-              </h3>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition">
-                <XCircle className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Tên bãi đỗ xe</label>
-                <input 
-                  type="text" 
-                  value={editForm.name} 
-                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Địa chỉ chi tiết</label>
-                <input 
-                  type="text" 
-                  value={editForm.address} 
-                  onChange={(e) => setEditForm({...editForm, address: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Sức chứa (slots)</label>
-                  <input 
-                    type="number" 
-                    value={editForm.capacity} 
-                    onChange={(e) => setEditForm({...editForm, capacity: e.target.value})}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Giá thuê/tháng (VNĐ)</label>
-                  <input 
-                    type="number" 
-                    value={editForm.price_per_month} 
-                    onChange={(e) => setEditForm({...editForm, price_per_month: e.target.value})}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Phí nền tảng (VNĐ) <span className="text-gray-400 font-normal text-xs">(Phí thu của Provider)</span></label>
-                <input 
-                  type="number" 
-                  value={editForm.system_fee} 
-                  onChange={(e) => setEditForm({...editForm, system_fee: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-yellow-50"
-                />
-              </div>
-              
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-start gap-3">
-                 <div className="mt-0.5"><Lock className="w-5 h-5 text-blue-500" /></div>
-                 <div>
-                    <h4 className="text-sm font-bold text-blue-900">Tính năng khóa cơ sở</h4>
-                    <p className="text-xs text-blue-700 mt-1">Để khóa hoặc ẩn cơ sở này khỏi hệ thống, vui lòng sử dụng nút <strong>Khóa</strong> màu đỏ ở ngoài bảng danh sách.</p>
-                 </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-              <button 
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-              >
-                Hủy bỏ
-              </button>
-              <button 
-                onClick={handleSaveEdit}
-                disabled={isSaving}
-                className="px-6 py-2 bg-indigo-600 border border-transparent rounded-lg text-sm font-bold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
-              >
-                {isSaving ? (
-                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Đang lưu...</>
-                ) : 'Lưu Thay Đổi'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

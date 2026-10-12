@@ -288,6 +288,10 @@ class FacilityRepository {
             amenity: true,
           },
         },
+        reviews: {
+          where: { status: "VISIBLE" },
+          select: { rating: true },
+        },
       },
     });
 
@@ -408,6 +412,18 @@ class FacilityRepository {
         name: updateData.name !== undefined ? updateData.name : undefined,
         address:
           updateData.address !== undefined ? updateData.address : undefined,
+        latitude:
+          updateData.latitude !== undefined
+            ? updateData.latitude === "" || updateData.latitude === null
+              ? null
+              : parseFloat(updateData.latitude)
+            : undefined,
+        longitude:
+          updateData.longitude !== undefined
+            ? updateData.longitude === "" || updateData.longitude === null
+              ? null
+              : parseFloat(updateData.longitude)
+            : undefined,
         capacity:
           updateData.capacity !== undefined
             ? parseInt(updateData.capacity, 10)
