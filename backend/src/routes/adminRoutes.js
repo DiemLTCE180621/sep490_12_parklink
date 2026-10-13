@@ -15,6 +15,12 @@ router.use(authenticateToken, authorizeRoles('ADMIN'));
 router.get('/registrations/pending', adminController.getPendingRegistrations);
 
 /**
+ * Lấy chi tiết một yêu cầu đăng ký bãi đỗ xe theo ID
+ */
+router.get('/registrations/:id', adminController.getRegistrationDetails);
+router.get('/facilities/:id', adminController.getRegistrationDetails);
+
+/**
  * M2-UC21: Approve facility registration
  * Phê duyệt yêu cầu đăng ký bãi đỗ xe
  */

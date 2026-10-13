@@ -9,6 +9,14 @@ const inspectorService = {
   },
 
   /**
+   * Lấy chi tiết cơ sở bãi đỗ xe cần khảo sát
+   * @param {number} id
+   */
+  getFacilityDetails: async (id) => {
+    return await api.get(`/inspector/facilities/${id}`);
+  },
+
+  /**
    * Submit kết quả khảo sát
    * @param {number} id 
    * @param {object} data - { capacity, images }

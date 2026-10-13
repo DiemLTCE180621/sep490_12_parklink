@@ -23,6 +23,7 @@ import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
 import AdminFacilityEditPage from './pages/admin/AdminFacilityEditPage';
+import AdminRegistrationDetailPage from './pages/admin/AdminRegistrationDetailPage';
 import ScrollToTop from './components/common/ScrollToTop';
 
 const LoadingScreen = () => (
@@ -100,6 +101,21 @@ function AppContent() {
           <Route path="/admin/facilities/:id/edit" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminFacilityEditPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/registrations/:id" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN', 'FIELD_INSPECTOR']}>
+              <AdminRegistrationDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/approvals/:id" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN', 'FIELD_INSPECTOR']}>
+              <AdminRegistrationDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/inspector/registrations/:id" element={
+            <RoleProtectedRoute allowedRoles={['FIELD_INSPECTOR', 'ADMIN']}>
+              <AdminRegistrationDetailPage />
             </RoleProtectedRoute>
           } />
 

@@ -14,6 +14,14 @@ const adminService = {
   },
 
   /**
+   * Lấy chi tiết hồ sơ đăng ký bãi đỗ xe theo ID
+   * @param {number} id
+   */
+  getRegistrationDetails: async (id) => {
+    return await api.get(`/admin/registrations/${id}`);
+  },
+
+  /**
    * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING (gửi mail chuẩn bị)
    * @param {number} id - ID của bãi đỗ xe
    */

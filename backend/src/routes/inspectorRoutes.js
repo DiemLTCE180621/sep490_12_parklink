@@ -14,6 +14,12 @@ router.use(authenticateToken, authorizeRoles('FIELD_INSPECTOR'));
 router.get('/facilities/preparing', inspectorController.getPreparingFacilities);
 
 /**
+ * Lấy chi tiết bãi đỗ xe cần khảo sát
+ */
+router.get('/facilities/:id', inspectorController.getFacilityDetails);
+router.get('/registrations/:id', inspectorController.getFacilityDetails);
+
+/**
  * Submit kết quả khảo sát
  */
 router.put('/facilities/:id/inspect', inspectorController.submitInspection);

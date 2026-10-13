@@ -16,6 +16,23 @@ class AdminService {
   }
 
   /**
+   * Lấy chi tiết hồ sơ đăng ký bãi đỗ xe theo ID
+   * @param {number} facilityId
+   */
+  async getRegistrationDetails(facilityId) {
+    const facility = await facilityRepository.findById(facilityId);
+    if (!facility) {
+      throw Object.assign(new Error("Không tìm thấy bãi đỗ xe!"), {
+        status: 404,
+      });
+    }
+    if (facility.provider) {
+      delete facility.provider.password;
+    }
+    return facility;
+  }
+
+  /**
    * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING
    * Admin chấp thuận đến thực địa chuẩn bị. Gửi mail thông báo cho Provider.
    * @param {number} facilityId

@@ -147,7 +147,9 @@ class FacilityService {
     }
 
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
-    const availableSlots = facility.capacity - activeContractsCount;
+    const availableSlots = facility.available_slots !== undefined && facility.available_slots !== null
+      ? facility.available_slots
+      : Math.max(0, facility.capacity - activeContractsCount);
 
     return {
       facility_id: facilityId,
