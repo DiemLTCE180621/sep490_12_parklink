@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProviderReservations, acceptReservation, rejectReservation } from '../../services/reservationService';
 import ConfirmModal from '../modals/ConfirmModal';
-import CreateConfirmationRecordModal from '../CreateConfirmationRecordModal';
 import Toast from '../common/Toast';
 import {
   Car,
@@ -33,9 +32,6 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING, APPROVED, REJECTED, CANCELLED
   const [searchTerm, setSearchTerm] = useState('');
 
-  // States for Contract creation modal
-  const [selectedReservationForContract, setSelectedReservationForContract] = useState(null);
-  const [isCreateContractOpen, setIsCreateContractOpen] = useState(false);
 
   // States for Confirm Modal (Accept / Reject)
   const [confirmModalState, setConfirmModalState] = useState({
@@ -473,8 +469,9 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedReservationForContract(item);
-                        setIsCreateContractOpen(true);
+                        navigate(`/provider/reservations/${item.id}/create-contract`, {
+                          state: { reservation: item }
+                        });
                       }}
                       className="px-4 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center justify-center gap-1.5"
                     >
@@ -526,22 +523,6 @@ const ProviderReservationsPanel = ({ onNavigateToContracts }) => {
         </div>
       )}
 
-      {/* CREATE CONTRACT MODAL */}
-      <CreateConfirmationRecordModal
-        isOpen={isCreateContractOpen}
-        onClose={() => {
-          setIsCreateContractOpen(false);
-          setSelectedReservationForContract(null);
-        }}
-        reservation={selectedReservationForContract}
-        onSuccess={() => {
-          setToastInfo({ message: 'Tạo và gửi hợp đồng điện tử thành công!', type: 'success' });
-          fetchProviderReservations();
-          if (onNavigateToContracts) {
-            onNavigateToContracts();
-          }
-        }}
-      />
 
       {/* CONFIRMATION MODAL FOR ACCEPT / REJECT */}
       <ConfirmModal

@@ -17,8 +17,10 @@ import ContractDetailPage from './pages/ContractDetailPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
 import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
 import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
+import CreateReservationPage from './pages/customer/CreateReservationPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
 import ProviderReservationDetailPage from './pages/provider/ProviderReservationDetailPage';
+import ProviderCreateContractPage from './pages/provider/ProviderCreateContractPage';
 import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
@@ -120,6 +122,16 @@ function AppContent() {
           } />
 
           {/* Customer only */}
+          <Route path="/facilities/:facilityId/reserve" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CreateReservationPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/reserve/:facilityId" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CreateReservationPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/my-reservations" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerReservationsPage />
@@ -180,6 +192,21 @@ function AppContent() {
           <Route path="/provider-reservations/:id" element={
             <RoleProtectedRoute allowedRoles={['PROVIDER']}>
               <ProviderReservationDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/provider/reservations/:id/create-contract" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderCreateContractPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/provider-reservations/:id/create-contract" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderCreateContractPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/create/:reservationId" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderCreateContractPage />
             </RoleProtectedRoute>
           } />
 

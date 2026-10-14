@@ -15,14 +15,14 @@ import {
 
 const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess }) => {
   const defaultTerms = useMemo(() => ({
-    customer_obligations:
-      '1. Thanh toán đầy đủ tiền thuê bãi đỗ xe theo đúng hạn thỏa thuận hàng tháng.\n2. Đỗ xe đúng vị trí được phân công, tuân thủ nghiêm ngặt nội quy bãi xe và quy định về Phòng cháy chữa cháy (PCCC).\n3. Thông báo rõ cho chủ bãi về tình trạng hoặc đặc tính nguy hiểm của phương tiện (nếu có).\n4. Tự bảo quản các vật dụng tài sản cá nhân có giá trị rời để bên trong xe.',
     owner_obligations:
-      '1. Bố trí chỗ đỗ xe an toàn, duy trì hạ tầng, vệ sinh và hệ thống giám sát an ninh 24/7.\n2. Bảo quản phương tiện đỗ tại bãi theo quy định của Bộ luật Dân sự 2015; chịu trách nhiệm bồi thường thiệt hại theo quy định pháp luật nếu phương tiện bị mất mát hoặc hư hỏng do lỗi trực tiếp của bãi đỗ xe.\n3. Không được tự ý di chuyển hoặc giao phương tiện cho người thứ ba sử dụng khi chưa có sự đồng ý của khách thuê.',
+      '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.',
+    customer_obligations:
+      '- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất 15 ngày.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.',
     termination_conditions:
-      '1. Hợp đồng đương nhiên hết hiệu lực khi hết thời hạn thỏa thuận mà hai bên không gia hạn.\n2. Mỗi bên có quyền đơn phương chấm dứt hợp đồng trước hạn nếu bên kia vi phạm nghiêm trọng nghĩa vụ hợp đồng và phải thông báo bằng thông điệp dữ liệu điện tử/văn bản trước ít nhất 15 ngày.',
+      '- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.',
     dispute_resolution:
-      '1. Hợp đồng điện tử này được lập và có giá trị pháp lý tuân thủ theo Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam.\n2. Mọi tranh chấp phát sinh sẽ được ưu tiên thương lượng, hòa giải trên nền tảng ParkLink. Trường hợp không thể tự thỏa thuận, tranh chấp sẽ do Tòa án nhân dân có thẩm quyền giải quyết.'
+      '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.'
   }), []);
 
   const [formData, setFormData] = useState({
@@ -226,11 +226,55 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* SECTION II: THỜI HẠN & GIÁ THUỂ */}
+          {/* ĐIỀU 1: ĐỐI TƯỢNG GỬI, GIỮ */}
+          <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+            <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-teal-800">
+                <Car className="w-4 h-4 text-teal-600" /> Điều 1: Đối Tượng Gửi, Giữ
+              </span>
+              <span className="text-[10px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+                Phương tiện đăng ký
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 mb-1">
+                  Loại phương tiện / Hãng xe <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="vehicle_type"
+                  value={formData.vehicle_type}
+                  onChange={handleChange}
+                  placeholder="VD: Ô tô (4-7 chỗ) hoặc Mitsubishi Xforce"
+                  required
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 mb-1">
+                  Biển kiểm soát / Biển số xe đăng ký <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="license_plate"
+                  value={formData.license_plate}
+                  onChange={handleChange}
+                  placeholder="VD: 65A-563.94"
+                  required
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ĐIỀU 2: GIÁ CẢ VÀ PHƯƠNG THỨC VÀ THỜI HẠN THANH TOÁN */}
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
-                <Calendar className="w-4 h-4 text-teal-600" /> II. Thời Hạn Hợp Đồng & Phí Thuê
+                <Calendar className="w-4 h-4 text-teal-600" /> Điều 2: Giá Cả Và Phương Thức Và Thời Hạn Thanh Toán
               </span>
               {getDurationMonths() && (
                 <span className="text-[11px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
@@ -242,7 +286,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Giá thuê thỏa thuận hàng tháng (VNĐ) <span className="text-red-500">*</span>
+                  Giá dịch vụ trông giữ xe thỏa thuận (VNĐ) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -250,7 +294,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                     name="agreed_price"
                     value={formData.agreed_price}
                     onChange={handleChange}
-                    placeholder="VD: 1500000"
+                    placeholder="VD: 850000"
                     required
                     className="w-full px-3 py-2 pr-12 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                   />
@@ -280,13 +324,13 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                 />
                 <p className="text-[11px] text-slate-500 mt-1">
-                  Định kỳ thanh toán trước ngày {formData.payment_deadline_day || 5} mỗi tháng.
+                  Định kỳ thanh toán từ ngày 01 đến ngày {formData.payment_deadline_day || 5} mỗi tháng.
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Ngày bắt đầu hiệu lực <span className="text-red-500">*</span>
+                  Thời gian gửi: Ngày bắt đầu hiệu lực <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -300,7 +344,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
 
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Ngày hết hạn hợp đồng <span className="text-red-500">*</span>
+                  Thời gian gửi: Ngày hết hạn hợp đồng <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -311,69 +355,42 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* SECTION III: VỊ TRÍ ĐỖ XE & PHƯƠNG TIỆN */}
-          <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
-            <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center gap-1.5 text-teal-800">
-              <Car className="w-4 h-4 text-teal-600" /> III. Vị Trí Đỗ Xe & Phương Tiện
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Vị trí / Ô đỗ phân công cụ thể
+                  Vị trí gửi / Ô đỗ phân công trong bãi
                 </label>
                 <input
                   type="text"
                   name="parking_spot"
                   value={formData.parking_spot}
                   onChange={handleChange}
-                  placeholder="VD: Slot #A-12 hoặc Chỗ đỗ tự do"
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Biển số xe / Loại xe đăng ký
-                </label>
-                <input
-                  type="text"
-                  name="license_plate"
-                  value={formData.license_plate}
-                  onChange={handleChange}
-                  placeholder="VD: 65A-123.45"
+                  placeholder="VD: Bãi xe Trung tâm hoặc Slot #A-12"
                   className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                 />
               </div>
             </div>
           </div>
 
-          {/* SECTION IV: ĐIỀU KHOẢN PHÁP LÝ HỢP ĐỒNG */}
+          {/* CÁC ĐIỀU KHOẢN THỎA THUẬN (ĐIỀU 3 - ĐIỀU 6) */}
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
-                <ShieldCheck className="w-4 h-4 text-teal-600" /> IV. Bản Thảo Điều Khoản Hợp Đồng
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Các Điều Khoản Thỏa Thuận (Điều 3 - Điều 6)
               </span>
-              <span className="text-[10px] text-slate-400 font-normal">Chuẩn Bộ luật Dân sự 2015 & Luật GDĐT</span>
+              <span className="text-[10px] text-slate-400 font-normal">Chuẩn Bộ luật Dân sự 2015</span>
+            </div>
+
+            <div className="p-2.5 bg-teal-50/70 rounded-lg border border-teal-200/70 text-[11px] text-teal-900 flex items-center gap-2">
+              <Info className="w-4 h-4 text-teal-600 shrink-0" />
+              <span>
+                <strong>Điều 1</strong> (Đối tượng xe gửi) và <strong>Điều 2</strong> (Giá cả & thanh toán) đã ở phía trên. Dưới đây là <strong>Điều 3, 4, 5, 6</strong>:
+              </span>
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
               {/* TAB NAVIGATION */}
               <div className="flex border-b border-slate-200 bg-slate-100/80 overflow-x-auto text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setActiveTermsTab('customer')}
-                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'customer'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  1. Nghĩa vụ Khách Thuê
-                </button>
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('owner')}
@@ -383,18 +400,18 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                       : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  2. Nghĩa vụ Chủ Bãi
+                  Điều 3: Nghĩa vụ Bên A (Chủ bãi)
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTermsTab('termination')}
+                  onClick={() => setActiveTermsTab('customer')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'termination'
+                    activeTermsTab === 'customer'
                       ? 'border-teal-700 text-teal-800 bg-white font-bold'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  3. Chấm Dứt Hợp Đồng
+                  Điều 4: Nghĩa vụ Bên B (Khách thuê)
                 </button>
                 <button
                   type="button"
@@ -405,34 +422,52 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                       : 'border-transparent text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  4. Tranh Chấp
+                  Điều 5: Tranh Chấp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTermsTab('termination')}
+                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
+                    activeTermsTab === 'termination'
+                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Điều 6: Hiệu Lực HĐ
                 </button>
               </div>
 
               {/* TAB PANEL */}
               <div className="p-3 bg-white">
-                {activeTermsTab === 'customer' && (
+                {activeTermsTab === 'owner' && (
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      Nghĩa vụ và trách nhiệm của Bên B (Khách thuê):
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Điều 3: Quyền và nghĩa vụ của Bên A (Bên giữ xe):
                     </label>
                     <textarea
-                      name="customer_obligations"
-                      rows="4"
-                      value={formData.customer_obligations}
+                      name="owner_obligations"
+                      rows="5"
+                      value={formData.owner_obligations}
                       onChange={handleChange}
                       className="w-full p-3 border border-slate-300 rounded-lg text-xs font-normal text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-600"
                     />
                   </div>
                 )}
 
-                {activeTermsTab === 'owner' && (
+                {activeTermsTab === 'customer' && (
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      Nghĩa vụ và trách nhiệm trông giữ của Bên A (Chủ bãi):
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Điều 4: Quyền và nghĩa vụ của Bên B (Bên gửi xe):
                     </label>
                     <textarea
-                      name="owner_obligations"
+                      name="customer_obligations"
+                      rows="5"
+                      value={formData.customer_obligations}
+                      onChange={handleChange}
+                      className="w-full p-3 border border-slate-300 rounded-lg text-xs font-normal text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-600"
+                    />
+                  </div>
+                )}
                       rows="4"
                       value={formData.owner_obligations}
                       onChange={handleChange}
