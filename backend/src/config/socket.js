@@ -1,6 +1,8 @@
 const { Server } = require('socket.io');
 const chatRepository = require('../repositories/chatRepository');
 
+let ioInstance = null;
+
 const initSocket = (server) => {
     // Khởi tạo Socket.IO với CORS
     const io = new Server(server, {
@@ -9,6 +11,8 @@ const initSocket = (server) => {
             methods: ["GET", "POST"]
         }
     });
+
+    ioInstance = io;
 
     const jwt = require('jsonwebtoken');
     const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
@@ -25,12 +29,7 @@ const initSocket = (server) => {
                 return next(new Error('Authentication error: Invalid token'));
             }
 
-            // Kiểm tra phân quyền: Chỉ cho phép CUSTOMER và PROVIDER
-            const role = decodedUser.role;
-            if (role !== 'CUSTOMER' && role !== 'PROVIDER') {
-                return next(new Error('Authorization error: You do not have permission to chat'));
-            }
-
+            // Cho phép các vai trò hợp lệ trong hệ thống kết nối Socket
             socket.user = decodedUser;
             next();
         });
@@ -85,4 +84,6 @@ const initSocket = (server) => {
     return io;
 };
 
-module.exports = { initSocket };
+const getIO = () => ioInstance;
+
+module.exports = { initSocket, getIO };

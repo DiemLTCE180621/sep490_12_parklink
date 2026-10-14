@@ -160,6 +160,8 @@ model Review {
   comment         String   @db.Text
   provider_reply  String?  @db.Text
   status          String   @default("VISIBLE")
+  is_flagged      Boolean  @default(false)
+  flagged_reason  String?  @db.Text
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
@@ -188,6 +190,7 @@ model Complaint {
   facility_id    Int
   title          String
   description    String   @db.Text
+  image_urls     String[] @default([])
   status         String   @default("OPEN")
   admin_response String?  @db.Text
   created_at     DateTime @default(now())
@@ -256,4 +259,19 @@ model Message {
 
   room       Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
   sender     User      @relation(fields: [sender_id], references: [id])
+}
+
+// ------------------------------------------------------
+// NHÓM QUẢN LÝ PHÍ NỀN TẢNG
+// ------------------------------------------------------
+model Platform_Fee {
+  id          Int      @id @default(autoincrement())
+  name        String
+  min_slots   Int
+  max_slots   Int?
+  fee_amount  Decimal
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }

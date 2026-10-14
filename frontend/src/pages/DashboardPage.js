@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
 import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
+import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
+import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import EditProfileModal from '../components/EditProfileModal';
 import Toast from '../components/common/Toast';
@@ -140,6 +142,12 @@ const DashboardPage = () => {
                 >
                   <AlertCircle className="w-5 h-5 text-red-500" /> Quản lý Khiếu Nại
                 </button>
+                <button
+                  onClick={() => setActiveAdminTab("reviews")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "reviews" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <Star className="w-5 h-5 text-amber-500" /> Quản Lý Đánh Giá
+                </button>
               </div>
             </div>
 
@@ -150,6 +158,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'users' && <AdminUsersPanel />}
               {activeAdminTab === 'inspectors' && <AdminFieldInspectorsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
+              {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -204,6 +213,12 @@ const DashboardPage = () => {
                 >
                   <AlertCircle className="w-5 h-5 text-amber-500" /> Quản Lý Khiếu Nại
                 </button>
+                <button
+                  onClick={() => setActiveProviderTab('reviews')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'reviews' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Star className="w-5 h-5 text-amber-500" /> Đánh Giá Khách Hàng
+                </button>
               </div>
             </div>
 
@@ -215,6 +230,7 @@ const DashboardPage = () => {
               )}
               {activeProviderTab === 'contracts' && <ProviderContractsPanel />}
               {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
+              {activeProviderTab === 'reviews' && <ProviderReviewsPanel />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
