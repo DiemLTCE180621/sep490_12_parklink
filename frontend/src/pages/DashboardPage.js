@@ -22,11 +22,20 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations'); // Menu bên trái cho Admin
-  const [activeProviderTab, setActiveProviderTab] = useState('facility'); // Menu bên trái cho Provider
+  const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility'); // Menu bên trái cho Provider
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
-  const [toastInfo, setToastInfo] = useState(null);
+  const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
+
+  React.useEffect(() => {
+    if (location.state?.providerTab) {
+      setActiveProviderTab(location.state.providerTab);
+    }
+    if (location.state?.message) {
+      setToastInfo({ message: location.state.message, type: location.state.type || 'success' });
+    }
+  }, [location.state]);
 
   const roleName = user?.role?.name || "CUSTOMER";
 

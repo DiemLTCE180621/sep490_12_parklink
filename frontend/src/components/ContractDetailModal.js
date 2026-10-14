@@ -252,28 +252,40 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                 {/* 6. ĐIỀU KHOẢN HỢP ĐỒNG */}
                 <div className="space-y-3">
                   <h4 className="text-xs font-bold text-slate-900 uppercase border-b border-slate-200 pb-1">
-                    5. Các Điều Khoản & Quy Định Pháp Lý (BLDS 2015 & Luật GDĐT)
+                    5. Các Điều Khoản & Quy Định Pháp Lý (Bộ luật Dân sự 2015)
                   </h4>
 
                   <div className="space-y-2.5 text-xs text-slate-700 leading-relaxed">
                     <div>
-                      <strong className="text-slate-900 block font-semibold mb-0.5">5.1. Quyền và nghĩa vụ của Khách Thuê (Bên B):</strong>
-                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">{terms.customer_obligations || '1. Thanh toán đầy đủ tiền thuê bãi đỗ xe theo đúng hạn thỏa thuận hàng tháng.\n2. Đỗ xe đúng vị trí được phân công, tuân thủ nghiêm ngặt nội quy bãi xe và quy định về Phòng cháy chữa cháy (PCCC).\n3. Thông báo rõ cho chủ bãi về tình trạng hoặc đặc tính nguy hiểm của phương tiện (nếu có).\n4. Tự bảo quản các vật dụng tài sản cá nhân có giá trị rời để bên trong xe.'}</p>
+                      <strong className="text-slate-900 block font-semibold mb-0.5">Điều 3: Quyền và nghĩa vụ của Bên A (Bên giữ xe):</strong>
+                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">
+                        {terms.owner_obligations ||
+                          '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.'}
+                      </p>
                     </div>
 
                     <div>
-                      <strong className="text-slate-900 block font-semibold mb-0.5">5.2. Quyền và nghĩa vụ của Chủ Bãi (Bên A):</strong>
-                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">{terms.owner_obligations || '1. Bố trí chỗ đỗ xe an toàn, duy trì hạ tầng, vệ sinh và hệ thống giám sát an ninh 24/7.\n2. Bảo quản phương tiện đỗ tại bãi theo quy định của Bộ luật Dân sự 2015; chịu trách nhiệm bồi thường thiệt hại theo quy định pháp luật nếu phương tiện bị mất mát hoặc hư hỏng do lỗi trực tiếp của bãi đỗ xe.\n3. Không được tự ý di chuyển hoặc giao phương tiện cho người thứ ba sử dụng khi chưa có sự đồng ý của khách thuê.'}</p>
+                      <strong className="text-slate-900 block font-semibold mb-0.5">Điều 4: Quyền và nghĩa vụ của Bên B (Bên gửi xe):</strong>
+                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">
+                        {terms.customer_obligations ||
+                          '- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất 15 ngày.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.'}
+                      </p>
                     </div>
 
                     <div>
-                      <strong className="text-slate-900 block font-semibold mb-0.5">5.3. Điều khoản Chấm dứt hợp đồng:</strong>
-                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">{terms.termination_conditions || '1. Hợp đồng đương nhiên hết hiệu lực khi hết thời hạn thỏa thuận mà hai bên không gia hạn.\n2. Mỗi bên có quyền đơn phương chấm dứt hợp đồng trước hạn nếu bên kia vi phạm nghiêm trọng nghĩa vụ hợp đồng và phải thông báo bằng thông điệp dữ liệu điện tử/văn bản trước ít nhất 15 ngày.'}</p>
+                      <strong className="text-slate-900 block font-semibold mb-0.5">Điều 5: Giải quyết tranh chấp:</strong>
+                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">
+                        {terms.dispute_resolution ||
+                          '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.'}
+                      </p>
                     </div>
 
                     <div>
-                      <strong className="text-slate-900 block font-semibold mb-0.5">5.4. Giải quyết tranh chấp:</strong>
-                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">{terms.dispute_resolution || '1. Hợp đồng điện tử này được lập và có giá trị pháp lý tuân thủ theo Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam.\n2. Mọi tranh chấp phát sinh sẽ được ưu tiên thương lượng, hòa giải trên nền tảng ParkLink. Trường hợp không thể tự thỏa thuận, tranh chấp sẽ do Tòa án nhân dân có thẩm quyền giải quyết.'}</p>
+                      <strong className="text-slate-900 block font-semibold mb-0.5">Điều 6: Hiệu lực của hợp đồng:</strong>
+                      <p className="whitespace-pre-line text-slate-600 pl-2 border-l-2 border-slate-300">
+                        {terms.termination_conditions ||
+                          `- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`}
+                      </p>
                     </div>
                   </div>
                 </div>

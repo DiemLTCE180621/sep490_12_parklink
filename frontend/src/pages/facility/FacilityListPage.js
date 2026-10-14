@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAvailableFacilities } from '../../services/reservationService';
-import SendReservationModal from '../../components/modals/SendReservationModal';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Search, Building2, Shield, Send, AlertCircle, CheckCircle2, User, Loader2, ArrowLeft } from 'lucide-react';
 
 const FacilityListPage = () => {
@@ -10,16 +9,18 @@ const FacilityListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFacility, setSelectedFacility] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
 
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchFacilities();
-  }, []);
+    if (location.state?.toastMsg) {
+      setToastMsg(location.state.toastMsg);
+    }
+  }, [location.state]);
 
   const fetchFacilities = async () => {
     try {
@@ -35,10 +36,9 @@ const FacilityListPage = () => {
     }
   };
 
-  const handleOpenModal = (facility) => {
+  const handleOpenReservation = (facility) => {
     if (!isAuthenticated) {
-      alert('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
-      navigate('/login');
+      navigate('/login', { state: { from: `/facilities/${facility.id}/reserve` } });
       return;
     }
 
@@ -47,16 +47,7 @@ const FacilityListPage = () => {
       return;
     }
 
-    setSelectedFacility(facility);
-    setIsModalOpen(true);
-  };
-
-  const handleReservationSuccess = () => {
-    setIsModalOpen(false);
-    setToastMsg('Gửi yêu cầu thuê thành công! Đang chuyển tới trang quản lý yêu cầu...');
-    setTimeout(() => {
-      navigate('/my-reservations');
-    }, 1500);
+    navigate(`/facilities/${facility.id}/reserve`, { state: { facility } });
   };
 
   // Lọc bãi đỗ theo từ khóa tìm kiếm
@@ -203,7 +194,7 @@ const FacilityListPage = () => {
                 {/* CARD FOOTER ACTION */}
                 <div className="p-6 pt-0">
                   <button
-                    onClick={() => handleOpenModal(facility)}
+                    onClick={() => handleOpenReservation(facility)}
                     className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-center gap-2"
                   >
                     <Send className="w-4 h-4" /> Gửi Yêu Cầu Thuê Bãi Xe
@@ -214,14 +205,6 @@ const FacilityListPage = () => {
           </div>
         )}
       </div>
-
-      {/* MODAL GỬI YÊU CẦU THUÊ */}
-      <SendReservationModal
-        facility={selectedFacility}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleReservationSuccess}
-      />
     </div>
   );
 };

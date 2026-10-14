@@ -6,7 +6,6 @@ import {
   rejectReservation
 } from '../../services/reservationService';
 import ConfirmModal from '../../components/modals/ConfirmModal';
-import CreateConfirmationRecordModal from '../../components/CreateConfirmationRecordModal';
 import Toast from '../../components/common/Toast';
 import {
   Car,
@@ -44,8 +43,6 @@ const ProviderReservationDetailPage = () => {
   });
   const [processingAction, setProcessingAction] = useState(false);
 
-  // Create Contract Modal
-  const [isCreateContractOpen, setIsCreateContractOpen] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -319,7 +316,11 @@ const ProviderReservationDetailPage = () => {
                       Yêu cầu đã được bạn phê duyệt chấp nhận. Hãy tạo Biên bản xác nhận / Hợp đồng điện tử để gửi cho khách hàng ký xác nhận.
                     </p>
                     <button
-                      onClick={() => setIsCreateContractOpen(true)}
+                      onClick={() =>
+                        navigate(`/provider/reservations/${reservation.id}/create-contract`, {
+                          state: { reservation }
+                        })
+                      }
                       className="w-full py-3 px-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2"
                     >
                       <FileText className="w-4 h-4 text-slate-950" /> Tạo Hợp Đồng Điện Tử
@@ -366,16 +367,6 @@ const ProviderReservationDetailPage = () => {
         ) : null}
       </div>
 
-      {/* CREATE CONTRACT MODAL */}
-      <CreateConfirmationRecordModal
-        isOpen={isCreateContractOpen}
-        onClose={() => setIsCreateContractOpen(false)}
-        reservation={reservation}
-        onSuccess={() => {
-          setToastInfo({ message: 'Tạo và gửi hợp đồng điện tử thành công!', type: 'success' });
-          fetchDetail();
-        }}
-      />
 
       {/* CONFIRM MODAL FOR ACCEPT / REJECT */}
       <ConfirmModal

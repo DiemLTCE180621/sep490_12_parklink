@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import ReviewSection from '../../components/common/ReviewSection';
-import SendReservationModal from '../../components/modals/SendReservationModal';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
 import chatService from '../../services/chatService';
@@ -111,7 +110,6 @@ const FacilityDetailPage = () => {
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState('');
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState('success');
 
@@ -238,12 +236,12 @@ const FacilityDetailPage = () => {
     }
   };
 
-  const handleOpenModal = () => {
+  const handleOpenReservation = () => {
     if (!isAuthenticated) {
       setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
       setToastType('error');
       setTimeout(() => {
-        navigate('/login');
+        navigate('/login', { state: { from: `/facilities/${facilityId}/reserve` } });
       }, 1500);
       return;
     }
@@ -260,16 +258,7 @@ const FacilityDetailPage = () => {
       return;
     }
 
-    setIsModalOpen(true);
-  };
-
-  const handleReservationSuccess = () => {
-    setIsModalOpen(false);
-    setToastType('success');
-    setToastMsg('Gửi yêu cầu thuê bãi đỗ xe thành công! Đang chuyển hướng tới danh sách yêu cầu...');
-    setTimeout(() => {
-      navigate('/my-reservations');
-    }, 1500);
+    navigate(`/facilities/${facilityId}/reserve`, { state: { facility } });
   };
 
   const handleGetDirections = () => {
@@ -447,7 +436,7 @@ const FacilityDetailPage = () => {
                   <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500' : ''}`} /> {isFavorite ? 'Đã lưu' : 'Lưu bãi xe'}
                 </button>
                 <button onClick={() => navigator.clipboard?.writeText(window.location.href)} className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Sao chép liên kết"><Share2 className="w-4 h-4" /></button>
-                <button onClick={handleOpenModal} disabled={availability && availability.available_slots <= 0} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold text-xs shadow-sm transition disabled:cursor-not-allowed">
+                <button onClick={handleOpenReservation} disabled={availability && availability.available_slots <= 0} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold text-xs shadow-sm transition disabled:cursor-not-allowed">
                   <Send className="w-4 h-4" /> Đặt giữ chỗ
                 </button>
               </div>
@@ -505,7 +494,7 @@ const FacilityDetailPage = () => {
               <button onClick={handleChatClick} disabled={isChatLoading} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed">
                 {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Nhắn chủ bãi
               </button>
-              <button onClick={handleOpenModal} disabled={availability && availability.available_slots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
+              <button onClick={handleOpenReservation} disabled={availability && availability.available_slots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
             </div>
           </section>
         </div>
@@ -557,14 +546,6 @@ const FacilityDetailPage = () => {
 
         <ReviewSection facilityId={facilityId} />
       </div>
-
-      {/* MODAL GỬI YÊU CẦU THUÊ */}
-      <SendReservationModal
-        facility={{...facility, price: facility.price_per_month}}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleReservationSuccess}
-      />
     </div>
   );
 };
