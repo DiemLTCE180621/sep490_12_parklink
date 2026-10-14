@@ -1,24 +1,22 @@
 const prisma = require('../config/prisma');
 
 /**
- * Lớp Repository quản lý thao tác với Database cho bảng Review
  * Tuân thủ nguyên tắc: Nơi DUY NHẤT giao tiếp trực tiếp với Prisma (raw SQL nếu cần, nhưng ưu tiên Prisma)
  */
 class ReviewRepository {
   /**
-   * M5-UC69: View facility reviews
    * Lấy danh sách đánh giá của một bãi đỗ xe cụ thể
    */
   async getReviewsByFacilityId(facility_id) {
-    // Trả về kèm theo thông tin của người review (full_name) để hiện lên FE
     return await prisma.review.findMany({
-      where: { 
+      where: {
         facility_id: parseInt(facility_id),
-        status: 'VISIBLE' // Chỉ lấy các review hợp lệ hiển thị
+        status: 'VISIBLE'
       },
       include: {
         customer: {
           select: {
+            id: true,
             full_name: true,
             email: true
           }
@@ -40,8 +38,19 @@ class ReviewRepository {
   }
 
   /**
-   * M5-UC70: Write facility rating & review
-   * Tạo đánh giá mới
+   * Kiểm tra xem Customer đã từng có bài đánh giá tại Facility này chưa
+   */
+  async getReviewByCustomerAndFacility(customer_id, facility_id) {
+    return await prisma.review.findFirst({
+      where: {
+        customer_id: parseInt(customer_id),
+        facility_id: parseInt(facility_id)
+      }
+    });
+  }
+
+  /**
+   * Tạo đánh giá mới (bao gồm kết quả cắm cờ từ AI nếu có)
    */
   async createReview(data) {
     return await prisma.review.create({
@@ -50,27 +59,46 @@ class ReviewRepository {
         facility_id: parseInt(data.facility_id),
         rating: parseInt(data.rating),
         comment: data.comment,
-        status: 'VISIBLE'
+        status: data.status ? data.status : (data.is_flagged ? 'HIDDEN' : 'VISIBLE'),
+        is_flagged: data.is_flagged ?? false,
+        flagged_reason: data.flagged_reason ?? null
       }
     });
   }
 
   /**
-   * M5-UC71: Edit own review
-   * Chỉnh sửa đánh giá (Chỉ update rating và comment)
+   * Chỉnh sửa đánh giá (update rating, comment, và cập nhật cắm cờ AI nếu có)
    */
   async updateReview(review_id, data) {
+    const updateData = {};
+    if (data.rating !== undefined) updateData.rating = parseInt(data.rating);
+    if (data.comment !== undefined) updateData.comment = data.comment;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.is_flagged !== undefined) updateData.is_flagged = data.is_flagged;
+    if (data.flagged_reason !== undefined) updateData.flagged_reason = data.flagged_reason;
+
     return await prisma.review.update({
       where: { id: parseInt(review_id) },
-      data: {
-        rating: data.rating !== undefined ? parseInt(data.rating) : undefined,
-        comment: data.comment,
-      }
+      data: updateData
     });
   }
 
   /**
-   * M5-UC72: Delete own review
+   * Cập nhật trạng thái đánh giá (Dành riêng cho Admin: Ẩn/Hiện, Bỏ cờ)
+   */
+  async updateReviewStatus(review_id, data) {
+    const updateData = {};
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.is_flagged !== undefined) updateData.is_flagged = data.is_flagged;
+    if (data.flagged_reason !== undefined) updateData.flagged_reason = data.flagged_reason;
+
+    return await prisma.review.update({
+      where: { id: parseInt(review_id) },
+      data: updateData
+    });
+  }
+
+  /**
    * Xóa đánh giá (Có thể xóa cứng hoặc đổi status sang 'DELETED')
    * Ở đây áp dụng xóa cứng theo chuẩn Prisma
    */
@@ -79,7 +107,7 @@ class ReviewRepository {
       where: { id: parseInt(review_id) }
     });
   }
-  
+
   /**
    * Hàm phụ trợ kiểm tra xem Customer đã có Hợp Đồng thuê thành công với Facility này chưa?
    * (Phục vụ cho luồng nghiệp vụ tạo Review)
@@ -90,11 +118,70 @@ class ReviewRepository {
         customer_id: parseInt(customer_id),
         facility_id: parseInt(facility_id),
         confirmation_record: {
-            isNot: null // Yêu cầu phải có hợp đồng (Confirmation Record)
+          isNot: null // Yêu cầu phải có hợp đồng (Confirmation Record)
         }
       },
       include: {
         confirmation_record: true
+      }
+    });
+  }
+
+  /**
+   * Lấy toàn bộ đánh giá cho Admin
+   */
+  async getAllReviewsAdmin() {
+    return await prisma.review.findMany({
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            address: true
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
+      }
+    });
+  }
+
+  /**
+   * Lấy danh sách đánh giá các bãi xe thuộc quyền sở hữu của Provider
+   */
+  async getProviderReviews(provider_id) {
+    return await prisma.review.findMany({
+      where: {
+        facility: {
+          provider_id: parseInt(provider_id)
+        }
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            address: true
+          }
+        }
+      },
+      orderBy: {
+        created_at: 'desc'
       }
     });
   }

@@ -19,6 +19,24 @@ class ReviewController {
     }
   }
 
+  async getMyReview(req, res) {
+    try {
+      const customer_id = req.user.userId;
+      const { facility_id } = req.params;
+      const review = await reviewService.getMyReview(customer_id, facility_id);
+
+      return res.status(200).json({
+        success: true,
+        data: review || null
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
   async createReview(req, res) {
     try {
       const customer_id = req.user.userId;
@@ -75,6 +93,60 @@ class ReviewController {
       return res.status(200).json({
         success: true,
         message: 'Xóa đánh giá thành công'
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  async getAllReviewsAdmin(req, res) {
+    try {
+      const reviews = await reviewService.getAllReviewsAdmin();
+      return res.status(200).json({
+        success: true,
+        data: reviews
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  async getProviderReviews(req, res) {
+    try {
+      const provider_id = req.user.userId;
+      const reviews = await reviewService.getProviderReviews(provider_id);
+      return res.status(200).json({
+        success: true,
+        data: reviews
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Admin cập nhật trạng thái hiển thị (Ẩn/Hiện) hoặc gỡ cắm cờ
+   */
+  async updateReviewStatus(req, res) {
+    try {
+      const { id: review_id } = req.params;
+      const { status, is_flagged } = req.body;
+
+      const updated = await reviewService.updateReviewStatus(review_id, { status, is_flagged });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Cập nhật trạng thái đánh giá thành công',
+        data: updated
       });
     } catch (error) {
       return res.status(400).json({
