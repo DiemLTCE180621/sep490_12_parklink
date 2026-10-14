@@ -9,6 +9,21 @@ class InspectorService {
   }
 
   /**
+   * Lấy chi tiết cơ sở bãi đỗ xe cần khảo sát
+   * @param {number} facilityId
+   */
+  async getFacilityDetails(facilityId) {
+    const facility = await facilityRepository.findById(facilityId);
+    if (!facility) {
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), { status: 404 });
+    }
+    if (facility.provider) {
+      delete facility.provider.password;
+    }
+    return facility;
+  }
+
+  /**
    * Nhân viên khảo sát gửi kết quả khảo sát (cập nhật capacity, tải ảnh)
    * @param {number} facilityId
    * @param {number} capacity

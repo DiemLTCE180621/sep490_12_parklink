@@ -1,44 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import inspectorService from '../../services/inspectorService';
-import uploadService from '../../services/uploadService';
-import FacilityDetailsModal from '../modals/FacilityDetailsModal';
-import { Clock, AlertCircle, CheckCircle, Building2, MapPin, User, Eye, Wrench } from 'lucide-react';
+import {
+  Wrench,
+  Building2,
+  MapPin,
+  User,
+  Phone,
+  Search,
+  RotateCcw,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  AlertCircle,
+  Car
+} from 'lucide-react';
 
+/**
+ * FieldInspectorRegistrationsPanel: Giao diện Khảo Sát Thực Địa cho Nhân viên khảo sát
+ * Thiết kế đồng bộ chuẩn bảng (Table layout, Search toolbar, điều hướng /id trực tiếp - KHÔNG POPUP)
+ */
 const FieldInspectorRegistrationsPanel = () => {
+  const navigate = useNavigate();
+
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [actionModal, setActionModal] = useState(null); // { type: 'INSPECT', id: number }
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState(null);
-  const [detailsModal, setDetailsModal] = useState(null);
-  
-  const [capacity, setCapacity] = useState("");
-  const [uploadedFiles, setUploadedFiles] = useState({
-    path: null,
-    area: null,
-    gate: null,
-    other: null,
-    additional: [],
-  });
-
-  const showToast = (type, message) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchRegistrations = async () => {
     try {
       setLoading(true);
+      setError('');
       const res = await inspectorService.getPreparingFacilities();
-      if (res && res.status === "success") {
-        setRegistrations(res.data);
+      if (res && res.status === 'success') {
+        setRegistrations(res.data || []);
       } else if (Array.isArray(res)) {
         setRegistrations(res);
+      } else {
+        setRegistrations(res?.data || []);
       }
     } catch (err) {
       console.error(err);
-      setError("Lỗi khi tải danh sách chờ khảo sát");
+      setError('Lỗi khi tải danh sách bãi xe chờ khảo sát');
     } finally {
       setLoading(false);
     }
@@ -48,309 +55,218 @@ const FieldInspectorRegistrationsPanel = () => {
     fetchRegistrations();
   }, []);
 
-  const confirmAction = async () => {
-    if (!actionModal || isSubmitting) return;
-    try {
-      setIsSubmitting(true);
-      if (actionModal.type === "INSPECT") {
-        if (!capacity || parseInt(capacity, 10) <= 0) {
-          showToast("error", "Vui lòng nhập sức chứa hợp lệ!");
-          setIsSubmitting(false);
-          return;
-        }
+  // Lọc dữ liệu theo từ khóa tìm kiếm
+  const filteredRegistrations = useMemo(() => {
+    return registrations.filter((item) => {
+      const matchSearch =
+        (item.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (item.address || '').toLowerCase().includes(search.toLowerCase()) ||
+        (item.provider?.full_name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (item.provider?.phone_number || '').toLowerCase().includes(search.toLowerCase());
 
-        if (
-          !uploadedFiles.path ||
-          !uploadedFiles.area ||
-          !uploadedFiles.gate ||
-          !uploadedFiles.other
-        ) {
-          showToast("error", "Vui lòng tải lên đầy đủ 4 loại hình ảnh bãi đỗ xe bắt buộc!");
-          setIsSubmitting(false);
-          return;
-        }
+      return matchSearch;
+    });
+  }, [registrations, search]);
 
-        const filesToUpload = [
-          uploadedFiles.path,
-          uploadedFiles.area,
-          uploadedFiles.gate,
-          uploadedFiles.other,
-          ...(uploadedFiles.additional || []),
-        ];
+  // Phân trang
+  const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage) || 1;
+  const paginatedList = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredRegistrations.slice(start, start + itemsPerPage);
+  }, [filteredRegistrations, currentPage]);
 
-        const token = localStorage.getItem("parklink_token");
-        const uploadRes = await uploadService.uploadFiles(filesToUpload, token);
-        if (!uploadRes.success) {
-          showToast("error", "Lỗi tải ảnh lên Cloudinary! Vui lòng thử lại.");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const imageUrls = uploadRes.data.mediaUrls;
-
-        await inspectorService.submitInspection(actionModal.id, {
-          capacity: parseInt(capacity, 10),
-          images: imageUrls,
-        });
-
-        showToast("success", "Đã gửi dữ liệu khảo sát thành công!");
-      }
-      setActionModal(null);
-      setCapacity("");
-      setUploadedFiles({
-        path: null,
-        area: null,
-        gate: null,
-        other: null,
-        additional: [],
-      });
-      fetchRegistrations();
-    } catch (err) {
-      const backendMessage = err.response?.data?.message || err.response?.data?.errors?.[0] || err.message;
-      showToast("error", "Lỗi: " + backendMessage);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md flex justify-center items-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
-      </div>
-    );
-  }
-
-  const renderCard = (facility) => {
-    return (
-      <div
-        key={facility.id}
-        className="rounded-2xl border p-4 md:p-5 space-y-4 border-blue-200 bg-blue-50/50"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                🔧 Đang chờ khảo sát
-              </span>
-            </div>
-            <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-teal-600 shrink-0" />{" "}
-              {facility.name}
-            </h4>
-            <p className="text-slate-500 text-sm flex items-center gap-1.5 mt-1">
-              <MapPin className="w-3.5 h-3.5 shrink-0" /> {facility.address}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-          <div className="bg-white rounded-xl p-3 border border-slate-100">
-            <p className="text-xs text-slate-400 font-semibold uppercase mb-1 flex items-center gap-1">
-              <User className="w-3 h-3" /> Provider
-            </p>
-            <p className="font-bold text-slate-800 truncate">
-              {facility.provider?.full_name}
-            </p>
-            <p className="text-slate-500 text-xs">
-              {facility.provider?.phone_number}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-3 border border-slate-100 col-span-2 md:col-span-1">
-            <p className="text-xs text-slate-400 font-semibold uppercase mb-1">
-              Đề xuất ban đầu (Slots)
-            </p>
-            <p className="font-bold text-slate-800 text-lg">
-              {facility.capacity} xe
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2 justify-end border-t border-slate-200 pt-4">
-          <button
-            onClick={() => setDetailsModal(facility)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition mr-auto"
-          >
-            <Eye className="w-4 h-4" /> Xem chi tiết
-          </button>
-
-          <button
-            onClick={() => {
-              setCapacity(facility.capacity);
-              setActionModal({ type: "INSPECT", id: facility.id });
-            }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl shadow transition"
-          >
-            <Wrench className="w-4 h-4" /> Báo cáo thực địa
-          </button>
-        </div>
-      </div>
-    );
+  const handleResetFilters = () => {
+    setSearch('');
+    setCurrentPage(1);
+    fetchRegistrations();
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md">
-        <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-amber-500" /> Công Việc Khảo Sát Thực Địa
-        </h3>
-        <p className="text-sm text-slate-600 font-medium mb-2">Bạn có {registrations.length} yêu cầu cần thực địa.</p>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-2 text-sm font-medium">
-          <AlertCircle className="w-5 h-5" /> {error}
-        </div>
-      )}
-
-      {registrations.length === 0 ? (
-        <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md text-center">
-          <CheckCircle className="w-12 h-12 text-teal-400 mx-auto mb-3" />
-          <p className="text-slate-500 font-medium">
-            Tuyệt vời! Hiện tại bạn không có bãi đỗ xe nào cần khảo sát.
+    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
+      {/* Title Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Wrench className="w-6 h-6 text-teal-600" /> Công Việc Khảo Sát Thực Địa
+          </h2>
+          <p className="text-slate-500 text-xs mt-1">
+            Danh sách các bãi đỗ xe đã duyệt sơ bộ, cần nhân viên khảo sát đến kiểm tra thực tế và cập nhật dữ liệu
           </p>
         </div>
+        <div className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
+          Cần thực địa: <strong className="text-teal-700 font-extrabold">{registrations.length}</strong> cơ sở
+        </div>
+      </div>
+
+      {/* Search Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <Search className="w-4 h-4" />
+          </div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            placeholder="Tìm theo tên bãi xe, địa chỉ hoặc tên chủ bãi..."
+            className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleResetFilters}
+          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0 border border-slate-200"
+          title="Làm mới danh sách"
+        >
+          <RotateCcw className="w-3.5 h-3.5 text-slate-600" /> Làm mới
+        </button>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+          {error}
+        </div>
+      )}
+
+      {/* Loading state */}
+      {loading ? (
+        <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center gap-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-teal-600" />
+          <span>Đang tải danh sách công việc khảo sát...</span>
+        </div>
+      ) : filteredRegistrations.length === 0 ? (
+        <div className="py-16 text-center text-slate-400">
+          <CheckCircle className="w-12 h-12 mx-auto mb-3 text-teal-400" />
+          <p className="font-semibold text-sm">Tuyệt vời! Hiện tại bạn không có bãi đỗ xe nào cần khảo sát.</p>
+          <p className="text-xs text-slate-400 mt-1">Khi có yêu cầu mới được duyệt sơ bộ, danh sách sẽ hiển thị tại đây.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
-          <div className="space-y-3">
-            {registrations.map(renderCard)}
-          </div>
+        /* Data Table */
+        <div className="overflow-x-auto rounded-2xl border border-slate-100">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                <th className="py-3.5 px-4">ID</th>
+                <th className="py-3.5 px-4 min-w-[280px]">Cơ sở bãi đỗ xe</th>
+                <th className="py-3.5 px-4 min-w-[180px]">Chủ bãi (Provider)</th>
+                <th className="py-3.5 px-4">Đề xuất ban đầu</th>
+                <th className="py-3.5 px-4">Trạng thái</th>
+                <th className="py-3.5 px-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {paginatedList.map((facility) => (
+                <tr key={facility.id} className="hover:bg-slate-50/80 transition">
+                  {/* ID */}
+                  <td className="py-3.5 px-4 font-mono font-bold text-slate-400">
+                    #{facility.id}
+                  </td>
+
+                  {/* Facility Info */}
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0 text-teal-700 mt-0.5">
+                        {facility.images && facility.images.length > 0 ? (
+                          <img
+                            src={facility.images[0].image_url}
+                            alt=""
+                            className="w-10 h-10 object-cover rounded-xl"
+                          />
+                        ) : (
+                          <Building2 className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div className="space-y-0.5">
+                        <button
+                          onClick={() => navigate(`/inspector/registrations/${facility.id}`)}
+                          className="font-bold text-slate-900 hover:text-teal-700 transition text-left line-clamp-1"
+                        >
+                          {facility.name}
+                        </button>
+                        <div className="text-slate-500 text-[11px] flex items-center gap-1 line-clamp-1">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          {facility.address}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Provider Info */}
+                  <td className="py-3.5 px-4">
+                    <div className="space-y-0.5">
+                      <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-slate-400" />
+                        {facility.provider?.full_name || 'N/A'}
+                      </div>
+                      {facility.provider?.phone_number && (
+                        <div className="text-slate-500 text-[11px] flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-slate-400" />
+                          {facility.provider?.phone_number}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* Capacity */}
+                  <td className="py-3.5 px-4">
+                    <div className="font-bold text-slate-800 flex items-center gap-1">
+                      <Car className="w-3.5 h-3.5 text-teal-600" />
+                      {facility.capacity} xe
+                    </div>
+                  </td>
+
+                  {/* Status Badge */}
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-sky-300">
+                      <Wrench className="w-3.5 h-3.5 text-sky-600" /> Đang chờ khảo sát
+                    </span>
+                  </td>
+
+                  {/* Actions - Dẫn thẳng vào trang /id để báo cáo thực địa */}
+                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => navigate(`/inspector/registrations/${facility.id}`)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg shadow-sm transition"
+                      title="Vào trang báo cáo kết quả khảo sát thực tế"
+                    >
+                      <Wrench className="w-3.5 h-3.5" /> Báo cáo thực địa
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Modal Báo cáo thực địa */}
-      {actionModal && actionModal.type === "INSPECT" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-3xl w-full shadow-2xl my-auto">
-            <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-teal-600" />
-            </div>
-            <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
-              Báo Cáo Khảo Sát
-            </h3>
-            <p className="text-center text-slate-500 text-sm mb-6">
-              Vui lòng điền số chỗ (capacity) thực tế và tải lên các hình ảnh hiện trạng của bãi.
-            </p>
-
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Sức chứa thực tế (Số xe) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                value={capacity}
-                onChange={(e) => setCapacity(e.target.value)}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                placeholder="Ví dụ: 50"
-                min="1"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
-                Tải lên hình ảnh thực tế (Bắt buộc 4 tấm) <span className="text-red-500">*</span>
-              </label>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                  <p className="text-xs font-bold text-slate-700 mb-2">1. Hình đường vào bãi</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setUploadedFiles({ ...uploadedFiles, path: e.target.files[0] })}
-                    className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
-                  />
-                  {uploadedFiles.path && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.path.name}</p>}
-                </div>
-
-                <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                  <p className="text-xs font-bold text-slate-700 mb-2">2. Hình toàn cảnh bãi đỗ</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setUploadedFiles({ ...uploadedFiles, area: e.target.files[0] })}
-                    className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
-                  />
-                  {uploadedFiles.area && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.area.name}</p>}
-                </div>
-
-                <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                  <p className="text-xs font-bold text-slate-700 mb-2">3. Hình cổng bãi</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setUploadedFiles({ ...uploadedFiles, gate: e.target.files[0] })}
-                    className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
-                  />
-                  {uploadedFiles.gate && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.gate.name}</p>}
-                </div>
-
-                <div className="border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                  <p className="text-xs font-bold text-slate-700 mb-2">4. Hình góc độ khác</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setUploadedFiles({ ...uploadedFiles, other: e.target.files[0] })}
-                    className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
-                  />
-                  {uploadedFiles.other && <p className="text-[10px] text-teal-600 mt-1 truncate font-medium">Đã chọn: {uploadedFiles.other.name}</p>}
-                </div>
-              </div>
-
-              <div className="mt-4 border border-slate-200 rounded-xl p-3 bg-white shadow-sm">
-                <p className="text-xs font-bold text-slate-700 mb-2">5. Hình ảnh bổ sung (Tùy chọn)</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => setUploadedFiles({ ...uploadedFiles, additional: Array.from(e.target.files) })}
-                  className="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setActionModal(null);
-                  setCapacity("");
-                  setUploadedFiles({ path: null, area: null, gate: null, other: null, additional: [] });
-                }}
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
-              >
-                Hủy
-              </button>
-              <button
-                disabled={
-                  isSubmitting ||
-                  !uploadedFiles.path ||
-                  !uploadedFiles.area ||
-                  !uploadedFiles.gate ||
-                  !uploadedFiles.other ||
-                  !capacity
-                }
-                onClick={confirmAction}
-                className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg shadow-teal-200 transition disabled:opacity-50"
-              >
-                Gửi Kết Quả
-              </button>
-            </div>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-600">
+          <div>
+            Trang <strong>{currentPage}</strong> / {totalPages} (Tổng{' '}
+            {filteredRegistrations.length} cơ sở)
           </div>
-        </div>
-      )}
-
-      {/* Modal Xem Chi Tiết */}
-      <FacilityDetailsModal
-        facility={detailsModal}
-        onClose={() => setDetailsModal(null)}
-      />
-
-      {/* Toast Notification */}
-      {toast && (
-        <div className="fixed top-6 right-6 z-[100] transition-all duration-300">
-          <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-xl border ${toast.type === "success" ? "bg-teal-50 border-teal-200 text-teal-900" : "bg-red-50 border-red-200 text-red-900"}`}>
-            {toast.type === "success" ? <CheckCircle className="w-6 h-6 text-teal-600 shrink-0" /> : <AlertCircle className="w-6 h-6 text-red-600 shrink-0" />}
-            <p className="font-bold text-sm">{toast.message}</p>
+          <div className="flex gap-2">
+            <button
+              disabled={currentPage <= 1 || loading}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+            >
+              <ChevronLeft className="w-4 h-4" /> Trước
+            </button>
+            <button
+              disabled={currentPage >= totalPages || loading}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+            >
+              Sau <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}

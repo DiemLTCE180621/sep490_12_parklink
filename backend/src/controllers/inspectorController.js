@@ -14,6 +14,25 @@ class InspectorController {
   }
 
   /**
+   * Lấy thông tin chi tiết một cơ sở cần khảo sát
+   */
+  async getFacilityDetails(req, res, next) {
+    try {
+      const facilityId = parseInt(req.params.id, 10);
+      if (isNaN(facilityId)) {
+        return res.status(400).json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
+      }
+      const facility = await inspectorService.getFacilityDetails(facilityId);
+      res.json({ status: "success", data: facility });
+    } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({ status: "fail", message: error.message });
+      }
+      next(error);
+    }
+  }
+
+  /**
    * Submit kết quả khảo sát
    */
   async submitInspection(req, res, next) {

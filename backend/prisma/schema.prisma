@@ -53,6 +53,7 @@ model Facility {
   longitude           Float?   
   vehicle_types       Json
   capacity            Int
+  available_slots     Int      @default(0)
   price_per_month     Decimal
   system_fee          Decimal?
   payment_status      String   @default("UNPAID")

@@ -43,6 +43,11 @@ class FacilityRepository {
       include: {
         provider: true,
         images: true,
+        facility_amenities: {
+          include: {
+            amenity: true,
+          },
+        },
       },
     });
   }
@@ -164,6 +169,7 @@ class FacilityRepository {
         where: { id: facilityId },
         data: {
           capacity: parseInt(capacity, 10),
+          available_slots: parseInt(capacity, 10),
           verification_status: "INSPECTED",
         },
       });
@@ -427,6 +433,10 @@ class FacilityRepository {
         capacity:
           updateData.capacity !== undefined
             ? parseInt(updateData.capacity, 10)
+            : undefined,
+        available_slots:
+          updateData.available_slots !== undefined
+            ? parseInt(updateData.available_slots, 10)
             : undefined,
         price_per_month:
           updateData.price_per_month !== undefined

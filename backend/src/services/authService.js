@@ -171,6 +171,7 @@ class AuthService {
       latitude: latitude ? parseFloat(latitude) : 10.034185,
       longitude: longitude ? parseFloat(longitude) : 105.788326,
       capacity: slotCount,
+      available_slots: slotCount,
       price_per_month: parseFloat(price_per_month),
       system_fee: system_fee,
       vehicle_types: vehicle_types || ['CAR_4_5_SEATER'],

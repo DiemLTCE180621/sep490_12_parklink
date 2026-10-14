@@ -17,6 +17,28 @@ class AdminController {
   }
 
   /**
+   * Lấy chi tiết một yêu cầu đăng ký bãi đỗ xe theo ID
+   */
+  async getRegistrationDetails(req, res, next) {
+    try {
+      const facilityId = parseInt(req.params.id, 10);
+      if (isNaN(facilityId)) {
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
+      }
+      const facility = await adminService.getRegistrationDetails(facilityId);
+      res.json({ status: "success", data: facility });
+    } catch (error) {
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
+      next(error);
+    }
+  }
+
+  /**
    * M2-UC21 Bước 1: Admin duyệt sơ bộ → PREPARING
    */
   async approveRegistration(req, res, next) {
