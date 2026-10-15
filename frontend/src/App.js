@@ -6,9 +6,13 @@ import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/auth/LoginPage';
+import ForceChangePasswordPage from './pages/auth/ForceChangePasswordPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import RegisterCustomerPage from './pages/auth/RegisterCustomerPage';
 import RegisterProviderPage from './pages/auth/RegisterProviderPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
+import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import SearchPage from './pages/facility/SearchPage';
 import CustomerReservationsPage from './pages/customer/CustomerReservationsPage';
 import CustomerReservationDetailPage from './pages/customer/CustomerReservationDetailPage';
@@ -37,37 +41,60 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Chỉ cho Guest truy cập. User đã login: CUSTOMER → '/', còn lại → '/dashboard'
+// Chỉ cho khách (Guest). Nếu cần đổi mật khẩu lần đầu → /change-password-first-time
 const GuestOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!isAuthenticated) return children;
+  if (user?.requires_password_change) {
+    return <Navigate to="/change-password-first-time" replace />;
+  }
   return <Navigate to={user?.role?.name === 'CUSTOMER' ? '/' : '/dashboard'} replace />;
 };
 
-// Yêu cầu đăng nhập, mọi role đều vào được
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  const location = useLocation();
+// Chỉ cho tài khoản cần đổi mật khẩu lần đầu
+const ForcePasswordRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!user?.requires_password_change) {
+    return <Navigate to={user?.role?.name === 'CUSTOMER' ? '/' : '/dashboard'} replace />;
+  }
   return children;
 };
 
-// Yêu cầu đăng nhập + đúng role. Sai role → '/dashboard'
+// Yêu cầu đăng nhập
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading, user } = useAuth();
+  const location = useLocation();
+  if (loading) return <LoadingScreen />;
+  if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user?.requires_password_change) {
+    return <Navigate to="/change-password-first-time" replace />;
+  }
+  return children;
+};
+
+// Yêu cầu đúng Role
 const RoleProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
   if (loading) return <LoadingScreen />;
   if (!isAuthenticated) return <Navigate to="/login" state={{ from: location }} replace />;
+  if (user?.requires_password_change) {
+    return <Navigate to="/change-password-first-time" replace />;
+  }
   if (!allowedRoles.includes(user?.role?.name)) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
-// Trang công cộng: ADMIN và FIELD_INSPECTOR không dùng → chuyển về dashboard
+// Trang công cộng
 const PublicBrowseRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
+  if (isAuthenticated && user?.requires_password_change) {
+    return <Navigate to="/change-password-first-time" replace />;
+  }
   const role = user?.role?.name;
   if (isAuthenticated && (role === 'ADMIN' || role === 'FIELD_INSPECTOR')) {
     return <Navigate to="/dashboard" replace />;
@@ -95,11 +122,25 @@ function AppContent() {
 
           {/* Guest only */}
           <Route path="/login" element={<GuestOnlyRoute><LoginPage /></GuestOnlyRoute>} />
+          <Route path="/forgot-password" element={<GuestOnlyRoute><ForgotPasswordPage /></GuestOnlyRoute>} />
           <Route path="/register" element={<GuestOnlyRoute><RegisterCustomerPage /></GuestOnlyRoute>} />
           <Route path="/register-provider" element={<GuestOnlyRoute><RegisterProviderPage /></GuestOnlyRoute>} />
 
+          {/* Bắt buộc đổi mật khẩu lần đầu (Force Change Password) */}
+          <Route path="/change-password-first-time" element={
+            <ForcePasswordRoute>
+              <ForceChangePasswordPage />
+            </ForcePasswordRoute>
+          } />
+
           {/* Mọi role đã login */}
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/users/:id" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminUserDetailPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/admin/facilities/:id/edit" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminFacilityEditPage />

@@ -121,11 +121,19 @@ const validateLogin = (req, res, next) => {
 };
 
 const validateChangePassword = (req, res, next) => {
-  const { newPassword } = req.body;
+  const { oldPassword, newPassword } = req.body;
   const errors = [];
+
+  if (!oldPassword) {
+    errors.push('Vui lòng cung cấp mật khẩu hiện tại.');
+  }
 
   if (!isValidPassword(newPassword)) {
     errors.push('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số.');
+  }
+
+  if (oldPassword && newPassword && oldPassword === newPassword) {
+    errors.push('Mật khẩu mới không được trùng với mật khẩu hiện tại.');
   }
 
   if (errors.length > 0) {
