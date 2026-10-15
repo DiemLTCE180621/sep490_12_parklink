@@ -75,7 +75,7 @@ const DashboardPage = () => {
 
           <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => setIsEditProfileModalOpen(true)}
+              onClick={() => navigate('/profile')}
               className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
             >
               <Edit className="w-4 h-4" /> Sửa Hồ Sơ
@@ -343,17 +343,10 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* USER PROFILE CARD */}
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+              <div className="border-b border-slate-100 pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
                 </h3>
-                <button
-                  onClick={() => setIsEditProfileModalOpen(true)}
-                  className="p-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition flex items-center gap-1"
-                  title="Chỉnh sửa thông tin cá nhân"
-                >
-                  <Edit className="w-4 h-4" /> Sửa
-                </button>
               </div>
 
               <div className="space-y-3 text-sm">

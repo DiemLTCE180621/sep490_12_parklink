@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, RotateCcw, Eye, User, RefreshCw, ChevronLeft, ChevronRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import userService from '../../services/userService';
-import UserDetailModal from '../modals/UserDetailModal';
 
 const AdminUsersPanel = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -58,20 +59,8 @@ const AdminUsersPanel = () => {
     fetchUsers(1);
   };
 
-  const handleViewUserDetail = async (userId) => {
-    try {
-      setLoadingDetail(true);
-      const res = await userService.getUserDetails(userId);
-      const payload = res?.data || res;
-      if (payload && payload.user) {
-        setSelectedUser(payload.user);
-        setIsDetailModalOpen(true);
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Không thể xem thông tin người dùng');
-    } finally {
-      setLoadingDetail(false);
-    }
+  const handleViewUserDetail = (userId) => {
+    navigate(`/admin/users/${userId}`);
   };
 
   const getRoleBadge = (roleName) => {
@@ -256,15 +245,6 @@ const AdminUsersPanel = () => {
         </div>
       )}
 
-      {/* Modal chi tiết người dùng */}
-      <UserDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedUser(null);
-        }}
-        user={selectedUser}
-      />
     </div>
   );
 };

@@ -48,8 +48,8 @@ const Navbar = () => {
     }
   };
 
-  // Ẩn Navbar (Header) đối với Admin và Nhân viên khảo sát
-  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR')) {
+  // Ẩn Navbar (Header) đối với Admin, Nhân viên khảo sát hoặc người dùng đang cần đổi mật khẩu lần đầu
+  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR' || user?.requires_password_change)) {
     return null;
   }
 
