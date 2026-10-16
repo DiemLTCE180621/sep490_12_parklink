@@ -15,6 +15,8 @@ model Role {
   name        String   @unique
   description String?
   users       User[]
+
+  @@map("roles")
 }
 
 model User {
@@ -41,7 +43,9 @@ model User {
   chat_rooms_as_customer   Chat_Room[] @relation("CustomerRooms")
   chat_rooms_as_provider   Chat_Room[] @relation("ProviderRooms")
   messages                 Message[]
-  favorites Favorite[]
+  favorites                Favorite[]
+
+  @@map("users")
 }
 
 model Facility {
@@ -73,7 +77,9 @@ model Facility {
   reviews             Review[]
   complaints          Complaint[]
   chat_rooms          Chat_Room[]
-  favorites Favorite[]
+  favorites           Favorite[]
+
+  @@map("facilities")
 }
 
 // ------------------------------------------------------
@@ -86,6 +92,8 @@ model Facility_Image {
   is_primary  Boolean  @default(false)
   
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+
+  @@map("facility_images")
 }
 
 model Facility_Update_Request {
@@ -99,6 +107,8 @@ model Facility_Update_Request {
   updated_at     DateTime @updatedAt
 
   facility       Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+
+  @@map("facility_update_requests")
 }
 
 model System_Transaction {
@@ -113,6 +123,8 @@ model System_Transaction {
 
   provider         User     @relation(fields: [provider_id], references: [id])
   facility         Facility @relation(fields: [facility_id], references: [id])
+
+  @@map("system_transactions")
 }
 
 // ------------------------------------------------------
@@ -132,6 +144,8 @@ model Reservation_Request {
   facility           Facility @relation(fields: [facility_id], references: [id])
   
   confirmation_record Confirmation_Record? 
+
+  @@map("reservation_requests")
 }
 
 model Confirmation_Record {
@@ -150,6 +164,8 @@ model Confirmation_Record {
   updated_at           DateTime @updatedAt
 
   reservation          Reservation_Request @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
+
+  @@map("confirmation_records")
 }
 
 model Review {
@@ -167,6 +183,8 @@ model Review {
 
   customer        User     @relation(fields: [customer_id], references: [id])
   facility        Facility @relation(fields: [facility_id], references: [id])
+
+  @@map("reviews")
 }
 
 model Favorite {
@@ -179,6 +197,7 @@ model Favorite {
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@unique([customer_id, facility_id]) 
+  @@map("favorites")
 }
 
 // ------------------------------------------------------
@@ -198,6 +217,8 @@ model Complaint {
 
   customer       User     @relation(fields: [customer_id], references: [id])
   facility       Facility @relation(fields: [facility_id], references: [id])
+
+  @@map("complaints")
 }
 
 model Notification {
@@ -211,6 +232,8 @@ model Notification {
   updated_at DateTime @updatedAt 
 
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
 
 model Amenity {
@@ -219,6 +242,8 @@ model Amenity {
   icon               String?
   type               String?
   facility_amenities Facility_Amenity[]
+
+  @@map("amenities")
 }
 
 model Facility_Amenity {
@@ -229,6 +254,7 @@ model Facility_Amenity {
   amenity     Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
 
   @@id([facility_id, amenity_id]) 
+  @@map("facility_amenities")
 }
 
 // ------------------------------------------------------
@@ -246,6 +272,8 @@ model Chat_Room {
   facility    Facility @relation(fields: [facility_id], references: [id])
   
   messages    Message[]
+
+  @@map("chat_rooms")
 }
 
 model Message {
@@ -259,6 +287,8 @@ model Message {
 
   room       Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
   sender     User      @relation(fields: [sender_id], references: [id])
+
+  @@map("messages")
 }
 
 // ------------------------------------------------------
@@ -274,4 +304,21 @@ model Platform_Fee {
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  @@map("platform_fees")
+}
+
+// ------------------------------------------------------
+// NHÓM CHÍNH SÁCH HỆ THỐNG (SYSTEM POLICIES)
+// ------------------------------------------------------
+model System_Policy {
+  id          Int      @id @default(autoincrement())
+  policy_type String   @unique // "CUSTOMER" hoặc "PROVIDER"
+  title       String
+  content     String   @db.Text
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("system_policies")
 }
