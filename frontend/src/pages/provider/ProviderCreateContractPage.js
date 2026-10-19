@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { getReservationDetail } from '../../services/reservationService';
 import { createConfirmationRecord } from '../../services/confirmationRecordService';
+import { useAuth } from '../../context/AuthContext';
 import Toast from '../../components/common/Toast';
 import {
   FileText,
@@ -20,7 +21,8 @@ import {
   Mail,
   MapPin,
   Clock,
-  Eye
+  Eye,
+  Lock
 } from 'lucide-react';
 
 const ProviderCreateContractPage = () => {
@@ -28,6 +30,7 @@ const ProviderCreateContractPage = () => {
   const targetId = id || reservationId;
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [reservation, setReservation] = useState(location.state?.reservation || null);
   const [loadingReservation, setLoadingReservation] = useState(!location.state?.reservation);
@@ -57,8 +60,10 @@ const ProviderCreateContractPage = () => {
     start_date: '',
     end_date: '',
     parking_spot: 'Chỗ đỗ tự do trong bãi',
-    vehicle_type: 'Ô tô (4-7 chỗ)',
+    vehicle_type: '',
     license_plate: '',
+    customer_address: '',
+    customer_id_card: '',
     ...defaultTerms
   });
 
@@ -91,7 +96,7 @@ const ProviderCreateContractPage = () => {
   }, [targetId]);
 
   useEffect(() => {
-    if (!reservation && targetId) {
+    if ((!reservation || !reservation.facility?.provider) && targetId) {
       fetchReservation();
     }
   }, [reservation, targetId, fetchReservation]);
@@ -113,6 +118,45 @@ const ProviderCreateContractPage = () => {
       endObj.setFullYear(endObj.getFullYear() + 1);
       const endDateVal = endObj.toISOString().split('T')[0];
 
+      let extractedVehicleType = '';
+      let extractedLicensePlate = '';
+      let extractedIdCard = '';
+      let extractedAddress = '';
+
+      if (reservation.vehicle_info) {
+        const raw = reservation.vehicle_info;
+        const cccdMatch = raw.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+        if (cccdMatch) extractedIdCard = cccdMatch[1].trim();
+
+        const dcMatch = raw.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+        if (dcMatch) extractedAddress = dcMatch[1].trim();
+
+        if (!extractedIdCard) extractedIdCard = localStorage.getItem('customer_id_card') || '';
+        if (!extractedAddress) extractedAddress = localStorage.getItem('customer_address') || reservation.customer?.address || '';
+
+        const cleanVehicle = raw
+          .replace(/\s*\[(?:CCCD|CMND)[^\]]+\]/i, '')
+          .replace(/\s*\[(?:ĐC|Địa chỉ)[^\]]+\]/i, '')
+          .trim();
+
+        const plateRegex = /\s*-\s*Biển\s*(?:số|kiểm\s*soát)?:\s*/i;
+        if (plateRegex.test(cleanVehicle)) {
+          const parts = cleanVehicle.split(plateRegex);
+          extractedVehicleType = parts[0].trim();
+          extractedLicensePlate = parts.slice(1).join(' ').trim();
+        } else if (cleanVehicle.includes(' - ')) {
+          const parts = cleanVehicle.split(' - ');
+          extractedVehicleType = parts[0].trim();
+          extractedLicensePlate = parts.slice(1).join(' - ').replace(/Biển số:\s*/i, '').trim();
+        } else {
+          extractedVehicleType = cleanVehicle;
+          extractedLicensePlate = cleanVehicle;
+        }
+      } else {
+        extractedIdCard = localStorage.getItem('customer_id_card') || '';
+        extractedAddress = localStorage.getItem('customer_address') || reservation.customer?.address || '';
+      }
+
       setFormData((prev) => ({
         ...prev,
         agreed_price: prev.agreed_price || initialPrice,
@@ -120,8 +164,10 @@ const ProviderCreateContractPage = () => {
         start_date: prev.start_date || startDateVal,
         end_date: prev.end_date || endDateVal,
         parking_spot: prev.parking_spot || 'Chỗ đỗ tự do trong bãi',
-        vehicle_type: prev.vehicle_type || 'Ô tô (4-7 chỗ)',
-        license_plate: prev.license_plate || reservation.vehicle_info || '',
+        vehicle_type: extractedVehicleType || prev.vehicle_type || 'Phương tiện đăng ký đỗ',
+        license_plate: extractedLicensePlate || prev.license_plate || reservation.vehicle_info || '',
+        customer_address: extractedAddress || prev.customer_address || reservation.customer?.address || '',
+        customer_id_card: extractedIdCard || prev.customer_id_card || '',
         ...defaultTerms
       }));
     }
@@ -164,6 +210,16 @@ const ProviderCreateContractPage = () => {
       return;
     }
 
+    if (!formData.customer_id_card || !formData.customer_id_card.trim()) {
+      setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của Bên B để lập hợp đồng!');
+      return;
+    }
+
+    if (!formData.customer_address || !formData.customer_address.trim()) {
+      setFormError('Vui lòng nhập Địa chỉ liên hệ / thường trú của Bên B để lập hợp đồng!');
+      return;
+    }
+
     try {
       setSubmitting(true);
       const payload = {
@@ -175,6 +231,8 @@ const ProviderCreateContractPage = () => {
         parking_spot: formData.parking_spot ? formData.parking_spot.trim() : 'Chỗ đỗ tự do',
         vehicle_type: formData.vehicle_type ? formData.vehicle_type.trim() : 'Phương tiện đỗ',
         license_plate: formData.license_plate ? formData.license_plate.trim() : reservation.vehicle_info,
+        customer_address: formData.customer_address.trim(),
+        customer_id_card: formData.customer_id_card.trim(),
         terms: {
           customer_obligations: formData.customer_obligations,
           owner_obligations: formData.owner_obligations,
@@ -208,14 +266,14 @@ const ProviderCreateContractPage = () => {
   const formattedPricePreview = parseCleanNumber(formData.agreed_price).toLocaleString('vi-VN');
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans antialiased">
+    <div className="min-h-screen bg-slate-50 py-6 px-3 sm:px-6 lg:px-8 font-sans antialiased">
       <Toast
         message={toastInfo.message}
         type={toastInfo.type}
         onClose={() => setToastInfo({ message: '', type: 'success' })}
       />
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="w-full max-w-[1600px] mx-auto space-y-6">
         {/* BREADCRUMB & BACK NAVIGATION */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 flex-wrap">
@@ -389,20 +447,20 @@ const ProviderCreateContractPage = () => {
                     <p className="text-slate-600 pt-1 border-t border-slate-200/50">
                       Đại diện:{' '}
                       <strong className="text-slate-800">
-                        {reservation.facility?.provider?.full_name || 'Chủ cơ sở'}
+                        {reservation.facility?.provider?.full_name || user?.full_name || 'Chủ cơ sở'}
                       </strong>
                     </p>
                     <p className="text-slate-600 flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5 text-slate-400" /> SĐT:{' '}
                       <span className="font-semibold text-slate-800">
-                        {reservation.facility?.provider?.phone_number || 'Chưa cập nhật'}
+                        {reservation.facility?.provider?.phone_number || user?.phone_number || 'Chưa cập nhật'}
                       </span>
                     </p>
-                    {reservation.facility?.provider?.email && (
+                    {(reservation.facility?.provider?.email || user?.email) && (
                       <p className="text-slate-600 flex items-center gap-1.5">
                         <Mail className="w-3.5 h-3.5 text-slate-400" /> Email:{' '}
                         <span className="font-semibold text-slate-800">
-                          {reservation.facility?.provider?.email}
+                          {reservation.facility?.provider?.email || user?.email}
                         </span>
                       </p>
                     )}
@@ -439,6 +497,38 @@ const ProviderCreateContractPage = () => {
                         {reservation.customer?.email}
                       </span>
                     </p>
+
+                    <div className="pt-2.5 border-t border-slate-200/80 space-y-2.5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Số CMND / Thẻ Căn cước công dân (CCCD) Bên B <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="customer_id_card"
+                          value={formData.customer_id_card}
+                          readOnly
+                          placeholder="Chưa có thông tin CCCD"
+                          required
+                          className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1">
+                          Địa chỉ thường trú / liên hệ Bên B <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          name="customer_address"
+                          value={formData.customer_address}
+                          readOnly
+                          placeholder="Chưa có thông tin địa chỉ"
+                          required
+                          className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -463,13 +553,13 @@ const ProviderCreateContractPage = () => {
                       type="text"
                       name="vehicle_type"
                       value={formData.vehicle_type}
-                      onChange={handleChange}
-                      placeholder="VD: Ô tô (4-7 chỗ) hoặc Mitsubishi Xforce"
+                      readOnly
+                      placeholder="VD: Ô tô (4-7 chỗ)"
                       required
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Mô tả chủng loại xe theo đăng ký gửi xe của khách.
+                      Chủng loại xe khách hàng đã đăng ký khi gửi yêu cầu thuê chỗ.
                     </p>
                   </div>
 
@@ -481,13 +571,13 @@ const ProviderCreateContractPage = () => {
                       type="text"
                       name="license_plate"
                       value={formData.license_plate}
-                      onChange={handleChange}
+                      readOnly
                       placeholder="VD: 65A-563.94"
                       required
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition"
+                      className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Biển số kiểm soát xe gửi giữ tại bãi theo thỏa thuận.
+                      Biển số kiểm soát xe gửi giữ tại bãi theo đăng ký của khách hàng.
                     </p>
                   </div>
                 </div>
@@ -506,7 +596,7 @@ const ProviderCreateContractPage = () => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
                       Giá dịch vụ trông giữ xe thỏa thuận (VNĐ) <span className="text-red-500">*</span>
@@ -579,7 +669,7 @@ const ProviderCreateContractPage = () => {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
+                  <div className="sm:col-span-2 lg:col-span-4">
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
                       Vị trí gửi / Ô đỗ phân công trong bãi
                     </label>

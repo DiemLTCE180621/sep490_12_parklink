@@ -37,3 +37,61 @@ code {
   transform: scale(1.15);
   transition: transform 0.2s ease;
 }
+
+/* ====================================================
+   PRINT & EXPORT PDF STYLES CHO HỢP ĐỒNG ĐIỆN TỬ
+   (Chuẩn thể thức văn bản hành chính Việt Nam NĐ 30/2020)
+   ==================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 13pt !important;
+    line-height: 1.45 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Ẩn các thành phần giao diện không cần in */
+  .print\:hidden,
+  nav,
+  header,
+  footer,
+  aside,
+  button:not(.print\:show) {
+    display: none !important;
+  }
+
+  /* Canvas văn bản hợp đồng chuẩn */
+  .contract-paper-canvas {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    color: #000000 !important;
+  }
+
+  .contract-paper-canvas * {
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+
+  /* In văn bản rõ nét */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+

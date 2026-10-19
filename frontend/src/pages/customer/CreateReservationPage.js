@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { sendReservationRequest } from '../../services/reservationService';
 import facilityService from '../../services/facilityService';
+import { getFacilitySupportedTypes } from '../../constants/vehicleTypes';
 import {
   ArrowLeft,
   Calendar,
@@ -38,7 +39,10 @@ const CreateReservationPage = () => {
   const [facilityError, setFacilityError] = useState(null);
 
   // Form states
-  const [vehicleInfo, setVehicleInfo] = useState('');
+  const [customerIdCard, setCustomerIdCard] = useState(() => localStorage.getItem('customer_id_card') || '');
+  const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
+  const [vehicleBrand, setVehicleBrand] = useState('');
+  const [licensePlate, setLicensePlate] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -88,8 +92,14 @@ const CreateReservationPage = () => {
     }
   }, [facilityId, facility, fetchFacilityData, availability]);
 
+  const supportedVehicleTypes = getFacilitySupportedTypes(facility?.vehicle_types);
+
   const handleQuickPreset = (presetText) => {
-    setVehicleInfo((prev) => (prev ? `${prev} - ${presetText}` : presetText));
+    setVehicleBrand((prev) => {
+      if (!prev) return presetText;
+      if (prev.includes(presetText)) return prev;
+      return `${prev} - ${presetText}`;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -111,8 +121,23 @@ const CreateReservationPage = () => {
       return;
     }
 
-    if (!vehicleInfo.trim() || vehicleInfo.trim().length < 3) {
-      setFormError('Vui lòng nhập rõ thông tin xe (Loại xe & Biển số xe) từ 3 ký tự trở lên.');
+    if (!customerIdCard?.trim()) {
+      setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của bạn.');
+      return;
+    }
+
+    if (!customerAddress?.trim()) {
+      setFormError('Vui lòng nhập Địa chỉ thường trú / liên hệ của bạn.');
+      return;
+    }
+
+    if (!vehicleBrand?.trim() || vehicleBrand.trim().length < 2) {
+      setFormError('Vui lòng nhập Hãng xe / Dòng xe (Ví dụ: Toyota Camry, Honda City...).');
+      return;
+    }
+
+    if (!licensePlate?.trim() || licensePlate.trim().length < 3) {
+      setFormError('Vui lòng nhập Biển kiểm soát / Biển số xe (Ví dụ: 65A-123.45).');
       return;
     }
 
@@ -121,11 +146,22 @@ const CreateReservationPage = () => {
       return;
     }
 
+    const cleanBrand = vehicleBrand.trim();
+    const cleanPlate = licensePlate.trim().toUpperCase();
+    const cleanIdCard = customerIdCard.trim();
+    const cleanAddress = customerAddress.trim();
+
+    localStorage.setItem('customer_id_card', cleanIdCard);
+    localStorage.setItem('customer_address', cleanAddress);
+
+    const formattedVehicle = `${cleanBrand} - Biển số: ${cleanPlate}`;
+    const fullVehicleInfo = `${formattedVehicle} [CCCD: ${cleanIdCard} | ĐC: ${cleanAddress}]`;
+
     try {
       setSubmitting(true);
       const response = await sendReservationRequest({
         facility_id: facility.id,
-        vehicle_info: vehicleInfo.trim(),
+        vehicle_info: fullVehicleInfo,
         desired_start_date: desiredStartDate
       });
 
@@ -152,8 +188,8 @@ const CreateReservationPage = () => {
     facility?.provider?.full_name || facility?.provider?.name || 'Chủ cơ sở bãi xe';
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-50 py-6 px-3 sm:px-6 lg:px-8 font-sans antialiased">
+      <div className="w-full max-w-[1600px] mx-auto space-y-6">
         {/* TOP BREADCRUMB & BACK ACTION */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500">
@@ -234,8 +270,20 @@ const CreateReservationPage = () => {
                   <span className="text-teal-900">{facility?.name}</span>
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-slate-700">
-                  <span>Thông tin phương tiện:</span>
-                  <span className="font-bold text-slate-900 font-mono">{vehicleInfo}</span>
+                  <span>Hãng & Dòng xe:</span>
+                  <span className="font-bold text-slate-900">{vehicleBrand}</span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-slate-700">
+                  <span>Biển kiểm soát:</span>
+                  <span className="font-bold text-teal-800 font-mono text-sm">{licensePlate.toUpperCase()}</span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-slate-700">
+                  <span>Số CMND / Thẻ CCCD:</span>
+                  <span className="font-semibold text-slate-800">{customerIdCard}</span>
+                </div>
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-slate-700">
+                  <span>Địa chỉ liên hệ:</span>
+                  <span className="font-semibold text-slate-800">{customerAddress}</span>
                 </div>
                 <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 text-slate-700">
                   <span>Ngày mong muốn bắt đầu:</span>
@@ -288,7 +336,7 @@ const CreateReservationPage = () => {
           /* MAIN FORM CANVAS */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* LEFT COLUMN: THE RESERVATION FORM */}
-            <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden">
+            <div className="lg:col-span-8 xl:col-span-8 2xl:col-span-9 bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden">
               {/* HERO HEADER */}
               <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 p-6 sm:p-8 text-white">
                 <div className="flex items-center gap-2 mb-2.5">
@@ -349,67 +397,108 @@ const CreateReservationPage = () => {
                       </div>
                     </div>
                   </div>
+                  {/* CĂN CƯỚC CÔNG DÂN & ĐỊA CHỈ BÊN B */}
+                  <div className="pt-3 border-t border-teal-100/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Số CMND / Thẻ Căn cước công dân (CCCD) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={customerIdCard}
+                        onChange={(e) => setCustomerIdCard(e.target.value)}
+                        placeholder="VD: 092098001234 (9 hoặc 12 số)"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition shadow-2xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">
+                        Địa chỉ thường trú / liên hệ <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={customerAddress}
+                        onChange={(e) => setCustomerAddress(e.target.value)}
+                        placeholder="VD: 123 Đường 30/4, P. Xuân Khánh, Cần Thơ"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
                   <p className="text-[11px] text-slate-500 pt-1 border-t border-teal-100/60">
-                    Thông tin liên hệ này sẽ được tự động sử dụng trong bản thảo Hợp đồng dịch vụ gửi giữ xe ô tô với Bên A.
+                    Thông tin liên hệ, CMND/CCCD và địa chỉ này sẽ được chuyển tới chủ bãi để tự động lập hợp đồng gửi giữ xe ô tô với bạn.
                   </p>
                 </div>
 
-                {/* VEHICLE INFO INPUT */}
-                <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider">
-                      Thông Tin Phương Tiện Đăng Ký Gửi Giữ <span className="text-red-500">*</span>
-                    </label>
-                    <span className="text-[11px] font-bold text-teal-700">Điều 1 trong Hợp đồng</span>
+                {/* VEHICLE INFO INPUT: TÁCH HÃNG XE VÀ BIỂN SỐ RIÊNG */}
+                <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/60">
+                    <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Car className="w-4 h-4 text-teal-600" /> Thông Tin Phương Tiện Đăng Ký Gửi Giữ
+                    </span>
+                    <span className="text-[11px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                      Điều 1 trong Hợp đồng
+                    </span>
                   </div>
 
-                  <div className="relative">
-                    <Car className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      value={vehicleInfo}
-                      onChange={(e) => setVehicleInfo(e.target.value)}
-                      placeholder="Ví dụ: Toyota Camry - Biển số 65A-123.45 (Xe 5 chỗ)"
-                      className="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition shadow-2xs"
-                    />
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* TRƯỜNG 1: HÃNG XE / DÒNG XE */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Hãng xe / Dòng xe (Loại xe) <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Car className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          value={vehicleBrand}
+                          onChange={(e) => setVehicleBrand(e.target.value)}
+                          placeholder="VD: Toyota Camry, Honda City..."
+                          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition shadow-2xs"
+                        />
+                      </div>
 
-                  {/* PRESET CHIPS */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs pt-1">
-                    <span className="text-slate-400 font-semibold">Gợi ý nhanh:</span>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPreset('Xe 4 chỗ')}
-                      className="px-2.5 py-1 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg transition font-semibold shadow-2xs"
-                    >
-                      + Xe 4 chỗ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPreset('Xe 7 chỗ')}
-                      className="px-2.5 py-1 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg transition font-semibold shadow-2xs"
-                    >
-                      + Xe 7 chỗ
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPreset('SUV / Bán tải')}
-                      className="px-2.5 py-1 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg transition font-semibold shadow-2xs"
-                    >
-                      + SUV / Bán tải
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPreset('Xe điện (EV)')}
-                      className="px-2.5 py-1 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg transition font-semibold shadow-2xs"
-                    >
-                      + Xe điện (EV)
-                    </button>
+                      {/* PRESET CHIPS DYNAMIC TỪ DATABASE CỦA BÃI XE */}
+                      {supportedVehicleTypes && supportedVehicleTypes.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
+                          <span className="text-slate-400 font-medium">Bãi tiếp nhận:</span>
+                          {supportedVehicleTypes.map((preset) => (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => handleQuickPreset(preset.shortLabel || preset.label)}
+                              className="px-2 py-0.5 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-700 rounded-md transition font-semibold shadow-2xs text-[11px] flex items-center gap-1"
+                              title={preset.label}
+                            >
+                              <span>+ {preset.shortLabel || preset.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* TRƯỜNG 2: BIỂN KIỂM SOÁT */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Biển kiểm soát (Biển số xe) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={licensePlate}
+                        onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+                        placeholder="VD: 65A-123.45 hoặc 51K-987.65"
+                        className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm font-black text-teal-900 tracking-wider font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition shadow-2xs uppercase"
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        Biển số xe dùng để nhận diện xe ra vào bãi và ghi vào hợp đồng gửi giữ.
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-500">
-                    Vui lòng nhập rõ dòng xe và biển kiểm soát xe để chủ bãi nắm thông tin phân luồng và soạn thảo vào hợp đồng.
-                  </p>
                 </div>
 
                 {/* DESIRED START DATE */}
@@ -502,7 +591,7 @@ const CreateReservationPage = () => {
             </div>
 
             {/* RIGHT COLUMN: STICKY FACILITY SUMMARY CARD */}
-            <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-8 space-y-5">
+            <div className="lg:col-span-4 xl:col-span-4 2xl:col-span-3 lg:sticky lg:top-8 space-y-5">
               <div className="bg-white rounded-3xl border border-slate-200 shadow-md overflow-hidden">
                 {/* FACILITY IMAGE */}
                 <div className="h-48 sm:h-56 bg-slate-200 relative overflow-hidden">

@@ -88,10 +88,17 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
     }
   };
 
+  const rawVehicle = reservation?.vehicle_info || '';
+  const cccdMatch = rawVehicle.match(/\[CCCD:\s*([^|\]]+)/i);
+  const dcMatch = rawVehicle.match(/\|\s*ĐC:\s*([^\]]+)/i);
+  const displayVehicle = rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim();
+  const displayCccd = cccdMatch ? cccdMatch[1].trim() : null;
+  const displayAddress = dcMatch ? dcMatch[1].trim() : null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-2xl overflow-hidden transform transition-all duration-300 max-h-[90vh] flex flex-col"
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
@@ -180,7 +187,7 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                   <div>
                     <span className="text-xs text-slate-500 font-semibold">Thông tin xe đăng ký đỗ:</span>
                     <p className="font-bold text-slate-900 mt-0.5 flex items-center gap-2">
-                      <Car className="w-4 h-4 text-slate-400" /> {reservation.vehicle_info}
+                      <Car className="w-4 h-4 text-slate-400" /> {displayVehicle || reservation.vehicle_info}
                     </p>
                   </div>
 
@@ -218,6 +225,20 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                       <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                       <span className="font-medium text-xs text-slate-600">{reservation.customer.email}</span>
                     </div>
+
+                    {displayCccd && (
+                      <div className="text-xs text-slate-700 pt-1.5 border-t border-slate-200/80">
+                        <span className="text-[11px] font-bold text-slate-400 block uppercase">Số CMND / Thẻ CCCD</span>
+                        <span className="font-bold text-slate-900">{displayCccd}</span>
+                      </div>
+                    )}
+
+                    {displayAddress && (
+                      <div className="text-xs text-slate-700 pt-1.5 border-t border-slate-200/80">
+                        <span className="text-[11px] font-bold text-slate-400 block uppercase">Địa Chỉ Thường Trú</span>
+                        <span className="font-bold text-slate-900">{displayAddress}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

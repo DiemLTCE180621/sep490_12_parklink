@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { sendReservationRequest } from '../../services/reservationService';
 import { useAuth } from '../../context/AuthContext';
+import { getFacilitySupportedTypes } from '../../constants/vehicleTypes';
 import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2 } from 'lucide-react';
 
 const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
-  const [vehicleInfo, setVehicleInfo] = useState('');
+  const [customerIdCard, setCustomerIdCard] = useState(() => localStorage.getItem('customer_id_card') || '');
+  const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
+  const [vehicleBrand, setVehicleBrand] = useState('');
+  const [licensePlate, setLicensePlate] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -25,8 +29,23 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
     setError(null);
     setSuccessMsg(null);
 
-    if (!vehicleInfo.trim() || vehicleInfo.trim().length < 3) {
-      setError('Vui lòng nhập thông tin xe (Tên dòng xe + Biển số) từ 3 ký tự trở lên.');
+    if (!customerIdCard?.trim()) {
+      setError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD).');
+      return;
+    }
+
+    if (!customerAddress?.trim()) {
+      setError('Vui lòng nhập Địa chỉ thường trú hoặc liên hệ của bạn.');
+      return;
+    }
+
+    if (!vehicleBrand?.trim() || vehicleBrand.trim().length < 2) {
+      setError('Vui lòng nhập Hãng xe / Dòng xe (Ví dụ: Toyota Camry, Honda City...).');
+      return;
+    }
+
+    if (!licensePlate?.trim() || licensePlate.trim().length < 3) {
+      setError('Vui lòng nhập Biển kiểm soát / Biển số xe (Ví dụ: 65A-123.45).');
       return;
     }
 
@@ -35,11 +54,22 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
       return;
     }
 
+    const cleanBrand = vehicleBrand.trim();
+    const cleanPlate = licensePlate.trim().toUpperCase();
+    const cleanIdCard = customerIdCard.trim();
+    const cleanAddress = customerAddress.trim();
+
+    localStorage.setItem('customer_id_card', cleanIdCard);
+    localStorage.setItem('customer_address', cleanAddress);
+
+    const formattedVehicle = `${cleanBrand} - Biển số: ${cleanPlate}`;
+    const fullVehicleInfo = `${formattedVehicle} [CCCD: ${cleanIdCard} | ĐC: ${cleanAddress}]`;
+
     try {
       setLoading(true);
       const response = await sendReservationRequest({
         facility_id: facility.id,
-        vehicle_info: vehicleInfo.trim(),
+        vehicle_info: fullVehicleInfo,
         desired_start_date: desiredStartDate
       });
 
@@ -54,14 +84,20 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
     }
   };
 
+  const supportedVehicleTypes = getFacilitySupportedTypes(facility?.vehicle_types);
+
   const handleQuickPreset = (presetText) => {
-    setVehicleInfo(prev => prev ? `${prev} - ${presetText}` : presetText);
+    setVehicleBrand((prev) => {
+      if (!prev) return presetText;
+      if (prev.includes(presetText)) return prev;
+      return `${prev} - ${presetText}`;
+    });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden transform transition-all duration-300 scale-100"
+      <div
+        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 scale-100 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
@@ -88,9 +124,9 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
         <div className="p-6 bg-slate-50/80 border-b border-slate-100 flex items-start gap-4">
           <div className="w-20 h-20 rounded-2xl bg-slate-200 overflow-hidden shrink-0 border border-slate-200 shadow-inner">
             {facility.images && facility.images.length > 0 ? (
-              <img 
-                src={facility.images.find(img => img.is_primary)?.image_url || facility.images[0].image_url} 
-                alt={facility.name} 
+              <img
+                src={facility.images.find(img => img.is_primary)?.image_url || facility.images[0].image_url}
+                alt={facility.name}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -154,47 +190,87 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          {/* INPUT 1: VEHICLE INFO */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Thông tin xe đỗ <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <Car className="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400" />
+          {/* CCCD & ĐỊA CHỈ KHÁCH HÀNG */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Số CMND / Thẻ CCCD <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 required
-                value={vehicleInfo}
-                onChange={(e) => setVehicleInfo(e.target.value)}
-                placeholder="Ví dụ: Toyota Camry - Biển số 65A-123.45 (Xe 5 chỗ)"
-                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+                value={customerIdCard}
+                onChange={(e) => setCustomerIdCard(e.target.value)}
+                placeholder="VD: 092098001234 (10 hoặc 12 số)"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
               />
             </div>
-            
-            {/* Quick Preset Badges */}
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="text-slate-400 font-medium">Gợi ý loại xe:</span>
-              <button
-                type="button"
-                onClick={() => handleQuickPreset('Xe 4 chỗ')}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg transition font-medium"
-              >
-                + Xe 4 chỗ
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickPreset('Xe 7 chỗ')}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg transition font-medium"
-              >
-                + Xe 7 chỗ
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickPreset('SUV / Bán tải')}
-                className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-600 rounded-lg transition font-medium"
-              >
-                + SUV / Bán tải
-              </button>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Địa chỉ liên hệ / thường trú <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                placeholder="VD: 123 Đường 30/4, P. Xuân Khánh, Cần Thơ"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+              />
+            </div>
+          </div>
+
+          {/* INPUT: TÁCH HÃNG XE VÀ BIỂN SỐ */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Hãng xe / Dòng xe <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Car className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  required
+                  value={vehicleBrand}
+                  onChange={(e) => setVehicleBrand(e.target.value)}
+                  placeholder="VD: Toyota Camry..."
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+                />
+              </div>
+
+              {/* Quick Preset Badges Dynamic từ DB của Bãi xe */}
+              {supportedVehicleTypes && supportedVehicleTypes.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
+                  <span className="text-slate-400 font-medium">Bãi tiếp nhận:</span>
+                  {supportedVehicleTypes.map((preset) => (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleQuickPreset(preset.shortLabel || preset.label)}
+                      className="px-2.5 py-0.5 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 text-slate-700 rounded-md transition font-semibold text-[11px]"
+                      title={preset.label}
+                    >
+                      + {preset.shortLabel || preset.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Biển số xe <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={licensePlate}
+                onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+                placeholder="VD: 65A-123.45"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-black font-mono tracking-wider text-teal-800 uppercase focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+              />
+              <p className="text-[10px] text-slate-400 mt-1">Biển số đăng ký ra vào bãi.</p>
             </div>
           </div>
 

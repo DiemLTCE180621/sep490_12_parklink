@@ -20,6 +20,8 @@ class ConfirmationRecordController {
         parking_spot,
         vehicle_type,
         license_plate,
+        customer_address,
+        customer_id_card,
         terms
       } = req.body;
 
@@ -33,6 +35,8 @@ class ConfirmationRecordController {
         parkingSpot: parking_spot,
         vehicleType: vehicle_type,
         licensePlate: license_plate,
+        customerAddress: customer_address,
+        customerIdCard: customer_id_card,
         terms
       });
 
@@ -111,8 +115,12 @@ class ConfirmationRecordController {
     try {
       const { id } = req.params;
       const customerId = req.user.userId;
+      const { customer_address, customer_id_card } = req.body;
 
-      const record = await confirmationRecordService.acceptConfirmationRecord(id, customerId);
+      const record = await confirmationRecordService.acceptConfirmationRecord(id, customerId, {
+        customerAddress: customer_address,
+        customerIdCard: customer_id_card
+      });
 
       return res.status(200).json({
         status: 'success',

@@ -5,12 +5,23 @@ const { cleanText } = require('../utils/validators');
  */
 
 const validateCreateReservation = (req, res, next) => {
-  const { facility_id, vehicle_info, desired_start_date } = req.body;
+  let { facility_id, vehicle_info, desired_start_date, vehicle_brand, license_plate, customer_id_card, customer_address } = req.body;
   const errors = [];
 
   // 1. Kiểm tra facility_id
   if (!facility_id || isNaN(facility_id) || Number(facility_id) <= 0) {
     errors.push('Mã bãi đỗ xe (facility_id) không hợp lệ!');
+  }
+
+  // Hỗ trợ tự động ghép vehicle_info nếu phía Client/FE gửi các trường rời rạc
+  if (!vehicle_info && (vehicle_brand || license_plate)) {
+    const brand = cleanText(vehicle_brand) || 'Chưa cập nhật';
+    const plate = cleanText(license_plate) || 'Chưa cập nhật';
+    let extra = '';
+    if (customer_id_card || customer_address) {
+      extra = ` [CCCD: ${cleanText(customer_id_card) || 'Chưa cập nhật'} | ĐC: ${cleanText(customer_address) || 'Chưa cập nhật'}]`;
+    }
+    vehicle_info = `${brand} - Biển số: ${plate}${extra}`;
   }
 
   // 2. Kiểm tra vehicle_info
