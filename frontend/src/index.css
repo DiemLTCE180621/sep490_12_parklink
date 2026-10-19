@@ -26,3 +26,14 @@ code {
 .parklink-facility-popup .leaflet-popup-tip {
   background: #ffffff;
 }
+
+/* Custom marker icon cho bãi đỗ xe - reset style mặc định của Leaflet divIcon */
+.parklink-facility-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.parklink-facility-icon:hover {
+  transform: scale(1.15);
+  transition: transform 0.2s ease;
+}

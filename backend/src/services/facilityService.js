@@ -60,21 +60,43 @@ class FacilityService {
    * rồi xây dựng ma trận so sánh (comparison matrix) chuẩn hóa để trả về frontend.
    * @param {number[]} ids - Mảng 2–4 ID bãi đỗ xe (đã được parse sang số)
    */
-  async compareFacilities(ids) {
-    // Validate số lượng: phải từ 2 đến 4 bãi
-    if (!ids || ids.length < 2 || ids.length > 4) {
+  async compareFacilities(ids, location = {}) {
+    const normalizedIds = Array.isArray(ids)
+      ? ids
+        .map(id => Number(id))
+        .filter(id => Number.isInteger(id) && id > 0)
+      : [];
+
+    // Validate số lượng: phải từ 2 đến 4 bãi, không được trùng ID
+    if (
+      normalizedIds.length < 2 ||
+      normalizedIds.length > 4 ||
+      new Set(normalizedIds).size !== normalizedIds.length
+    ) {
       throw new Error('Vui lòng chọn từ 2 đến 4 bãi đỗ xe để so sánh.');
     }
 
     // Lấy dữ liệu thô từ repository
-    const facilities = await facilityRepository.findByIdsForCompare(ids);
+    const facilities = await facilityRepository.findByIdsForCompare(normalizedIds);
 
     // Kiểm tra xem tất cả ID có tồn tại và đang ACTIVE không
-    if (facilities.length !== ids.length) {
+    if (facilities.length !== normalizedIds.length) {
       const foundIds = facilities.map(f => f.id);
-      const notFoundIds = ids.filter(id => !foundIds.includes(id));
+      const notFoundIds = normalizedIds.filter(id => !foundIds.includes(id));
       throw new Error(`Không tìm thấy hoặc bãi đỗ xe không còn hoạt động (ID: ${notFoundIds.join(', ')})`);
     }
+
+    const latitude = Number(location.lat);
+    const longitude = Number(location.lng);
+    const hasLocation = Number.isFinite(latitude) && Number.isFinite(longitude);
+
+    const activeContractsByFacility = await Promise.all(
+      facilities.map(async (facility) => [
+        facility.id,
+        await facilityRepository.getActiveContractsCount(facility.id)
+      ])
+    );
+    const activeContractsMap = new Map(activeContractsByFacility);
 
     // Xây dựng comparison matrix: chuẩn hóa dữ liệu từng bãi
     const comparisonMatrix = facilities.map(facility => {
@@ -89,6 +111,10 @@ class FacilityService {
 
       // Danh sách tên tiện ích
       const amenities = facility.facility_amenities.map(fa => fa.amenity.name);
+      const activeContracts = activeContractsMap.get(facility.id) || 0;
+      const distance = hasLocation && facility.latitude !== null && facility.longitude !== null
+        ? this.calculateDistance(latitude, longitude, facility.latitude, facility.longitude)
+        : null;
 
       return {
         id: facility.id,
@@ -96,11 +122,12 @@ class FacilityService {
         address: facility.address,
         price_per_month: parseFloat(facility.price_per_month),
         capacity: facility.capacity,
-        // Số chỗ còn trống (chức năng này có thể mở rộng sau, hiện tại trả về null)
-        available_slots: null,
+        active_contracts: activeContracts,
+        available_slots: Math.max(facility.capacity - activeContracts, 0),
         amenities,
         latitude: facility.latitude,
         longitude: facility.longitude,
+        distance,
         image_url: primaryImage?.image_url || null,
         avg_rating: avgRating ? parseFloat(avgRating) : null,
         total_reviews: ratings.length

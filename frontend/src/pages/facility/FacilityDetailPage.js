@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { facilityCarIcon } from '../../utils/mapIcons';
 import ReviewSection from '../../components/common/ReviewSection';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
@@ -534,7 +536,7 @@ const FacilityDetailPage = () => {
                 {route && <RouteViewport points={route.points} />}
                 {route && <Polyline positions={route.points} pathOptions={{ color: '#0d9488', weight: 5 }} />}
                 {route && <Marker position={route.origin} />}
-                <Marker position={[latitude, longitude]} />
+                <Marker position={[latitude, longitude]} icon={facilityCarIcon} />
               </MapContainer>
             ) : (
               <div className="h-full flex items-center justify-center px-6 text-center text-sm text-slate-500">

@@ -9,6 +9,7 @@ import { addFavorite, removeFavorite, getFavorites } from '../../services/favori
 import { useAuth } from '../../context/AuthContext';
 import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import CompareModal from '../../components/modals/CompareModal';
+import { facilityCarIcon } from '../../utils/mapIcons';
 import Toast from '../../components/common/Toast';
 import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
 
@@ -154,10 +155,17 @@ const SearchPage = () => {
    */
   const handleToggleCompare = useCallback((e, facId) => {
     e.stopPropagation(); // Không trigger sự kiện click card bên dưới
+    const normalizedFacilityId = Number(facId);
+    if (!Number.isInteger(normalizedFacilityId) || normalizedFacilityId <= 0) {
+      setToastMsg('Không thể chọn cơ sở không hợp lệ để so sánh.');
+      setToastType('error');
+      return;
+    }
+
     setCompareIds(prev => {
-      if (prev.includes(facId)) {
+      if (prev.includes(normalizedFacilityId)) {
         // Bỏ chọn
-        return prev.filter(id => id !== facId);
+        return prev.filter(id => id !== normalizedFacilityId);
       }
       if (prev.length >= 4) {
         // EX-01: Đã đủ 4 bãi, hiển thị toast cảnh báo
@@ -165,7 +173,7 @@ const SearchPage = () => {
         setToastType('error');
         return prev;
       }
-      return [...prev, facId];
+      return [...prev, normalizedFacilityId];
     });
   }, []);
 
@@ -378,6 +386,7 @@ const SearchPage = () => {
       <CompareModal
         selectedIds={compareIds}
         isOpen={isCompareOpen}
+        comparisonLocation={searchedLocation || userLocation}
         onClose={() => setIsCompareOpen(false)}
         onRemove={handleRemoveFromCompare}
       />
@@ -650,7 +659,7 @@ const SearchPage = () => {
                   .slice(0, 3);
 
                 return (
-                  <Marker key={fac.id} position={[fac.latitude, fac.longitude]}>
+                  <Marker key={fac.id} position={[fac.latitude, fac.longitude]} icon={facilityCarIcon}>
                     <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
                       <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
                         <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">

@@ -48,11 +48,12 @@ exports.compareFacilities = async (req, res) => {
     const { ids } = req.query;
 
     // Parse chuỗi '1,2,3' thành mảng số [1, 2, 3]
-    const parsedIds = ids
-      ? ids.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id))
-      : [];
+    const parsedIds = ids ? ids.split(',') : [];
 
-    const data = await facilityService.compareFacilities(parsedIds);
+    const data = await facilityService.compareFacilities(parsedIds, {
+      lat: req.query.lat,
+      lng: req.query.lng
+    });
 
     res.json({
       status: 'success',

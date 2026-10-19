@@ -12,7 +12,7 @@ import facilityService from '../../services/facilityService';
  *  - onClose: () => void        – Callback đóng modal
  *  - onRemove: (id) => void     – Callback xóa 1 bãi khỏi danh sách so sánh
  */
-const CompareModal = ({ selectedIds, isOpen, onClose, onRemove }) => {
+const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocation }) => {
   const navigate = useNavigate();
 
   const [comparisonData, setComparisonData] = useState([]);
@@ -28,20 +28,23 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove }) => {
     try {
       setLoading(true);
       setError('');
-      const res = await facilityService.compareFacilities(selectedIds);
+      const res = await facilityService.compareFacilities(selectedIds, comparisonLocation);
       if (res.status === 'success') {
         // Giữ thứ tự theo selectedIds gốc
         const ordered = selectedIds
           .map(id => res.data.find(f => f.id === id))
           .filter(Boolean);
         setComparisonData(ordered);
+      } else {
+        setComparisonData([]);
+        setError('Không thể tải dữ liệu so sánh.');
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Không thể tải dữ liệu so sánh.');
     } finally {
       setLoading(false);
     }
-  }, [selectedIds, isOpen]);
+  }, [selectedIds, isOpen, comparisonLocation]);
 
   useEffect(() => {
     fetchComparisonData();
