@@ -394,44 +394,40 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('owner')}
-                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'owner'
+                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'owner'
                       ? 'border-teal-700 text-teal-800 bg-white font-bold'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Điều 3: Nghĩa vụ Bên A (Chủ bãi)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('customer')}
-                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'customer'
+                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'customer'
                       ? 'border-teal-700 text-teal-800 bg-white font-bold'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Điều 4: Nghĩa vụ Bên B (Khách thuê)
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('dispute')}
-                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'dispute'
+                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'dispute'
                       ? 'border-teal-700 text-teal-800 bg-white font-bold'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Điều 5: Tranh Chấp
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('termination')}
-                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${
-                    activeTermsTab === 'termination'
+                  className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'termination'
                       ? 'border-teal-700 text-teal-800 bg-white font-bold'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
-                  }`}
+                    }`}
                 >
                   Điều 6: Hiệu Lực HĐ
                 </button>
@@ -468,33 +464,11 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                     />
                   </div>
                 )}
-                      rows="4"
-                      value={formData.owner_obligations}
-                      onChange={handleChange}
-                      className="w-full p-3 border border-slate-300 rounded-lg text-xs font-normal text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-600"
-                    />
-                  </div>
-                )}
-
-                {activeTermsTab === 'termination' && (
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      Các căn cứ và điều kiện chấm dứt hợp đồng:
-                    </label>
-                    <textarea
-                      name="termination_conditions"
-                      rows="4"
-                      value={formData.termination_conditions}
-                      onChange={handleChange}
-                      className="w-full p-3 border border-slate-300 rounded-lg text-xs font-normal text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-600"
-                    />
-                  </div>
-                )}
 
                 {activeTermsTab === 'dispute' && (
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      Cơ quan có thẩm quyền giải quyết tranh chấp:
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Điều 5: Cơ quan có thẩm quyền giải quyết tranh chấp:
                     </label>
                     <textarea
                       name="dispute_resolution"
@@ -505,43 +479,58 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                     />
                   </div>
                 )}
+
+                {activeTermsTab === 'termination' && (
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Điều 6: Các căn cứ và điều kiện chấm dứt hợp đồng:
+                    </label>
+                    <textarea
+                      name="termination_conditions"
+                      rows="4"
+                      value={formData.termination_conditions}
+                      onChange={handleChange}
+                      className="w-full p-3 border border-slate-300 rounded-lg text-xs font-normal text-slate-800 leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-600"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
-            <Info className="w-4 h-4 text-teal-700 shrink-0" />
-            <div>
-              Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
-            </div>
-          </div>
+      <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
+        <Info className="w-4 h-4 text-teal-700 shrink-0" />
+        <div>
+          Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
+        </div>
+      </div>
 
-          {/* ACTIONS */}
-          <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
-            >
-              Hủy Bỏ
-            </button>
+      {/* ACTIONS */}
+      <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
+        >
+          Hủy Bỏ
+        </button>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
-                </>
-              )}
-            </button>
-          </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
+            </>
+          )}
+        </button>
+      </div>
         </form>
       </div>
     </div>
