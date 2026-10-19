@@ -73,6 +73,8 @@ const validateCreateConfirmationRecord = (req, res, next) => {
   if (parking_spot) req.body.parking_spot = cleanText(parking_spot);
   if (vehicle_type) req.body.vehicle_type = cleanText(vehicle_type);
   if (license_plate) req.body.license_plate = cleanText(license_plate);
+  if (req.body.customer_address) req.body.customer_address = cleanText(req.body.customer_address);
+  if (req.body.customer_id_card) req.body.customer_id_card = cleanText(req.body.customer_id_card);
 
   next();
 };

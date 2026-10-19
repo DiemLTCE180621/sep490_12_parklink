@@ -37,7 +37,8 @@ export const getConfirmationRecordDetail = async (id) => {
 /**
  * 5. [CUSTOMER] Chấp nhận / Ký Biên bản xác nhận điện tử (Accept confirmation record)
  * @param {number|string} id - ID của biên bản xác nhận
+ * @param {Object} [data] - { customer_address, customer_id_card }
  */
-export const acceptConfirmationRecord = async (id) => {
-  return await api.patch(`/confirmation-records/${id}/accept`);
+export const acceptConfirmationRecord = async (id, data = {}) => {
+  return await api.patch(`/confirmation-records/${id}/accept`, data);
 };

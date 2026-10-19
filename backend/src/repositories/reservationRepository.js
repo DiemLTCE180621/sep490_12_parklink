@@ -80,11 +80,15 @@ class ReservationRepository {
       },
       include: {
         facility: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            price_per_month: true
+          include: {
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            }
           }
         },
         customer: {
@@ -140,11 +144,15 @@ class ReservationRepository {
       where: { customer_id: parseInt(customerId, 10) },
       include: {
         facility: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            price_per_month: true,
+          include: {
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            },
             images: {
               where: { is_primary: true },
               take: 1
@@ -183,11 +191,15 @@ class ReservationRepository {
           }
         },
         facility: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            price_per_month: true
+          include: {
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            }
           }
         },
         confirmation_record: {
@@ -219,11 +231,15 @@ class ReservationRepository {
           }
         },
         facility: {
-          select: {
-            id: true,
-            name: true,
-            address: true,
-            price_per_month: true
+          include: {
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            }
           }
         },
         confirmation_record: true

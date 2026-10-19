@@ -18,6 +18,8 @@ class ConfirmationRecordService {
     parkingSpot,
     vehicleType,
     licensePlate,
+    customerAddress,
+    customerIdCard,
     terms
   }) {
     // 1. Kiểm tra sự tồn tại của Yêu cầu thuê xe
@@ -53,6 +55,27 @@ class ConfirmationRecordService {
     // 5. Tự động sinh Mã hợp đồng / Biên bản duy nhất
     const contractCode = `HD-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    // Trích xuất fallback từ vehicle_info nếu người tạo chưa nhập hoặc gọi API thiếu trường
+    let fallbackBrand = '';
+    let fallbackPlate = '';
+    let fallbackIdCard = '';
+    let fallbackAddress = '';
+
+    if (reservation.vehicle_info) {
+      const raw = reservation.vehicle_info;
+      const cccdMatch = raw.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+      if (cccdMatch) fallbackIdCard = cccdMatch[1].trim();
+
+      const dcMatch = raw.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+      if (dcMatch) fallbackAddress = dcMatch[1].trim();
+
+      const brandMatch = raw.match(/^([^-]+)\s*-\s*Biển số:\s*([^\[]+)/i);
+      if (brandMatch) {
+        fallbackBrand = brandMatch[1].trim();
+        fallbackPlate = brandMatch[2].trim();
+      }
+    }
+
     // 6. Tạo Dữ liệu Snapshot 7 Mục lưu giữ nguyên vẹn nội dung hợp đồng chuẩn
     const contractSnapshot = {
       // MỤC 1: Thông tin hợp đồng
@@ -65,13 +88,13 @@ class ConfirmationRecordService {
 
       // MỤC 2: Thông tin Owner (Chủ bãi đỗ xe)
       owner_info: {
-        facility_id: reservation.facility.id,
-        facility_name: reservation.facility.name,
-        facility_address: reservation.facility.address,
-        provider_id: reservation.facility.provider.id,
-        provider_name: reservation.facility.provider.full_name,
-        provider_phone: reservation.facility.provider.phone_number,
-        provider_email: reservation.facility.provider.email
+        facility_id: reservation.facility?.id,
+        facility_name: reservation.facility?.name,
+        facility_address: reservation.facility?.address,
+        provider_id: reservation.facility?.provider?.id || reservation.facility?.provider_id || parseInt(providerId, 10),
+        provider_name: reservation.facility?.provider?.full_name || 'Chủ cơ sở bãi xe',
+        provider_phone: reservation.facility?.provider?.phone_number || 'Chưa cập nhật',
+        provider_email: reservation.facility?.provider?.email || ''
       },
 
       // MỤC 3: Thông tin Customer (Khách hàng thuê)
@@ -80,14 +103,21 @@ class ConfirmationRecordService {
         customer_name: reservation.customer.full_name,
         customer_phone: reservation.customer.phone_number,
         customer_email: reservation.customer.email,
-        customer_address: reservation.customer.address || 'Chưa cập nhật'
+        customer_address:
+          customerAddress && customerAddress !== 'Chưa cập nhật' && customerAddress.trim() !== ''
+            ? customerAddress.trim()
+            : fallbackAddress || reservation.customer?.address || 'Chưa cập nhật',
+        customer_id_card:
+          customerIdCard && customerIdCard !== 'Chưa cập nhật' && customerIdCard.trim() !== ''
+            ? customerIdCard.trim()
+            : fallbackIdCard || 'Chưa cập nhật'
       },
 
       // MỤC 4: Thông tin xe đăng ký đỗ
       vehicle_info: {
         vehicle_info_raw: reservation.vehicle_info,
-        vehicle_type: vehicleType || 'Phương tiện đăng ký đỗ',
-        license_plate: licensePlate || reservation.vehicle_info
+        vehicle_type: vehicleType || fallbackBrand || 'Phương tiện đăng ký đỗ',
+        license_plate: licensePlate || fallbackPlate || reservation.vehicle_info
       },
 
       // MỤC 5: Thông tin thuê đỗ xe
@@ -175,13 +205,33 @@ class ConfirmationRecordService {
       throw error;
     }
 
+    // Tự động bổ sung thông tin CCCD và Địa chỉ nếu trước đó bị lưu là 'Chưa cập nhật'
+    if (record.contract_snapshot && record.contract_snapshot.customer_info) {
+      const custInfo = record.contract_snapshot.customer_info;
+      const raw = record.reservation?.vehicle_info || '';
+      if (!custInfo.customer_id_card || custInfo.customer_id_card === 'Chưa cập nhật') {
+        const cccdMatch = raw.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+        if (cccdMatch) {
+          custInfo.customer_id_card = cccdMatch[1].trim();
+        }
+      }
+      if (!custInfo.customer_address || custInfo.customer_address === 'Chưa cập nhật') {
+        const dcMatch = raw.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+        if (dcMatch) {
+          custInfo.customer_address = dcMatch[1].trim();
+        } else if (record.reservation?.customer?.address) {
+          custInfo.customer_address = record.reservation.customer.address;
+        }
+      }
+    }
+
     return record;
   }
 
   /**
    * 3. [CUSTOMER] Chấp nhận / Ký Biên bản xác nhận điện tử (Accept confirmation record)
    */
-  async acceptConfirmationRecord(recordId, customerId) {
+  async acceptConfirmationRecord(recordId, customerId, customerData = {}) {
     // 1. Tìm Biên bản xác nhận
     const record = await confirmationRecordRepository.findById(recordId);
     if (!record) {
@@ -207,8 +257,34 @@ class ConfirmationRecordService {
     // 4. Cập nhật trạng thái thành ACTIVE và ghi nhận ngày chấp nhận
     const now = new Date();
     const currentSnapshot = record.contract_snapshot || {};
+    const rawVeh = record.reservation?.vehicle_info || '';
+    const cccdM = rawVeh.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+    const dcM = rawVeh.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+
+    const existingCust = currentSnapshot.customer_info || {};
+    const finalIdCard =
+      customerData.customerIdCard && customerData.customerIdCard !== 'Chưa cập nhật' && customerData.customerIdCard.trim() !== ''
+        ? customerData.customerIdCard.trim()
+        : (existingCust.customer_id_card && existingCust.customer_id_card !== 'Chưa cập nhật' && existingCust.customer_id_card.trim() !== ''
+            ? existingCust.customer_id_card
+            : (cccdM ? cccdM[1].trim() : (existingCust.customer_id_card || 'Chưa cập nhật')));
+
+    const finalAddress =
+      customerData.customerAddress && customerData.customerAddress !== 'Chưa cập nhật' && customerData.customerAddress.trim() !== ''
+        ? customerData.customerAddress.trim()
+        : (existingCust.customer_address && existingCust.customer_address !== 'Chưa cập nhật' && existingCust.customer_address.trim() !== ''
+            ? existingCust.customer_address
+            : (dcM ? dcM[1].trim() : (record.reservation?.customer?.address || existingCust.customer_address || 'Chưa cập nhật')));
+
+    const updatedCustomerInfo = {
+      ...existingCust,
+      customer_id_card: finalIdCard,
+      customer_address: finalAddress
+    };
+
     const updatedSnapshot = {
       ...currentSnapshot,
+      customer_info: updatedCustomerInfo,
       confirmation: {
         ...currentSnapshot.confirmation,
         customer_agreed_at: now,

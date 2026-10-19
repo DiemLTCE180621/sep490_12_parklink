@@ -127,11 +127,18 @@ const ProviderReservationDetailPage = () => {
     }
   };
 
+  const rawVehicle = reservation?.vehicle_info || '';
+  const cccdMatch = rawVehicle.match(/\[CCCD:\s*([^|\]]+)/i);
+  const dcMatch = rawVehicle.match(/\|\s*ĐC:\s*([^\]]+)/i);
+  const displayVehicle = rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim();
+  const displayCccd = cccdMatch ? cccdMatch[1].trim() : null;
+  const displayAddress = dcMatch ? dcMatch[1].trim() : null;
+
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 py-6 sm:py-8 px-3 sm:px-6 lg:px-10">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div className="w-full max-w-[1600px] mx-auto space-y-6">
         {/* TOP BAR / NAVIGATION */}
         <div className="flex items-center justify-between">
           <button
@@ -221,6 +228,20 @@ const ProviderReservationDetailPage = () => {
                         {reservation.customer?.email}
                       </p>
                     </div>
+
+                    {displayCccd && (
+                      <div className="space-y-1 pt-2 border-t border-slate-100">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Số CMND / Thẻ CCCD</span>
+                        <p className="text-sm font-bold text-slate-900">{displayCccd}</p>
+                      </div>
+                    )}
+
+                    {displayAddress && (
+                      <div className="space-y-1 pt-2 border-t border-slate-100">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">Địa Chỉ Liên Hệ / Thường Trú</span>
+                        <p className="text-sm font-bold text-slate-900">{displayAddress}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -235,7 +256,7 @@ const ProviderReservationDetailPage = () => {
                       <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                         <Car className="w-4 h-4 text-slate-500" /> Phương Tiện Đăng Ký
                       </span>
-                      <p className="text-base font-extrabold text-slate-900">{reservation.vehicle_info}</p>
+                      <p className="text-base font-extrabold text-slate-900">{displayVehicle || reservation.vehicle_info}</p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-teal-50 border border-teal-100 space-y-1">

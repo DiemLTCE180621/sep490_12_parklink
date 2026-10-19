@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { createConfirmationRecord } from '../services/confirmationRecordService';
+import { useAuth } from '../context/AuthContext';
 import {
   X,
   FileText,
@@ -10,10 +11,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Info
+  Info,
+  Lock
 } from 'lucide-react';
 
 const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess }) => {
+  const { user } = useAuth();
   const defaultTerms = useMemo(() => ({
     owner_obligations:
       '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.',
@@ -31,12 +34,14 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     start_date: '',
     end_date: '',
     parking_spot: '',
-    vehicle_type: 'Ô tô (4-7 chỗ)',
+    vehicle_type: '',
     license_plate: '',
+    customer_address: '',
+    customer_id_card: '',
     ...defaultTerms
   });
 
-  const [activeTermsTab, setActiveTermsTab] = useState('customer'); // customer | owner | termination | dispute
+  const [activeTermsTab, setActiveTermsTab] = useState('owner'); // owner | customer | dispute | termination
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -54,14 +59,60 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
         initialPrice = String(reservation.facility.price_per_month).split('.')[0];
       }
 
-      const startDateVal = reservation.desired_start_date
-        ? new Date(reservation.desired_start_date).toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0];
+      let startDateVal = new Date().toISOString().split('T')[0];
+      if (reservation.desired_start_date) {
+        const parsed = new Date(reservation.desired_start_date);
+        if (!isNaN(parsed.getTime())) {
+          startDateVal = parsed.toISOString().split('T')[0];
+        }
+      }
 
+      let endDateVal = '';
       const startObj = new Date(startDateVal);
-      const endObj = new Date(startObj);
-      endObj.setFullYear(endObj.getFullYear() + 1);
-      const endDateVal = endObj.toISOString().split('T')[0];
+      if (!isNaN(startObj.getTime())) {
+        const endObj = new Date(startObj);
+        endObj.setFullYear(endObj.getFullYear() + 1);
+        endDateVal = !isNaN(endObj.getTime()) ? endObj.toISOString().split('T')[0] : '';
+      }
+
+      let extractedVehicleType = '';
+      let extractedLicensePlate = '';
+      let extractedIdCard = '';
+      let extractedAddress = '';
+
+      if (reservation.vehicle_info) {
+        const raw = reservation.vehicle_info;
+        const cccdMatch = raw.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+        if (cccdMatch) extractedIdCard = cccdMatch[1].trim();
+
+        const dcMatch = raw.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+        if (dcMatch) extractedAddress = dcMatch[1].trim();
+
+        if (!extractedIdCard) extractedIdCard = localStorage.getItem('customer_id_card') || '';
+        if (!extractedAddress) extractedAddress = localStorage.getItem('customer_address') || reservation.customer?.address || '';
+
+        const cleanVehicle = raw
+          .replace(/\s*\[(?:CCCD|CMND)[^\]]+\]/i, '')
+          .replace(/\s*\[(?:ĐC|Địa chỉ)[^\]]+\]/i, '')
+          .trim();
+
+        const plateRegex = /\s*-\s*Biển\s*(?:số|kiểm\s*soát)?:\s*/i;
+        if (plateRegex.test(cleanVehicle)) {
+          const parts = cleanVehicle.split(plateRegex);
+          extractedVehicleType = parts[0].trim();
+          extractedLicensePlate = parts.slice(1).join(' ').trim();
+        } else if (cleanVehicle.includes(' - ')) {
+          const parts = cleanVehicle.split(' - ');
+          extractedVehicleType = parts[0].trim();
+          extractedLicensePlate = parts.slice(1).join(' - ').replace(/Biển số:\s*/i, '').trim();
+        } else {
+          extractedVehicleType = cleanVehicle;
+          extractedLicensePlate = cleanVehicle;
+        }
+      } else {
+        extractedIdCard = localStorage.getItem('customer_id_card') || '';
+        extractedAddress = localStorage.getItem('customer_address') || reservation.customer?.address || '';
+      }
 
       setFormData({
         agreed_price: initialPrice,
@@ -69,8 +120,10 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
         start_date: startDateVal,
         end_date: endDateVal,
         parking_spot: 'Chỗ đỗ tự do trong bãi',
-        vehicle_type: 'Ô tô (4-7 chỗ)',
-        license_plate: reservation.vehicle_info || '',
+        vehicle_type: extractedVehicleType || 'Phương tiện đăng ký đỗ',
+        license_plate: extractedLicensePlate || reservation.vehicle_info || '',
+        customer_address: extractedAddress || reservation.customer?.address || '',
+        customer_id_card: extractedIdCard || '',
         ...defaultTerms
       });
       setError(null);
@@ -111,8 +164,19 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
       return;
     }
 
-    if (new Date(formData.end_date) <= new Date(formData.start_date)) {
-      setError('Ngày kết thúc hợp đồng phải diễn ra sau ngày bắt đầu!');
+    const deadlineDay = parseCleanNumber(formData.payment_deadline_day) || 5;
+    if (deadlineDay < 1 || deadlineDay > 31) {
+      setError('Hạn thanh toán hàng tháng phải từ ngày 1 đến ngày 31!');
+      return;
+    }
+
+    if (!formData.customer_id_card || !formData.customer_id_card.trim()) {
+      setError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của Bên B để lập hợp đồng!');
+      return;
+    }
+
+    if (!formData.customer_address || !formData.customer_address.trim()) {
+      setError('Vui lòng nhập Địa chỉ liên hệ / thường trú của Bên B để lập hợp đồng!');
       return;
     }
 
@@ -121,12 +185,14 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
       const payload = {
         reservation_id: reservation.id,
         agreed_price: priceNum,
-        payment_deadline_day: parseCleanNumber(formData.payment_deadline_day) || 5,
+        payment_deadline_day: deadlineDay,
         start_date: formData.start_date,
         end_date: formData.end_date,
         parking_spot: formData.parking_spot ? formData.parking_spot.trim() : 'Chỗ đỗ tự do',
         vehicle_type: formData.vehicle_type ? formData.vehicle_type.trim() : 'Phương tiện đỗ',
         license_plate: formData.license_plate ? formData.license_plate.trim() : reservation.vehicle_info,
+        customer_address: formData.customer_address.trim(),
+        customer_id_card: formData.customer_id_card.trim(),
         terms: {
           customer_obligations: formData.customer_obligations,
           owner_obligations: formData.owner_obligations,
@@ -150,7 +216,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/65 backdrop-blur-sm animate-fadeIn">
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200/90 w-full max-w-4xl overflow-hidden transform transition-all duration-200 max-h-[92vh] flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl border border-slate-200/90 w-full max-w-6xl overflow-hidden transform transition-all duration-200 max-h-[94vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* DOCUMENT TOP BAR */}
@@ -210,18 +276,52 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                 <p className="font-bold text-slate-900 pt-0.5">{reservation.facility?.name}</p>
                 <p className="text-slate-600 text-[11px]">{reservation.facility?.address}</p>
                 <p className="text-slate-500 text-[11px] pt-1">
-                  Đại diện: <strong>{reservation.facility?.provider?.full_name || 'Chủ cơ sở'}</strong> • SĐT: {reservation.facility?.provider?.phone_number || 'N/A'}
+                  Đại diện: <strong>{reservation.facility?.provider?.full_name || user?.full_name || 'Chủ cơ sở'}</strong> • SĐT: {reservation.facility?.provider?.phone_number || user?.phone_number || 'N/A'}
                 </p>
               </div>
 
               {/* BÊN B (CUSTOMER) */}
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-1">
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-2">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block border-b border-slate-200/60 pb-1">
                   Bên B (Khách Hàng Thuê)
                 </span>
                 <p className="font-bold text-slate-900 pt-0.5">{reservation.customer?.full_name}</p>
-                <p className="text-slate-600 text-[11px]">SĐT: {reservation.customer?.phone_number || 'Chưa cập nhật'}</p>
-                <p className="text-slate-500 text-[11px]">Email: {reservation.customer?.email}</p>
+                <div className="grid grid-cols-2 gap-2 text-slate-600 text-[11px]">
+                  <p>SĐT: <span className="font-semibold text-slate-800">{reservation.customer?.phone_number || 'Chưa cập nhật'}</span></p>
+                  <p className="truncate">Email: <span className="font-semibold text-slate-800">{reservation.customer?.email}</span></p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/70 space-y-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      Số CMND / Thẻ Căn cước công dân (CCCD) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_id_card"
+                      value={formData.customer_id_card}
+                      readOnly
+                      placeholder="Chưa có CCCD"
+                      required
+                      className="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">
+                      Địa chỉ thường trú / liên hệ Bên B <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_address"
+                      value={formData.customer_address}
+                      readOnly
+                      placeholder="Chưa có địa chỉ"
+                      required
+                      className="w-full px-2.5 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -246,10 +346,10 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="text"
                   name="vehicle_type"
                   value={formData.vehicle_type}
-                  onChange={handleChange}
-                  placeholder="VD: Ô tô (4-7 chỗ) hoặc Mitsubishi Xforce"
+                  readOnly
+                  placeholder="VD: Ô tô (4-7 chỗ)"
                   required
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
+                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
                 />
               </div>
 
@@ -261,10 +361,10 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="text"
                   name="license_plate"
                   value={formData.license_plate}
-                  onChange={handleChange}
+                  readOnly
                   placeholder="VD: 65A-563.94"
                   required
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
+                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
                 />
               </div>
             </div>

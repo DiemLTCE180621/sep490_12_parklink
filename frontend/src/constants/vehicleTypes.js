@@ -32,3 +32,39 @@ export const getVehicleTypeLabel = (typeId) => {
   const found = VEHICLE_TYPES.find(v => v.id === typeId);
   return found ? found.label : typeId;
 };
+
+/**
+ * Trích xuất danh sách loại xe hỗ trợ thực tế của Bãi đỗ xe từ Database (facility.vehicle_types)
+ */
+export const getFacilitySupportedTypes = (vehicleTypesData) => {
+  if (!vehicleTypesData) return VEHICLE_TYPES;
+
+  let raw = vehicleTypesData;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch (e) {
+      raw = [];
+    }
+  }
+
+  if (!Array.isArray(raw) || raw.length === 0) {
+    return VEHICLE_TYPES;
+  }
+
+  const mapped = raw
+    .map((item) => {
+      const typeId = typeof item === 'string' ? item : item?.id;
+      const standard = VEHICLE_TYPES.find((v) => v.id === typeId);
+      if (standard) return standard;
+      return {
+        id: typeId,
+        label: typeof item === 'string' ? item : (item.label || typeId),
+        shortLabel: typeof item === 'string' ? item : (item.shortLabel || item.label || typeId)
+      };
+    })
+    .filter(Boolean);
+
+  return mapped.length > 0 ? mapped : VEHICLE_TYPES;
+};
+
