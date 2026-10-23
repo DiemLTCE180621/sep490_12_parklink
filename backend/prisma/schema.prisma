@@ -313,7 +313,7 @@ model Platform_Fee {
 // ------------------------------------------------------
 model System_Policy {
   id          Int      @id @default(autoincrement())
-  policy_type String   @unique // "CUSTOMER" hoặc "PROVIDER"
+  policy_type String   @unique 
   title       String
   content     String   @db.Text
   is_active   Boolean  @default(true)
@@ -321,4 +321,19 @@ model System_Policy {
   updated_at  DateTime @updatedAt
 
   @@map("system_policies")
+}
+
+// ------------------------------------------------------
+// NHÓM QUẢN LÝ LOẠI PHƯƠNG TIỆN (VEHICLE TYPES)
+// ------------------------------------------------------
+model Vehicle_Type {
+  id          Int      @id @default(autoincrement())
+  type_code   String   @unique 
+  name        String   
+  description String?  @db.Text
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("vehicle_types")
 }
