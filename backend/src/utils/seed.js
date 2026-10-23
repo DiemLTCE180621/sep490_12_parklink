@@ -136,6 +136,43 @@ async function seedAll() {
     }
     console.log('✅ 5. System Policies hoàn tất.');
 
+    // 6. Danh mục Loại phương tiện (Vehicle Types)
+    const vehicleTypes = [
+      {
+        type_code: 'CAR_4_5_SEATER',
+        name: 'Ô tô 4 - 5 chỗ (Sedan, Hatchback, CUV)',
+        description: 'Các dòng xe con phổ thông 4 đến 5 chỗ ngồi.',
+        is_active: true
+      },
+      {
+        type_code: 'CAR_7_SEATER',
+        name: 'Ô tô 7 chỗ (SUV, MPV)',
+        description: 'Các dòng xe gia đình cỡ lớn, xe SUV, MPV 7 chỗ ngồi.',
+        is_active: true
+      },
+      {
+        type_code: 'PICKUP_TRUCK',
+        name: 'Xe bán tải / Xe tải nhỏ (Dưới 1.5 tấn)',
+        description: 'Xe bán tải hoặc xe tải chở hàng hạng nhẹ dưới 1.5 tấn.',
+        is_active: true
+      },
+      {
+        type_code: 'ELECTRIC_CAR',
+        name: 'Xe ô tô điện (EV)',
+        description: 'Các dòng xe ô tô chạy hoàn toàn bằng điện.',
+        is_active: true
+      }
+    ];
+
+    for (const vt of vehicleTypes) {
+      await prisma.vehicle_Type.upsert({
+        where: { type_code: vt.type_code },
+        update: {},
+        create: vt
+      });
+    }
+    console.log('✅ 6. Vehicle Types hoàn tất.');
+
     console.log('Khởi tạo dữ liệu hệ thống hoàn tất!');
   } catch (error) {
     console.error('Lỗi khi seed:', error);
