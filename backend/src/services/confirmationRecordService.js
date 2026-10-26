@@ -1,5 +1,6 @@
 const confirmationRecordRepository = require('../repositories/confirmationRecordRepository');
 const reservationRepository = require('../repositories/reservationRepository');
+const facilityRepository = require('../repositories/facilityRepository');
 
 /**
  * Service chứa toàn bộ Business Logic xử lý Biên bản xác nhận / Hợp đồng điện tử (Confirmation Record)
@@ -266,15 +267,15 @@ class ConfirmationRecordService {
       customerData.customerIdCard && customerData.customerIdCard !== 'Chưa cập nhật' && customerData.customerIdCard.trim() !== ''
         ? customerData.customerIdCard.trim()
         : (existingCust.customer_id_card && existingCust.customer_id_card !== 'Chưa cập nhật' && existingCust.customer_id_card.trim() !== ''
-            ? existingCust.customer_id_card
-            : (cccdM ? cccdM[1].trim() : (existingCust.customer_id_card || 'Chưa cập nhật')));
+          ? existingCust.customer_id_card
+          : (cccdM ? cccdM[1].trim() : (existingCust.customer_id_card || 'Chưa cập nhật')));
 
     const finalAddress =
       customerData.customerAddress && customerData.customerAddress !== 'Chưa cập nhật' && customerData.customerAddress.trim() !== ''
         ? customerData.customerAddress.trim()
         : (existingCust.customer_address && existingCust.customer_address !== 'Chưa cập nhật' && existingCust.customer_address.trim() !== ''
-            ? existingCust.customer_address
-            : (dcM ? dcM[1].trim() : (record.reservation?.customer?.address || existingCust.customer_address || 'Chưa cập nhật')));
+          ? existingCust.customer_address
+          : (dcM ? dcM[1].trim() : (record.reservation?.customer?.address || existingCust.customer_address || 'Chưa cập nhật')));
 
     const updatedCustomerInfo = {
       ...existingCust,
@@ -300,6 +301,236 @@ class ConfirmationRecordService {
     );
 
     return updatedRecord;
+  }
+
+  /**
+   * [ADMIN] Xem toàn bộ Hợp đồng / Biên bản xác nhận trên nền tảng
+   * Hỗ trợ tìm kiếm từ khóa, lọc theo trạng thái, cơ sở, ngày lập, phân trang & tổng hợp doanh thu
+   */
+  async getAllConfirmationRecordsForAdmin({
+    search = '',
+    status = '',
+    facilityId = null,
+    providerId = null,
+    customerId = null,
+    startDate = null,
+    endDate = null,
+    page = 1,
+    limit = 20
+  }) {
+    const result = await confirmationRecordRepository.findAllContracts({
+      search,
+      status,
+      facilityId,
+      providerId,
+      customerId,
+      startDate,
+      endDate,
+      page,
+      limit
+    });
+
+    // Chuẩn hóa và làm sạch dữ liệu hiển thị cho từng hợp đồng
+    const formattedRecords = result.records.map((record) => {
+      const snapshot = record.contract_snapshot || {};
+      const custInfo = snapshot.customer_info || {};
+      const vehInfo = snapshot.vehicle_info || {};
+      const rentInfo = snapshot.rental_info || {};
+      const rawVeh = record.reservation?.vehicle_info || '';
+
+      const cccdMatch = rawVeh.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+      const dcMatch = rawVeh.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+
+      const finalIdCard =
+        custInfo.customer_id_card && custInfo.customer_id_card !== 'Chưa cập nhật'
+          ? custInfo.customer_id_card
+          : (cccdMatch ? cccdMatch[1].trim() : 'Chưa cập nhật');
+
+      const finalAddress =
+        custInfo.customer_address && custInfo.customer_address !== 'Chưa cập nhật'
+          ? custInfo.customer_address
+          : (dcMatch ? dcMatch[1].trim() : 'Chưa cập nhật');
+
+      return {
+        id: record.id,
+        contract_code: record.contract_code,
+        status: record.status,
+        start_date: record.start_date,
+        end_date: record.end_date,
+        agreed_price: Number(record.agreed_price || 0),
+        payment_deadline_day: record.payment_deadline_day || 5,
+        customer_agreed_at: record.customer_agreed_at,
+        provider_agreed_at: record.provider_agreed_at,
+        created_at: record.created_at,
+        updated_at: record.updated_at,
+        reservation_id: record.reservation_id,
+        customer: {
+          id: record.reservation?.customer?.id,
+          full_name: record.reservation?.customer?.full_name || custInfo.customer_name || 'Khách hàng',
+          email: record.reservation?.customer?.email || custInfo.customer_email,
+          phone_number: record.reservation?.customer?.phone_number || custInfo.customer_phone,
+          address: finalAddress,
+          id_card: finalIdCard
+        },
+        facility: {
+          id: record.reservation?.facility?.id,
+          name: record.reservation?.facility?.name,
+          address: record.reservation?.facility?.address,
+          capacity: record.reservation?.facility?.capacity,
+          price_per_month: Number(record.reservation?.facility?.price_per_month || 0)
+        },
+        provider: {
+          id: record.reservation?.facility?.provider?.id,
+          full_name: record.reservation?.facility?.provider?.full_name,
+          email: record.reservation?.facility?.provider?.email,
+          phone_number: record.reservation?.facility?.provider?.phone_number
+        },
+        vehicle: {
+          raw_info: rawVeh,
+          vehicle_type: vehInfo.vehicle_type || 'Phương tiện đăng ký đỗ',
+          license_plate: vehInfo.license_plate || rawVeh
+        },
+        rental: {
+          parking_spot: rentInfo.parking_spot || 'Vị trí đỗ tự do',
+          amenities: rentInfo.amenities || []
+        },
+        contract_snapshot: snapshot
+      };
+    });
+
+    return {
+      confirmation_records: formattedRecords,
+      pagination: result.pagination,
+      summary: result.summary
+    };
+  }
+
+  /**
+   *  [PARKING PROVIDER] Xem danh sách Khách hàng đang có hợp đồng hiệu lực (Active) tại cơ sở
+   * Kiểm tra quyền sở hữu cơ sở bãi xe, trích xuất đầy đủ thông tin khách hàng, xe, ô đỗ và số ngày còn lại
+   */
+  async getActiveCustomersAtFacility({
+    providerId,
+    facilityId = null,
+    search = '',
+    page = 1,
+    limit = 20
+  }) {
+    let targetFacility = null;
+
+    // 1. Nếu có truyền facilityId, xác minh cơ sở bãi đỗ xe thuộc quyền sở hữu của Provider
+    if (facilityId) {
+      targetFacility = await facilityRepository.findById(parseInt(facilityId, 10));
+      if (!targetFacility) {
+        const error = new Error('Không tìm thấy thông tin cơ sở bãi đỗ xe!');
+        error.status = 404;
+        throw error;
+      }
+      if (targetFacility.provider_id !== parseInt(providerId, 10)) {
+        const error = new Error('Bạn không có quyền quản lý cơ sở bãi đỗ xe này!');
+        error.status = 403;
+        throw error;
+      }
+    } else {
+      // Nếu không truyền, lấy facility mặc định của Provider
+      targetFacility = await facilityRepository.getFacilityByProviderId(parseInt(providerId, 10));
+    }
+
+    // 2. Truy vấn danh sách hợp đồng ACTIVE từ repository
+    const result = await confirmationRecordRepository.findActiveCustomersByFacility({
+      providerId,
+      facilityId: targetFacility ? targetFacility.id : null,
+      search,
+      page,
+      limit
+    });
+
+    const now = new Date();
+
+    // 3. Chuẩn hóa dữ liệu danh sách khách hàng hoạt động (Active Customers)
+    const activeCustomers = result.records.map((record) => {
+      const snapshot = record.contract_snapshot || {};
+      const custInfo = snapshot.customer_info || {};
+      const vehInfo = snapshot.vehicle_info || {};
+      const rentInfo = snapshot.rental_info || {};
+      const rawVeh = record.reservation?.vehicle_info || '';
+
+      const cccdMatch = rawVeh.match(/(?:CCCD|CMND|Số CMND|Số CCCD)[:\s]+([^|\]\-,\n]+)/i);
+      const dcMatch = rawVeh.match(/(?:ĐC|Địa chỉ|DC)[:\s]+([^|\]\n]+)/i);
+
+      const finalIdCard =
+        custInfo.customer_id_card && custInfo.customer_id_card !== 'Chưa cập nhật'
+          ? custInfo.customer_id_card
+          : (cccdMatch ? cccdMatch[1].trim() : 'Chưa cập nhật');
+
+      const finalAddress =
+        custInfo.customer_address && custInfo.customer_address !== 'Chưa cập nhật'
+          ? custInfo.customer_address
+          : (dcMatch ? dcMatch[1].trim() : 'Chưa cập nhật');
+
+      const endDateObj = new Date(record.end_date);
+      const diffTime = endDateObj.getTime() - now.getTime();
+      const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      const isExpired = endDateObj < now;
+
+      return {
+        contract_id: record.id,
+        contract_code: record.contract_code,
+        status: record.status,
+        start_date: record.start_date,
+        end_date: record.end_date,
+        days_remaining: daysRemaining,
+        is_expired: isExpired,
+        customer_agreed_at: record.customer_agreed_at,
+        created_at: record.created_at,
+        customer: {
+          id: record.reservation?.customer?.id,
+          full_name: record.reservation?.customer?.full_name || custInfo.customer_name || 'Khách hàng',
+          phone_number: record.reservation?.customer?.phone_number || custInfo.customer_phone,
+          email: record.reservation?.customer?.email || custInfo.customer_email,
+          address: finalAddress,
+          id_card: finalIdCard
+        },
+        vehicle: {
+          raw_info: rawVeh,
+          vehicle_type: vehInfo.vehicle_type || 'Phương tiện đăng ký đỗ',
+          license_plate: vehInfo.license_plate || rawVeh
+        },
+        rental: {
+          parking_spot: rentInfo.parking_spot || 'Vị trí đỗ tự do',
+          agreed_price: Number(record.agreed_price || 0),
+          payment_deadline_day: record.payment_deadline_day || 5
+        },
+        facility: {
+          id: record.reservation?.facility?.id,
+          name: record.reservation?.facility?.name,
+          address: record.reservation?.facility?.address,
+          capacity: record.reservation?.facility?.capacity
+        }
+      };
+    });
+
+    const facilityCapacity = targetFacility ? targetFacility.capacity : null;
+    const occupiedSlots = result.summary.total_active_customers;
+    const availableSlots = facilityCapacity !== null ? Math.max(0, facilityCapacity - occupiedSlots) : null;
+    const occupancyRate =
+      facilityCapacity && facilityCapacity > 0
+        ? Math.min(100, Math.round((occupiedSlots / facilityCapacity) * 100))
+        : 0;
+
+    return {
+      active_customers: activeCustomers,
+      pagination: result.pagination,
+      summary: {
+        total_active_customers: result.summary.total_active_customers,
+        total_matching: result.summary.total_matching,
+        total_monthly_revenue: result.summary.total_monthly_revenue,
+        facility_capacity: facilityCapacity,
+        occupied_slots: occupiedSlots,
+        available_slots: availableSlots,
+        occupancy_rate: occupancyRate
+      }
+    };
   }
 }
 

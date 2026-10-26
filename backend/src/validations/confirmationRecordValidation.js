@@ -79,6 +79,90 @@ const validateCreateConfirmationRecord = (req, res, next) => {
   next();
 };
 
+/**
+ *  [ADMIN] Kiểm tra tham số lọc danh sách Hợp đồng điện tử trên nền tảng
+ */
+const validateAdminQueryConfirmationRecords = (req, res, next) => {
+  const { page, limit, start_date, end_date, facility_id, provider_id, customer_id } = req.query;
+  const errors = [];
+
+  if (page !== undefined && page !== '' && (isNaN(page) || Number(page) < 1)) {
+    errors.push('Tham số phân trang (page) phải là số nguyên dương!');
+  }
+
+  if (limit !== undefined && limit !== '' && (isNaN(limit) || Number(limit) < 1 || Number(limit) > 100)) {
+    errors.push('Số lượng bản ghi mỗi trang (limit) phải từ 1 đến 100!');
+  }
+
+  if (facility_id !== undefined && facility_id !== '' && (isNaN(facility_id) || Number(facility_id) < 1)) {
+    errors.push('ID bãi đỗ xe (facility_id) không hợp lệ!');
+  }
+
+  if (provider_id !== undefined && provider_id !== '' && (isNaN(provider_id) || Number(provider_id) < 1)) {
+    errors.push('ID chủ bãi xe (provider_id) không hợp lệ!');
+  }
+
+  if (customer_id !== undefined && customer_id !== '' && (isNaN(customer_id) || Number(customer_id) < 1)) {
+    errors.push('ID khách hàng (customer_id) không hợp lệ!');
+  }
+
+  if (start_date && isNaN(Date.parse(start_date))) {
+    errors.push('Ngày bắt đầu (start_date) không đúng định dạng YYYY-MM-DD!');
+  }
+
+  if (end_date && isNaN(Date.parse(end_date))) {
+    errors.push('Ngày kết thúc (end_date) không đúng định dạng YYYY-MM-DD!');
+  }
+
+  if (start_date && end_date && !isNaN(Date.parse(start_date)) && !isNaN(Date.parse(end_date))) {
+    if (new Date(end_date) < new Date(start_date)) {
+      errors.push('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu!');
+    }
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tham số truy vấn danh sách hợp đồng không hợp lệ!',
+      errors
+    });
+  }
+
+  next();
+};
+
+/**
+ * [PROVIDER] Kiểm tra tham số truy vấn khách hàng đang hoạt động tại bãi xe
+ */
+const validateProviderActiveCustomersQuery = (req, res, next) => {
+  const { facility_id, page, limit } = req.query;
+  const errors = [];
+
+  if (facility_id !== undefined && facility_id !== '' && (isNaN(facility_id) || Number(facility_id) < 1)) {
+    errors.push('ID cơ sở bãi đỗ xe (facility_id) phải là số nguyên dương hợp lệ!');
+  }
+
+  if (page !== undefined && page !== '' && (isNaN(page) || Number(page) < 1)) {
+    errors.push('Tham số phân trang (page) phải là số nguyên dương!');
+  }
+
+  if (limit !== undefined && limit !== '' && (isNaN(limit) || Number(limit) < 1 || Number(limit) > 100)) {
+    errors.push('Số lượng bản ghi mỗi trang (limit) phải từ 1 đến 100!');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Tham số truy vấn danh sách khách hàng hoạt động không hợp lệ!',
+      errors
+    });
+  }
+
+  next();
+};
+
 module.exports = {
-  validateCreateConfirmationRecord
+  validateCreateConfirmationRecord,
+  validateAdminQueryConfirmationRecords,
+  validateProviderActiveCustomersQuery
 };

@@ -116,103 +116,100 @@ const CustomerReservationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
+      <div className="w-full space-y-6">
         
-        {/* PAGE BANNER HEADER */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        {/* PAGE HEADER */}
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 text-xs font-semibold transition mb-3 border border-white/10"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition mb-2"
             >
-              <ArrowLeft className="w-4 h-4 text-teal-400" /> Quay Lại
+              <ArrowLeft className="w-3.5 h-3.5" /> Quay Lại
             </button>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-bold uppercase tracking-wider mb-3 ml-2">
-              <Car className="w-4 h-4 text-teal-400" /> Quản Lý Đăng Ký Thuê
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Danh Sách Yêu Cầu Thuê Xe Của Tôi</h1>
-            <p className="text-slate-300 text-sm mt-1">Theo dõi tiến độ duyệt, xem chi tiết và quản lý các yêu cầu thuê bãi đỗ xe theo tháng</p>
+            <h1 className="text-2xl font-bold text-slate-900">Danh Sách Yêu Cầu Thuê Xe Của Tôi</h1>
+            <p className="text-sm text-slate-500 mt-0.5">Theo dõi tiến độ duyệt và quản lý các yêu cầu thuê bãi đỗ xe theo tháng</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={fetchMyReservations}
-              className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl shadow transition"
+              className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 shadow-sm transition flex items-center gap-1.5"
               title="Làm mới dữ liệu"
             >
-              <RefreshCw className="w-5 h-5" />
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Làm mới
             </button>
 
             <Link
               to="/facilities"
-              className="px-5 py-3 bg-teal-500 hover:bg-teal-600 text-slate-950 font-extrabold text-sm rounded-2xl shadow-md transition flex items-center gap-2"
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-sm transition flex items-center gap-1.5"
             >
-              <PlusCircle className="w-5 h-5" /> Tìm Bãi Đỗ Mới
+              <PlusCircle className="w-4 h-4" /> Tìm bãi đỗ mới
             </Link>
           </div>
         </div>
 
         {/* STATS OVERVIEW CARDS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div 
             onClick={() => setActiveTab('ALL')} 
-            className={`p-5 rounded-3xl border cursor-pointer transition shadow-sm ${activeTab === 'ALL' ? 'bg-teal-900 text-white border-teal-800 ring-2 ring-teal-500' : 'bg-white border-slate-200 text-slate-900 hover:border-teal-300'}`}
+            className={`p-4 rounded-xl border cursor-pointer transition shadow-sm ${activeTab === 'ALL' ? 'bg-teal-50/60 border-teal-500 ring-1 ring-teal-500' : 'bg-white border-slate-200 hover:border-slate-300'}`}
           >
-            <span className="text-xs font-semibold uppercase block opacity-80 mb-1">Tất cả yêu cầu</span>
-            <span className="text-2xl sm:text-3xl font-extrabold">{totalCount}</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1">Tất cả yêu cầu</span>
+            <span className="text-2xl font-bold text-slate-900">{totalCount}</span>
           </div>
 
           <div 
             onClick={() => setActiveTab('PENDING')} 
-            className={`p-5 rounded-3xl border cursor-pointer transition shadow-sm ${activeTab === 'PENDING' ? 'bg-amber-600 text-white border-amber-700 ring-2 ring-amber-400' : 'bg-white border-slate-200 text-slate-900 hover:border-amber-300'}`}
+            className={`p-4 rounded-xl border cursor-pointer transition shadow-sm ${activeTab === 'PENDING' ? 'bg-amber-50/60 border-amber-500 ring-1 ring-amber-500' : 'bg-white border-slate-200 hover:border-slate-300'}`}
           >
-            <span className="text-xs font-semibold uppercase block text-amber-700 mb-1">Chờ chủ bãi duyệt</span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-amber-700">{pendingCount}</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1">Chờ chủ bãi duyệt</span>
+            <span className="text-2xl font-bold text-amber-600">{pendingCount}</span>
           </div>
 
           <div 
             onClick={() => setActiveTab('APPROVED')} 
-            className={`p-5 rounded-3xl border cursor-pointer transition shadow-sm ${activeTab === 'APPROVED' ? 'bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-500' : 'bg-white border-slate-200 text-slate-900 hover:border-emerald-300'}`}
+            className={`p-4 rounded-xl border cursor-pointer transition shadow-sm ${activeTab === 'APPROVED' ? 'bg-emerald-50/60 border-emerald-500 ring-1 ring-emerald-500' : 'bg-white border-slate-200 hover:border-slate-300'}`}
           >
-            <span className="text-xs font-semibold uppercase block text-emerald-700 mb-1">Đã được duyệt</span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-700">{approvedCount}</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1">Đã được duyệt</span>
+            <span className="text-2xl font-bold text-emerald-600">{approvedCount}</span>
           </div>
 
           <div 
             onClick={() => setActiveTab('CANCELLED')} 
-            className={`p-5 rounded-3xl border cursor-pointer transition shadow-sm ${activeTab === 'CANCELLED' ? 'bg-slate-700 text-white border-slate-800 ring-2 ring-slate-500' : 'bg-white border-slate-200 text-slate-900 hover:border-slate-300'}`}
+            className={`p-4 rounded-xl border cursor-pointer transition shadow-sm ${activeTab === 'CANCELLED' ? 'bg-slate-100 border-slate-400 ring-1 ring-slate-400' : 'bg-white border-slate-200 hover:border-slate-300'}`}
           >
-            <span className="text-xs font-semibold uppercase block text-slate-500 mb-1">Đã hủy / Từ chối</span>
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-700">{otherCount}</span>
+            <span className="text-xs font-medium text-slate-500 uppercase tracking-wider block mb-1">Đã hủy / Từ chối</span>
+            <span className="text-2xl font-bold text-slate-600">{otherCount}</span>
           </div>
         </div>
 
         {/* FILTER TABS */}
-        <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-2">
+        <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2 overflow-x-auto text-xs">
           <button
             onClick={() => setActiveTab('ALL')}
-            className={`px-4 py-2 text-sm font-bold rounded-xl transition ${activeTab === 'ALL' ? 'bg-teal-600 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`px-3.5 py-1.5 font-semibold rounded-lg transition ${activeTab === 'ALL' ? 'bg-teal-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
           >
             Tất Cả ({totalCount})
           </button>
           <button
             onClick={() => setActiveTab('PENDING')}
-            className={`px-4 py-2 text-sm font-bold rounded-xl transition ${activeTab === 'PENDING' ? 'bg-amber-600 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`px-3.5 py-1.5 font-semibold rounded-lg transition ${activeTab === 'PENDING' ? 'bg-amber-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
           >
-            Đang Chờ Phê Duyệt ({pendingCount})
+            Chờ Phê Duyệt ({pendingCount})
           </button>
           <button
             onClick={() => setActiveTab('APPROVED')}
-            className={`px-4 py-2 text-sm font-bold rounded-xl transition ${activeTab === 'APPROVED' ? 'bg-emerald-600 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`px-3.5 py-1.5 font-semibold rounded-lg transition ${activeTab === 'APPROVED' ? 'bg-emerald-600 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
           >
-            Đã Duyệt / Chấp Nhận ({approvedCount})
+            Đã Duyệt ({approvedCount})
           </button>
           <button
             onClick={() => setActiveTab('CANCELLED')}
-            className={`px-4 py-2 text-sm font-bold rounded-xl transition ${activeTab === 'CANCELLED' ? 'bg-slate-700 text-white shadow' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`px-3.5 py-1.5 font-semibold rounded-lg transition ${activeTab === 'CANCELLED' ? 'bg-slate-700 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
           >
-            Đã Hủy / Từ Chối ({otherCount})
+            Đã Hủy ({otherCount})
           </button>
         </div>
 
@@ -245,7 +242,7 @@ const CustomerReservationsPage = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredReservations.map((item) => (
               <div
                 key={item.id}

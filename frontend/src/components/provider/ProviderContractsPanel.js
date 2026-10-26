@@ -18,10 +18,11 @@ import {
   Mail,
   Car,
   ShieldCheck,
-  Eye
+  Eye,
+  Users
 } from 'lucide-react';
 
-const ProviderContractsPanel = () => {
+const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,13 +121,31 @@ const ProviderContractsPanel = () => {
           </p>
         </div>
 
-        <button
-          onClick={fetchContracts}
-          disabled={loading}
-          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-2 border border-slate-200 shrink-0"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Tải Lại Danh Sách
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {onNavigateToActiveCustomers ? (
+            <button
+              onClick={onNavigateToActiveCustomers}
+              className="px-4 py-2.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5 border border-teal-200 shrink-0"
+            >
+              <Users className="w-4 h-4 text-teal-600" /> Khách Đang Thuê
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/provider/active-customers')}
+              className="px-4 py-2.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5 border border-teal-200 shrink-0"
+            >
+              <Users className="w-4 h-4 text-teal-600" /> Khách Đang Thuê
+            </button>
+          )}
+
+          <button
+            onClick={fetchContracts}
+            disabled={loading}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-2 border border-slate-200 shrink-0"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Tải Lại Danh Sách
+          </button>
+        </div>
       </div>
 
       {/* STATS OVERVIEW CARDS */}
