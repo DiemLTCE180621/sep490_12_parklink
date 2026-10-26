@@ -19,6 +19,11 @@ router.post('/', fieldInspectorController.createFieldInspector);
 router.get('/', fieldInspectorController.getFieldInspectors);
 
 /**
+ * Lấy danh sách Nhân viên khảo sát đang hoạt động (ACTIVE) phục vụ phân công
+ */
+router.get('/active', fieldInspectorController.getActiveInspectors);
+
+/**
  * UC-88: Update Field Inspector information (Cập nhật thông tin Nhân viên khảo sát)
  */
 router.put('/:id', fieldInspectorController.updateFieldInspector);

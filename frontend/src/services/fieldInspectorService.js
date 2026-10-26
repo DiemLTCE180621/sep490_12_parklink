@@ -28,6 +28,13 @@ const fieldInspectorService = {
    */
   updateFieldInspector: async (id, data) => {
     return await api.put(`/admin/field-inspectors/${id}`, data);
+  },
+
+  /**
+   * Lấy danh sách Nhân viên khảo sát đang hoạt động (ACTIVE) để phân công
+   */
+  getActiveInspectors: async () => {
+    return await api.get('/admin/field-inspectors/active');
   }
 };
 

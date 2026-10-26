@@ -18,8 +18,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  DollarSign
+  DollarSign,
+  UserCheck
 } from 'lucide-react';
+import AssignInspectorModal from './AssignInspectorModal';
 import Toast from '../common/Toast';
 
 /**
@@ -45,6 +47,14 @@ const AdminRegistrationsPanel = () => {
 
   const showToast = (type, message) => {
     setToast({ type, message });
+  };
+
+  const handleOpenPrepareModal = (facilityId) => {
+    setActionModal({ type: 'PREPARE', id: facilityId });
+  };
+
+  const handleOpenReassignModal = (facilityId) => {
+    setActionModal({ type: 'REASSIGN', id: facilityId });
   };
 
   const fetchRegistrations = async () => {
@@ -75,13 +85,7 @@ const AdminRegistrationsPanel = () => {
     if (!actionModal || isSubmitting) return;
     try {
       setIsSubmitting(true);
-      if (actionModal.type === 'PREPARE') {
-        await adminService.approveRegistration(actionModal.id);
-        showToast(
-          'success',
-          'Đã duyệt sơ bộ! Email thông báo đã gửi cho Provider.'
-        );
-      } else if (actionModal.type === 'FINALIZE') {
+      if (actionModal.type === 'FINALIZE') {
         await adminService.finalizeRegistration(actionModal.id);
         showToast(
           'success',
@@ -418,9 +422,23 @@ const AdminRegistrationsPanel = () => {
                       </div>
                     </td>
 
-                    {/* Status Badge */}
+                    {/* Status Badge & Inspector */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      {getStatusBadge(facility.verification_status)}
+                      <div>
+                        {getStatusBadge(facility.verification_status)}
+                        {facility.assigned_inspector ? (
+                          <div className="text-[11px] text-teal-800 font-semibold flex items-center gap-1 mt-1">
+                            <UserCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                            <span className="truncate max-w-[140px]" title={facility.assigned_inspector.full_name}>
+                              {facility.assigned_inspector.full_name}
+                            </span>
+                          </div>
+                        ) : isPreparing ? (
+                          <div className="text-[11px] text-amber-600 font-medium italic mt-1">
+                            Chưa gán NV
+                          </div>
+                        ) : null}
+                      </div>
                     </td>
 
                     {/* Action Buttons */}
@@ -439,11 +457,11 @@ const AdminRegistrationsPanel = () => {
                         {isPending && (
                           <>
                             <button
-                              onClick={() => setActionModal({ type: 'PREPARE', id: facility.id })}
+                              onClick={() => handleOpenPrepareModal(facility.id)}
                               className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition"
                               title="Duyệt sơ bộ & Giao khảo sát"
                             >
-                              <Wrench className="w-3.5 h-3.5" /> Duyệt sơ bộ
+                              <UserCheck className="w-3.5 h-3.5" /> Duyệt sơ bộ
                             </button>
                             <button
                               onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
@@ -477,9 +495,13 @@ const AdminRegistrationsPanel = () => {
 
                         {/* Đang khảo sát thực địa */}
                         {isPreparing && (
-                          <span className="text-[11px] text-slate-400 font-medium italic">
-                            Chờ NV khảo sát
-                          </span>
+                          <button
+                            onClick={() => handleOpenReassignModal(facility.id)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition"
+                            title="Đổi nhân viên khảo sát phụ trách"
+                          >
+                            <UserCheck className="w-3.5 h-3.5 text-teal-600" /> Đổi NV
+                          </button>
                         )}
                       </div>
                     </td>
@@ -517,39 +539,58 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {/* Action Confirmation Modal */}
-      {actionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl">
-            {actionModal.type === 'PREPARE' && (
-              <>
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Wrench className="w-8 h-8 text-amber-600" />
-                </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
-                  Xác nhận Duyệt Sơ Bộ
-                </h3>
-                <p className="text-center text-slate-500 text-sm mb-6">
-                  Bạn chấp thuận duyệt sơ bộ và giao hồ sơ cho Nhân viên khảo sát thực địa. Email thông báo sẽ được gửi đến Provider.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setActionModal(null)}
-                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    disabled={isSubmitting}
-                    onClick={confirmAction}
-                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
-                  >
-                    {isSubmitting ? 'Đang xử lý...' : 'Xác nhận duyệt'}
-                  </button>
-                </div>
-              </>
-            )}
+      {/* Modal Phân công nhân viên khảo sát (Phương án A - Nâng Cấp Popup To & Đa Năng) */}
+      <AssignInspectorModal
+        isOpen={actionModal?.type === 'PREPARE' || actionModal?.type === 'REASSIGN'}
+        onClose={() => setActionModal(null)}
+        facilityName={registrations.find((f) => f.id === actionModal?.id)?.name}
+        facilityAddress={registrations.find((f) => f.id === actionModal?.id)?.address}
+        currentInspectorId={registrations.find((f) => f.id === actionModal?.id)?.assigned_inspector_id}
+        isSubmitting={isSubmitting}
+        title={
+          actionModal?.type === 'REASSIGN'
+            ? 'Thay Đổi Nhân Viên Khảo Sát'
+            : 'Duyệt Sơ Bộ & Phân Công Khảo Sát'
+        }
+        confirmText={
+          actionModal?.type === 'REASSIGN'
+            ? 'Cập nhật phân công'
+            : 'Xác nhận duyệt & Giao việc'
+        }
+        onConfirm={async (inspectorId) => {
+          try {
+            setIsSubmitting(true);
+            if (actionModal.type === 'PREPARE') {
+              await adminService.approveRegistration(actionModal.id, inspectorId);
+              showToast(
+                'success',
+                'Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.'
+              );
+            } else {
+              await adminService.assignInspector(actionModal.id, inspectorId);
+              showToast(
+                'success',
+                'Đã phân công lại nhân viên khảo sát thành công!'
+              );
+            }
+            setActionModal(null);
+            await fetchRegistrations();
+          } catch (err) {
+            const backendMessage =
+              err.response?.data?.message ||
+              err.response?.data?.errors?.[0] ||
+              err.message;
+            showToast('error', backendMessage || 'Có lỗi xảy ra khi xử lý!');
+          } finally {
+            setIsSubmitting(false);
+          }
+        }}
+      />
 
+      {/* Action Confirmation Modal for Finalize / Reject */}
+      {actionModal && (actionModal.type === 'FINALIZE' || actionModal.type === 'REJECT') && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl my-auto transition-all">
             {actionModal.type === 'FINALIZE' && (
               <>
                 <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">

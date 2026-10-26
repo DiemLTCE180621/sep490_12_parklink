@@ -1,6 +1,7 @@
 const facilityRepository = require("../repositories/facilityRepository");
 const userRepository = require("../repositories/userRepository");
 const roleRepository = require("../repositories/roleRepository");
+const fieldInspectorRepository = require("../repositories/fieldInspectorRepository");
 const emailService = require("../utils/emailService");
 const bcrypt = require("bcryptjs");
 /**
@@ -33,11 +34,20 @@ class AdminService {
   }
 
   /**
-   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING
-   * Admin chấp thuận đến thực địa chuẩn bị. Gửi mail thông báo cho Provider.
+   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING & Phân công Nhân viên khảo sát thực địa
+   * Admin chấp thuận đến thực địa chuẩn bị và chỉ định 1 Nhân viên khảo sát cụ thể.
+   * Gửi mail thông báo kèm thông tin nhân viên cho Provider.
    * @param {number} facilityId
+   * @param {number} inspectorId - ID của nhân viên khảo sát được giao nhiệm vụ
    */
-  async approveRegistration(facilityId) {
+  async approveRegistration(facilityId, inspectorId) {
+    if (!inspectorId) {
+      throw Object.assign(
+        new Error("Vui lòng chọn nhân viên khảo sát thực địa để phân công nhiệm vụ!"),
+        { status: 400 },
+      );
+    }
+
     const facility = await facilityRepository.findById(facilityId);
     if (!facility)
       throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
@@ -50,19 +60,106 @@ class AdminService {
       );
     }
 
+    // Xác thực tài khoản Nhân viên khảo sát
+    const inspector = await fieldInspectorRepository.findInspectorById(inspectorId);
+    if (!inspector || inspector.role?.name !== "FIELD_INSPECTOR") {
+      throw Object.assign(
+        new Error("Nhân viên khảo sát không hợp lệ!"),
+        { status: 400 },
+      );
+    }
+    if (inspector.status !== "ACTIVE") {
+      throw Object.assign(
+        new Error("Nhân viên khảo sát này hiện đang bị khóa hoặc chưa kích hoạt!"),
+        { status: 400 },
+      );
+    }
+
     const updatedFacility = await facilityRepository.prepareFacility(
       facilityId,
       facility.provider_id,
+      inspectorId,
     );
 
-    // Gửi mail thông báo "đang chuẩn bị"
+    // Gửi mail thông báo "đang chuẩn bị & khảo sát" kèm thông tin nhân viên cho Provider
     await emailService.sendFacilityPreparingEmail({
       toEmail: facility.provider.email,
       fullName: facility.provider.full_name,
       facilityName: facility.name,
+      inspectorName: inspector.full_name,
+      inspectorPhone: inspector.phone_number,
     });
 
     return updatedFacility;
+  }
+
+  /**
+   * Phân công hoặc đổi Nhân viên khảo sát thực địa cho cơ sở
+   * Áp dụng khi cơ sở đang ở PENDING_REVIEW hoặc PREPARING
+   * @param {number} facilityId
+   * @param {number} inspectorId
+   */
+  async assignInspector(facilityId, inspectorId) {
+    if (!inspectorId) {
+      throw Object.assign(
+        new Error("Vui lòng chọn nhân viên khảo sát thực địa hợp lệ!"),
+        { status: 400 },
+      );
+    }
+
+    const facility = await facilityRepository.findById(facilityId);
+    if (!facility) {
+      throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), {
+        status: 404,
+      });
+    }
+
+    if (!["PENDING_REVIEW", "PREPARING"].includes(facility.verification_status)) {
+      throw Object.assign(
+        new Error("Chỉ có thể phân công nhân viên khảo sát khi cơ sở đang chờ duyệt hoặc đang khảo sát!"),
+        { status: 400 },
+      );
+    }
+
+    // Xác thực tài khoản Nhân viên khảo sát
+    const inspector = await fieldInspectorRepository.findInspectorById(inspectorId);
+    if (!inspector || inspector.role?.name !== "FIELD_INSPECTOR") {
+      throw Object.assign(
+        new Error("Nhân viên khảo sát không hợp lệ!"),
+        { status: 400 },
+      );
+    }
+    if (inspector.status !== "ACTIVE") {
+      throw Object.assign(
+        new Error("Nhân viên khảo sát này hiện đang bị khóa hoặc chưa kích hoạt!"),
+        { status: 400 },
+      );
+    }
+
+    const updatedFacility = await facilityRepository.assignInspector(
+      facilityId,
+      inspectorId,
+    );
+
+    // Nếu cơ sở chuyển từ PENDING_REVIEW sang PREPARING, gửi email thông báo cho Provider
+    if (facility.verification_status === "PENDING_REVIEW") {
+      await emailService.sendFacilityPreparingEmail({
+        toEmail: facility.provider.email,
+        fullName: facility.provider.full_name,
+        facilityName: facility.name,
+        inspectorName: inspector.full_name,
+        inspectorPhone: inspector.phone_number,
+      });
+    }
+
+    return updatedFacility;
+  }
+
+  /**
+   * Lấy danh sách Nhân viên khảo sát đang hoạt động (ACTIVE)
+   */
+  async getActiveInspectors() {
+    return await fieldInspectorRepository.findActiveInspectors();
   }
 
   /**

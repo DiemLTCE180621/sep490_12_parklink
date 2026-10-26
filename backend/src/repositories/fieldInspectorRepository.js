@@ -127,6 +127,40 @@ class FieldInspectorRepository {
       }
     });
   }
+
+  /**
+   * Lấy danh sách tất cả Nhân viên khảo sát đang hoạt động (ACTIVE)
+   * phục vụ cho việc chọn phân công nhiệm vụ khảo sát thực địa
+   */
+  async findActiveInspectors() {
+    return await prisma.user.findMany({
+      where: {
+        role: {
+          name: 'FIELD_INSPECTOR'
+        },
+        status: 'ACTIVE'
+      },
+      orderBy: { full_name: 'asc' },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        phone_number: true,
+        address: true,
+        status: true,
+        role: true,
+        _count: {
+          select: {
+            assigned_facilities: {
+              where: {
+                verification_status: 'PREPARING',
+              },
+            },
+          },
+        },
+      }
+    });
+  }
 }
 
 module.exports = new FieldInspectorRepository();

@@ -25,6 +25,9 @@ const authenticateToken = (req, res, next) => {
     }
 
     req.user = decodedUser;
+    if (req.user && req.user.userId && !req.user.id) {
+      req.user.id = req.user.userId;
+    }
     next();
   });
 };

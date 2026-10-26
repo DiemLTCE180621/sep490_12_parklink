@@ -94,6 +94,14 @@ class FieldInspectorService {
 
     return await fieldInspectorRepository.updateInspector(inspectorId, updateData);
   }
+
+  /**
+   * Lấy danh sách tất cả Nhân viên khảo sát đang hoạt động (ACTIVE)
+   * dùng cho việc Admin phân công nhiệm vụ khảo sát thực địa
+   */
+  async getActiveFieldInspectors() {
+    return await fieldInspectorRepository.findActiveInspectors();
+  }
 }
 
 module.exports = new FieldInspectorService();
