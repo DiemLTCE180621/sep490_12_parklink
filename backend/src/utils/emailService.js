@@ -60,7 +60,7 @@ class EmailService {
   /**
    * UC-86: Gửi email cấp tài khoản cho Nhân viên khảo sát thực địa (Field Inspector)
    */
-  async sendFieldInspectorWelcomeEmail({ toEmail, fullName, tempPassword }) {
+  async sendFieldInspectorWelcomeEmail({ toEmail, fullName, tempPassword, address }) {
     const subject = '[ParkLink] 📋 TÀI KHOẢN NHÂN VIÊN KHẢO SÁT THỰC ĐỊA & MẬT KHẨU ĐĂNG NHẬP';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
@@ -69,9 +69,10 @@ class EmailService {
         <p>Tài khoản dành cho <strong>Nhân viên khảo sát thực địa (Field Inspector)</strong> của bạn đã được khởi tạo bởi Quản trị viên hệ thống ParkLink.</p>
         
         <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; border-left: 4px solid #0d9488; margin: 20px 0;">
-          <p style="margin: 0 0 8px 0;"><strong>Thông tin đăng nhập tài khoản của bạn:</strong></p>
+          <p style="margin: 0 0 8px 0;"><strong>Thông tin tài khoản của bạn:</strong></p>
           <p style="margin: 4px 0;">📧 Email đăng nhập: <strong>${toEmail}</strong></p>
           <p style="margin: 4px 0;">🔑 Mật khẩu tạm thời: <strong style="font-size: 18px; color: #0f766e; background: #ccfbf1; padding: 2px 8px; border-radius: 4px;">${tempPassword}</strong></p>
+          ${address ? `<p style="margin: 4px 0;">📍 Địa chỉ: <strong>${address}</strong></p>` : ''}
         </div>
 
         <p style="color: #e11d48; font-size: 13px;">⚠️ <em>Lưu ý: Bạn vui lòng Đổi mật khẩu cá nhân ngay trong lần đăng nhập đầu tiên để bảo mật tài khoản.</em></p>

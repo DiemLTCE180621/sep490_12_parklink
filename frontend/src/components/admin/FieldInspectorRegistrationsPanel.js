@@ -143,8 +143,8 @@ const FieldInspectorRegistrationsPanel = () => {
       ) : filteredRegistrations.length === 0 ? (
         <div className="py-16 text-center text-slate-400">
           <CheckCircle className="w-12 h-12 mx-auto mb-3 text-teal-400" />
-          <p className="font-semibold text-sm">Tuyệt vời! Hiện tại bạn không có bãi đỗ xe nào cần khảo sát.</p>
-          <p className="text-xs text-slate-400 mt-1">Khi có yêu cầu mới được duyệt sơ bộ, danh sách sẽ hiển thị tại đây.</p>
+          <p className="font-semibold text-sm">Bạn chưa được phân công khảo sát cơ sở nào.</p>
+          <p className="text-xs text-slate-400 mt-1">Vui lòng đợi thông báo hoặc phân công khảo sát từ Quản trị viên.</p>
         </div>
       ) : (
         /* Data Table */

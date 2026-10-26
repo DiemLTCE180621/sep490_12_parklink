@@ -9,9 +9,9 @@ const bcrypt = require("bcryptjs");
 class FieldInspectorService {
   /**
    * UC-86: Tạo tài khoản Nhân viên khảo sát thực địa (Field Inspector) & tự động gửi mail mật khẩu
-   * @param {object} params - { email, full_name, phone_number }
+   * @param {object} params - { email, full_name, phone_number, address }
    */
-  async createFieldInspectorAccount({ email, full_name, phone_number }) {
+  async createFieldInspectorAccount({ email, full_name, phone_number, address }) {
     if (!email || !full_name || !phone_number) {
       throw Object.assign(new Error("Vui lòng nhập đầy đủ thông tin (Email, Họ tên, SĐT)!"), { status: 400 });
     }
@@ -40,6 +40,7 @@ class FieldInspectorService {
       email: trimmedEmail,
       full_name: full_name.trim(),
       phone_number: phone_number.trim(),
+      address: address ? address.trim() : null,
       password_hash: password_hash,
       role_id: inspectorRole.id,
       status: "ACTIVE",
@@ -50,7 +51,8 @@ class FieldInspectorService {
     await emailService.sendFieldInspectorWelcomeEmail({
       toEmail: trimmedEmail,
       fullName: full_name.trim(),
-      tempPassword: tempPassword
+      tempPassword: tempPassword,
+      address: address ? address.trim() : null
     });
 
     // Loại bỏ thông tin password_hash trước khi trả về
@@ -74,7 +76,7 @@ class FieldInspectorService {
   /**
    * UC-88: Cập nhật thông tin tài khoản Nhân viên khảo sát thực địa
    */
-  async updateFieldInspectorInfo(inspectorId, { full_name, phone_number, status }) {
+  async updateFieldInspectorInfo(inspectorId, { full_name, phone_number, address, status }) {
     const inspector = await fieldInspectorRepository.findInspectorById(inspectorId);
     if (!inspector) {
       throw Object.assign(new Error("Tài khoản Nhân viên khảo sát không tồn tại!"), { status: 404 });
@@ -87,6 +89,7 @@ class FieldInspectorService {
     const updateData = {};
     if (full_name) updateData.full_name = full_name.trim();
     if (phone_number) updateData.phone_number = phone_number.trim();
+    if (address !== undefined) updateData.address = address ? address.trim() : null;
     if (status) updateData.status = status;
 
     return await fieldInspectorRepository.updateInspector(inspectorId, updateData);

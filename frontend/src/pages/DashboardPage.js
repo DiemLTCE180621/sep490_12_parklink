@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, MapPin } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -323,6 +323,12 @@ const DashboardPage = () => {
                       <label className="text-xs text-slate-400 font-semibold uppercase">Số Điện Thoại</label>
                       <p className="text-base font-bold text-slate-900 flex items-center gap-2">
                         <Phone className="w-4 h-4 text-slate-400" /> {user?.phone_number || 'Chưa cập nhật'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">Địa Chỉ</label>
+                      <p className="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-slate-400" /> {user?.address || 'Chưa cập nhật'}
                       </p>
                     </div>
                     <div>
