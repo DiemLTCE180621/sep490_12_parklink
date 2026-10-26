@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, MapPin } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -10,9 +10,11 @@ import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
+import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
+import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveCustomersPanel';
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
@@ -31,6 +33,9 @@ const DashboardPage = () => {
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
 
   React.useEffect(() => {
+    if (location.state?.adminTab) {
+      setActiveAdminTab(location.state.adminTab);
+    }
     if (location.state?.providerTab) {
       setActiveProviderTab(location.state.providerTab);
     }
@@ -131,6 +136,12 @@ const DashboardPage = () => {
                   <Building2 className="w-5 h-5" /> Tất cả cơ sở
                 </button>
                 <button
+                  onClick={() => setActiveAdminTab('contracts')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'contracts' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <FileText className="w-5 h-5" /> Quản Lý Hợp Đồng
+                </button>
+                <button
                   onClick={() => setActiveAdminTab("transactions")}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "transactions" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
@@ -157,6 +168,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
               {activeAdminTab === 'users' && <AdminUsersPanel />}
               {activeAdminTab === 'inspectors' && <AdminFieldInspectorsPanel />}
+              {activeAdminTab === 'contracts' && <AdminContractsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'transactions' && (
@@ -182,6 +194,12 @@ const DashboardPage = () => {
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'facility' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
                 >
                   <Building2 className="w-5 h-5" /> Thông Tin Bãi Xe
+                </button>
+                <button
+                  onClick={() => setActiveProviderTab('active-customers')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'active-customers' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <Users className="w-5 h-5" /> Khách Đang Thuê
                 </button>
                 <button
                   onClick={() => setActiveProviderTab('reservations')}
@@ -225,10 +243,13 @@ const DashboardPage = () => {
             {/* NỘI DUNG PROVIDER TƯƠNG ỨNG */}
             <div className="flex-1">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
+              {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
               {activeProviderTab === 'reservations' && (
                 <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
               )}
-              {activeProviderTab === 'contracts' && <ProviderContractsPanel />}
+              {activeProviderTab === 'contracts' && (
+                <ProviderContractsPanel onNavigateToActiveCustomers={() => setActiveProviderTab('active-customers')} />
+              )}
               {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
               {activeProviderTab === 'reviews' && <ProviderReviewsPanel />}
               {activeProviderTab === 'profile' && (

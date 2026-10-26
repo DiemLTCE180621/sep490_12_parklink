@@ -300,9 +300,6 @@ const ProviderDashboardPanel = () => {
 
       {currentFacility.verification_status === 'APPROVED' && currentFacility.visibility_status === 'VISIBLE' && (
         <div className="mt-4 p-4 border border-green-200 rounded-2xl bg-green-50 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-            <span className="text-xl">🚀</span>
-          </div>
           <div>
             <h4 className="font-bold text-green-900">Đang Hoạt Động Công Khai</h4>
             <p className="text-xs text-green-800">Cơ sở của bạn đã được thanh toán và đang hiển thị trên nền tảng cho khách hàng tìm kiếm.</p>

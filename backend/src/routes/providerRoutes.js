@@ -14,4 +14,16 @@ router.get('/my-facility', providerController.getMyFacility);
 router.put('/my-facility', validateUpdateFacility, providerController.updateMyFacility);
 router.put('/facilities/:id/payment-confirm', adminController.confirmPayment);
 
+/**
+ *  [PROVIDER] Xem danh sách khách hàng đang có hợp đồng hiệu lực (Active) tại cơ sở
+ */
+const confirmationRecordController = require('../controllers/confirmationRecordController');
+const { validateProviderActiveCustomersQuery } = require('../validations/confirmationRecordValidation');
+router.get(
+  '/active-customers',
+  validateProviderActiveCustomersQuery,
+  confirmationRecordController.getActiveCustomersAtFacility
+);
+
 module.exports = router;
+

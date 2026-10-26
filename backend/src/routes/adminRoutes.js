@@ -57,4 +57,16 @@ router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
  */
 router.put('/facilities/:id', adminController.updateFacility);
 
+/**
+ *  [ADMIN] Xem toàn bộ Hợp đồng / Biên bản xác nhận trên hệ thống
+ */
+const confirmationRecordController = require('../controllers/confirmationRecordController');
+const { validateAdminQueryConfirmationRecords } = require('../validations/confirmationRecordValidation');
+router.get(
+  '/confirmation-records',
+  validateAdminQueryConfirmationRecords,
+  confirmationRecordController.getAllConfirmationRecords
+);
+
 module.exports = router;
+

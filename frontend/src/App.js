@@ -30,6 +30,8 @@ import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
 import AdminFacilityEditPage from './pages/admin/AdminFacilityEditPage';
 import AdminRegistrationDetailPage from './pages/admin/AdminRegistrationDetailPage';
+import AdminContractsPage from './pages/admin/AdminContractsPage';
+import ProviderActiveCustomersPage from './pages/provider/ProviderActiveCustomersPage';
 import ScrollToTop from './components/common/ScrollToTop';
 
 const LoadingScreen = () => (
@@ -146,6 +148,11 @@ function AppContent() {
               <AdminFacilityEditPage />
             </RoleProtectedRoute>
           } />
+          <Route path="/admin/contracts" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminContractsPage />
+            </RoleProtectedRoute>
+          } />
           <Route path="/admin/registrations/:id" element={
             <RoleProtectedRoute allowedRoles={['ADMIN', 'FIELD_INSPECTOR']}>
               <AdminRegistrationDetailPage />
@@ -194,7 +201,7 @@ function AppContent() {
             </RoleProtectedRoute>
           } />
           <Route path="/contracts/:id" element={
-            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER', 'ADMIN']}>
               <ContractDetailPage />
             </RoleProtectedRoute>
           } />
@@ -248,6 +255,16 @@ function AppContent() {
           <Route path="/contracts/create/:reservationId" element={
             <RoleProtectedRoute allowedRoles={['PROVIDER']}>
               <ProviderCreateContractPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/provider/active-customers" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderActiveCustomersPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/provider-active-customers" element={
+            <RoleProtectedRoute allowedRoles={['PROVIDER']}>
+              <ProviderActiveCustomersPage />
             </RoleProtectedRoute>
           } />
 

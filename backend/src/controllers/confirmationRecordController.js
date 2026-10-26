@@ -131,6 +131,74 @@ class ConfirmationRecordController {
       next(error);
     }
   }
+
+  /**
+   *  [GET /api/confirmation-records/admin/all] & [GET /api/admin/confirmation-records]
+   * Admin xem toàn bộ Hợp đồng / Biên bản xác nhận trên nền tảng
+   */
+  async getAllConfirmationRecords(req, res, next) {
+    try {
+      const {
+        search,
+        status,
+        facility_id,
+        provider_id,
+        customer_id,
+        start_date,
+        end_date,
+        page,
+        limit
+      } = req.query;
+
+      const result = await confirmationRecordService.getAllConfirmationRecordsForAdmin({
+        search,
+        status,
+        facilityId: facility_id,
+        providerId: provider_id,
+        customerId: customer_id,
+        startDate: start_date,
+        endDate: end_date,
+        page,
+        limit
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Lấy danh sách tất cả hợp đồng trên nền tảng thành công!',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * UC-58: [GET /api/confirmation-records/provider/active-customers] & [GET /api/provider/active-customers]
+   * Parking Provider xem danh sách khách hàng có hợp đồng hiệu lực tại cơ sở bãi đỗ xe
+   */
+  async getActiveCustomersAtFacility(req, res, next) {
+    try {
+      const providerId = req.user.userId;
+      const { facility_id, search, page, limit } = req.query;
+
+      const result = await confirmationRecordService.getActiveCustomersAtFacility({
+        providerId,
+        facilityId: facility_id,
+        search,
+        page,
+        limit
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Lấy danh sách khách hàng đang thuê hiệu lực tại bãi xe thành công!',
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new ConfirmationRecordController();
+

@@ -3,7 +3,11 @@ const router = express.Router();
 
 const confirmationRecordController = require('../controllers/confirmationRecordController');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
-const { validateCreateConfirmationRecord } = require('../validations/confirmationRecordValidation');
+const {
+  validateCreateConfirmationRecord,
+  validateAdminQueryConfirmationRecords,
+  validateProviderActiveCustomersQuery
+} = require('../validations/confirmationRecordValidation');
 
 /**
  * Route: POST /api/confirmation-records
@@ -37,6 +41,30 @@ router.get(
   authenticateToken,
   authorizeRoles('PROVIDER'),
   confirmationRecordController.getProviderConfirmationRecords
+);
+
+/**
+ * UC-57: Route: GET /api/confirmation-records/admin/all
+ * [ADMIN] View confirmation records on platform (Admin xem toàn bộ hợp đồng thuê trên hệ thống)
+ */
+router.get(
+  '/admin/all',
+  authenticateToken,
+  authorizeRoles('ADMIN'),
+  validateAdminQueryConfirmationRecords,
+  confirmationRecordController.getAllConfirmationRecords
+);
+
+/**
+ * UC-58: Route: GET /api/confirmation-records/provider/active-customers
+ * [PROVIDER] View active customers at facility (Chủ bãi xem danh sách khách hàng đang có hợp đồng hiệu lực tại cơ sở)
+ */
+router.get(
+  '/provider/active-customers',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  validateProviderActiveCustomersQuery,
+  confirmationRecordController.getActiveCustomersAtFacility
 );
 
 /**
