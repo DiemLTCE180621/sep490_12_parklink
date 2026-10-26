@@ -1,4 +1,5 @@
 const favoriteRepository = require('../repositories/favoriteRepository');
+const facilityRepository = require('../repositories/facilityRepository');
 
 class FavoriteService {
   async addFavorite(customerId, facilityId) {
@@ -7,12 +8,24 @@ class FavoriteService {
     const parsedFacilityId = parseInt(facilityId, 10);
 
     if (isNaN(parsedCustomerId) || isNaN(parsedFacilityId)) {
-      throw new Error('ID không hợp lệ');
+      const error = new Error('ID không hợp lệ');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Kiểm tra bãi đỗ xe có tồn tại trong hệ thống hay không
+    const facility = await facilityRepository.findById(parsedFacilityId);
+    if (!facility) {
+      const error = new Error('Bãi đỗ xe không tồn tại');
+      error.statusCode = 404;
+      throw error;
     }
 
     const exists = await favoriteRepository.checkFavoriteExists(parsedCustomerId, parsedFacilityId);
     if (exists) {
-      throw new Error('Bãi đỗ xe đã nằm trong danh sách yêu thích');
+      const error = new Error('Bãi đỗ xe đã nằm trong danh sách yêu thích');
+      error.statusCode = 400;
+      throw error;
     }
 
     return await favoriteRepository.addFavorite(parsedCustomerId, parsedFacilityId);

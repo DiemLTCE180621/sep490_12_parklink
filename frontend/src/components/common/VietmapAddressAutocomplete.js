@@ -74,8 +74,18 @@ const VietmapAddressAutocomplete = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const requestIdRef = useRef(0);
+  // Cờ đánh dấu người dùng có đang thực sự gõ phím vào ô nhập liệu hay không
+  const userTypedRef = useRef(false);
 
   useEffect(() => {
+    // Nếu giá trị value thay đổi do kéo marker trên bản đồ hoặc gán tự động (không do người dùng gõ tay),
+    // tuyệt đối không kích hoạt tìm kiếm gợi ý và không mở dropdown suggest
+    if (!userTypedRef.current) {
+      setSuggestions([]);
+      setIsOpen(false);
+      return undefined;
+    }
+
     const query = value.trim();
     if (query.length < minChars) {
       setSuggestions([]);
@@ -110,7 +120,8 @@ const VietmapAddressAutocomplete = ({
 
         if (requestId === requestIdRef.current) {
           setSuggestions(nextSuggestions);
-          setIsOpen(nextSuggestions.length > 0);
+          // Chỉ mở dropdown nếu cờ gõ phím vẫn đang bật
+          setIsOpen(userTypedRef.current && nextSuggestions.length > 0);
         }
       } catch (error) {
         if (requestId === requestIdRef.current) {
@@ -132,6 +143,7 @@ const VietmapAddressAutocomplete = ({
     const handleOutsideClick = (event) => {
       if (!containerRef.current?.contains(event.target)) {
         setIsOpen(false);
+        userTypedRef.current = false;
       }
     };
 
@@ -140,6 +152,7 @@ const VietmapAddressAutocomplete = ({
   }, []);
 
   const handleSelect = (suggestion) => {
+    userTypedRef.current = false;
     const label = getSuggestionLabel(suggestion);
     onChange(label);
     onSelect?.(suggestion, label);
@@ -154,10 +167,15 @@ const VietmapAddressAutocomplete = ({
         type="text"
         value={value}
         onChange={(event) => {
+          userTypedRef.current = true;
           onChange(event.target.value);
           setIsOpen(true);
         }}
-        onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+        onFocus={() => {
+          if (userTypedRef.current && suggestions.length > 0) {
+            setIsOpen(true);
+          }
+        }}
         placeholder={placeholder}
         className={`w-full pl-10 pr-10 ${inputClassName}`}
         required={required}

@@ -15,8 +15,11 @@ exports.addFavorite = async (req, res) => {
       message: 'Đã lưu bãi đỗ xe vào danh sách yêu thích'
     });
   } catch (error) {
-    const statusCode = error.message.includes('đã nằm trong') ? 400 : 500;
-    res.status(statusCode).json({ status: 'error', message: error.message });
+    const statusCode = error.statusCode || (error.message.includes('đã nằm trong') ? 400 : 500);
+    res.status(statusCode).json({
+      status: 'error',
+      message: statusCode === 500 ? 'Đã xảy ra lỗi máy chủ nội bộ' : error.message
+    });
   }
 };
 
