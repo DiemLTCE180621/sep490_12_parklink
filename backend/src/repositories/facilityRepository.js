@@ -25,6 +25,14 @@ class FacilityRepository {
             status: true,
           },
         },
+        assigned_inspector: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true,
+          },
+        },
         images: true,
       },
       orderBy: {
@@ -42,6 +50,16 @@ class FacilityRepository {
       where: { id },
       include: {
         provider: true,
+        assigned_inspector: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+            phone_number: true,
+            address: true,
+            status: true,
+          },
+        },
         images: true,
         facility_amenities: {
           include: {
@@ -62,18 +80,35 @@ class FacilityRepository {
   }
 
   /**
-   * Bước 1: Duyệt sơ bộ → PREPARING
-   * Admin xác nhận sẽ đến thực địa chuẩn bị. Provider nhận mail thông báo.
+   * Bước 1: Duyệt sơ bộ → PREPARING & Phân công Nhân viên khảo sát
+   * Admin xác nhận duyệt sơ bộ và chỉ định nhân viên khảo sát thực địa.
    * @param {number} facilityId
    * @param {number} providerId
+   * @param {number|null} inspectorId - ID Nhân viên khảo sát được phân công
    */
-  async prepareFacility(facilityId, providerId) {
+  async prepareFacility(facilityId, providerId, inspectorId = null) {
     return await prisma.$transaction(async (tx) => {
+      const updateData = {
+        verification_status: "PREPARING",
+        visibility_status: "HIDDEN",
+      };
+      if (inspectorId) {
+        updateData.assigned_inspector_id = inspectorId;
+      }
+
       const facility = await tx.facility.update({
         where: { id: facilityId },
-        data: {
-          verification_status: "PREPARING",
-          visibility_status: "HIDDEN",
+        data: updateData,
+        include: {
+          provider: true,
+          assigned_inspector: {
+            select: {
+              id: true,
+              full_name: true,
+              email: true,
+              phone_number: true,
+            },
+          },
         },
       });
 
@@ -81,8 +116,61 @@ class FacilityRepository {
       await tx.notification.create({
         data: {
           user_id: providerId,
-          title: "Cơ sở đang được chuẩn bị",
-          content: `Yêu cầu đăng ký cơ sở "${facility.name}" đã được duyệt sơ bộ. Đội ngũ ParkLink sẽ liên hệ và đến chuẩn bị dữ liệu cho cơ sở của bạn trong thời gian sớm nhất.`,
+          title: "Cơ sở đang được chuẩn bị & khảo sát",
+          content: `Yêu cầu đăng ký cơ sở "${facility.name}" đã được duyệt sơ bộ. Đội ngũ kỹ thuật ParkLink sẽ sớm liên hệ và đến khảo sát thực địa.`,
+          type: "SYSTEM",
+        },
+      });
+
+      // Tạo Notification cho Nhân viên khảo sát được phân công
+      if (inspectorId) {
+        await tx.notification.create({
+          data: {
+            user_id: inspectorId,
+            title: "Nhiệm vụ khảo sát thực địa mới",
+            content: `Bạn đã được phân công khảo sát cơ sở "${facility.name}" tại: ${facility.address}. Vui lòng liên hệ chủ bãi và thực hiện kiểm tra thực địa.`,
+            type: "SYSTEM",
+          },
+        });
+      }
+
+      return facility;
+    });
+  }
+
+  /**
+   * Phân công hoặc thay đổi Nhân viên khảo sát thực địa cho cơ sở
+   * @param {number} facilityId
+   * @param {number} inspectorId
+   */
+  async assignInspector(facilityId, inspectorId) {
+    return await prisma.$transaction(async (tx) => {
+      const facility = await tx.facility.update({
+        where: { id: facilityId },
+        data: {
+          assigned_inspector_id: inspectorId,
+          verification_status: "PREPARING",
+          visibility_status: "HIDDEN",
+        },
+        include: {
+          provider: true,
+          assigned_inspector: {
+            select: {
+              id: true,
+              full_name: true,
+              email: true,
+              phone_number: true,
+            },
+          },
+        },
+      });
+
+      // Tạo Notification cho Nhân viên khảo sát được phân công
+      await tx.notification.create({
+        data: {
+          user_id: inspectorId,
+          title: "Nhiệm vụ khảo sát thực địa mới",
+          content: `Bạn đã được phân công khảo sát cơ sở "${facility.name}" tại: ${facility.address}. Vui lòng liên hệ chủ bãi và thực hiện kiểm tra thực địa.`,
           type: "SYSTEM",
         },
       });
@@ -190,17 +278,33 @@ class FacilityRepository {
 
   /**
    * Lấy danh sách bãi đỗ xe đang PREPARING cho Field Inspector
+   * Chỉ nhân viên được phân công mới nhận được công việc này
+   * @param {number} inspectorId - ID Nhân viên khảo sát phụ trách
    */
-  async findPreparingFacilities() {
+  async findPreparingFacilities(inspectorId) {
+    if (!inspectorId) return [];
+
+    const where = {
+      verification_status: "PREPARING",
+      assigned_inspector_id: inspectorId,
+    };
+
     return await prisma.facility.findMany({
-      where: {
-        verification_status: "PREPARING",
-      },
+      where,
       include: {
         provider: {
           select: {
             full_name: true,
             phone_number: true,
+            email: true,
+          },
+        },
+        assigned_inspector: {
+          select: {
+            id: true,
+            full_name: true,
+            phone_number: true,
+            email: true,
           },
         },
       },

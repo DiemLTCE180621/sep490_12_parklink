@@ -2,11 +2,15 @@ const inspectorService = require("../services/inspectorService");
 
 class InspectorController {
   /**
-   * Lấy danh sách bãi đỗ xe đang chờ khảo sát
+   * Lấy danh sách bãi đỗ xe đang chờ khảo sát được phân công cho nhân viên hiện tại
    */
   async getPreparingFacilities(req, res, next) {
     try {
-      const facilities = await inspectorService.getPreparingFacilities();
+      const inspectorId = req.user?.userId || req.user?.id;
+      if (!inspectorId) {
+        return res.status(401).json({ status: "fail", message: "Không xác định được danh tính nhân viên khảo sát!" });
+      }
+      const facilities = await inspectorService.getPreparingFacilities(inspectorId);
       res.json({ status: "success", data: facilities });
     } catch (error) {
       next(error);
@@ -22,7 +26,8 @@ class InspectorController {
       if (isNaN(facilityId)) {
         return res.status(400).json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
-      const facility = await inspectorService.getFacilityDetails(facilityId);
+      const inspectorId = req.user?.userId || req.user?.id;
+      const facility = await inspectorService.getFacilityDetails(facilityId, inspectorId);
       res.json({ status: "success", data: facility });
     } catch (error) {
       if (error.status) {
@@ -47,7 +52,8 @@ class InspectorController {
         return res.status(400).json({ status: "fail", message: "Vui lòng cung cấp sức chứa và hình ảnh hợp lệ" });
       }
 
-      await inspectorService.submitInspection(facilityId, capacity, images);
+      const inspectorId = req.user?.userId || req.user?.id;
+      await inspectorService.submitInspection(facilityId, capacity, images, inspectorId);
       res.json({
         status: "success",
         message: "Gửi kết quả khảo sát thành công. Đang chờ Admin phê duyệt cuối cùng."

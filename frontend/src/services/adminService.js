@@ -22,11 +22,24 @@ const adminService = {
   },
 
   /**
-   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING (gửi mail chuẩn bị)
+   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING & Giao việc cho Nhân viên khảo sát
    * @param {number} id - ID của bãi đỗ xe
+   * @param {number|object} data - ID nhân viên hoặc object { inspector_id }
    */
-  approveRegistration: async (id) => {
-    return await api.put(`/admin/registrations/${id}/approve`);
+  approveRegistration: async (id, data) => {
+    const payload = typeof data === 'object' ? data : { inspector_id: data };
+    return await api.put(`/admin/registrations/${id}/approve`, payload);
+  },
+
+  /**
+   * Phân công hoặc đổi Nhân viên khảo sát thực địa
+   * @param {number} id - ID của bãi đỗ xe
+   * @param {number} inspectorId - ID nhân viên khảo sát
+   */
+  assignInspector: async (id, inspectorId) => {
+    return await api.put(`/admin/registrations/${id}/assign-inspector`, {
+      inspector_id: inspectorId,
+    });
   },
 
   /**

@@ -145,8 +145,8 @@ class EmailService {
   /**
    * M2-UC21 Bước 1: Gửi email thông báo cơ sở đang được CHUẨN BỊ cho Provider
    */
-  async sendFacilityPreparingEmail({ toEmail, fullName, facilityName }) {
-    const subject = '[ParkLink] 🔧 CƠ SỞ BÃI ĐỖ XE ĐANG ĐƯỢC CHUẨN BỊ';
+  async sendFacilityPreparingEmail({ toEmail, fullName, facilityName, inspectorName, inspectorPhone }) {
+    const subject = '[ParkLink] 🔧 CƠ SỞ BÃI ĐỖ XE ĐANG ĐƯỢC CHUẨN BỊ & KHẢO SÁT';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
@@ -160,6 +160,13 @@ class EmailService {
         <div style="background-color: #fffbeb; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
           <p style="margin: 0; font-size: 18px; font-weight: bold; color: #92400e;">🏢 ${facilityName}</p>
         </div>
+
+        ${inspectorName ? `
+        <div style="background-color: #f0fdf4; padding: 14px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 16px 0;">
+          <p style="margin: 0 0 6px 0; font-weight: bold; color: #166534;">📋 Nhân viên khảo sát thực địa phụ trách:</p>
+          <p style="margin: 0; color: #15803d; font-size: 14px;">Họ tên: <strong>${inspectorName}</strong> ${inspectorPhone ? `— SĐT: <strong>${inspectorPhone}</strong>` : ''}</p>
+        </div>
+        ` : ''}
 
         <p>Đội ngũ kỹ thuật ParkLink sẽ <strong>liên hệ và đến tận cơ sở</strong> của bạn để:</p>
         <ul style="color: #475569; line-height: 2;">

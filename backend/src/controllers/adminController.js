@@ -39,7 +39,7 @@ class AdminController {
   }
 
   /**
-   * M2-UC21 Bước 1: Admin duyệt sơ bộ → PREPARING
+   * M2-UC21 Bước 1: Admin duyệt sơ bộ → PREPARING & Phân công Nhân viên khảo sát
    */
   async approveRegistration(req, res, next) {
     try {
@@ -49,11 +49,55 @@ class AdminController {
           .status(400)
           .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
-      await adminService.approveRegistration(facilityId);
+
+      const inspectorId = req.body.inspector_id ? parseInt(req.body.inspector_id, 10) : null;
+      if (!inspectorId || isNaN(inspectorId)) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Vui lòng chọn nhân viên khảo sát thực địa để phân công nhiệm vụ!",
+        });
+      }
+
+      await adminService.approveRegistration(facilityId, inspectorId);
       res.json({
         status: "success",
         message:
-          "Duyệt sơ bộ thành công. Email thông báo đã được gửi cho Provider.",
+          "Duyệt sơ bộ và phân công nhân viên khảo sát thành công. Email thông báo đã được gửi cho Provider.",
+      });
+    } catch (error) {
+      if (error.status)
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
+      next(error);
+    }
+  }
+
+  /**
+   * Phân công hoặc đổi Nhân viên khảo sát thực địa cho cơ sở
+   */
+  async assignInspector(req, res, next) {
+    try {
+      const facilityId = parseInt(req.params.id, 10);
+      if (isNaN(facilityId)) {
+        return res
+          .status(400)
+          .json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
+      }
+
+      const inspectorId = req.body.inspector_id ? parseInt(req.body.inspector_id, 10) : null;
+      if (!inspectorId || isNaN(inspectorId)) {
+        return res.status(400).json({
+          status: "fail",
+          message: "Vui lòng chọn nhân viên khảo sát thực địa hợp lệ!",
+        });
+      }
+
+      const updated = await adminService.assignInspector(facilityId, inspectorId);
+      res.json({
+        status: "success",
+        message: "Phân công nhân viên khảo sát thực địa thành công!",
+        data: updated,
       });
     } catch (error) {
       if (error.status)
