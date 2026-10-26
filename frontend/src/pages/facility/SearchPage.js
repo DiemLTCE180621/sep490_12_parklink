@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Navigation, CarFront, Star, Info, List, X, GitCompareArrows, CheckSquare, Square, Heart } from 'lucide-react';
+import {
+  Search, MapPin, Navigation, CarFront, Star, Info, List, X,
+  GitCompareArrows, CheckSquare, Square, Heart, Loader2
+} from 'lucide-react';
 import facilityService from '../../services/facilityService';
 import { addFavorite, removeFavorite, getFavorites } from '../../services/favoriteService';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +15,8 @@ import CompareModal from '../../components/modals/CompareModal';
 import { facilityCarIcon } from '../../utils/mapIcons';
 import Toast from '../../components/common/Toast';
 import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
+import vietmapService from '../../services/vietmapService';
+import { formatDistance, formatDuration } from '../../utils/mapUtils';
 
 // Fix icon lỗi mặc định của leaflet khi dùng React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -40,7 +45,6 @@ const searchedLocationIcon = new L.Icon({
 });
 
 const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
-const VIETMAP_API_KEY = process.env.REACT_APP_VIETMAP_API_KEY;
 
 const getFacilityRating = (facility) => {
   if (facility.avg_rating !== null && facility.avg_rating !== undefined && Number.isFinite(Number(facility.avg_rating))) {
@@ -73,6 +77,17 @@ const MapUpdater = ({ center, zoom }) => {
   return null;
 };
 
+// Component tự động điều chỉnh khung nhìn bản đồ khi có tuyến đường chỉ đường
+const RouteViewportController = ({ routePoints }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (routePoints && routePoints.length > 1) {
+      map.fitBounds(routePoints, { padding: [48, 48] });
+    }
+  }, [routePoints, map]);
+  return null;
+};
+
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -91,6 +106,10 @@ const SearchPage = () => {
   const [searchedLocation, setSearchedLocation] = useState(null); // [lat, lng]
   const [mapCenter, setMapCenter] = useState([10.0299, 105.7706]); // Mặc định Cần Thơ
   const [mapZoom, setMapZoom] = useState(13);
+
+  // State cho tính năng chỉ đường thực tế
+  const [activeRoute, setActiveRoute] = useState(null); // { facilityId, facilityName, facility, points, distance, time, origin, destination }
+  const [routingFacilityId, setRoutingFacilityId] = useState(null);
 
   const [amenitiesList, setAmenitiesList] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
@@ -264,6 +283,7 @@ const SearchPage = () => {
   const handleSearch = async (e) => {
     e?.preventDefault();
     setSearchedLocation(null);
+    setActiveRoute(null);
     const location = await resolveSearchLocation(keyword);
     if (location) {
       await fetchFacilities(location[0], location[1], keyword, false);
@@ -273,47 +293,15 @@ const SearchPage = () => {
   };
 
   const resolveSearchLocation = async (query, suggestion = null) => {
-    if (!VIETMAP_API_KEY) return;
-
     try {
-      let coordinates = suggestion;
-
-      if ((!coordinates?.lat || !coordinates?.lng) && coordinates?.ref_id) {
-        const placeResponse = await fetch(
-          `https://maps.vietmap.vn/api/place/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&refid=${encodeURIComponent(coordinates.ref_id)}`
-        );
-        if (placeResponse.ok) {
-          coordinates = await placeResponse.json();
-        }
-      }
-
-      if ((!coordinates?.lat || !coordinates?.lng) && query.trim()) {
-        const searchResponse = await fetch(
-          `https://maps.vietmap.vn/api/search/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&text=${encodeURIComponent(query)}`
-        );
-        if (searchResponse.ok) {
-          const data = await searchResponse.json();
-          const firstResult = Array.isArray(data) ? data[0] : data?.data?.[0];
-          if (firstResult?.lat && firstResult?.lng) {
-            coordinates = firstResult;
-          } else if (firstResult?.ref_id) {
-            const placeResponse = await fetch(
-              `https://maps.vietmap.vn/api/place/v3?apikey=${encodeURIComponent(VIETMAP_API_KEY)}&refid=${encodeURIComponent(firstResult.ref_id)}`
-            );
-            if (placeResponse.ok) coordinates = await placeResponse.json();
-          }
-        }
-      }
-
-      if (coordinates?.lat && coordinates?.lng) {
-        const location = [Number(coordinates.lat), Number(coordinates.lng)];
+      const location = await vietmapService.resolveAddressCoordinates(query, suggestion);
+      if (location) {
         setSearchedLocation(location);
         setMapCenter(location);
         setMapZoom(16);
         return location;
       }
     } catch (error) {
-      // Search results remain usable even if map geocoding is unavailable.
       console.error('Lỗi định vị địa điểm tìm kiếm trên bản đồ:', error);
     }
     return null;
@@ -321,11 +309,148 @@ const SearchPage = () => {
 
   const handleAddressSelect = async (suggestion, label) => {
     setKeyword(label);
+    setActiveRoute(null);
     const location = await resolveSearchLocation(label, suggestion);
     if (location) {
       await fetchFacilities(location[0], location[1], label, false);
     } else {
       await fetchFacilities(null, null, label, false);
+    }
+  };
+
+  /**
+   * Xử lý di dời marker tìm kiếm của người dùng:
+   * 1. Cập nhật vị trí ghim mới.
+   * 2. Gọi reverse geocoding để lấy tên địa chỉ thực tế.
+   * 3. Cập nhật thanh địa chỉ keyword nếu tìm thấy, hoặc giữ nguyên thanh địa chỉ cũ.
+   *    Tuyệt đối KHÔNG ghi kinh độ vĩ độ vào thanh địa chỉ.
+   * 4. Tìm lại các bãi xe xung quanh vị trí mới.
+   * 5. Cập nhật lại tuyến đường chỉ đường nếu đang mở chỉ đường đến một bãi xe.
+   */
+  const handleSearchedLocationDragEnd = async (e) => {
+    const marker = e.target;
+    if (!marker) return;
+    const pos = marker.getLatLng();
+    const newCoords = [pos.lat, pos.lng];
+    setSearchedLocation(newCoords);
+
+    let updatedKeyword = keyword;
+    try {
+      const resolvedAddress = await vietmapService.reverseGeocode(pos.lat, pos.lng);
+      if (resolvedAddress && resolvedAddress.trim()) {
+        updatedKeyword = resolvedAddress;
+        setKeyword(resolvedAddress);
+      }
+    } catch (err) {
+      console.error('Lỗi reverse geocoding khi kéo marker tìm kiếm:', err);
+    }
+
+    await fetchFacilities(pos.lat, pos.lng, updatedKeyword, false);
+
+    // Cập nhật lại tuyến đường nếu đang mở chỉ đường
+    if (activeRoute?.facility) {
+      const facLat = Number(activeRoute.facility.latitude);
+      const facLng = Number(activeRoute.facility.longitude);
+      if (Number.isFinite(facLat) && Number.isFinite(facLng)) {
+        try {
+          const routeData = await vietmapService.getRouteDirections(newCoords, [facLat, facLng], 'car');
+          setActiveRoute(prev => prev ? {
+            ...prev,
+            origin: newCoords,
+            points: routeData.points,
+            distance: routeData.distance,
+            time: routeData.time,
+          } : null);
+        } catch (routeErr) {
+          console.error('Lỗi cập nhật lại tuyến đường:', routeErr);
+        }
+      }
+    }
+  };
+
+  /**
+   * Xử lý di dời marker vị trí GPS của người dùng
+   */
+  const handleUserLocationDragEnd = async (e) => {
+    const marker = e.target;
+    if (!marker) return;
+    const pos = marker.getLatLng();
+    const newCoords = [pos.lat, pos.lng];
+    setUserLocation(newCoords);
+
+    let updatedKeyword = keyword;
+    try {
+      const resolvedAddress = await vietmapService.reverseGeocode(pos.lat, pos.lng);
+      if (resolvedAddress && resolvedAddress.trim()) {
+        updatedKeyword = resolvedAddress;
+        setKeyword(resolvedAddress);
+      }
+    } catch (err) {
+      console.error('Lỗi reverse geocoding khi kéo marker GPS:', err);
+    }
+
+    await fetchFacilities(pos.lat, pos.lng, updatedKeyword, true);
+
+    if (activeRoute?.facility) {
+      const facLat = Number(activeRoute.facility.latitude);
+      const facLng = Number(activeRoute.facility.longitude);
+      if (Number.isFinite(facLat) && Number.isFinite(facLng)) {
+        try {
+          const routeData = await vietmapService.getRouteDirections(newCoords, [facLat, facLng], 'car');
+          setActiveRoute(prev => prev ? {
+            ...prev,
+            origin: newCoords,
+            points: routeData.points,
+            distance: routeData.distance,
+            time: routeData.time,
+          } : null);
+        } catch (routeErr) {
+          console.error('Lỗi cập nhật lại tuyến đường:', routeErr);
+        }
+      }
+    }
+  };
+
+  /**
+   * Lấy đường đi thực tế từ điểm đã tìm/vị trí user đến bãi đỗ xe
+   */
+  const handleGetDirections = async (fac) => {
+    const origin = searchedLocation || userLocation;
+    if (!origin || !Number.isFinite(origin[0]) || !Number.isFinite(origin[1])) {
+      setToastMsg('Vui lòng tìm kiếm một địa điểm hoặc nhấn nút định vị để có điểm xuất phát!');
+      setToastType('error');
+      return;
+    }
+
+    const facLat = Number(fac.latitude);
+    const facLng = Number(fac.longitude);
+    if (!Number.isFinite(facLat) || !Number.isFinite(facLng)) {
+      setToastMsg('Bãi đỗ xe này chưa có tọa độ GPS để chỉ đường.');
+      setToastType('error');
+      return;
+    }
+
+    setRoutingFacilityId(fac.id);
+    try {
+      const routeData = await vietmapService.getRouteDirections(origin, [facLat, facLng], 'car');
+      setActiveRoute({
+        facilityId: fac.id,
+        facilityName: fac.name,
+        facility: fac,
+        points: routeData.points,
+        distance: routeData.distance,
+        time: routeData.time,
+        origin,
+        destination: [facLat, facLng],
+      });
+      setToastMsg(`Đã tìm thấy đường đi: ${formatDistance(routeData.distance)} (~${formatDuration(routeData.time)})`);
+      setToastType('success');
+    } catch (err) {
+      console.error('Lỗi tìm đường đi Vietmap:', err);
+      setToastMsg(err.message || 'Không thể tìm thấy tuyến đường đến cơ sở này.');
+      setToastType('error');
+    } finally {
+      setRoutingFacilityId(null);
     }
   };
 
@@ -374,6 +499,7 @@ const SearchPage = () => {
   const clearKeyword = () => {
     setKeyword('');
     setSearchedLocation(null);
+    setActiveRoute(null);
     fetchFacilities();
   };
 
@@ -628,25 +754,62 @@ const SearchPage = () => {
               />
             )}
 
-            {/* Vị trí địa chỉ được tìm kiếm bằng chữ */}
+            {/* Vị trí địa chỉ được tìm kiếm bằng chữ - Cho phép kéo thả di dời */}
             {searchedLocation && (
-              <Marker position={searchedLocation} icon={searchedLocationIcon}>
+              <Marker
+                position={searchedLocation}
+                icon={searchedLocationIcon}
+                draggable={true}
+                eventHandlers={{
+                  dragend: handleSearchedLocationDragEnd,
+                }}
+              >
                 <Popup>
-                  <div className="font-bold text-red-600">Địa điểm tìm kiếm</div>
+                  <div className="p-1">
+                    <div className="font-bold text-red-600 text-xs flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" /> Điểm tìm kiếm của bạn
+                    </div>
+                    <p className="text-xs text-slate-700 mt-1">{keyword || 'Vị trí đã chọn'}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 italic">
+                      Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế hơn
+                    </p>
+                  </div>
                 </Popup>
               </Marker>
             )}
 
-            {/* Vị trí của user */}
+            {/* Vị trí của user - Cho phép kéo thả di dời */}
             {userLocation && (
-              <>
-                <Marker position={userLocation} icon={userIcon}>
-                  <Popup>
-                    <div className="font-bold text-teal-600">Vị trí của bạn</div>
-                  </Popup>
-                </Marker>
-              </>
+              <Marker
+                position={userLocation}
+                icon={userIcon}
+                draggable={true}
+                eventHandlers={{
+                  dragend: handleUserLocationDragEnd,
+                }}
+              >
+                <Popup>
+                  <div className="p-1">
+                    <div className="font-bold text-teal-600 text-xs flex items-center gap-1">
+                      <Navigation className="w-3.5 h-3.5" /> Vị trí hiện tại của bạn
+                    </div>
+                    <p className="text-xs text-slate-700 mt-1">{keyword || 'Vị trí của bạn'}</p>
+                    <p className="text-[10px] text-slate-400 mt-1 italic">
+                      Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế hơn
+                    </p>
+                  </div>
+                </Popup>
+              </Marker>
             )}
+
+            {/* Đường đi chỉ đường thực tế trên bản đồ */}
+            {activeRoute && activeRoute.points && activeRoute.points.length > 1 && (
+              <Polyline
+                positions={activeRoute.points}
+                pathOptions={{ color: '#0d9488', weight: 6, opacity: 0.85 }}
+              />
+            )}
+            <RouteViewportController routePoints={activeRoute?.points} />
 
             {/* Các bãi đỗ xe */}
             {facilities.map(fac => {
@@ -728,13 +891,60 @@ const SearchPage = () => {
                             </div>
                           )}
 
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/facility/${fac.id}`)}
-                            className="mt-3 w-full rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-teal-700"
-                          >
-                            Xem chi tiết bãi xe
-                          </button>
+                          {/* Thông tin tuyến đường thực tế khi nhấn Chỉ đường */}
+                          {activeRoute && activeRoute.facilityId === fac.id && (
+                            <div className="mt-2.5 p-2.5 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 text-xs">
+                              <div className="flex items-center justify-between font-bold text-teal-800">
+                                <span className="flex items-center gap-1">
+                                  <Navigation className="w-3.5 h-3.5 text-teal-600" />
+                                  Đường đi thực tế
+                                </span>
+                                <span className="text-[10px] bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded font-medium">
+                                  Ô tô
+                                </span>
+                              </div>
+                              <div className="mt-1.5 grid grid-cols-2 gap-1.5 text-center">
+                                <div className="bg-white/90 p-1.5 rounded-lg border border-teal-100">
+                                  <span className="text-[10px] text-slate-500 block">Khoảng cách</span>
+                                  <strong className="text-teal-700 font-bold">{formatDistance(activeRoute.distance)}</strong>
+                                </div>
+                                <div className="bg-white/90 p-1.5 rounded-lg border border-teal-100">
+                                  <span className="text-[10px] text-slate-500 block">Dự tính</span>
+                                  <strong className="text-teal-700 font-bold">~{formatDuration(activeRoute.time)}</strong>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Hàng 2 nút: Xem chi tiết và Chỉ đường đặt cạnh nhau */}
+                          <div className="mt-3 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/facility/${fac.id}`)}
+                              className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-slate-800 text-center"
+                            >
+                              Chi tiết
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGetDirections(fac);
+                              }}
+                              disabled={routingFacilityId === fac.id}
+                              className="flex-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-60"
+                            >
+                              {routingFacilityId === fac.id ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang tìm...
+                                </>
+                              ) : (
+                                <>
+                                  <Navigation className="w-3.5 h-3.5" /> Chỉ đường
+                                </>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </Popup>
@@ -744,6 +954,33 @@ const SearchPage = () => {
               return null;
             })}
           </MapContainer>
+
+          {/* FLOATING ROUTE BAR: Hiển thị nhanh thông tin tuyến đường và nút đóng */}
+          {activeRoute && (
+            <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 z-[400] max-w-sm bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-teal-200 shadow-xl flex items-center justify-between gap-3 animate-slideUp">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                  <Navigation className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900 truncate">
+                    Đường đi: {activeRoute.facilityName}
+                  </p>
+                  <p className="text-xs text-slate-600 font-medium">
+                    <span className="text-teal-700 font-bold">{formatDistance(activeRoute.distance)}</span> • ~{formatDuration(activeRoute.time)}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveRoute(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                title="Đóng chỉ đường"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           {/* MAP BADGE */}
           <div className="absolute top-4 left-4 z-[400] pointer-events-none">
