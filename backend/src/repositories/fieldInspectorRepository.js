@@ -28,6 +28,7 @@ class FieldInspectorRepository {
         email: true,
         full_name: true,
         phone_number: true,
+        address: true,
         status: true,
         requires_password_change: true,
         created_at: true,
@@ -63,7 +64,8 @@ class FieldInspectorRepository {
       where.OR = [
         { full_name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { phone_number: { contains: search, mode: 'insensitive' } }
+        { phone_number: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } }
       ];
     }
 
@@ -80,6 +82,7 @@ class FieldInspectorRepository {
           email: true,
           full_name: true,
           phone_number: true,
+          address: true,
           status: true,
           requires_password_change: true,
           created_at: true,
@@ -115,6 +118,7 @@ class FieldInspectorRepository {
         email: true,
         full_name: true,
         phone_number: true,
+        address: true,
         status: true,
         requires_password_change: true,
         created_at: true,

@@ -25,6 +25,7 @@ model User {
   email                    String    @unique
   full_name                String
   phone_number             String
+  address                  String?
   password_hash            String?
   requires_password_change Boolean   @default(true)
   status                   String    @default("PENDING")
@@ -32,7 +33,8 @@ model User {
   updated_at               DateTime  @updatedAt
 
   role                     Role      @relation(fields: [role_id], references: [id])
-  facility                 Facility? // Quan hệ 1-1 với Parking Provider
+  facility                 Facility? @relation("ProviderFacility") 
+  assigned_facilities      Facility[] @relation("InspectorFacilities")
   
   // Quan hệ ngược (Reverse relations)
   transactions             System_Transaction[]
@@ -44,6 +46,7 @@ model User {
   chat_rooms_as_provider   Chat_Room[] @relation("ProviderRooms")
   messages                 Message[]
   favorites                Favorite[]
+  updated_policies         System_Policy[] @relation("AdminUpdatedPolicies")
 
   @@map("users")
 }
@@ -51,6 +54,7 @@ model User {
 model Facility {
   id                  Int      @id @default(autoincrement())
   provider_id         Int      @unique
+  assigned_inspector_id Int?
   name                String
   address             String
   latitude            Float?   
@@ -60,6 +64,7 @@ model Facility {
   available_slots     Int      @default(0)
   price_per_month     Decimal
   system_fee          Decimal?
+  platform_fee_id     Int?
   payment_status      String   @default("UNPAID")
   verification_status String   @default("PENDING_REVIEW")
   visibility_status   String   @default("VISIBLE")
@@ -67,11 +72,14 @@ model Facility {
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  provider            User     @relation(fields: [provider_id], references: [id])
+  provider            User          @relation("ProviderFacility", fields: [provider_id], references: [id])
+  assigned_inspector  User?         @relation("InspectorFacilities", fields: [assigned_inspector_id], references: [id])
+  platform_fee        Platform_Fee? @relation(fields: [platform_fee_id], references: [id])
   
   images              Facility_Image[]
   update_requests     Facility_Update_Request[]
   facility_amenities  Facility_Amenity[]
+  facility_vehicle_types Facility_Vehicle_Type[]
   transactions        System_Transaction[]
   reservations        Reservation_Request[]
   reviews             Review[]
@@ -305,6 +313,8 @@ model Platform_Fee {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  facilities  Facility[]
+
   @@map("platform_fees")
 }
 
@@ -317,8 +327,11 @@ model System_Policy {
   title       String
   content     String   @db.Text
   is_active   Boolean  @default(true)
+  updated_by  Int?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  admin       User?    @relation("AdminUpdatedPolicies", fields: [updated_by], references: [id])
 
   @@map("system_policies")
 }
@@ -335,5 +348,18 @@ model Vehicle_Type {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  facility_vehicle_types Facility_Vehicle_Type[]
+
   @@map("vehicle_types")
+}
+
+model Facility_Vehicle_Type {
+  facility_id     Int
+  vehicle_type_id Int
+
+  facility        Facility     @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  vehicle_type    Vehicle_Type @relation(fields: [vehicle_type_id], references: [id], onDelete: Cascade)
+
+  @@id([facility_id, vehicle_type_id])
+  @@map("facility_vehicle_types")
 }
