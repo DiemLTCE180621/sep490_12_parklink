@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Edit, UserCheck, RefreshCw, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, Mail, Phone, User, X } from 'lucide-react';
+import { Search, Plus, Edit, UserCheck, RefreshCw, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, Mail, Phone, User, X, MapPin } from 'lucide-react';
 import fieldInspectorService from '../services/fieldInspectorService';
+import AddressSelector from './common/AddressSelector';
 
 const AdminFieldInspectorsPanel = () => {
   const [inspectors, setInspectors] = useState([]);
@@ -18,14 +19,14 @@ const AdminFieldInspectorsPanel = () => {
 
   // Modal State cho UC-86 (Create)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [createForm, setCreateForm] = useState({ email: '', full_name: '', phone_number: '' });
+  const [createForm, setCreateForm] = useState({ email: '', full_name: '', phone_number: '', address: '' });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState('');
 
   // Modal State cho UC-88 (Update)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingInspector, setEditingInspector] = useState(null);
-  const [editForm, setEditForm] = useState({ full_name: '', phone_number: '', status: 'ACTIVE' });
+  const [editForm, setEditForm] = useState({ full_name: '', phone_number: '', address: '', status: 'ACTIVE' });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
 
@@ -71,7 +72,7 @@ const AdminFieldInspectorsPanel = () => {
       const res = await fieldInspectorService.createFieldInspector(createForm);
       setSuccessMessage(res.data?.message || 'Tạo tài khoản Nhân viên khảo sát thực địa thành công! Mật khẩu đã được gửi qua email.');
       setIsCreateModalOpen(false);
-      setCreateForm({ email: '', full_name: '', phone_number: '' });
+      setCreateForm({ email: '', full_name: '', phone_number: '', address: '' });
       fetchInspectors(1);
     } catch (err) {
       setCreateError(err.errors?.[0] || err.message || 'Lỗi khi tạo tài khoản nhân viên khảo sát');
@@ -86,6 +87,7 @@ const AdminFieldInspectorsPanel = () => {
     setEditForm({
       full_name: inspector.full_name || '',
       phone_number: inspector.phone_number || '',
+      address: inspector.address || '',
       status: inspector.status || 'ACTIVE'
     });
     setEditError('');
@@ -213,6 +215,7 @@ const AdminFieldInspectorsPanel = () => {
                 <th className="py-3 px-4">Họ và Tên</th>
                 <th className="py-3 px-4">Email Đăng Nhập</th>
                 <th className="py-3 px-4">Số Điện Thoại</th>
+                <th className="py-3 px-4">Địa Chỉ</th>
                 <th className="py-3 px-4">Trạng Thái</th>
                 <th className="py-3 px-4 text-center">Thao tác</th>
               </tr>
@@ -223,7 +226,14 @@ const AdminFieldInspectorsPanel = () => {
                   <td className="py-3 px-4 font-mono font-bold text-slate-400">#{inspector.id}</td>
                   <td className="py-3 px-4 font-semibold text-slate-900">{inspector.full_name}</td>
                   <td className="py-3 px-4 text-slate-600">{inspector.email}</td>
-                  <td className="py-3 px-4 font-mono">{inspector.phone_number || '—'}</td>
+                  <td className="py-3 px-4 font-mono text-slate-700">{inspector.phone_number || '—'}</td>
+                  <td className="py-3 px-4 text-slate-700" title={inspector.address || ''}>
+                    {inspector.address ? (
+                      inspector.address.split(',').map((p) => p.trim()).filter(Boolean).pop() || inspector.address
+                    ) : (
+                      <span className="text-slate-400 italic text-xs">Chưa cập nhật</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4">{getStatusBadge(inspector.status)}</td>
                   <td className="py-3 px-4 text-center">
                     <button
@@ -330,6 +340,16 @@ const AdminFieldInspectorsPanel = () => {
                 />
               </div>
 
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ
+                </label>
+                <AddressSelector
+                  value={createForm.address}
+                  onChange={(fullAddress) => setCreateForm((prev) => ({ ...prev, address: fullAddress }))}
+                />
+              </div>
+
               <div className="p-4 bg-teal-50/80 rounded-2xl border border-teal-100 text-teal-800 text-xs leading-relaxed">
                 <strong>Lưu ý:</strong> Mật khẩu sẽ được sinh tự động ngẫu nhiên và gửi tới Email trên. Nhân viên sẽ được yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
               </div>
@@ -409,6 +429,16 @@ const AdminFieldInspectorsPanel = () => {
                   value={editForm.phone_number}
                   onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })}
                   className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ
+                </label>
+                <AddressSelector
+                  value={editForm.address}
+                  onChange={(fullAddress) => setEditForm((prev) => ({ ...prev, address: fullAddress }))}
                 />
               </div>
 

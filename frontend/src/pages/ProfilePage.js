@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 // Trang Thông tin cá nhân & Cập nhật hồ sơ (UC07, UC08)
@@ -86,7 +86,7 @@ const ProfilePage = () => {
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-teal-500 text-slate-950 font-black flex items-center justify-center text-3xl shadow-md border border-teal-400/30">
+              <div className="w-16 h-16 rounded-2xl bg-teal-500 text-slate-900 font-black flex items-center justify-center text-3xl shadow-md border border-teal-400/30">
                 {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div>
@@ -171,6 +171,23 @@ const ProfilePage = () => {
               />
               <p className="text-[11px] text-slate-500">Gồm đúng 10 chữ số, bắt đầu bằng số 0.</p>
             </div>
+
+            {/* Địa chỉ người dùng (do Quản trị viên phân công) */}
+            {roleName === 'FIELD_INSPECTOR' && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-teal-600" /> ĐỊA CHỈ
+                </label>
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="font-semibold text-slate-900 text-sm">
+                    {user?.address || 'Chưa cập nhật địa chỉ'}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200 w-max shrink-0">
+                    Do Quản trị viên phân công
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Role Info */}
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
