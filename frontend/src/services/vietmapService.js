@@ -1,5 +1,3 @@
-import { normalizeRoutePoints } from '../utils/mapUtils';
-
 /**
  * Service giao tiếp với hệ thống Vietmap API.
  * Tuân thủ quy tắc kiến trúc Frontend: Nơi DUY NHẤT chứa code gọi API bản đồ Vietmap.
@@ -130,65 +128,11 @@ export const reverseGeocode = async (lat, lng) => {
   }
 };
 
-/**
- * Lấy dữ liệu lộ trình chỉ đường giữa 2 điểm (Vietmap Route v4).
- * @param {[number, number]} origin - Tọa độ điểm bắt đầu [lat, lng]
- * @param {[number, number]} destination - Tọa độ điểm đến [lat, lng]
- * @param {string} [vehicle='car'] - Phương tiện di chuyển ('car', 'bike', 'foot')
- * @returns {Promise<{points: Array<[number, number]>, distance: number, time: number}>} Thông tin đường đi thực tế
- */
-export const getRouteDirections = async (origin, destination, vehicle = 'car') => {
-  if (!VIETMAP_API_KEY) {
-    throw new Error('Chưa cấu hình Vietmap API Key trong hệ thống.');
-  }
-
-  if (
-    !Array.isArray(origin) || origin.length < 2 ||
-    !Array.isArray(destination) || destination.length < 2 ||
-    !Number.isFinite(Number(origin[0])) || !Number.isFinite(Number(origin[1])) ||
-    !Number.isFinite(Number(destination[0])) || !Number.isFinite(Number(destination[1]))
-  ) {
-    throw new Error('Tọa độ điểm đi hoặc điểm đến không hợp lệ.');
-  }
-
-  const params = new URLSearchParams({
-    apikey: VIETMAP_API_KEY,
-    point: `${origin[0]},${origin[1]}`,
-    vehicle,
-    points_encoded: 'false',
-  });
-  params.append('point', `${destination[0]},${destination[1]}`);
-
-  const res = await fetch(`https://maps.vietmap.vn/api/route/v4?${params.toString()}`);
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data?.message || data?.error || `Lỗi lấy tuyến đường: ${res.status}`);
-  }
-
-  const path = data?.paths?.[0];
-  if (!path) {
-    throw new Error('Không tìm thấy đường đi giữa hai địa điểm này.');
-  }
-
-  const points = normalizeRoutePoints(path);
-  if (!points || points.length < 2) {
-    throw new Error('Không thể xây dựng hình học tuyến đường.');
-  }
-
-  return {
-    points,
-    distance: Number(path.distance || 0), // Khoảng cách thực tế (mét)
-    time: Number(path.time || 0),         // Thời gian dự tính (mili giây)
-  };
-};
-
 const vietmapService = {
   searchPlaces,
   getPlaceDetail,
   resolveAddressCoordinates,
   reverseGeocode,
-  getRouteDirections,
 };
 
 export default vietmapService;

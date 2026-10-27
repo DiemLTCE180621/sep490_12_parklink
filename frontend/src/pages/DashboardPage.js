@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin, Radio } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -11,6 +11,7 @@ import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspector
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
+import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -159,6 +160,12 @@ const DashboardPage = () => {
                 >
                   <Star className="w-5 h-5 text-amber-500" /> Quản Lý Đánh Giá
                 </button>
+                <button
+                  onClick={() => setActiveAdminTab("broadcast")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "broadcast" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <Radio className="w-5 h-5 text-indigo-400" /> Phát Thông Báo
+                </button>
               </div>
             </div>
 
@@ -171,6 +178,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'contracts' && <AdminContractsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
+              {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -438,7 +446,7 @@ const DashboardPage = () => {
                         Danh Sách Yêu Cầu Thuê Của Tôi
                       </Link>
                       <Link
-                        to="/facilities"
+                        to="/search"
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-xl transition"
                       >
                         Tìm Bãi Đỗ Xe Mới
