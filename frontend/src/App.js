@@ -25,7 +25,6 @@ import CreateReservationPage from './pages/customer/CreateReservationPage';
 import ProviderReservationsPage from './pages/provider/ProviderReservationsPage';
 import ProviderReservationDetailPage from './pages/provider/ProviderReservationDetailPage';
 import ProviderCreateContractPage from './pages/provider/ProviderCreateContractPage';
-import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
 import AdminFacilityEditPage from './pages/admin/AdminFacilityEditPage';
@@ -33,6 +32,7 @@ import AdminRegistrationDetailPage from './pages/admin/AdminRegistrationDetailPa
 import AdminContractsPage from './pages/admin/AdminContractsPage';
 import ProviderActiveCustomersPage from './pages/provider/ProviderActiveCustomersPage';
 import ScrollToTop from './components/common/ScrollToTop';
+import GlobalBroadcastAlerts from './components/common/GlobalBroadcastAlerts';
 
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -113,14 +113,13 @@ function AppContent() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans antialiased text-slate-800 bg-slate-50">
+      <GlobalBroadcastAlerts />
       <Navbar />
       <main className="flex-grow">
         <Routes>
           {/* Public */}
           <Route path="/" element={<PublicBrowseRoute><HomePage /></PublicBrowseRoute>} />
-          <Route path="/search" element={<PublicBrowseRoute><SearchPage /></PublicBrowseRoute>} />
-          <Route path="/facilities" element={<PublicBrowseRoute><FacilityListPage /></PublicBrowseRoute>} />
-          <Route path="/facility/:id" element={<PublicBrowseRoute><FacilityDetailPage /></PublicBrowseRoute>} />
+          <Route path="/facilities" element={<Navigate to="/search" replace />} />
 
           {/* Guest only */}
           <Route path="/login" element={<GuestOnlyRoute><LoginPage /></GuestOnlyRoute>} />
@@ -136,6 +135,15 @@ function AppContent() {
           } />
 
           {/* Mọi role đã login */}
+          <Route path="/search" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <SearchPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/facility/:id" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <FacilityDetailPage />
+            </RoleProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/admin/users/:id" element={
