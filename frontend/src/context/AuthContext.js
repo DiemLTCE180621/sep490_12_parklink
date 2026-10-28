@@ -53,6 +53,10 @@ export const AuthProvider = ({ children }) => {
 
   const changePassword = async (passwordData) => {
     const response = await authService.changePassword(passwordData);
+    if (response?.data?.token) {
+      localStorage.setItem('parklink_token', response.data.token);
+      setToken(response.data.token);
+    }
     if (response?.data?.user) {
       setUser(response.data.user);
     }

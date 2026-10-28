@@ -311,6 +311,33 @@ class EmailService {
   }
 
   /**
+   * UC10: Gửi email thông báo Đặt lại mật khẩu từ Quản trị viên (Admin)
+   */
+  async sendAdminForceResetPasswordEmail({ toEmail, fullName, tempPassword }) {
+    const subject = '[ParkLink] 🔐 THÔNG BÁO ĐẶT LẠI MẬT KHẨU TÀI KHOẢN';
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0d9488; text-align: center;">Thông Báo Đặt Lại Mật Khẩu</h2>
+        <p>Xin chào <strong>${fullName}</strong>,</p>
+        <p>Mật khẩu tài khoản của bạn trên nền tảng <strong>ParkLink</strong> vừa được Quản trị viên hệ thống (Admin) đặt lại.</p>
+        
+        <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; border-left: 4px solid #0d9488; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0;"><strong>Thông tin đăng nhập mới của bạn:</strong></p>
+          <p style="margin: 4px 0;">📧 Email: <strong>${toEmail}</strong></p>
+          <p style="margin: 4px 0;">🔑 Mật khẩu tạm thời: <strong style="font-size: 18px; color: #0f766e; background: #ccfbf1; padding: 2px 8px; border-radius: 4px;">${tempPassword}</strong></p>
+        </div>
+
+        <p style="color: #e11d48; font-size: 13px;">⚠️ <em>Lưu ý: Vì mục đích bảo mật, bạn bắt buộc phải Đổi mật khẩu mới ngay trong lần đăng nhập đầu tiên với mật khẩu tạm thời này.</em></p>
+        
+        <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b; text-align: center;">Đội ngũ Ban quản trị ParkLink.</p>
+      </div>
+    `;
+
+    return await this.sendEmail(toEmail, subject, htmlContent, tempPassword, 'FORCE_RESET_PASSWORD');
+  }
+
+  /**
    * Hàm core gửi email (tích hợp SMTP hoặc Console Simulation)
    * @param {string} toEmail
    * @param {string} subject

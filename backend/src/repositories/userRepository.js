@@ -231,7 +231,33 @@ class UserRepository {
         requires_password_change: true,
         created_at: true,
         updated_at: true,
-        role: true
+        role: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            capacity: true,
+            available_slots: true,
+            price_per_month: true,
+            verification_status: true,
+            payment_status: true,
+            visibility_status: true
+          }
+        },
+        assigned_facilities: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+            verification_status: true
+          }
+        },
+        _count: {
+          select: {
+            reservations: true
+          }
+        }
       }
     });
   }
@@ -271,6 +297,27 @@ class UserRepository {
         phone_number: true
       },
       orderBy: { id: 'asc' }
+    });
+  }
+
+  /**
+   * Lấy thông tin user phục vụ middleware xác thực JWT và kiểm tra token version
+   */
+  async findAuthUserById(id) {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        status: true,
+        password_hash: true,
+        requires_password_change: true,
+        role: {
+          select: {
+            name: true
+          }
+        }
+      }
     });
   }
 }

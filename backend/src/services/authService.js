@@ -15,11 +15,13 @@ const otpStore = new Map();
  */
 class AuthService {
   generateToken(user) {
+    const roleName = user.role?.name || user.role || '';
     return jwt.sign(
       {
         userId: user.id,
-        role: user.role.name,
-        email: user.email
+        role: roleName,
+        email: user.email,
+        pwdVersion: user.password_hash ? user.password_hash.slice(-10) : ''
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
@@ -245,10 +247,28 @@ class AuthService {
       throw error;
     }
 
+    // Nếu người dùng đổi mật khẩu thông thường (không phải đổi lần đầu), bắt buộc kiểm tra oldPassword
+    if (!user.requires_password_change) {
+      if (!oldPassword) {
+        const error = new Error('Vui lòng cung cấp mật khẩu hiện tại!');
+        error.status = 400;
+        throw error;
+      }
+      if (user.password_hash) {
+        const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
+        if (!isMatch) {
+          const error = new Error('Mật khẩu hiện tại không chính xác!');
+          error.status = 400;
+          throw error;
+        }
+      }
+    }
+
+    // Đảm bảo mật khẩu mới không trùng với mật khẩu hiện tại / tạm thời
     if (user.password_hash) {
-      const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-      if (!isMatch) {
-        const error = new Error('Mật khẩu hiện tại không chính xác!');
+      const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+      if (isSamePassword) {
+        const error = new Error('Mật khẩu mới không được trùng với mật khẩu hiện tại!');
         error.status = 400;
         throw error;
       }
@@ -257,8 +277,13 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
-    const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash);
-    return this.sanitizeUser(updatedUser);
+    // Cập nhật mật khẩu mới và gỡ cờ requires_password_change
+    const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash, false);
+    const newToken = this.generateToken(updatedUser);
+    return {
+      user: this.sanitizeUser(updatedUser),
+      token: newToken
+    };
   }
 
   /**
