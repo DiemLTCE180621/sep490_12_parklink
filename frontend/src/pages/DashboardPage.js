@@ -6,7 +6,7 @@ import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck,
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
-import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
+import AdminFieldInspectorsPanel from '../components/admin/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
@@ -18,7 +18,6 @@ import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveC
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
-import EditProfileModal from '../components/EditProfileModal';
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {
@@ -29,7 +28,6 @@ const DashboardPage = () => {
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility'); // Menu bên trái cho Provider
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
 
   React.useEffect(() => {
@@ -121,7 +119,7 @@ const DashboardPage = () => {
                   onClick={() => setActiveAdminTab("users")}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "users" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
-                  <User className="w-5 h-5" /> Quản lý Users
+                  <User className="w-5 h-5" /> Quản Lý Người Dùng
                 </button>
                 <button
                   onClick={() => setActiveAdminTab('inspectors')}
@@ -455,11 +453,6 @@ const DashboardPage = () => {
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}
-      />
-      <EditProfileModal
-        isOpen={isEditProfileModalOpen}
-        onClose={() => setIsEditProfileModalOpen(false)}
-        onSuccess={(msg) => setToastInfo({ message: msg, type: 'success' })}
       />
       {toastInfo && (
         <Toast

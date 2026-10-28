@@ -63,11 +63,12 @@ class FieldInspectorService {
   /**
    * UC-87: Lấy danh sách tài khoản Nhân viên khảo sát thực địa (kèm phân trang & tìm kiếm)
    */
-  async getFieldInspectorsList({ search, page, limit }) {
+  async getFieldInspectorsList({ search, address, page, limit }) {
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
     return await fieldInspectorRepository.findInspectorsPaginated({
       search: search ? search.trim() : "",
+      address: address ? address.trim() : "",
       page: pageNum,
       limit: limitNum,
     });

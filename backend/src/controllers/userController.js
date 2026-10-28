@@ -40,42 +40,53 @@ class UserController {
     }
   }
 
-  /**
-   * UC07: Lấy thông tin cá nhân của người dùng hiện tại
-   */
-  async getProfile(req, res, next) {
-    try {
-      const user = await userService.getUserProfile(req.user.userId);
-      res.json({ status: "success", data: { user } });
-    } catch (error) {
-      if (error.status) {
-        return res.status(error.status).json({ status: "fail", message: error.message });
-      }
-      next(error);
-    }
-  }
 
   /**
-   * UC08: Cập nhật thông tin cá nhân của người dùng hiện tại (Họ tên, SĐT)
+   * UC13: Admin cập nhật thông tin tài khoản người dùng (Họ và tên, SĐT)
    */
-  async updateProfile(req, res, next) {
+  async updateUser(req, res, next) {
     try {
-      const updatedUser = await userService.updateUserProfile(req.user.userId, req.body);
+      const userId = parseInt(req.params.id, 10);
+      const updatedUser = await userService.updateUserInfo(userId, req.body);
       res.json({
         status: "success",
-        message: "Cập nhật thông tin cá nhân thành công!",
+        message: "Cập nhật thông tin tài khoản thành công!",
         data: { user: updatedUser }
       });
     } catch (error) {
       if (error.status) {
-        return res.status(error.status).json({ status: "fail", message: error.message });
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
       }
       next(error);
     }
   }
 
   /**
-   * UC Tương lai (Iter 4): Khóa / Mở khóa tài khoản người dùng
+   * UC10: Admin cưỡng chế đặt lại mật khẩu cho người dùng
+   */
+  async forceResetPassword(req, res, next) {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      const result = await userService.forceResetPassword(userId);
+      res.json({
+        status: "success",
+        message: result.message,
+        data: result
+      });
+    } catch (error) {
+      if (error.status) {
+        return res
+          .status(error.status)
+          .json({ status: "fail", message: error.message });
+      }
+      next(error);
+    }
+  }
+
+  /**
+   * UC14 & UC15: Khóa / Mở khóa tài khoản người dùng
    */
   async toggleUserStatus(req, res, next) {
     try {

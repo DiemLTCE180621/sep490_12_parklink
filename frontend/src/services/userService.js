@@ -22,7 +22,24 @@ const userService = {
   },
 
   /**
-   * UC Tương lai (Iter 4): Khóa / Mở khóa tài khoản người dùng
+   * UC13: Admin cập nhật thông tin người dùng (Họ và tên, SĐT)
+   * @param {number} id - ID của user
+   * @param {object} data - { full_name, phone_number }
+   */
+  updateUser: async (id, data) => {
+    return await api.put(`/admin/users/${id}`, data);
+  },
+
+  /**
+   * UC10: Admin cưỡng chế đặt lại mật khẩu cho người dùng
+   * @param {number} id - ID của user
+   */
+  forceResetPassword: async (id) => {
+    return await api.post(`/admin/users/${id}/reset-password`);
+  },
+
+  /**
+   * UC14 & UC15: Khóa / Mở khóa tài khoản người dùng
    * @param {number} id - ID của user
    */
   toggleUserStatus: async (id) => {
