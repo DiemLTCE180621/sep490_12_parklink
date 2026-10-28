@@ -8,6 +8,7 @@ class ComplaintRepository {
         facility_id: parseInt(data.facility_id),
         title: data.title,
         description: data.description,
+        image_urls: Array.isArray(data.image_urls) ? data.image_urls : [],
         status: 'PENDING'
       }
     });

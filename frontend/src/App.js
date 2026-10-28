@@ -29,6 +29,8 @@ import FacilityListPage from './pages/facility/FacilityListPage';
 import FacilityDetailPage from './pages/facility/FacilityDetailPage';
 import ChatPage from './pages/ChatPage';
 import AdminFacilityEditPage from './pages/admin/AdminFacilityEditPage';
+import AdminPlatformFeeCreatePage from './pages/admin/AdminPlatformFeeCreatePage';
+import AdminPlatformFeeEditPage from './pages/admin/AdminPlatformFeeEditPage';
 import AdminRegistrationDetailPage from './pages/admin/AdminRegistrationDetailPage';
 import ScrollToTop from './components/common/ScrollToTop';
 
@@ -144,6 +146,21 @@ function AppContent() {
           <Route path="/admin/facilities/:id/edit" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminFacilityEditPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/platform-fees/create" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminPlatformFeeCreatePage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/platform-fees/:id" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminPlatformFeeEditPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/platform-fees/:id/edit" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminPlatformFeeEditPage />
             </RoleProtectedRoute>
           } />
           <Route path="/admin/registrations/:id" element={

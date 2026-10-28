@@ -137,6 +137,15 @@ const CustomerComplaintsPage = () => {
                 <div className="text-sm text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                   <span className="font-bold block mb-1 text-slate-900">Nội dung khiếu nại:</span>
                   <p className="whitespace-pre-wrap">{item.description}</p>
+                  {Array.isArray(item.image_urls) && item.image_urls.length > 0 && (
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                      {item.image_urls.map((url, index) => (
+                        <a key={url} href={url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white">
+                          <img src={url} alt={`Ảnh khiếu nại ${index + 1}`} className="h-full w-full object-cover hover:opacity-90" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {item.facility && (
