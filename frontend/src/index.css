@@ -48,7 +48,8 @@ code {
     margin: 15mm 15mm 15mm 15mm;
   }
 
-  html, body {
+  html,
+  body {
     background: #ffffff !important;
     color: #000000 !important;
     font-family: 'Times New Roman', Times, serif !important;
@@ -69,27 +70,34 @@ code {
     display: none !important;
   }
 
+  /* Khi mở Modal Hợp đồng (Admin / Provider), ẩn toàn bộ trang nền phía sau khi in */
+  body.contract-modal-open>#root {
+    display: none !important;
+  }
+
+  .contract-modal-overlay,
+  .contract-modal-dialog,
+  .contract-modal-body {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    transform: none !important;
+  }
+
   /* Canvas văn bản hợp đồng chuẩn */
   .contract-paper-canvas {
     border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    background: #ffffff !important;
-    border-radius: 0 !important;
-    font-family: 'Times New Roman', Times, serif !important;
-    color: #000000 !important;
-  }
-
-  .contract-paper-canvas * {
-    font-family: 'Times New Roman', Times, serif !important;
-  }
-
-  /* In văn bản rõ nét */
-  * {
-    -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 }
