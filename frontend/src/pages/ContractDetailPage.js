@@ -335,7 +335,7 @@ const ContractDetailPage = () => {
                     <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
                     <div className="h-24 flex flex-col items-center justify-center">
                       <div className="border border-black px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                        ĐÃ KÝ ĐIỆN TỬ
+                        XÁC NHẬN ĐIỆN TỬ
                       </div>
                       <p className="text-[11px] text-black mt-1">
                         Ngày: {new Date(contract.provider_agreed_at || contract.created_at).toLocaleDateString('vi-VN')}
@@ -354,14 +354,14 @@ const ContractDetailPage = () => {
                       {isActive || contract.customer_agreed_at ? (
                         <>
                           <div className="border border-black px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                            ĐÃ KÝ ĐIỆN TỬ
+                            XÁC NHẬN ĐIỆN TỬ
                           </div>
                           <p className="text-[11px] text-black mt-1">
                             Ngày: {new Date(contract.customer_agreed_at).toLocaleDateString('vi-VN')}
                           </p>
                         </>
                       ) : (
-                        <p className="text-xs italic text-black">(Chờ khách hàng ký điện tử)</p>
+                        <p className="text-xs italic text-black">(Chờ khách hàng xác nhận điện tử)</p>
                       )}
                     </div>
                     <p className="font-bold text-xs sm:text-sm pt-2">
