@@ -12,7 +12,7 @@ datasource db {
 // ------------------------------------------------------
 model Role {
   id          Int      @id @default(autoincrement())
-  name        String   @unique
+  name        String   @unique @db.VarChar(50)
   description String?
   users       User[]
 
@@ -23,7 +23,7 @@ model User {
   id                       Int       @id @default(autoincrement())
   role_id                  Int
   email                    String    @unique
-  full_name                String
+  full_name                String    @db.VarChar(50)
   phone_number             String
   address                  String?
   password_hash            String?
@@ -158,7 +158,7 @@ model Reservation_Request {
 
 model Confirmation_Record {
   id                   Int      @id @default(autoincrement())
-  contract_code        String   @unique
+  contract_code        String   @unique @db.VarChar(50)
   reservation_id       Int      @unique
   agreed_price         Decimal
   payment_deadline_day Int?
@@ -246,7 +246,7 @@ model Notification {
 
 model Amenity {
   id                 Int      @id @default(autoincrement())
-  name               String   @unique
+  name               String   @unique @db.VarChar(100)
   icon               String?
   type               String?
   facility_amenities Facility_Amenity[]
@@ -304,7 +304,7 @@ model Message {
 // ------------------------------------------------------
 model Platform_Fee {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String   @db.VarChar(100)
   min_slots   Int
   max_slots   Int?
   fee_amount  Decimal
