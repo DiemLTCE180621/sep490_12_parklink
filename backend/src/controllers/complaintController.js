@@ -7,13 +7,14 @@ class ComplaintController {
     try {
       const customer_id = req.user.userId; 
       
-      const { reservation_id, title, description } = req.body;
+      const { reservation_id, title, description, image_urls } = req.body;
 
       const newComplaint = await complaintService.createComplaint({
         customer_id,
         reservation_id,
         title,
-        description
+        description,
+        image_urls
       });
 
       res.status(201).json({

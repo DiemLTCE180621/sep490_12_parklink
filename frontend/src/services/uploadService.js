@@ -1,22 +1,21 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api/uploads';
+import api from './api';
 
 const uploadService = {
-    // Upload nhiều file (tối đa 4 file)
-    uploadFiles: async (filesArray, token) => {
+    uploadFiles: async (filesArray, _tokenOrFolder = 'chat', folderName) => {
+        const selectedFolder = folderName || (
+            _tokenOrFolder === 'complaints' ? 'complaints' : 'chat'
+        );
         const formData = new FormData();
         filesArray.forEach(file => {
-            formData.append('files', file); // Chú ý key 'files' phải khớp với backend upload.array('files')
+            formData.append('files', file);
         });
 
-        const response = await axios.post(API_URL, formData, {
-            headers: { 
-                Authorization: `Bearer ${token}`,
+        const response = await api.post(`/uploads?folder=${encodeURIComponent(selectedFolder)}`, formData, {
+            headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
-        return response.data; // Trả về { success: true, data: { mediaUrls: [...] } }
+        return response;
     }
 };
 

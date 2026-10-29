@@ -12,7 +12,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  DollarSign,
   User,
   Building2,
   Car,
@@ -30,8 +29,7 @@ const AdminContractsPanel = () => {
     total_all: 0,
     total_active: 0,
     total_pending_signature: 0,
-    total_matching: 0,
-    total_active_monthly_revenue: 0
+    total_matching: 0
   });
 
   const [pagination, setPagination] = useState({
@@ -121,10 +119,6 @@ const AdminContractsPanel = () => {
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
-  };
-
   const formatDate = (dateStr) => {
     if (!dateStr) return '---';
     return new Date(dateStr).toLocaleDateString('vi-VN');
@@ -195,8 +189,8 @@ const AdminContractsPanel = () => {
         </button>
       </div>
 
-      {/* THỐNG KÊ (KPI CARDS) - ĐỒNG BỘ, ĐƠN GIẢN, CHUẨN ENTERPRISE */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* THỐNG KÊ (3 KPI CARDS - KHÔNG HIỂN THỊ DOANH THU THUÊ) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium uppercase tracking-wider">
             <span>Tổng hợp đồng</span>
@@ -228,17 +222,6 @@ const AdminContractsPanel = () => {
           </div>
           <div className="text-2xl font-bold text-amber-600 mt-2">{summary.total_pending_signature || 0}</div>
           <p className="text-xs text-slate-400 mt-1">Chờ xác nhận từ người thuê</p>
-        </div>
-
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-medium uppercase tracking-wider">
-            <span>Doanh thu thuê / tháng</span>
-            <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-bold text-teal-700 mt-2">{formatCurrency(summary.total_active_monthly_revenue)}</div>
-          <p className="text-xs text-slate-400 mt-1">Từ các hợp đồng Active</p>
         </div>
       </div>
 
@@ -349,7 +332,6 @@ const AdminContractsPanel = () => {
                   <th scope="col" className="px-4 py-3">Khách Thuê (Bên B)</th>
                   <th scope="col" className="px-4 py-3">Bãi Đỗ Xe (Bên A)</th>
                   <th scope="col" className="px-4 py-3">Phương Tiện / Ô Đỗ</th>
-                  <th scope="col" className="px-4 py-3">Giá Thuê / Tháng</th>
                   <th scope="col" className="px-4 py-3">Thời Hạn</th>
                   <th scope="col" className="px-4 py-3">Trạng Thái</th>
                   <th scope="col" className="px-4 py-3 text-right">Thao Tác</th>
@@ -385,7 +367,7 @@ const AdminContractsPanel = () => {
                       </td>
 
                       {/* Bãi xe & Chủ bãi */}
-                      <td className="px-4 py-3.5 max-w-[220px]">
+                      <td className="px-4 py-3.5 max-w-[240px]">
                         <div className="font-semibold text-slate-900 truncate flex items-center gap-1.5" title={facility?.name}>
                           <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           {facility?.name || 'Bãi đỗ xe'}
@@ -407,12 +389,6 @@ const AdminContractsPanel = () => {
                         <div className="text-slate-500 text-[11px] mt-0.5">
                           Ô đỗ: <span className="font-medium text-slate-700">{rental.parking_spot || 'Tự do'}</span>
                         </div>
-                      </td>
-
-                      {/* Giá thuê */}
-                      <td className="px-4 py-3.5 whitespace-nowrap">
-                        <div className="font-bold text-slate-900">{formatCurrency(item.agreed_price)}</div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">Hạn: ngày {item.payment_deadline_day || 5}</div>
                       </td>
 
                       {/* Thời hạn */}

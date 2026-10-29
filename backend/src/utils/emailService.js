@@ -373,6 +373,57 @@ class EmailService {
 
     return { success: true, simulated: true, tempPassword };
   }
+
+  /**
+   * UC-66: Gửi email phát sóng (Broadcast Email) cho danh sách người dùng hệ thống
+   * Xử lý bất đồng bộ (Background processing) và chia batch để tránh quá tải SMTP / spam trigger
+   * @param {Object} params
+   * @param {Array<string>} params.recipientEmails - Danh sách email nhận
+   * @param {string} params.subject - Tiêu đề email
+   * @param {string} params.htmlContent - Nội dung HTML của email
+   * @returns {Promise<Object>} Tóm tắt tác vụ (batch ID, tổng số email vào hàng đợi, timestamp)
+   */
+  async sendBroadcastEmail({ recipientEmails, subject, htmlContent }) {
+    const batchId = `BATCH_${Date.now()}`;
+    const totalQueued = recipientEmails.length;
+
+    // Xử lý chạy ngầm (asynchronous background task) không block HTTP response
+    setImmediate(async () => {
+      console.log(`[Broadcast Email] Bắt đầu tác vụ ${batchId} gửi tới ${totalQueued} người nhận...`);
+      let successCount = 0;
+      let failCount = 0;
+
+      // Chia batch nhỏ (10 emails/batch)
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < recipientEmails.length; i += BATCH_SIZE) {
+        const batch = recipientEmails.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(
+          batch.map(async (email) => {
+            try {
+              await this.sendEmail(email, subject, htmlContent, null, 'BROADCAST');
+              successCount++;
+            } catch (err) {
+              failCount++;
+              console.error(`[Broadcast Email Error] Lỗi gửi tới ${email}:`, err.message);
+            }
+          })
+        );
+
+        // Nghỉ 500ms giữa các batch
+        if (i + BATCH_SIZE < recipientEmails.length) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      console.log(`[Broadcast Email] Hoàn tất ${batchId}: Thành công ${successCount}, Thất bại ${failCount}`);
+    });
+
+    return {
+      batchId,
+      totalQueued,
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 module.exports = new EmailService();

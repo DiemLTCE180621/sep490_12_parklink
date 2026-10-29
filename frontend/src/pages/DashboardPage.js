@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin } from 'lucide-react';
+import { 
+  User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, 
+  UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users, 
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X 
+} from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -10,7 +14,9 @@ import AdminFieldInspectorsPanel from '../components/admin/AdminFieldInspectorsP
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
+import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
+import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -24,9 +30,11 @@ const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations'); // Menu bên trái cho Admin
-  const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility'); // Menu bên trái cho Provider
-  const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
+  const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations');
+  const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility');
+  const [activeInspectorTab, setActiveInspectorTab] = useState('inspections');
+  const [isMobileAdminMenuOpen, setIsMobileAdminMenuOpen] = useState(false);
+  const [isMobileProviderMenuOpen, setIsMobileProviderMenuOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
 
@@ -48,6 +56,36 @@ const DashboardPage = () => {
     await logout();
     navigate("/login");
   };
+
+  const adminTabs = [
+    { id: 'registrations', label: 'Duyệt Bãi Đỗ Xe', icon: Building2 },
+    { id: 'users', label: 'Quản Lý Người Dùng', icon: User },
+    { id: 'inspectors', label: 'Nhân Viên Khảo Sát', icon: UserCheck },
+    { id: 'facilities', label: 'Tất Cả Cơ Sở', icon: Building2 },
+    { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
+    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
+    { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
+    { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
+    { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
+  ];
+
+  const providerTabs = [
+    { id: 'facility', label: 'Thông Tin Bãi Xe', icon: Building2 },
+    { id: 'active-customers', label: 'Khách Đang Thuê', icon: Users },
+    { id: 'reservations', label: 'Duyệt Yêu Cầu Thuê', icon: Car },
+    { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
+    { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
+    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
+    { id: 'reviews', label: 'Đánh Giá Khách Hàng', icon: Star },
+    { id: 'platform-fees', label: 'Biểu Phí Nền Tảng', icon: DollarSign },
+  ];
+
+  const inspectorTabs = [
+    { id: 'inspections', label: 'Khảo Sát Thực Địa', icon: Building2 },
+    { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
@@ -102,66 +140,138 @@ const DashboardPage = () => {
       <div className="px-4 sm:px-6 lg:px-8 w-full mx-auto space-y-8">
         {/* CONTENT GRID BY ROLE */}
         {roleName === 'ADMIN' ? (
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* SIDEBAR ADMIN */}
-            <div className="w-full md:w-64 shrink-0 space-y-4">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
-                  Menu Quản Trị
-                </h3>
+          <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
+            {/* MOBILE NAV ADMIN */}
+            <div className="w-full md:hidden space-y-2.5 mb-2">
+              <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                    {React.createElement(adminTabs.find(t => t.id === activeAdminTab)?.icon || ShieldCheck, { className: 'w-4 h-4' })}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Đang xem mục</span>
+                    <h4 className="text-sm font-bold text-slate-900 truncate">
+                      {adminTabs.find(t => t.id === activeAdminTab)?.label}
+                    </h4>
+                  </div>
+                </div>
                 <button
-                  onClick={() => setActiveAdminTab("registrations")}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "registrations" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                  onClick={() => setIsMobileAdminMenuOpen(!isMobileAdminMenuOpen)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+                    isMobileAdminMenuOpen
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
                 >
-                  <Building2 className="w-5 h-5" /> Duyệt Bãi Đỗ Xe
+                  {isMobileAdminMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
+                  <span>{isMobileAdminMenuOpen ? 'Đóng' : 'Tất cả menu'}</span>
                 </button>
-                <button
-                  onClick={() => setActiveAdminTab("users")}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "users" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-                >
-                  <User className="w-5 h-5" /> Quản Lý Người Dùng
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab('inspectors')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'inspectors' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <UserCheck className="w-5 h-5" /> Nhân Viên Khảo Sát
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab('facilities')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'facilities' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Building2 className="w-5 h-5" /> Tất cả cơ sở
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab('contracts')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === 'contracts' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <FileText className="w-5 h-5" /> Quản Lý Hợp Đồng
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab("transactions")}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "transactions" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-                >
-                  <Shield className="w-5 h-5" /> Quản lý Giao Dịch
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab("complaints")}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "complaints" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-                >
-                  <AlertCircle className="w-5 h-5 text-red-500" /> Quản lý Khiếu Nại
-                </button>
-                <button
-                  onClick={() => setActiveAdminTab("reviews")}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "reviews" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-                >
-                  <Star className="w-5 h-5 text-amber-500" /> Quản Lý Đánh Giá
-                </button>
+              </div>
+
+              {isMobileAdminMenuOpen && (
+                <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-lg grid grid-cols-2 gap-2">
+                  {adminTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeAdminTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveAdminTab(tab.id);
+                          setIsMobileAdminMenuOpen(false);
+                        }}
+                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${
+                          isActive
+                            ? 'bg-teal-600 text-white shadow-sm'
+                            : 'bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-700'
+                        }`}
+                      >
+                        <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                        <span className="truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {adminTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeAdminTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveAdminTab(tab.id)}
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
+                        isActive
+                          ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
+                          : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* DESKTOP SIDEBAR ADMIN */}
+            <div className="hidden md:block w-72 lg:w-80 shrink-0 sticky top-6">
+              <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-1.5">
+                <div className="px-3 py-2.5 border-b border-slate-100 mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold shadow-sm">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">Menu Quản Trị</h3>
+                      <p className="text-[11px] text-slate-400 font-medium">Hệ thống ParkLink</p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                    {adminTabs.length} mục
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  {adminTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeAdminTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveAdminTab(tab.id)}
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
+                          isActive
+                            ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
+                              isActive
+                                ? 'bg-white/20 text-white shadow-inner'
+                                : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className={`truncate ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
+                        </div>
+                        {isActive && (
+                          <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 w-full">
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
               {activeAdminTab === 'users' && <AdminUsersPanel />}
@@ -169,6 +279,8 @@ const DashboardPage = () => {
               {activeAdminTab === 'contracts' && <AdminContractsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
+              {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
+              {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -180,66 +292,138 @@ const DashboardPage = () => {
             </div>
           </div>
         ) : roleName === 'PROVIDER' ? (
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* SIDEBAR PROVIDER */}
-            <div className="w-full md:w-64 shrink-0 space-y-4">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
-                  Menu Chủ Bãi Xe
-                </h3>
+          <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
+            {/* MOBILE NAV PROVIDER */}
+            <div className="w-full md:hidden space-y-2.5 mb-2">
+              <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                    {React.createElement(providerTabs.find(t => t.id === activeProviderTab)?.icon || Building2, { className: 'w-4 h-4' })}
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Đang xem mục</span>
+                    <h4 className="text-sm font-bold text-slate-900 truncate">
+                      {providerTabs.find(t => t.id === activeProviderTab)?.label}
+                    </h4>
+                  </div>
+                </div>
                 <button
-                  onClick={() => setActiveProviderTab('facility')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'facility' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                  onClick={() => setIsMobileProviderMenuOpen(!isMobileProviderMenuOpen)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
+                    isMobileProviderMenuOpen
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
                 >
-                  <Building2 className="w-5 h-5" /> Thông Tin Bãi Xe
+                  {isMobileProviderMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
+                  <span>{isMobileProviderMenuOpen ? 'Đóng' : 'Tất cả menu'}</span>
                 </button>
-                <button
-                  onClick={() => setActiveProviderTab('active-customers')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'active-customers' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Users className="w-5 h-5" /> Khách Đang Thuê
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('reservations')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'reservations' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Car className="w-5 h-5" /> Duyệt Yêu Cầu Thuê
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('contracts')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'contracts' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <FileText className="w-5 h-5" /> Quản Lý Hợp Đồng
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('profile')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'profile' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <User className="w-5 h-5" /> Thông Tin Cá Nhân
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('transactions')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'transactions' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Shield className="w-5 h-5" /> Quản Lý Giao Dịch
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('complaints')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'complaints' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <AlertCircle className="w-5 h-5 text-amber-500" /> Quản Lý Khiếu Nại
-                </button>
-                <button
-                  onClick={() => setActiveProviderTab('reviews')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'reviews' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Star className="w-5 h-5 text-amber-500" /> Đánh Giá Khách Hàng
-                </button>
+              </div>
+
+              {isMobileProviderMenuOpen && (
+                <div className="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-lg grid grid-cols-2 gap-2">
+                  {providerTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeProviderTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveProviderTab(tab.id);
+                          setIsMobileProviderMenuOpen(false);
+                        }}
+                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${
+                          isActive
+                            ? 'bg-teal-600 text-white shadow-sm'
+                            : 'bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-700'
+                        }`}
+                      >
+                        <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                        <span className="truncate">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {providerTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const isActive = activeProviderTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveProviderTab(tab.id)}
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
+                        isActive
+                          ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
+                          : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* DESKTOP SIDEBAR PROVIDER */}
+            <div className="hidden md:block w-72 lg:w-80 shrink-0 sticky top-6">
+              <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-1.5">
+                <div className="px-3 py-2.5 border-b border-slate-100 mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold shadow-sm">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">Menu Chủ Bãi Xe</h3>
+                      <p className="text-[11px] text-slate-400 font-medium">Bảng điều khiển cơ sở</p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                    {providerTabs.length} mục
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  {providerTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeProviderTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveProviderTab(tab.id)}
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
+                          isActive
+                            ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
+                              isActive
+                                ? 'bg-white/20 text-white shadow-inner'
+                                : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className={`truncate ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
+                        </div>
+                        {isActive && (
+                          <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* NỘI DUNG PROVIDER TƯƠNG ỨNG */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 w-full">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
               {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
               {activeProviderTab === 'reservations' && (
@@ -250,6 +434,7 @@ const DashboardPage = () => {
               )}
               {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
               {activeProviderTab === 'reviews' && <ProviderReviewsPanel />}
+              {activeProviderTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={true} />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -296,30 +481,85 @@ const DashboardPage = () => {
             </div>
           </div>
         ) : roleName === 'FIELD_INSPECTOR' ? (
-          <div className="flex flex-col md:flex-row gap-8">
-            {/* SIDEBAR FIELD INSPECTOR */}
-            <div className="w-full md:w-64 shrink-0 space-y-4">
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 mb-3">
-                  Nhân Viên Khảo Sát
-                </h3>
-                <button
-                  onClick={() => setActiveInspectorTab('inspections')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeInspectorTab === 'inspections' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <Building2 className="w-5 h-5" /> Khảo Sát Thực Địa
-                </button>
-                <button
-                  onClick={() => setActiveInspectorTab('profile')}
-                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeInspectorTab === 'profile' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  <User className="w-5 h-5" /> Thông Tin Cá Nhân
-                </button>
+          <div className="flex flex-col md:flex-row gap-6 lg:gap-8 items-start">
+            {/* MOBILE NAV FIELD INSPECTOR */}
+            <div className="w-full md:hidden flex gap-2 overflow-x-auto no-scrollbar py-1 mb-2">
+              {inspectorTabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeInspectorTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveInspectorTab(tab.id)}
+                    className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
+                      isActive
+                        ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
+                        : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* DESKTOP SIDEBAR FIELD INSPECTOR */}
+            <div className="hidden md:block w-72 lg:w-80 shrink-0 sticky top-6">
+              <div className="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-1.5">
+                <div className="px-3 py-2.5 border-b border-slate-100 mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold shadow-sm">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">Khảo Sát Thực Địa</h3>
+                      <p className="text-[11px] text-slate-400 font-medium">Field Inspector Hub</p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                    {inspectorTabs.length} mục
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  {inspectorTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeInspectorTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveInspectorTab(tab.id)}
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
+                          isActive
+                            ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
+                              isActive
+                                ? 'bg-white/20 text-white shadow-inner'
+                                : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
+                            }`}
+                          >
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className={`truncate ${isActive ? 'font-bold' : ''}`}>{tab.label}</span>
+                        </div>
+                        {isActive && (
+                          <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* NỘI DUNG FIELD INSPECTOR TƯƠNG ỨNG */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 w-full">
               {activeInspectorTab === 'inspections' && <FieldInspectorRegistrationsPanel />}
               {activeInspectorTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
@@ -398,8 +638,6 @@ const DashboardPage = () => {
 
             {/* DYNAMIC CONTENT FOR CUSTOMER */}
             <div className="md:col-span-2 space-y-6">
-
-              {/* PANEL DÀNH CHO CUSTOMER HOẶC ROLE KHÁC */}
               {roleName !== 'PROVIDER' && roleName !== 'FIELD_INSPECTOR' && roleName !== 'ADMIN' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -436,7 +674,7 @@ const DashboardPage = () => {
                         Danh Sách Yêu Cầu Thuê Của Tôi
                       </Link>
                       <Link
-                        to="/facilities"
+                        to="/search"
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-xl transition"
                       >
                         Tìm Bãi Đỗ Xe Mới

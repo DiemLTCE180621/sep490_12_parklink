@@ -148,6 +148,9 @@ class FacilityService {
       throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
     }
 
+    const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
+    const availableSlots = Math.max(0, facility.capacity - activeContractsCount);
+
     // Format data
     const ratings = facility.reviews.map(r => r.rating);
     const avgRating = ratings.length > 0
@@ -158,7 +161,9 @@ class FacilityService {
       ...facility,
       avg_rating: avgRating,
       total_reviews: ratings.length,
-      vehicle_types: typeof facility.vehicle_types === 'string' ? JSON.parse(facility.vehicle_types) : facility.vehicle_types
+      vehicle_types: typeof facility.vehicle_types === 'string' ? JSON.parse(facility.vehicle_types) : facility.vehicle_types,
+      active_contracts: activeContractsCount,
+      available_slots: availableSlots
     };
   }
 
@@ -173,16 +178,18 @@ class FacilityService {
       throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
     }
 
+    // Đếm số lượng xe/hợp đồng đang gửi hiệu lực (ACTIVE) tại bãi
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
-    const availableSlots = facility.available_slots !== undefined && facility.available_slots !== null
-      ? facility.available_slots
-      : Math.max(0, facility.capacity - activeContractsCount);
+
+    // LOGIC CHUẨN: Số chỗ còn trống thực tế = Sức chứa (capacity) trừ số xe đang gửi (activeContractsCount)
+    // Đảm bảo nguyên lý: Sức chứa = Đang gửi + Còn trống
+    const availableSlots = Math.max(0, facility.capacity - activeContractsCount);
 
     return {
       facility_id: facilityId,
       capacity: facility.capacity,
       active_contracts: activeContractsCount,
-      available_slots: availableSlots >= 0 ? availableSlots : 0
+      available_slots: availableSlots
     };
   }
 }

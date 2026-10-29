@@ -2,7 +2,7 @@ const complaintRepository = require('../repositories/complaintRepository');
 
 class ComplaintService {
   async createComplaint(data) {
-    const { reservation_id, customer_id, title, description } = data;
+    const { reservation_id, customer_id, title, description, image_urls } = data;
 
     const reservation = await complaintRepository.getReservationById(reservation_id);
     
@@ -23,7 +23,8 @@ class ComplaintService {
       customer_id,
       facility_id: reservation.facility_id,
       title,
-      description
+      description,
+      image_urls
     });
   }
 

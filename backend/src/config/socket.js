@@ -39,6 +39,18 @@ const initSocket = (server) => {
     io.on('connection', (socket) => {
         console.log(`[Socket] Client kết nối: ${socket.id}`);
 
+        // Tự động tham gia phòng cá nhân (user_${userId}) và phòng theo vai trò (role_${userRole})
+        const userId = socket.user?.id || socket.user?.userId;
+        const userRole = socket.user?.role;
+        if (userId) {
+            socket.join(`user_${userId}`);
+            console.log(`[Socket] User ${socket.id} (ID: ${userId}) đã vào phòng user_${userId}`);
+        }
+        if (userRole) {
+            socket.join(`role_${userRole}`);
+            console.log(`[Socket] User ${socket.id} (Role: ${userRole}) đã vào phòng role_${userRole}`);
+        }
+
         // Client yêu cầu tham gia phòng chat
         socket.on('join_room', (roomId) => {
             socket.join(roomId.toString());
