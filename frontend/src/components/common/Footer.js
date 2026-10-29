@@ -53,8 +53,12 @@ const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div className="space-y-3">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-teal-500 text-slate-900 flex items-center justify-center font-bold">
-                  <MapPin className="w-4 h-4" />
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+                  <img
+                    src="/logo.png"
+                    alt="ParkLink Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-xl font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
               </div>
@@ -94,8 +98,12 @@ const Footer = () => {
           {/* Brand Info */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2.5">
-              <div className="w-8 h-8 rounded-lg bg-teal-500 text-slate-900 flex items-center justify-center font-bold">
-                <MapPin className="w-4 h-4" />
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+                <img
+                  src="/logo.png"
+                  alt="ParkLink Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-xl font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
             </div>

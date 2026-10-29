@@ -20,60 +20,76 @@ const HomePage = () => {
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#14b8a6_1px,transparent_1px)] [background-size:16px_16px]"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-6">
-              <Shield className="w-4 h-4 text-teal-400" /> Mô Hình Thuê Bãi Đỗ Theo Tháng Uy Tín
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6">
-              Tìm Bãi Đỗ Xe Cho Thuê <span className="text-teal-400">Theo Tháng</span> Gần Bạn
-            </h1>
+            {/* --- CỘT TRÁI: Nội dung và Thanh tìm kiếm --- */}
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-teal-300 text-xs font-semibold uppercase tracking-wider mb-6">
+                <Shield className="w-4 h-4 text-teal-400" /> Mô Hình Thuê Bãi Đỗ Theo Tháng Uy Tín
+              </div>
 
-            <p className="text-lg sm:text-xl text-slate-300 mb-8 leading-relaxed">
-              ParkLink kết nối trực tiếp chủ bãi đỗ xe và khách thuê. Đặt chỗ giữ chỗ dài hạn, check-in tiện lợi, minh bạch 100%.
-            </p>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+                Tìm Bãi Đỗ Xe Cho Thuê <span className="text-teal-400">Theo Tháng</span> Gần Bạn
+              </h1>
 
-            {/* SEARCH BAR CARD */}
-            <div id="search" className="bg-white p-4 sm:p-5 rounded-2xl shadow-2xl text-slate-900 border border-slate-100">
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-                {/* Location Search Input */}
-                <div className="sm:col-span-6 relative">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Địa điểm / Vị trí</label>
-                  <div className="relative">
-                    <VietmapAddressAutocomplete
-                      value={searchLocation}
-                      onChange={setSearchLocation}
-                      placeholder="Nhập quận, tên đường hoặc tọa độ..."
-                      inputClassName="py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+              <p className="text-lg sm:text-xl text-slate-300 mb-8 leading-relaxed">
+                ParkLink kết nối trực tiếp chủ bãi đỗ xe và khách thuê. Đặt chỗ giữ chỗ dài hạn, check-in tiện lợi, minh bạch 100%.
+              </p>
+
+              {/* SEARCH BAR CARD */}
+              <div id="search" className="bg-white p-3.5 sm:p-4 rounded-xl shadow-xl text-slate-900 border border-slate-100 relative z-20 max-w-2xl">
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  {/* Location Search Input */}
+                  <div className="sm:col-span-5 relative">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Địa điểm / Vị trí</label>
+                    <div className="relative">
+                      <VietmapAddressAutocomplete
+                        value={searchLocation}
+                        onChange={setSearchLocation}
+                        placeholder="Nhập quận, tên đường hoặc tọa độ..."
+                        inputClassName="py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* Vehicle Type Selection */}
-                <div className="sm:col-span-3">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Loại xe</label>
-                  <select
-                    value={vehicleType}
-                    onChange={(e) => setVehicleType(e.target.value)}
-                    className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    {VEHICLE_TYPES.map(vt => (
-                      <option key={vt.id} value={vt.id}>{vt.label}</option>
-                    ))}
-                  </select>
-                </div>
+                  {/* Vehicle Type Selection */}
+                  <div className="sm:col-span-4">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Loại xe</label>
+                    <select
+                      value={vehicleType}
+                      onChange={(e) => setVehicleType(e.target.value)}
+                      className="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    >
+                      {VEHICLE_TYPES.map(vt => (
+                        <option key={vt.id} value={vt.id}>{vt.label}</option>
+                      ))}
+                    </select>
+                  </div>
 
-                {/* Submit Search Button */}
-                <div className="sm:col-span-3 pt-5 sm:pt-0">
-                  <button
-                    onClick={handleSearchClick}
-                    className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md flex items-center justify-center gap-2 transition duration-200"
-                  >
-                    <Search className="w-5 h-5" /> Tìm Bãi Đỗ
-                  </button>
+                  {/* Submit Search Button */}
+                  <div className="sm:col-span-3">
+                    <button
+                      onClick={handleSearchClick}
+                      className="w-full h-[38px] py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-sm flex items-center justify-center gap-1.5 text-sm transition duration-200"
+                    >
+                      <Search className="w-4 h-4" /> Tìm Bãi Đỗ
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* --- CỘT PHẢI: Hình ảnh minh họa --- */}
+            <div className="relative hidden lg:flex items-center justify-center w-full max-w-lg xl:max-w-xl mx-auto z-10">
+              <img
+                src="Parklink.png"
+                alt="Minh họa bãi đỗ xe"
+                className="w-full h-auto object-cover scale-125 [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_80%)] [-webkit-mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_80%)]"
+              />
+              {/* Vòng sáng trang trí nhẹ phía sau ảnh */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[130%] h-[130%] bg-teal-500/20 blur-[100px] -z-10 rounded-full"></div>
+            </div>
+
           </div>
         </div>
       </section>

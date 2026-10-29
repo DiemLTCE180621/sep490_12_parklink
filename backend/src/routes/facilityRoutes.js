@@ -15,8 +15,7 @@ router.get('/compare', facilityController.compareFacilities);
 // API Public: Lấy chi tiết bãi đỗ xe
 router.get('/:id', facilityController.getFacilityDetails);
 
-// API Protected: Lấy thông tin số chỗ còn trống (yêu cầu Customer login)
-const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
-router.get('/:id/availability', authenticateToken, authorizeRoles('CUSTOMER'), facilityController.getFacilityAvailability);
+// API: Lấy thông tin số chỗ còn trống (đồng bộ với chi tiết bãi xe)
+router.get('/:id/availability', facilityController.getFacilityAvailability);
 
 module.exports = router;
