@@ -100,7 +100,7 @@ const PublicBrowseRoute = ({ children }) => {
     return <Navigate to="/change-password-first-time" replace />;
   }
   const role = user?.role?.name;
-  if (isAuthenticated && (role === 'ADMIN' || role === 'FIELD_INSPECTOR')) {
+  if (isAuthenticated && (role === 'ADMIN' || role === 'FIELD_INSPECTOR' || role === 'PROVIDER')) {
     return <Navigate to="/dashboard" replace />;
   }
   return children;
@@ -138,12 +138,12 @@ function AppContent() {
 
           {/* Mọi role đã login */}
           <Route path="/search" element={
-            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <SearchPage />
             </RoleProtectedRoute>
           } />
           <Route path="/facility/:id" element={
-            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <FacilityDetailPage />
             </RoleProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
