@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { facilityCarIcon } from '../../utils/mapIcons';
+import { openGoogleMapsDirections } from '../../utils/mapUtils';
 import ReviewSection from '../../components/common/ReviewSection';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
@@ -14,93 +15,27 @@ import { getVehicleTypeLabel } from '../../constants/vehicleTypes';
 import {
   Send, MapPin, ShieldCheck, Car, MessageCircle, Heart, CheckCircle2,
   Loader2, ChevronLeft, ChevronRight, Share2, Clock3, Navigation, LockKeyhole,
-  UserRound, FileText, Star
+  UserRound, FileText, Star, ExternalLink
 } from 'lucide-react';
-
-const RouteViewport = ({ points }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (points?.length > 1) {
-      map.fitBounds(points, { padding: [24, 24] });
-    }
-  }, [map, points]);
-
-  return null;
-};
-
-const decodePolyline = (encoded) => {
-  const coordinates = [];
-  let index = 0;
-  let latitude = 0;
-  let longitude = 0;
-
-  while (index < encoded.length) {
-    let result = 0;
-    let shift = 0;
-    let byte;
-
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-    latitude += (result & 1) ? ~(result >> 1) : result >> 1;
-
-    result = 0;
-    shift = 0;
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-    longitude += (result & 1) ? ~(result >> 1) : result >> 1;
-
-    coordinates.push([latitude / 1e5, longitude / 1e5]);
-  }
-
-  return coordinates;
-};
-
-const normalizeRoutePoints = (path) => {
-  const rawPoints = path?.points;
-  const geoJsonCoordinates = rawPoints?.coordinates || path?.geometry?.coordinates;
-  const isGeoJsonCoordinates = Array.isArray(geoJsonCoordinates);
-  const coordinates = Array.isArray(rawPoints)
-    ? rawPoints
-    : isGeoJsonCoordinates
-      ? geoJsonCoordinates
-        : typeof rawPoints === 'string'
-          ? (() => {
-            try {
-              const parsed = JSON.parse(rawPoints);
-              return Array.isArray(parsed) ? parsed : decodePolyline(rawPoints);
-            } catch {
-              return decodePolyline(rawPoints);
-            }
-          })()
-          : [];
-
-  return coordinates
-    .map((point) => {
-      if (Array.isArray(point) && point.length >= 2) {
-        const first = Number(point[0]);
-        const second = Number(point[1]);
-        return isGeoJsonCoordinates ? [second, first] : [first, second];
-      }
-      if (point && Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lng))) {
-        return [Number(point.lat), Number(point.lng)];
-      }
-      return null;
-    })
-    .filter((point) => point && point.every(Number.isFinite));
-};
 
 const FacilityDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user, token } = useAuth();
   const facilityId = parseInt(id, 10);
+
+  // Lấy địa chỉ đã nhập hoặc vị trí ghim marker đã chọn từ lần tìm kiếm trước đó
+  const savedSearch = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('parklink_last_search') || '{}');
+    } catch {
+      return {};
+    }
+  })();
+
+  const preferredOriginCoords = location.state?.originCoords || savedSearch.coords || savedSearch.originCoords;
+  const preferredOriginAddress = location.state?.originAddress || savedSearch.address || savedSearch.originAddress;
 
   const [facility, setFacility] = useState(null);
   const [availability, setAvailability] = useState(null);
@@ -108,9 +43,6 @@ const FacilityDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [isChatLoading, setIsChatLoading] = useState(false);
-  const [route, setRoute] = useState(null);
-  const [routeLoading, setRouteLoading] = useState(false);
-  const [routeError, setRouteError] = useState('');
 
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState('success');
@@ -264,58 +196,50 @@ const FacilityDetailPage = () => {
   };
 
   const handleGetDirections = () => {
-    if (!hasCoordinates || !navigator.geolocation) {
-      setRouteError('Trình duyệt không hỗ trợ lấy vị trí hiện tại.');
+    if (!hasCoordinates && !facility?.address) {
+      setToastMsg('Bãi đỗ xe này chưa có thông tin vị trí hoặc địa chỉ để chỉ đường.');
+      setToastType('error');
       return;
     }
 
-    setRouteLoading(true);
-    setRouteError('');
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        try {
-          const apiKey = process.env.REACT_APP_VIETMAP_API_KEY;
-          const params = new URLSearchParams({
-            apikey: apiKey || '',
-            point: `${coords.latitude},${coords.longitude}`,
-            vehicle: 'car',
-            points_encoded: 'false',
-          });
-          params.append('point', `${latitude},${longitude}`);
+    const destination = hasCoordinates ? [latitude, longitude] : facility.address;
 
-          const response = await fetch(`https://maps.vietmap.vn/api/route/v4?${params.toString()}`);
-          const data = await response.json();
-          if (!response.ok) {
-            throw new Error(data?.message || data?.error || `Vietmap route failed with status ${response.status}`);
-          }
+    // 1. ƯU TIÊN HÀNG ĐẦU: Địa chỉ đã nhập hoặc vị trí ghim marker người dùng đã chọn
+    const origin = preferredOriginCoords || preferredOriginAddress;
+    if (origin) {
+      const fromLabel = preferredOriginAddress ? `từ "${preferredOriginAddress}"` : 'từ điểm ghim tìm kiếm';
+      setToastMsg(`Đang mở chỉ đường ${fromLabel} trên Google Maps...`);
+      setToastType('success');
+      openGoogleMapsDirections({
+        origin,
+        destination,
+        travelMode: 'driving',
+      });
+      return;
+    }
 
-          const path = data?.paths?.[0];
-          const points = normalizeRoutePoints(path);
+    // 2. NẾU KHÔNG CÓ ĐỊA CHỈ/MARKER TÌM KIẾM TRƯỚC ĐÓ: Thử lấy GPS nếu được cấp quyền
+    setToastMsg('Đang mở chỉ đường trên Google Maps...');
+    setToastType('success');
 
-          if (!path || points.length < 2 || points.some(([lat, lng]) => !Number.isFinite(lat) || !Number.isFinite(lng))) {
-            throw new Error(data?.message || data?.hints?.[0]?.message || `Vietmap trả về response không có hình học tuyến đường (code: ${data?.code || 'unknown'}).`);
-          }
-
-          setRoute({
-            points,
-            distance: path.distance,
-            time: path.time,
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          openGoogleMapsDirections({
             origin: [coords.latitude, coords.longitude],
+            destination,
+            travelMode: 'driving',
           });
-        } catch (error) {
-          console.error('Lỗi lấy tuyến đường Vietmap:', error);
-          setRouteError('Không thể tìm tuyến đường đến cơ sở này. Vui lòng thử lại.');
-        } finally {
-          setRouteLoading(false);
-        }
-      },
-      (error) => {
-        console.error('Lỗi lấy vị trí hiện tại:', error);
-        setRouteLoading(false);
-        setRouteError('Vui lòng cho phép trình duyệt truy cập vị trí để tìm đường.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+        },
+        () => {
+          // Bị từ chối GPS hoặc lỗi: Mở Google Maps với điểm đến (Google Maps tự định vị thiết bị)
+          openGoogleMapsDirections({ destination, travelMode: 'driving' });
+        },
+        { enableHighAccuracy: true, timeout: 4000 }
+      );
+    } else {
+      openGoogleMapsDirections({ destination, travelMode: 'driving' });
+    }
   };
 
   if (loading) {
@@ -353,6 +277,15 @@ const FacilityDetailPage = () => {
   const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
   const vietmapTileKey = process.env.REACT_APP_VIETMAP_TILE_KEY;
   const formatPrice = (value) => Number(value || 0).toLocaleString('vi-VN');
+
+  // Đảm bảo số chỗ trống luôn tuân thủ nguyên lý: Sức chứa = Đang gửi + Còn trống
+  const effectiveAvailableSlots = availability
+    ? (availability.available_slots !== undefined && availability.available_slots !== null
+        ? availability.available_slots
+        : Math.max(0, availability.capacity - (availability.active_contracts || 0)))
+    : (facility?.available_slots !== undefined && facility?.available_slots !== null
+        ? facility.available_slots
+        : Math.max(0, (facility?.capacity || 0) - (facility?.active_contracts || 0)));
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -438,7 +371,7 @@ const FacilityDetailPage = () => {
                   <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500' : ''}`} /> {isFavorite ? 'Đã lưu' : 'Lưu bãi xe'}
                 </button>
                 <button onClick={() => navigator.clipboard?.writeText(window.location.href)} className="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50" title="Sao chép liên kết"><Share2 className="w-4 h-4" /></button>
-                <button onClick={handleOpenReservation} disabled={availability && availability.available_slots <= 0} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold text-xs shadow-sm transition disabled:cursor-not-allowed">
+                <button onClick={handleOpenReservation} disabled={effectiveAvailableSlots <= 0} className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold text-xs shadow-sm transition disabled:cursor-not-allowed">
                   <Send className="w-4 h-4" /> Đặt giữ chỗ
                 </button>
               </div>
@@ -456,7 +389,7 @@ const FacilityDetailPage = () => {
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">Sức chứa</p><p className="text-2xl font-extrabold text-slate-900 mt-1">{availability.capacity}</p><p className="text-[11px] text-slate-400">khoang xe</p></div>
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">Đang gửi</p><p className="text-2xl font-extrabold text-indigo-600 mt-1">{availability.active_contracts}</p><p className="text-[11px] text-slate-400">xe đang đỗ</p></div>
-                <div className={`p-3 rounded-lg border ${availability.available_slots > 0 ? 'bg-teal-50 border-teal-200' : 'bg-red-50 border-red-200'}`}><p className="text-xs text-slate-600">Còn trống</p><p className={`text-2xl font-extrabold mt-1 ${availability.available_slots > 0 ? 'text-teal-600' : 'text-red-600'}`}>{availability.available_slots}</p><p className="text-[11px] text-slate-500">{availability.available_slots > 0 ? 'nhận xe ngay' : 'đã hết chỗ'}</p></div>
+                <div className={`p-3 rounded-lg border ${effectiveAvailableSlots > 0 ? 'bg-teal-50 border-teal-200' : 'bg-red-50 border-red-200'}`}><p className="text-xs text-slate-600">Còn trống</p><p className={`text-2xl font-extrabold mt-1 ${effectiveAvailableSlots > 0 ? 'text-teal-600' : 'text-red-600'}`}>{effectiveAvailableSlots}</p><p className="text-[11px] text-slate-500">{effectiveAvailableSlots > 0 ? 'nhận xe ngay' : 'đã hết chỗ'}</p></div>
               </div>
             ) : (
               <div className="bg-slate-50 p-5 rounded-lg border border-slate-200 text-center text-sm text-slate-500"><LockKeyhole className="w-5 h-5 mx-auto mb-2 text-slate-400" />Đăng nhập tài khoản Khách hàng để xem tình trạng chỗ trống.</div>
@@ -496,33 +429,39 @@ const FacilityDetailPage = () => {
               <button onClick={handleChatClick} disabled={isChatLoading} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed">
                 {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Nhắn chủ bãi
               </button>
-              <button onClick={handleOpenReservation} disabled={availability && availability.available_slots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
+              <button onClick={handleOpenReservation} disabled={effectiveAvailableSlots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
             </div>
           </section>
         </div>
 
         <section className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
-            <div><h2 className="text-lg font-bold text-slate-900 flex items-center gap-2"><Navigation className="w-5 h-5 text-teal-600" /> Vị trí & hướng dẫn đường đi</h2><p className="text-xs text-slate-500 mt-1">{facility.address}</p></div>
-            <button type="button" onClick={handleGetDirections} disabled={routeLoading || !hasCoordinates} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:text-teal-700 hover:bg-slate-50 text-xs font-semibold disabled:opacity-60">
-              <Navigation className="w-4 h-4 text-teal-600" /> {routeLoading ? 'Đang tìm đường...' : 'Chỉ đường từ vị trí hiện tại'}
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <Navigation className="w-5 h-5 text-teal-600" /> Vị trí & hướng dẫn đường đi
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">{facility.address}</p>
+              {preferredOriginAddress && (
+                <p className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded mt-1.5 inline-flex items-center gap-1 border border-teal-200">
+                  <MapPin className="w-3 h-3 text-teal-600" /> Xuất phát từ: <span className="underline">{preferredOriginAddress}</span>
+                </p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleGetDirections}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition active:scale-[0.98]"
+              title={preferredOriginAddress ? `Chỉ đường từ "${preferredOriginAddress}"` : 'Chỉ đường qua Google Maps'}
+            >
+              <Navigation className="w-4 h-4" /> Chỉ đường qua Google Maps
+              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
             </button>
           </div>
-          {routeError && <p className="mb-3 text-xs text-red-600">{routeError}</p>}
-          {route && (
-            <div className="mb-3 flex flex-wrap gap-3 text-xs text-slate-600">
-              <span className="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 font-semibold">
-                Quãng đường: {(route.distance / 1000).toFixed(1)} km
-              </span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 font-semibold">
-                Thời gian dự kiến: {Math.max(1, Math.round(route.time / 60000))} phút
-              </span>
-            </div>
-          )}
-          <div className="relative z-0 isolate h-48 sm:h-56 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+
+          <div className="relative z-0 isolate h-52 sm:h-64 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
             {hasCoordinates ? (
               <MapContainer
-                center={route?.origin || [latitude, longitude]}
+                center={[latitude, longitude]}
                 zoom={16}
                 scrollWheelZoom={false}
                 style={{ height: '100%', width: '100%' }}
@@ -533,14 +472,11 @@ const FacilityDetailPage = () => {
                   updateWhenIdle
                   updateWhenZooming={false}
                 />
-                {route && <RouteViewport points={route.points} />}
-                {route && <Polyline positions={route.points} pathOptions={{ color: '#0d9488', weight: 5 }} />}
-                {route && <Marker position={route.origin} />}
                 <Marker position={[latitude, longitude]} icon={facilityCarIcon} />
               </MapContainer>
             ) : (
               <div className="h-full flex items-center justify-center px-6 text-center text-sm text-slate-500">
-                Cơ sở chưa có tọa độ GPS để hiển thị trên Vietmap.
+                Cơ sở chưa có tọa độ GPS để hiển thị trên bản đồ.
               </div>
             )}
           </div>

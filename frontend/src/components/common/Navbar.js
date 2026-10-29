@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
+import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -99,13 +100,15 @@ const Navbar = () => {
           </div>
 
           {/* User Auth Controls */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-100 transition duration-150 border border-slate-200"
-                >
+              <>
+                <NotificationDropdown />
+                <div className="relative">
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-100 transition duration-150 border border-slate-200"
+                  >
                   <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
                     {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
                   </div>
@@ -166,7 +169,8 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-            ) : (
+            </>
+          ) : (
               <>
                 <Link
                   to="/login"
@@ -185,7 +189,8 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            {isAuthenticated && <NotificationDropdown />}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"

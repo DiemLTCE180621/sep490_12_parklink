@@ -3,6 +3,8 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
+const { validateUserId, validateUpdateUser } = require('../validations/userValidation');
+
 /**
  * Middleware: Chỉ ADMIN mới có quyền thực hiện các thao tác Quản lý Tài khoản này
  */
@@ -16,11 +18,21 @@ router.get('/', userController.getUsers);
 /**
  * UC12: View user account details (Xem chi tiết tài khoản người dùng)
  */
-router.get('/:id', userController.getUserById);
+router.get('/:id', validateUserId, userController.getUserById);
 
 /**
- * UC Tương lai: Lock / Unlock user account (Khóa / Mở khóa tài khoản người dùng)
+ * UC13: Update user information (Admin cập nhật thông tin người dùng)
  */
-router.put('/:id/toggle-status', userController.toggleUserStatus);
+router.put('/:id', validateUserId, validateUpdateUser, userController.updateUser);
+
+/**
+ * UC10: Force reset user password (Admin cưỡng chế đặt lại mật khẩu)
+ */
+router.post('/:id/reset-password', validateUserId, userController.forceResetPassword);
+
+/**
+ * UC14 & UC15: Lock / Unlock user account (Khóa / Mở khóa tài khoản người dùng)
+ */
+router.put('/:id/toggle-status', validateUserId, userController.toggleUserStatus);
 
 module.exports = router;

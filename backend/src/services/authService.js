@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/userRepository');
 const roleRepository = require('../repositories/roleRepository');
 const emailService = require('../utils/emailService');
+const platformFeeService = require('./platformFeeService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -15,11 +16,13 @@ const otpStore = new Map();
  */
 class AuthService {
   generateToken(user) {
+    const roleName = user.role?.name || user.role || '';
     return jwt.sign(
       {
         userId: user.id,
-        role: user.role.name,
-        email: user.email
+        role: roleName,
+        email: user.email,
+        pwdVersion: user.password_hash ? user.password_hash.slice(-10) : ''
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
@@ -144,12 +147,9 @@ class AuthService {
     }
 
     const slotCount = parseInt(capacity, 10);
-    let system_fee = 2000000;
-    if (slotCount >= 4 && slotCount <= 7) {
-      system_fee = 4000000;
-    } else if (slotCount > 7) {
-      system_fee = 6000000;
-    }
+    // Tính phí nền tảng(theo quy mô chỗ đỗ)
+    const feeCalculation = await platformFeeService.calculateFeeBySlots(slotCount);
+    const system_fee = feeCalculation.fee_amount;
 
     const tempPassword = emailService.generateRandomPassword();
     const salt = await bcrypt.genSalt(10);
@@ -245,10 +245,28 @@ class AuthService {
       throw error;
     }
 
+    // Nếu người dùng đổi mật khẩu thông thường (không phải đổi lần đầu), bắt buộc kiểm tra oldPassword
+    if (!user.requires_password_change) {
+      if (!oldPassword) {
+        const error = new Error('Vui lòng cung cấp mật khẩu hiện tại!');
+        error.status = 400;
+        throw error;
+      }
+      if (user.password_hash) {
+        const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
+        if (!isMatch) {
+          const error = new Error('Mật khẩu hiện tại không chính xác!');
+          error.status = 400;
+          throw error;
+        }
+      }
+    }
+
+    // Đảm bảo mật khẩu mới không trùng với mật khẩu hiện tại / tạm thời
     if (user.password_hash) {
-      const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-      if (!isMatch) {
-        const error = new Error('Mật khẩu hiện tại không chính xác!');
+      const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
+      if (isSamePassword) {
+        const error = new Error('Mật khẩu mới không được trùng với mật khẩu hiện tại!');
         error.status = 400;
         throw error;
       }
@@ -257,8 +275,13 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
-    const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash);
-    return this.sanitizeUser(updatedUser);
+    // Cập nhật mật khẩu mới và gỡ cờ requires_password_change
+    const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash, false);
+    const newToken = this.generateToken(updatedUser);
+    return {
+      user: this.sanitizeUser(updatedUser),
+      token: newToken
+    };
   }
 
   /**

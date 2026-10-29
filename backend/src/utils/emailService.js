@@ -145,8 +145,8 @@ class EmailService {
   /**
    * M2-UC21 Bước 1: Gửi email thông báo cơ sở đang được CHUẨN BỊ cho Provider
    */
-  async sendFacilityPreparingEmail({ toEmail, fullName, facilityName }) {
-    const subject = '[ParkLink] 🔧 CƠ SỞ BÃI ĐỖ XE ĐANG ĐƯỢC CHUẨN BỊ';
+  async sendFacilityPreparingEmail({ toEmail, fullName, facilityName, inspectorName, inspectorPhone }) {
+    const subject = '[ParkLink] 🔧 CƠ SỞ BÃI ĐỖ XE ĐANG ĐƯỢC CHUẨN BỊ & KHẢO SÁT';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
@@ -160,6 +160,13 @@ class EmailService {
         <div style="background-color: #fffbeb; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0;">
           <p style="margin: 0; font-size: 18px; font-weight: bold; color: #92400e;">🏢 ${facilityName}</p>
         </div>
+
+        ${inspectorName ? `
+        <div style="background-color: #f0fdf4; padding: 14px; border-radius: 8px; border: 1px solid #bbf7d0; margin: 16px 0;">
+          <p style="margin: 0 0 6px 0; font-weight: bold; color: #166534;">📋 Nhân viên khảo sát thực địa phụ trách:</p>
+          <p style="margin: 0; color: #15803d; font-size: 14px;">Họ tên: <strong>${inspectorName}</strong> ${inspectorPhone ? `— SĐT: <strong>${inspectorPhone}</strong>` : ''}</p>
+        </div>
+        ` : ''}
 
         <p>Đội ngũ kỹ thuật ParkLink sẽ <strong>liên hệ và đến tận cơ sở</strong> của bạn để:</p>
         <ul style="color: #475569; line-height: 2;">
@@ -304,6 +311,33 @@ class EmailService {
   }
 
   /**
+   * UC10: Gửi email thông báo Đặt lại mật khẩu từ Quản trị viên (Admin)
+   */
+  async sendAdminForceResetPasswordEmail({ toEmail, fullName, tempPassword }) {
+    const subject = '[ParkLink] 🔐 THÔNG BÁO ĐẶT LẠI MẬT KHẨU TÀI KHOẢN';
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #0d9488; text-align: center;">Thông Báo Đặt Lại Mật Khẩu</h2>
+        <p>Xin chào <strong>${fullName}</strong>,</p>
+        <p>Mật khẩu tài khoản của bạn trên nền tảng <strong>ParkLink</strong> vừa được Quản trị viên hệ thống (Admin) đặt lại.</p>
+        
+        <div style="background-color: #f0fdfa; padding: 15px; border-radius: 8px; border-left: 4px solid #0d9488; margin: 20px 0;">
+          <p style="margin: 0 0 8px 0;"><strong>Thông tin đăng nhập mới của bạn:</strong></p>
+          <p style="margin: 4px 0;">📧 Email: <strong>${toEmail}</strong></p>
+          <p style="margin: 4px 0;">🔑 Mật khẩu tạm thời: <strong style="font-size: 18px; color: #0f766e; background: #ccfbf1; padding: 2px 8px; border-radius: 4px;">${tempPassword}</strong></p>
+        </div>
+
+        <p style="color: #e11d48; font-size: 13px;">⚠️ <em>Lưu ý: Vì mục đích bảo mật, bạn bắt buộc phải Đổi mật khẩu mới ngay trong lần đăng nhập đầu tiên với mật khẩu tạm thời này.</em></p>
+        
+        <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b; text-align: center;">Đội ngũ Ban quản trị ParkLink.</p>
+      </div>
+    `;
+
+    return await this.sendEmail(toEmail, subject, htmlContent, tempPassword, 'FORCE_RESET_PASSWORD');
+  }
+
+  /**
    * Hàm core gửi email (tích hợp SMTP hoặc Console Simulation)
    * @param {string} toEmail
    * @param {string} subject
@@ -338,6 +372,57 @@ class EmailService {
     console.log('==================================================\n');
 
     return { success: true, simulated: true, tempPassword };
+  }
+
+  /**
+   * UC-66: Gửi email phát sóng (Broadcast Email) cho danh sách người dùng hệ thống
+   * Xử lý bất đồng bộ (Background processing) và chia batch để tránh quá tải SMTP / spam trigger
+   * @param {Object} params
+   * @param {Array<string>} params.recipientEmails - Danh sách email nhận
+   * @param {string} params.subject - Tiêu đề email
+   * @param {string} params.htmlContent - Nội dung HTML của email
+   * @returns {Promise<Object>} Tóm tắt tác vụ (batch ID, tổng số email vào hàng đợi, timestamp)
+   */
+  async sendBroadcastEmail({ recipientEmails, subject, htmlContent }) {
+    const batchId = `BATCH_${Date.now()}`;
+    const totalQueued = recipientEmails.length;
+
+    // Xử lý chạy ngầm (asynchronous background task) không block HTTP response
+    setImmediate(async () => {
+      console.log(`[Broadcast Email] Bắt đầu tác vụ ${batchId} gửi tới ${totalQueued} người nhận...`);
+      let successCount = 0;
+      let failCount = 0;
+
+      // Chia batch nhỏ (10 emails/batch)
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < recipientEmails.length; i += BATCH_SIZE) {
+        const batch = recipientEmails.slice(i, i + BATCH_SIZE);
+        await Promise.allSettled(
+          batch.map(async (email) => {
+            try {
+              await this.sendEmail(email, subject, htmlContent, null, 'BROADCAST');
+              successCount++;
+            } catch (err) {
+              failCount++;
+              console.error(`[Broadcast Email Error] Lỗi gửi tới ${email}:`, err.message);
+            }
+          })
+        );
+
+        // Nghỉ 500ms giữa các batch
+        if (i + BATCH_SIZE < recipientEmails.length) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      }
+
+      console.log(`[Broadcast Email] Hoàn tất ${batchId}: Thành công ${successCount}, Thất bại ${failCount}`);
+    });
+
+    return {
+      batchId,
+      totalQueued,
+      timestamp: new Date().toISOString()
+    };
   }
 }
 

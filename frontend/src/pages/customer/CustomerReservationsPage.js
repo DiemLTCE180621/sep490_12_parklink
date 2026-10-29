@@ -142,7 +142,7 @@ const CustomerReservationsPage = () => {
             </button>
 
             <Link
-              to="/facilities"
+              to="/search"
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg shadow-sm transition flex items-center gap-1.5"
             >
               <PlusCircle className="w-4 h-4" /> Tìm bãi đỗ mới
@@ -235,7 +235,7 @@ const CustomerReservationsPage = () => {
               Bạn chưa có yêu cầu thuê xe nào thuộc mục này. Hãy tìm kiếm bãi đỗ xe phù hợp tại Ninh Kiều để gửi yêu cầu thuê ngay!
             </p>
             <Link
-              to="/facilities"
+              to="/search"
               className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow transition"
             >
               <Search className="w-4 h-4" /> Khám Phá Bãi Đỗ Xe

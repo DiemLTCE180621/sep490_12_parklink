@@ -1,5 +1,4 @@
 import api from './api';
-import userService from './userService';
 
 /**
  * Service gọi các API Admin trên Frontend
@@ -22,11 +21,24 @@ const adminService = {
   },
 
   /**
-   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING (gửi mail chuẩn bị)
+   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING & Giao việc cho Nhân viên khảo sát
    * @param {number} id - ID của bãi đỗ xe
+   * @param {number|object} data - ID nhân viên hoặc object { inspector_id }
    */
-  approveRegistration: async (id) => {
-    return await api.put(`/admin/registrations/${id}/approve`);
+  approveRegistration: async (id, data) => {
+    const payload = typeof data === 'object' ? data : { inspector_id: data };
+    return await api.put(`/admin/registrations/${id}/approve`, payload);
+  },
+
+  /**
+   * Phân công hoặc đổi Nhân viên khảo sát thực địa
+   * @param {number} id - ID của bãi đỗ xe
+   * @param {number} inspectorId - ID nhân viên khảo sát
+   */
+  assignInspector: async (id, inspectorId) => {
+    return await api.put(`/admin/registrations/${id}/assign-inspector`, {
+      inspector_id: inspectorId,
+    });
   },
 
   /**
@@ -77,42 +89,6 @@ const adminService = {
    */
   updateFacility: async (id, data) => {
     return await api.put(`/admin/facilities/${id}`, data);
-  },
-  /**
-   * UC-Admin: Lấy danh sách tài khoản người dùng
-   * @param {object} params - { search, role, status, page, limit }
-   */
-  getUsersList: async (params = {}) => {
-    return await userService.getUsersList(params);
-  },
-
-  getUserDetails: async (id) => {
-    return await userService.getUserDetails(id);
-  },
-
-  /**
-   * UC-86: Tạo tài khoản Nhân viên khảo sát thực địa
-   * @param {object} data - { email, full_name, phone_number }
-   */
-  createFieldInspector: async (data) => {
-    return await api.post('/admin/field-inspectors', data);
-  },
-
-  /**
-   * UC-87: Lấy danh sách tài khoản Nhân viên khảo sát thực địa
-   * @param {object} params - { search, page, limit }
-   */
-  getFieldInspectors: async (params = {}) => {
-    return await api.get('/admin/field-inspectors', { params });
-  },
-
-  /**
-   * UC-88: Cập nhật thông tin Nhân viên khảo sát thực địa
-   * @param {number} id 
-   * @param {object} data - { full_name, phone_number, status }
-   */
-  updateFieldInspector: async (id, data) => {
-    return await api.put(`/admin/field-inspectors/${id}`, data);
   }
 };
 

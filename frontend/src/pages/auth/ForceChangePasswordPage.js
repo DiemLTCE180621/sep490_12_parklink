@@ -1,25 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Lock, Key, ShieldAlert, CheckCircle2, AlertCircle, Eye, EyeOff, LogOut, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Key, ShieldAlert, CheckCircle2, AlertCircle, Eye, EyeOff, LogOut, ArrowRight, ShieldCheck } from 'lucide-react';
 import { isValidPassword } from '../../utils/validators';
 
 // Trang Đổi mật khẩu lần đầu (bắt buộc khi login bằng mật khẩu ngẫu nhiên)
 const ForceChangePasswordPage = () => {
   const { user, changePassword, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Nhận mật khẩu tạm từ state của LoginPage nếu có
-  const initialTempPassword = location.state?.tempPassword || '';
 
   const [formData, setFormData] = useState({
-    oldPassword: initialTempPassword,
     newPassword: '',
     confirmPassword: ''
   });
 
-  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -43,11 +37,6 @@ const ForceChangePasswordPage = () => {
     e.preventDefault();
     setError('');
 
-    if (!formData.oldPassword) {
-      setError('Vui lòng nhập mật khẩu tạm thời đã nhận qua email.');
-      return;
-    }
-
     if (!isValidPassword(formData.newPassword)) {
       setError('Mật khẩu mới phải có tối thiểu 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số.');
       return;
@@ -58,16 +47,10 @@ const ForceChangePasswordPage = () => {
       return;
     }
 
-    if (formData.newPassword === formData.oldPassword) {
-      setError('Mật khẩu mới không được trùng với mật khẩu tạm thời!');
-      return;
-    }
-
     try {
       setLoading(true);
       // Gọi qua context -> services/authService.js -> API POST /auth/change-password
       await changePassword({
-        oldPassword: formData.oldPassword,
         newPassword: formData.newPassword
       });
 
@@ -81,7 +64,7 @@ const ForceChangePasswordPage = () => {
     } catch (err) {
       const errMessage = (err.errors && err.errors.length > 0)
         ? err.errors[0]
-        : (err.message || 'Đổi mật khẩu thất bại! Vui lòng kiểm tra lại mật khẩu tạm thời.');
+        : (err.message || 'Đổi mật khẩu thất bại! Vui lòng thử lại.');
       setError(errMessage);
     } finally {
       setLoading(false);
@@ -137,34 +120,6 @@ const ForceChangePasswordPage = () => {
           )}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Mật khẩu tạm thời */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                Mật khẩu tạm thời (nhận qua Email) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <input
-                  type={showOldPassword ? 'text' : 'password'}
-                  name="oldPassword"
-                  value={formData.oldPassword}
-                  onChange={handleChange}
-                  placeholder="Nhập mật khẩu tạm thời"
-                  className="block w-full pl-10 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowOldPassword(!showOldPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
-                >
-                  {showOldPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
             {/* Mật khẩu mới */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">

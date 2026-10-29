@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
+import platformFeeService from '../../services/platformFeeService';
 import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, CheckSquare, Square, Phone, Mail } from 'lucide-react';
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
 import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
@@ -14,6 +15,7 @@ const RegisterProviderPage = () => {
   // State tiện ích được lấy động từ Database (Bảng Amenity)
   const [dbAmenities, setDbAmenities] = useState([]);
   const [loadingAmenities, setLoadingAmenities] = useState(true);
+  const [platformFees, setPlatformFees] = useState([]);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -33,39 +35,65 @@ const RegisterProviderPage = () => {
   const [loading, setLoading] = useState(false);
   const [successResult, setSuccessResult] = useState(null);
 
-
-  // Tải danh mục Tiện ích từ Database khi khởi tạo trang
+  // Tải danh mục Tiện ích & Biểu phí nền tảng từ Database khi khởi tạo trang
   useEffect(() => {
-    const fetchAmenities = async () => {
+    const fetchInitialData = async () => {
       try {
         setLoadingAmenities(true);
-        const res = await authService.getAmenities();
-        if (res?.data?.amenities) {
-          setDbAmenities(res.data.amenities);
+        const [amenitiesRes, feesRes] = await Promise.allSettled([
+          authService.getAmenities(),
+          platformFeeService.getActiveFees()
+        ]);
+
+        if (amenitiesRes.status === 'fulfilled' && amenitiesRes.value?.data?.amenities) {
+          setDbAmenities(amenitiesRes.value.data.amenities);
           // Tự động chọn 3 tiện ích đầu tiên mặc định
-          const defaultIds = res.data.amenities.slice(0, 3).map(a => a.id);
+          const defaultIds = amenitiesRes.value.data.amenities.slice(0, 3).map(a => a.id);
           setFormData(prev => ({ ...prev, amenity_ids: defaultIds }));
         }
+
+        if (feesRes.status === 'fulfilled') {
+          const feeList = feesRes.value?.data || feesRes.value || [];
+          setPlatformFees(Array.isArray(feeList) ? feeList : []);
+        }
       } catch (err) {
-        console.error('Lỗi tải danh mục tiện ích từ DB:', err);
+        console.error('Lỗi tải dữ liệu ban đầu từ DB:', err);
       } finally {
         setLoadingAmenities(false);
       }
     };
 
-    fetchAmenities();
+    fetchInitialData();
   }, []);
 
-  // Tính phí tự động hiển thị trực tiếp cho Provider theo quy mô Slot
-  const calculateFee = (capStr) => {
-    const slots = parseInt(capStr, 10) || 0;
-    if (slots >= 1 && slots <= 3) return 2000000;
-    if (slots >= 4 && slots <= 7) return 4000000;
-    if (slots > 7) return 6000000;
-    return 0;
+  // Tìm gói phí nền tảng phù hợp với quy mô chỗ đỗ (Theo khung Min - Max)
+  const capacitySlots = parseInt(formData.capacity, 10);
+
+  const matchedFee = useMemo(() => {
+    if (isNaN(capacitySlots) || capacitySlots < 1 || !platformFees.length) return null;
+    return platformFees.find(f => {
+      if (!f.is_active) return false;
+      const minOk = capacitySlots >= f.min_slots;
+      const maxOk = f.max_slots === null || f.max_slots === undefined || capacitySlots <= f.max_slots;
+      return minOk && maxOk;
+    }) || null;
+  }, [platformFees, capacitySlots]);
+
+  const systemFee = matchedFee ? Number(matchedFee.fee_amount) : 0;
+
+  // Chỉ cho phép nhập số nguyên cho Sức chứa
+  const handleCapacityChange = (e) => {
+    const rawVal = e.target.value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, capacity: rawVal }));
+    if (errorList.length > 0) setErrorList([]);
   };
 
-  const systemFee = calculateFee(formData.capacity);
+  // Chỉ cho phép nhập số cho Giá thuê và lưu số nguyên thuần
+  const handlePriceChange = (e) => {
+    const rawVal = e.target.value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, price_per_month: rawVal }));
+    if (errorList.length > 0) setErrorList([]);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -320,52 +348,82 @@ const RegisterProviderPage = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">
-                        Sức chứa (Tổng số slot đỗ) <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between min-h-[24px] mb-1">
+                        <label className="block text-sm font-semibold text-slate-700">
+                          Sức chứa (Tổng số slot đỗ) <span className="text-red-500">*</span>
+                        </label>
+                      </div>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         name="capacity"
                         value={formData.capacity}
-                        onChange={handleChange}
+                        onChange={handleCapacityChange}
                         placeholder="5"
-                        min="1"
+                        maxLength={4}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">
-                        Giá thuê theo tháng (VNĐ/tháng) <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between min-h-[24px] mb-1">
+                        <label className="block text-sm font-semibold text-slate-700">
+                          Giá thuê theo tháng <span className="text-red-500">*</span>
+                        </label>
+                        {formData.price_per_month && Number(formData.price_per_month) > 0 && (
+                          <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
+                            {Number(formData.price_per_month).toLocaleString('vi-VN')} VNĐ/tháng
+                          </span>
+                        )}
+                      </div>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         name="price_per_month"
                         value={formData.price_per_month}
-                        onChange={handleChange}
+                        onChange={handlePriceChange}
                         placeholder="1500000"
-                        step="50000"
-                        min="100000"
-                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                        maxLength={12}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium text-slate-800"
                         required
                       />
                     </div>
                   </div>
 
-                  {/* THẺ TÍNH PHÍ NỀN TẢNG TỰ ĐỘNG */}
-                  <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-teal-800 font-bold uppercase tracking-wider">Phí nền tảng thí điểm (Thu 1 lần)</p>
-                      <p className="text-xs text-teal-700 mt-0.5">
-                        {formData.capacity <= 3 ? 'Gói 1 - 3 slot' : formData.capacity <= 7 ? 'Gói 4 - 7 slot' : 'Gói quy mô lớn (>7 slot)'}
+                  {/* THẺ TÍNH PHÍ NỀN TẢNG THEO ĐỀ TÀI (GÓI QUY MÔ MIN - MAX) */}
+                  <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-teal-800 font-bold uppercase tracking-wider">
+                          Phí nền tảng thí điểm (Thu 1 lần khi duyệt bãi)
+                        </p>
+                        {matchedFee && (
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-200/80 text-teal-900">
+                            {matchedFee.name}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-teal-700 font-medium">
+                        {matchedFee ? (
+                          <>
+                            Quy mô khai báo: <strong>{capacitySlots} chỗ đỗ</strong>{' '}
+                            (Áp dụng khung{' '}
+                            {matchedFee.max_slots && matchedFee.max_slots < 900
+                              ? `${matchedFee.min_slots} - ${matchedFee.max_slots} chỗ`
+                              : `từ ${matchedFee.min_slots} chỗ trở lên`}
+                            )
+                          </>
+                        ) : (
+                          'Vui lòng nhập số chỗ đỗ để xác định gói phí áp dụng'
+                        )}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-left sm:text-right shrink-0">
                       <span className="text-2xl font-extrabold text-teal-900">
-                        {systemFee.toLocaleString('vi-VN')} VNĐ
+                        {systemFee > 0 ? `${systemFee.toLocaleString('vi-VN')} VNĐ` : '—'}
                       </span>
                     </div>
                   </div>

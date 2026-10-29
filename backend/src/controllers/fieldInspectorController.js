@@ -36,6 +36,18 @@ class FieldInspectorController {
   }
 
   /**
+   * Lấy danh sách tất cả Nhân viên khảo sát đang hoạt động (ACTIVE) để phân công
+   */
+  async getActiveInspectors(req, res, next) {
+    try {
+      const inspectors = await fieldInspectorService.getActiveFieldInspectors();
+      res.json({ status: "success", data: inspectors });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * UC-88: Cập nhật thông tin tài khoản Nhân viên khảo sát thực địa
    */
   async updateFieldInspector(req, res, next) {

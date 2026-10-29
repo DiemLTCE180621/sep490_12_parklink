@@ -22,11 +22,13 @@ import {
   ShieldCheck,
   Car,
   Upload,
-  Camera
+  Camera,
+  UserCheck
 } from 'lucide-react';
 import adminService from '../../services/adminService';
 import inspectorService from '../../services/inspectorService';
 import uploadService from '../../services/uploadService';
+import AssignInspectorModal from '../../components/admin/AssignInspectorModal';
 import Toast from '../../components/common/Toast';
 
 const AdminRegistrationDetailPage = () => {
@@ -39,12 +41,16 @@ const AdminRegistrationDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Admin action modal: 'PREPARE' | 'FINALIZE' | 'REJECT'
+  // Admin action modal: 'PREPARE' | 'FINALIZE' | 'REJECT' | 'REASSIGN'
   const [actionModal, setActionModal] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleOpenAssignModal = (type = 'PREPARE') => {
+    setActionModal({ type });
+  };
 
   // Inspector form states (Inline on page - NO POPUP)
   const [capacity, setCapacity] = useState('');
@@ -182,18 +188,12 @@ const AdminRegistrationDetailPage = () => {
     }
   };
 
-  // Admin Actions (Approve / Reject)
+  // Admin Actions (Finalize / Reject)
   const confirmAdminAction = async () => {
     if (!actionModal || isSubmitting) return;
     try {
       setIsSubmitting(true);
-      if (actionModal.type === 'PREPARE') {
-        await adminService.approveRegistration(facility.id);
-        showToast(
-          'success',
-          'Đã duyệt sơ bộ! Email thông báo đã gửi cho Provider.'
-        );
-      } else if (actionModal.type === 'FINALIZE') {
+      if (actionModal.type === 'FINALIZE') {
         await adminService.finalizeRegistration(facility.id);
         showToast(
           'success',
@@ -205,8 +205,8 @@ const AdminRegistrationDetailPage = () => {
           setIsSubmitting(false);
           return;
         }
-        await adminService.rejectRegistration(facility.id, rejectReason);
-        showToast('success', 'Đã từ chối hồ sơ đăng ký!');
+        await adminService.rejectRegistration(facility.id, rejectReason.trim());
+        showToast('success', 'Đã từ chối hồ sơ đăng ký thành công!');
       }
       setActionModal(null);
       setRejectReason('');
@@ -854,6 +854,59 @@ const AdminRegistrationDetailPage = () => {
               </div>
             </div>
 
+            {/* Assigned Inspector Card */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-amber-50 text-amber-700 rounded-2xl flex items-center justify-center font-bold text-lg shadow-inner">
+                    <UserCheck className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      {facility.assigned_inspector?.full_name || (isPreparing ? 'Chưa chỉ định' : 'Chưa phân công')}
+                    </h3>
+                    <span className="text-[11px] text-amber-700 font-semibold px-2 py-0.5 bg-amber-50 rounded-full inline-block mt-0.5">
+                      NV Khảo Sát Thực Địa
+                    </span>
+                  </div>
+                </div>
+                {!isInspector && (isPreparing || isPending) && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenAssignModal(isPreparing ? 'REASSIGN' : 'PREPARE')}
+                    className="text-xs text-sky-600 hover:text-sky-700 font-semibold hover:underline"
+                  >
+                    {facility.assigned_inspector ? 'Đổi NV' : 'Phân công'}
+                  </button>
+                )}
+              </div>
+
+              {facility.assigned_inspector ? (
+                <div className="space-y-3 pt-2 text-xs text-slate-600">
+                  <div className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl">
+                    <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span className="font-semibold text-slate-800 truncate">{facility.assigned_inspector.email || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl">
+                    <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span className="font-semibold text-slate-800">{facility.assigned_inspector.phone_number || 'Chưa cập nhật'}</span>
+                  </div>
+                  {facility.assigned_inspector.address && (
+                    <div className="flex items-center gap-2.5 p-2.5 bg-slate-50 rounded-xl">
+                      <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                      <span className="text-slate-700 line-clamp-1">{facility.assigned_inspector.address}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-2xl text-[11px] text-amber-800 leading-relaxed">
+                  {isPending
+                    ? 'Hồ sơ đang chờ duyệt sơ bộ và phân công nhân viên khảo sát thực tế.'
+                    : 'Bãi xe chưa có nhân viên khảo sát phụ trách cụ thể. Bạn có thể phân công ngay.'}
+                </div>
+              )}
+            </div>
+
             {/* Decision Action Box */}
             <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-4">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
@@ -908,13 +961,13 @@ const AdminRegistrationDetailPage = () => {
                   {isPending && (
                     <div className="space-y-4">
                       <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                        <strong>Hồ sơ đang chờ duyệt sơ bộ:</strong> Admin cần kiểm tra tính hợp lệ của thông tin trước khi chuyển sang giao nhân viên khảo sát thực địa.
+                        <strong>Hồ sơ đang chờ duyệt sơ bộ:</strong> Admin cần kiểm tra tính hợp lệ của thông tin và chọn nhân viên khảo sát thực địa phụ trách.
                       </div>
                       <button
-                        onClick={() => setActionModal({ type: 'PREPARE' })}
+                        onClick={() => handleOpenAssignModal('PREPARE')}
                         className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2"
                       >
-                        <Wrench className="w-4 h-4" /> Duyệt sơ bộ &amp; Giao khảo sát
+                        <UserCheck className="w-4 h-4" /> Duyệt sơ bộ &amp; Giao khảo sát
                       </button>
                       <button
                         onClick={() => setActionModal({ type: 'REJECT' })}
@@ -932,9 +985,20 @@ const AdminRegistrationDetailPage = () => {
                           <Wrench className="w-4 h-4 text-sky-600" /> Đang khảo sát thực địa:
                         </p>
                         <p>
-                          Nhân viên khảo sát đang tiến hành kiểm tra thực tế, xác minh sức chứa và tải lên các hình ảnh bắt buộc của bãi xe.
+                          {facility.assigned_inspector ? (
+                            <>Nhân viên phụ trách: <strong>{facility.assigned_inspector.full_name}</strong> (SĐT: {facility.assigned_inspector.phone_number || 'N/A'}).</>
+                          ) : (
+                            <>Chưa có nhân viên khảo sát nào được chỉ định.</>
+                          )}
                         </p>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAssignModal('REASSIGN')}
+                        className="w-full py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-xs rounded-xl border border-sky-200 transition flex items-center justify-center gap-2"
+                      >
+                        <UserCheck className="w-4 h-4" /> {facility.assigned_inspector ? 'Đổi nhân viên khảo sát' : 'Gán nhân viên khảo sát'}
+                      </button>
                       <button
                         onClick={() => setActionModal({ type: 'REJECT' })}
                         className="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition flex items-center justify-center gap-2"
@@ -1019,39 +1083,58 @@ const AdminRegistrationDetailPage = () => {
         </div>
       )}
 
-      {/* Confirmation Actions Modal for Admin */}
-      {actionModal && (
+      {/* Enhanced Assign Inspector Modal */}
+      <AssignInspectorModal
+        isOpen={Boolean(actionModal && (actionModal.type === 'PREPARE' || actionModal.type === 'REASSIGN'))}
+        onClose={() => setActionModal(null)}
+        facilityName={facility?.name}
+        facilityAddress={facility?.address}
+        currentInspectorId={facility?.assigned_inspector_id}
+        isSubmitting={isSubmitting}
+        title={
+          actionModal?.type === 'PREPARE'
+            ? 'Duyệt Sơ Bộ & Phân Công Khảo Sát'
+            : 'Phân Công Lại Nhân Viên Khảo Sát'
+        }
+        confirmText={
+          actionModal?.type === 'PREPARE'
+            ? 'Duyệt sơ bộ & Giao việc'
+            : 'Lưu phân công'
+        }
+        onConfirm={async (inspectorId) => {
+          try {
+            setIsSubmitting(true);
+            if (actionModal.type === 'PREPARE') {
+              await adminService.approveRegistration(facility.id, inspectorId);
+              showToast(
+                'success',
+                'Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.'
+              );
+            } else {
+              await adminService.assignInspector(facility.id, inspectorId);
+              showToast(
+                'success',
+                'Đã phân công lại nhân viên khảo sát thành công!'
+              );
+            }
+            setActionModal(null);
+            await fetchDetail();
+          } catch (err) {
+            const backendMessage =
+              err.response?.data?.message ||
+              err.response?.data?.errors?.[0] ||
+              err.message;
+            showToast('error', backendMessage || 'Có lỗi xảy ra khi xử lý!');
+          } finally {
+            setIsSubmitting(false);
+          }
+        }}
+      />
+
+      {/* Confirmation Actions Modal for Finalize / Reject */}
+      {actionModal && (actionModal.type === 'FINALIZE' || actionModal.type === 'REJECT') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl my-auto">
-            {actionModal.type === 'PREPARE' && (
-              <>
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Wrench className="w-8 h-8 text-amber-600" />
-                </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
-                  Xác nhận Duyệt Sơ Bộ
-                </h3>
-                <p className="text-center text-slate-500 text-sm mb-6">
-                  Bạn chấp thuận duyệt sơ bộ cho cơ sở <strong>"{facility.name}"</strong> và giao cho Nhân viên khảo sát thực địa. Email thông báo sẽ được gửi đến Provider.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setActionModal(null)}
-                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    disabled={isSubmitting}
-                    onClick={confirmAdminAction}
-                    className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
-                  >
-                    {isSubmitting ? 'Đang xử lý...' : 'Xác nhận duyệt'}
-                  </button>
-                </div>
-              </>
-            )}
-
             {actionModal.type === 'FINALIZE' && (
               <>
                 <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1061,7 +1144,7 @@ const AdminRegistrationDetailPage = () => {
                   Phê Duyệt Chính Thức
                 </h3>
                 <p className="text-center text-slate-500 text-sm mb-6">
-                  Xác nhận hoàn tất phê duyệt cho bãi xe <strong>"{facility.name}"</strong>. Hệ thống sẽ kích hoạt tài khoản và gửi email thông tin mật khẩu kèm mã thanh toán cho Provider.
+                  Xác nhận hoàn tất phê duyệt cho bãi xe <strong>"{facility?.name}"</strong>. Hệ thống sẽ kích hoạt tài khoản và gửi email thông tin mật khẩu kèm mã thanh toán cho Provider.
                 </p>
                 <div className="flex gap-3">
                   <button

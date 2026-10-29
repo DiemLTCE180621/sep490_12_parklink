@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users, MapPin, Radio } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
-import AdminFieldInspectorsPanel from '../components/AdminFieldInspectorsPanel';
+import AdminFieldInspectorsPanel from '../components/admin/AdminFieldInspectorsPanel';
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
+import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
+import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -18,7 +20,6 @@ import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveC
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
-import EditProfileModal from '../components/EditProfileModal';
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {
@@ -29,7 +30,6 @@ const DashboardPage = () => {
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility'); // Menu bên trái cho Provider
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections'); // Menu bên trái cho Nhân viên khảo sát
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
 
   React.useEffect(() => {
@@ -121,7 +121,7 @@ const DashboardPage = () => {
                   onClick={() => setActiveAdminTab("users")}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "users" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
-                  <User className="w-5 h-5" /> Quản lý Users
+                  <User className="w-5 h-5" /> Quản Lý Người Dùng
                 </button>
                 <button
                   onClick={() => setActiveAdminTab('inspectors')}
@@ -159,6 +159,18 @@ const DashboardPage = () => {
                 >
                   <Star className="w-5 h-5 text-amber-500" /> Quản Lý Đánh Giá
                 </button>
+                <button
+                  onClick={() => setActiveAdminTab("platform-fees")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "platform-fees" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <DollarSign className="w-5 h-5 text-teal-500" /> Phí Nền Tảng
+                </button>
+                <button
+                  onClick={() => setActiveAdminTab("broadcast")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "broadcast" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <Radio className="w-5 h-5 text-indigo-400" /> Phát Thông Báo
+                </button>
               </div>
             </div>
 
@@ -171,6 +183,8 @@ const DashboardPage = () => {
               {activeAdminTab === 'contracts' && <AdminContractsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
+              {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
+              {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -237,6 +251,12 @@ const DashboardPage = () => {
                 >
                   <Star className="w-5 h-5 text-amber-500" /> Đánh Giá Khách Hàng
                 </button>
+                <button
+                  onClick={() => setActiveProviderTab('platform-fees')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'platform-fees' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <DollarSign className="w-5 h-5 text-teal-500" /> Biểu Phí Nền Tảng
+                </button>
               </div>
             </div>
 
@@ -252,6 +272,7 @@ const DashboardPage = () => {
               )}
               {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
               {activeProviderTab === 'reviews' && <ProviderReviewsPanel />}
+              {activeProviderTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={true} />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -438,7 +459,7 @@ const DashboardPage = () => {
                         Danh Sách Yêu Cầu Thuê Của Tôi
                       </Link>
                       <Link
-                        to="/facilities"
+                        to="/search"
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-xl transition"
                       >
                         Tìm Bãi Đỗ Xe Mới
@@ -455,11 +476,6 @@ const DashboardPage = () => {
       <ChangePasswordModal
         isOpen={isChangePasswordModalOpen}
         onClose={() => setIsChangePasswordModalOpen(false)}
-      />
-      <EditProfileModal
-        isOpen={isEditProfileModalOpen}
-        onClose={() => setIsEditProfileModalOpen(false)}
-        onSuccess={(msg) => setToastInfo({ message: msg, type: 'success' })}
       />
       {toastInfo && (
         <Toast

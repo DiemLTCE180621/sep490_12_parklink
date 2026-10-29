@@ -197,8 +197,8 @@ const CreateReservationPage = () => {
               Trang Chủ
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link to="/facilities" className="hover:text-teal-700 transition">
-              Bãi Đỗ Xe
+            <Link to="/search" className="hover:text-teal-700 transition">
+              Tìm Bãi Đỗ
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             {facility ? (
@@ -237,10 +237,10 @@ const CreateReservationPage = () => {
             <h2 className="text-xl font-bold text-slate-900">Không tìm thấy thông tin bãi xe</h2>
             <p className="text-sm text-slate-600 max-w-md mx-auto">{facilityError}</p>
             <Link
-              to="/facilities"
+              to="/search"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-teal-600 text-white font-bold text-sm shadow hover:bg-teal-700 transition"
             >
-              Xem danh sách bãi xe khác
+              Tìm bãi xe khác
             </Link>
           </div>
         ) : createdReservation ? (
