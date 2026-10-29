@@ -5,14 +5,15 @@ import ProviderReservationsPanel from '../../components/provider/ProviderReserva
 
 const ProviderReservationsPage = () => {
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-8 w-full">
+      <div className="w-full space-y-4">
+        <div>
           <Link
             to="/dashboard"
-            className="inline-flex items-center gap-2 text-sm font-bold text-teal-700 hover:text-teal-800 hover:underline transition"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition"
           >
-            <ArrowLeft className="w-4 h-4" /> Quay lại Trang Quản Lý Bãi Xe
+            <ArrowLeft className="w-4 h-4" />
+            Quay lại trang quản lý bãi xe
           </Link>
         </div>
 
