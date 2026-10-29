@@ -17,8 +17,10 @@ const storage = new CloudinaryStorage({
                        file.mimetype === 'application/msword' || 
                        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
                        
+    const isComplaintUpload = req.query.folder === 'complaints';
+
     return {
-      folder: 'ParkLink/Chat',
+      folder: isComplaintUpload ? 'ParkLink/Complaints' : 'ParkLink/Chat',
       allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'mp4', 'doc', 'docx'],
       resource_type: isDocument ? 'raw' : 'auto'
     };

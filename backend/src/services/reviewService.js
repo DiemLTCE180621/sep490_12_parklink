@@ -60,8 +60,11 @@ class ReviewService {
       throw new Error('Bạn chỉ có quyền chỉnh sửa đánh giá của chính mình');
     }
 
-    // Nếu người dùng sửa comment, kiểm duyệt lại nội dung mới
-    if (data.comment !== undefined) {
+    // Chỉ gọi AI kiểm duyệt khi nội dung comment thực sự thay đổi
+    const commentChanged = data.comment !== undefined
+      && data.comment !== existingReview.comment;
+
+    if (commentChanged) {
       const moderation = await aiModerationService.moderateComment(data.comment);
       data.is_flagged = moderation.is_flagged;
       data.flagged_reason = moderation.flagged_reason;

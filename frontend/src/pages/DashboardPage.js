@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, Users, MapPin, Radio } from 'lucide-react';
+import { User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users, MapPin, Radio } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
@@ -10,6 +10,7 @@ import AdminFieldInspectorsPanel from '../components/admin/AdminFieldInspectorsP
 import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspectorRegistrationsPanel';
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
+import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
@@ -159,6 +160,12 @@ const DashboardPage = () => {
                   <Star className="w-5 h-5 text-amber-500" /> Quản Lý Đánh Giá
                 </button>
                 <button
+                  onClick={() => setActiveAdminTab("platform-fees")}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "platform-fees" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
+                >
+                  <DollarSign className="w-5 h-5 text-teal-500" /> Phí Nền Tảng
+                </button>
+                <button
                   onClick={() => setActiveAdminTab("broadcast")}
                   className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeAdminTab === "broadcast" ? "bg-teal-600 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
                 >
@@ -176,6 +183,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'contracts' && <AdminContractsPanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
+              {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
@@ -243,6 +251,12 @@ const DashboardPage = () => {
                 >
                   <Star className="w-5 h-5 text-amber-500" /> Đánh Giá Khách Hàng
                 </button>
+                <button
+                  onClick={() => setActiveProviderTab('platform-fees')}
+                  className={`w-full text-left px-4 py-3 rounded-xl font-bold flex items-center gap-3 transition ${activeProviderTab === 'platform-fees' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+                >
+                  <DollarSign className="w-5 h-5 text-teal-500" /> Biểu Phí Nền Tảng
+                </button>
               </div>
             </div>
 
@@ -258,6 +272,7 @@ const DashboardPage = () => {
               )}
               {activeProviderTab === 'complaints' && <ProviderComplaintsPanel />}
               {activeProviderTab === 'reviews' && <ProviderReviewsPanel />}
+              {activeProviderTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={true} />}
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
