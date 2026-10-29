@@ -15,8 +15,6 @@ model Role {
   name        String   @unique
   description String?
   users       User[]
-
-  @@map("roles")
 }
 
 model User {
@@ -25,7 +23,6 @@ model User {
   email                    String    @unique
   full_name                String
   phone_number             String
-  address                  String?
   password_hash            String?
   requires_password_change Boolean   @default(true)
   status                   String    @default("PENDING")
@@ -33,8 +30,7 @@ model User {
   updated_at               DateTime  @updatedAt
 
   role                     Role      @relation(fields: [role_id], references: [id])
-  facility                 Facility? @relation("ProviderFacility") 
-  assigned_facilities      Facility[] @relation("InspectorFacilities")
+  facility                 Facility? // Quan hệ 1-1 với Parking Provider
   
   // Quan hệ ngược (Reverse relations)
   transactions             System_Transaction[]
@@ -45,26 +41,20 @@ model User {
   chat_rooms_as_customer   Chat_Room[] @relation("CustomerRooms")
   chat_rooms_as_provider   Chat_Room[] @relation("ProviderRooms")
   messages                 Message[]
-  favorites                Favorite[]
-  updated_policies         System_Policy[] @relation("AdminUpdatedPolicies")
-
-  @@map("users")
+  favorites Favorite[]
 }
 
 model Facility {
   id                  Int      @id @default(autoincrement())
   provider_id         Int      @unique
-  assigned_inspector_id Int?
-  name                String
-  address             String
+  name                String  
+  address             String  
   latitude            Float?   
   longitude           Float?   
   vehicle_types       Json
   capacity            Int
-  available_slots     Int      @default(0)
   price_per_month     Decimal
   system_fee          Decimal?
-  platform_fee_id     Int?
   payment_status      String   @default("UNPAID")
   verification_status String   @default("PENDING_REVIEW")
   visibility_status   String   @default("VISIBLE")
@@ -72,22 +62,17 @@ model Facility {
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 
-  provider            User          @relation("ProviderFacility", fields: [provider_id], references: [id])
-  assigned_inspector  User?         @relation("InspectorFacilities", fields: [assigned_inspector_id], references: [id])
-  platform_fee        Platform_Fee? @relation(fields: [platform_fee_id], references: [id])
+  provider            User     @relation(fields: [provider_id], references: [id])
   
   images              Facility_Image[]
   update_requests     Facility_Update_Request[]
   facility_amenities  Facility_Amenity[]
-  facility_vehicle_types Facility_Vehicle_Type[]
   transactions        System_Transaction[]
   reservations        Reservation_Request[]
   reviews             Review[]
   complaints          Complaint[]
   chat_rooms          Chat_Room[]
-  favorites           Favorite[]
-
-  @@map("facilities")
+  favorites Favorite[]
 }
 
 // ------------------------------------------------------
@@ -100,8 +85,6 @@ model Facility_Image {
   is_primary  Boolean  @default(false)
   
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-
-  @@map("facility_images")
 }
 
 model Facility_Update_Request {
@@ -115,8 +98,6 @@ model Facility_Update_Request {
   updated_at     DateTime @updatedAt
 
   facility       Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-
-  @@map("facility_update_requests")
 }
 
 model System_Transaction {
@@ -131,8 +112,6 @@ model System_Transaction {
 
   provider         User     @relation(fields: [provider_id], references: [id])
   facility         Facility @relation(fields: [facility_id], references: [id])
-
-  @@map("system_transactions")
 }
 
 // ------------------------------------------------------
@@ -152,8 +131,6 @@ model Reservation_Request {
   facility           Facility @relation(fields: [facility_id], references: [id])
   
   confirmation_record Confirmation_Record? 
-
-  @@map("reservation_requests")
 }
 
 model Confirmation_Record {
@@ -172,8 +149,6 @@ model Confirmation_Record {
   updated_at           DateTime @updatedAt
 
   reservation          Reservation_Request @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
-
-  @@map("confirmation_records")
 }
 
 model Review {
@@ -184,15 +159,11 @@ model Review {
   comment         String   @db.Text
   provider_reply  String?  @db.Text
   status          String   @default("VISIBLE")
-  is_flagged      Boolean  @default(false)
-  flagged_reason  String?  @db.Text
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
   customer        User     @relation(fields: [customer_id], references: [id])
   facility        Facility @relation(fields: [facility_id], references: [id])
-
-  @@map("reviews")
 }
 
 model Favorite {
@@ -205,7 +176,6 @@ model Favorite {
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@unique([customer_id, facility_id]) 
-  @@map("favorites")
 }
 
 // ------------------------------------------------------
@@ -217,7 +187,6 @@ model Complaint {
   facility_id    Int
   title          String
   description    String   @db.Text
-  image_urls     String[] @default([])
   status         String   @default("OPEN")
   admin_response String?  @db.Text
   created_at     DateTime @default(now())
@@ -225,8 +194,6 @@ model Complaint {
 
   customer       User     @relation(fields: [customer_id], references: [id])
   facility       Facility @relation(fields: [facility_id], references: [id])
-
-  @@map("complaints")
 }
 
 model Notification {
@@ -240,8 +207,6 @@ model Notification {
   updated_at DateTime @updatedAt 
 
   user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
 }
 
 model Amenity {
@@ -250,8 +215,6 @@ model Amenity {
   icon               String?
   type               String?
   facility_amenities Facility_Amenity[]
-
-  @@map("amenities")
 }
 
 model Facility_Amenity {
@@ -262,7 +225,6 @@ model Facility_Amenity {
   amenity     Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
 
   @@id([facility_id, amenity_id]) 
-  @@map("facility_amenities")
 }
 
 // ------------------------------------------------------
@@ -280,8 +242,6 @@ model Chat_Room {
   facility    Facility @relation(fields: [facility_id], references: [id])
   
   messages    Message[]
-
-  @@map("chat_rooms")
 }
 
 model Message {
@@ -295,71 +255,4 @@ model Message {
 
   room       Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
   sender     User      @relation(fields: [sender_id], references: [id])
-
-  @@map("messages")
-}
-
-// ------------------------------------------------------
-// NHÓM QUẢN LÝ PHÍ NỀN TẢNG
-// ------------------------------------------------------
-model Platform_Fee {
-  id          Int      @id @default(autoincrement())
-  name        String
-  min_slots   Int
-  max_slots   Int?
-  fee_amount  Decimal
-  description String?  @db.Text
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  facilities  Facility[]
-
-  @@map("platform_fees")
-}
-
-// ------------------------------------------------------
-// NHÓM CHÍNH SÁCH HỆ THỐNG (SYSTEM POLICIES)
-// ------------------------------------------------------
-model System_Policy {
-  id          Int      @id @default(autoincrement())
-  policy_type String   @unique 
-  title       String
-  content     String   @db.Text
-  is_active   Boolean  @default(true)
-  updated_by  Int?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  admin       User?    @relation("AdminUpdatedPolicies", fields: [updated_by], references: [id])
-
-  @@map("system_policies")
-}
-
-// ------------------------------------------------------
-// NHÓM QUẢN LÝ LOẠI PHƯƠNG TIỆN (VEHICLE TYPES)
-// ------------------------------------------------------
-model Vehicle_Type {
-  id          Int      @id @default(autoincrement())
-  type_code   String   @unique 
-  name        String   
-  description String?  @db.Text
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-
-  facility_vehicle_types Facility_Vehicle_Type[]
-
-  @@map("vehicle_types")
-}
-
-model Facility_Vehicle_Type {
-  facility_id     Int
-  vehicle_type_id Int
-
-  facility        Facility     @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-  vehicle_type    Vehicle_Type @relation(fields: [vehicle_type_id], references: [id], onDelete: Cascade)
-
-  @@id([facility_id, vehicle_type_id])
-  @@map("facility_vehicle_types")
 }
