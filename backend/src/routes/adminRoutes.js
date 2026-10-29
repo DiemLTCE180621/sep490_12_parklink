@@ -22,9 +22,15 @@ router.get('/facilities/:id', adminController.getRegistrationDetails);
 
 /**
  * M2-UC21: Approve facility registration
- * Phê duyệt yêu cầu đăng ký bãi đỗ xe
+ * Phê duyệt sơ bộ yêu cầu đăng ký bãi đỗ xe & phân công nhân viên khảo sát
  */
 router.put('/registrations/:id/approve', adminController.approveRegistration);
+
+/**
+ * Phân công hoặc đổi Nhân viên khảo sát thực địa cho cơ sở
+ */
+router.put('/registrations/:id/assign-inspector', adminController.assignInspector);
+router.put('/facilities/:id/assign-inspector', adminController.assignInspector);
 
 /**
  * M2-UC22: Reject facility registration
@@ -57,4 +63,16 @@ router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
  */
 router.put('/facilities/:id', adminController.updateFacility);
 
+/**
+ *  [ADMIN] Xem toàn bộ Hợp đồng / Biên bản xác nhận trên hệ thống
+ */
+const confirmationRecordController = require('../controllers/confirmationRecordController');
+const { validateAdminQueryConfirmationRecords } = require('../validations/confirmationRecordValidation');
+router.get(
+  '/confirmation-records',
+  validateAdminQueryConfirmationRecords,
+  confirmationRecordController.getAllConfirmationRecords
+);
+
 module.exports = router;
+

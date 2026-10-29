@@ -50,6 +50,8 @@ app.use("/api/complaints", complaintRoutes);
 
 const platformFeeRoutes = require("./routes/platformFeeRoutes");
 app.use("/api/platform-fees", platformFeeRoutes);
+const notificationRoutes = require("./routes/notificationRoutes");
+app.use("/api/notifications", notificationRoutes);
 
 // Simple route
 app.get("/", (req, res) => {

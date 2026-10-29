@@ -42,3 +42,20 @@ export const getConfirmationRecordDetail = async (id) => {
 export const acceptConfirmationRecord = async (id, data = {}) => {
   return await api.patch(`/confirmation-records/${id}/accept`, data);
 };
+
+/**
+ * 6. [ADMIN] Xem toàn bộ Hợp đồng / Biên bản xác nhận trên nền tảng (View confirmation records on platform)
+ * @param {Object} [params] - { search, status, facility_id, provider_id, customer_id, start_date, end_date, page, limit }
+ */
+export const getAdminConfirmationRecords = async (params = {}) => {
+  return await api.get('/confirmation-records/admin/all', { params });
+};
+
+/**
+ * 7. [PROVIDER] Xem danh sách khách hàng đang có hợp đồng hiệu lực tại cơ sở (View active customers at facility)
+ * @param {Object} [params] - { facility_id, search, page, limit }
+ */
+export const getProviderActiveCustomers = async (params = {}) => {
+  return await api.get('/confirmation-records/provider/active-customers', { params });
+};
+

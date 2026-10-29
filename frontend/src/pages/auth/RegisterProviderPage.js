@@ -81,6 +81,20 @@ const RegisterProviderPage = () => {
 
   const systemFee = matchedFee ? Number(matchedFee.fee_amount) : 0;
 
+  // Chỉ cho phép nhập số nguyên cho Sức chứa
+  const handleCapacityChange = (e) => {
+    const rawVal = e.target.value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, capacity: rawVal }));
+    if (errorList.length > 0) setErrorList([]);
+  };
+
+  // Chỉ cho phép nhập số cho Giá thuê và lưu số nguyên thuần
+  const handlePriceChange = (e) => {
+    const rawVal = e.target.value.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, price_per_month: rawVal }));
+    if (errorList.length > 0) setErrorList([]);
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (errorList.length > 0) setErrorList([]);
@@ -334,36 +348,46 @@ const RegisterProviderPage = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">
-                        Sức chứa (Tổng số slot đỗ) <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between min-h-[24px] mb-1">
+                        <label className="block text-sm font-semibold text-slate-700">
+                          Sức chứa (Tổng số slot đỗ) <span className="text-red-500">*</span>
+                        </label>
+                      </div>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         name="capacity"
                         value={formData.capacity}
-                        onChange={handleChange}
+                        onChange={handleCapacityChange}
                         placeholder="5"
-                        min="1"
+                        maxLength={4}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1">
-                        Giá thuê theo tháng (VNĐ/tháng) <span className="text-red-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between min-h-[24px] mb-1">
+                        <label className="block text-sm font-semibold text-slate-700">
+                          Giá thuê theo tháng <span className="text-red-500">*</span>
+                        </label>
+                        {formData.price_per_month && Number(formData.price_per_month) > 0 && (
+                          <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
+                            {Number(formData.price_per_month).toLocaleString('vi-VN')} VNĐ/tháng
+                          </span>
+                        )}
+                      </div>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         name="price_per_month"
                         value={formData.price_per_month}
-                        onChange={handleChange}
+                        onChange={handlePriceChange}
                         placeholder="1500000"
-                        step="50000"
-                        min="100000"
-                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                        maxLength={12}
+                        className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium text-slate-800"
                         required
                       />
                     </div>
