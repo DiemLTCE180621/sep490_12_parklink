@@ -11,10 +11,47 @@ app.use(cors());
 
 
 // Khai báo các API route của từng chức năng tại đây
+const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
+const fieldInspectorRoutes = require("./routes/fieldInspectorRoutes");
+const inspectorRoutes = require("./routes/inspectorRoutes");
+const providerRoutes = require("./routes/providerRoutes");
+const facilityRoutes = require("./routes/facilityRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
 
-// Connect DB
-// const { connectDB } = require("./config/database");
-// connectDB();
+app.use("/api/auth", authRoutes);
+app.use("/api/admin/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/admin/field-inspectors", fieldInspectorRoutes);
+app.use("/api/inspector", inspectorRoutes);
+app.use("/api/provider", providerRoutes);
+app.use("/api/facilities", facilityRoutes);
+app.use("/api/favorites", favoriteRoutes);
+const reservationRoutes = require("./routes/reservationRoutes");
+const confirmationRecordRoutes = require("./routes/confirmationRecordRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
+
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/confirmation-records", confirmationRecordRoutes);
+app.use("/api/webhook", webhookRoutes);
+
+const reviewRoutes = require("./routes/reviewRoutes");
+app.use("/api/reviews", reviewRoutes);
+
+const chatRoutes = require("./routes/chatRoutes");
+app.use("/api/chats", chatRoutes);
+
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/uploads", uploadRoutes);
+
+const complaintRoutes = require("./routes/complaintRoutes");
+app.use("/api/complaints", complaintRoutes);
+
+const platformFeeRoutes = require("./routes/platformFeeRoutes");
+app.use("/api/platform-fees", platformFeeRoutes);
+const notificationRoutes = require("./routes/notificationRoutes");
+app.use("/api/notifications", notificationRoutes);
 
 // Simple route
 app.get("/", (req, res) => {
@@ -36,6 +73,10 @@ const port = process.env.PORT || 5000;
 const server = app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+// Initialize Socket.io
+const { initSocket } = require("./config/socket");
+initSocket(server);
 
 // Handle unhandled Promise rejection
 process.on("unhandledRejection", (err) => {

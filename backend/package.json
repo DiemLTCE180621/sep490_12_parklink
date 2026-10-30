@@ -5,21 +5,32 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed": "node src/utils/seed.js"
+    "postinstall": "prisma generate",
+    "seed": "node src/utils/seed.js",
+    "reset-admin": "node src/utils/resetAdminPassword.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.23.0"
+    "multer": "^2.4.0",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^10.0.10",
+    "pg": "^8.23.0",
+    "prisma": "^5.22.0",
+    "socket.io": "^4.8.4"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "prisma": "^5.22.0"
   }
 }

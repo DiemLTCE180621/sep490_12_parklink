@@ -11,3 +11,116 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.parklink-facility-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.parklink-facility-popup .leaflet-popup-content {
+  width: auto !important;
+  margin: 0;
+}
+
+.parklink-facility-popup .leaflet-popup-tip {
+  background: #ffffff;
+}
+
+/* Custom marker icon cho bãi đỗ xe - reset style mặc định của Leaflet divIcon */
+.parklink-facility-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.parklink-facility-icon:hover {
+  transform: scale(1.15);
+  transition: transform 0.2s ease;
+}
+
+/* ====================================================
+   PRINT & EXPORT PDF STYLES CHO HỢP ĐỒNG ĐIỆN TỬ
+   (Chuẩn thể thức văn bản hành chính Việt Nam NĐ 30/2020)
+   ==================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 15mm 15mm 15mm 15mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif !important;
+    font-size: 13pt !important;
+    line-height: 1.45 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Ẩn các thành phần giao diện không cần in */
+  .print\:hidden,
+  nav,
+  header,
+  footer,
+  aside,
+  button:not(.print\:show) {
+    display: none !important;
+  }
+
+  /* Khi mở Modal Hợp đồng (Admin / Provider), ẩn toàn bộ trang nền phía sau khi in */
+  body.contract-modal-open>#root {
+    display: none !important;
+  }
+
+  .contract-modal-overlay,
+  .contract-modal-dialog,
+  .contract-modal-body {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    transform: none !important;
+  }
+
+  /* Canvas văn bản hợp đồng chuẩn */
+  .contract-paper-canvas {
+    border: none !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Ẩn mũi tên tăng giảm số của trình duyệt */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

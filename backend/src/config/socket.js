@@ -1,0 +1,109 @@
+const { Server } = require('socket.io');
+const chatRepository = require('../repositories/chatRepository');
+
+let ioInstance = null;
+
+const initSocket = (server) => {
+    // Khởi tạo Socket.IO với CORS
+    const io = new Server(server, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"]
+        }
+    });
+
+    ioInstance = io;
+
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
+
+    // Middleware bảo mật Socket
+    io.use((socket, next) => {
+        const token = socket.handshake.auth?.token;
+        if (!token) {
+            return next(new Error('Authentication error: Token missing'));
+        }
+
+        jwt.verify(token, JWT_SECRET, (err, decodedUser) => {
+            if (err) {
+                return next(new Error('Authentication error: Invalid token'));
+            }
+
+            // Cho phép các vai trò hợp lệ trong hệ thống kết nối Socket
+            socket.user = decodedUser;
+            next();
+        });
+    });
+
+    // Lắng nghe kết nối từ client
+    io.on('connection', (socket) => {
+        console.log(`[Socket] Client kết nối: ${socket.id}`);
+
+        // Tự động tham gia phòng cá nhân (user_${userId}) và phòng theo vai trò (role_${userRole})
+        const userId = socket.user?.id || socket.user?.userId;
+        const userRole = socket.user?.role;
+        if (userId) {
+            socket.join(`user_${userId}`);
+            console.log(`[Socket] User ${socket.id} (ID: ${userId}) đã vào phòng user_${userId}`);
+        }
+        if (userRole) {
+            socket.join(`role_${userRole}`);
+            console.log(`[Socket] User ${socket.id} (Role: ${userRole}) đã vào phòng role_${userRole}`);
+        }
+
+        // Client yêu cầu tham gia phòng chat
+        socket.on('join_room', (roomId) => {
+            socket.join(roomId.toString());
+            console.log(`[Socket] User ${socket.id} đã vào phòng: ${roomId}`);
+        });
+
+        // Client gửi tin nhắn mới
+        socket.on('send_message', async (data) => {
+            try {
+                const { roomId, senderId, content, mediaUrl } = data;
+
+                const newMessage = await chatRepository.createMessage(
+                    Number(roomId),
+                    Number(senderId),
+                    content,
+                    mediaUrl
+                );
+
+                if (data.tempId) {
+                    newMessage.tempId = data.tempId;
+                }
+
+                // Chaining .to() để Socket.IO tự động gom danh sách phòng thành 1 Set duy nhất:
+                // Tránh tình trạng client vừa ở phòng chat vừa ở phòng cá nhân bị nhận trùng sự kiện emit 2 lần
+                let broadcaster = io.to(roomId.toString());
+                if (newMessage.room) {
+                    broadcaster = broadcaster
+                        .to(`user_${newMessage.room.customer_id}`)
+                        .to(`user_${newMessage.room.provider_id}`);
+                }
+                broadcaster.emit('receive_message', newMessage);
+
+                console.log(`[Socket] Đã phát tin nhắn vào phòng ${roomId}`);
+            } catch (error) {
+                console.error('[Socket] Lỗi gửi tin nhắn:', error.message);
+                socket.emit('message_error', { message: 'Không thể gửi tin nhắn' });
+            }
+        });
+
+        // Lắng nghe sự kiện người dùng báo đã xem
+        socket.on('mark_read', ({ roomId, readerId }) => {
+            socket.to(roomId.toString()).emit('messages_read', { roomId, readerId });
+            console.log(`[Socket] Đã báo Đã xem cho phòng ${roomId}`);
+        });
+
+        socket.on('disconnect', () => {
+            console.log(`[Socket] Client ngắt kết nối: ${socket.id}`);
+        });
+    });
+
+    return io;
+};
+
+const getIO = () => ioInstance;
+
+module.exports = { initSocket, getIO };
