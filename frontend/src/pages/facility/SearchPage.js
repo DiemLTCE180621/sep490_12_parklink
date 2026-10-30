@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Search, MapPin, Navigation, CarFront, Star, Info, List, X,
-  GitCompareArrows, CheckSquare, Square, Heart, Loader2, ExternalLink
+  GitCompareArrows, CheckSquare, Square, Heart, ExternalLink
 } from 'lucide-react';
 import facilityService from '../../services/facilityService';
 import { addFavorite, removeFavorite, getFavorites } from '../../services/favoriteService';

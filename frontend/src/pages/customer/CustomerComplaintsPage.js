@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import complaintService from '../../services/complaintService';
 import { Link } from 'react-router-dom';
-import { AlertCircle, Calendar, MapPin, Building2, Clock, CheckCircle2, Loader2, ArrowLeft, Inbox } from 'lucide-react';
+import { AlertCircle, Calendar, Building2, Clock, CheckCircle2, Loader2, ArrowLeft, Inbox } from 'lucide-react';
 
 const CustomerComplaintsPage = () => {
   const [complaints, setComplaints] = useState([]);

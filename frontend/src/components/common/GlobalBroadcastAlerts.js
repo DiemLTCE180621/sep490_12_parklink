@@ -3,10 +3,7 @@ import {
   Radio,
   AlertTriangle,
   ShieldAlert,
-  X,
-  Bell,
-  CheckCircle2,
-  Info
+  X
 } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';

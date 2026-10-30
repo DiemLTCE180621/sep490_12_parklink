@@ -11,8 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Info,
-  Lock
+  Info
 } from 'lucide-react';
 
 const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess }) => {
