@@ -278,8 +278,96 @@ class UserRepository {
         requires_password_change: true,
         created_at: true,
         updated_at: true,
-        role: true
+        role: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            visibility_status: true
+          }
+        }
       }
+    });
+  }
+
+  /**
+   * Khóa tài khoản Provider đồng thời ẩn luôn cơ sở bãi đỗ xe (visibility_status = 'HIDDEN') trong một Transaction
+   * @param {number} userId - ID người dùng (Provider)
+   * @param {number} facilityId - ID cơ sở bãi đỗ xe
+   */
+  async blockProviderAndHideFacility(userId, facilityId) {
+    return await prisma.$transaction(async (tx) => {
+      // 1. Cập nhật trạng thái hiển thị của cơ sở bãi đỗ xe thành HIDDEN (ẩn khỏi tìm kiếm/đặt chỗ)
+      await tx.facility.update({
+        where: { id: facilityId },
+        data: { visibility_status: 'HIDDEN' }
+      });
+
+      // 2. Cập nhật trạng thái tài khoản người dùng thành BLOCKED
+      return await tx.user.update({
+        where: { id: userId },
+        data: { status: 'BLOCKED' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true,
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              visibility_status: true
+            }
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Khóa tài khoản Customer và tự động hủy các yêu cầu đặt chỗ đang PENDING
+   */
+  async blockCustomerAndCancelPendingReservations(userId) {
+    return await prisma.$transaction(async (tx) => {
+      // Hủy các yêu cầu đặt chỗ đang chờ duyệt của Customer
+      await tx.reservation_Request.updateMany({
+        where: {
+          customer_id: userId,
+          status: 'PENDING'
+        },
+        data: {
+          status: 'CANCELLED'
+        }
+      });
+
+      // Cập nhật trạng thái người dùng thành BLOCKED
+      return await tx.user.update({
+        where: { id: userId },
+        data: { status: 'BLOCKED' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true,
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              visibility_status: true
+            }
+          }
+        }
+      });
     });
   }
 
