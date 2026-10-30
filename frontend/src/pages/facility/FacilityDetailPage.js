@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 import { facilityCarIcon } from '../../utils/mapIcons';
 import { openGoogleMapsDirections } from '../../utils/mapUtils';
 import ReviewSection from '../../components/common/ReviewSection';
@@ -14,7 +13,7 @@ import { addFavorite, removeFavorite, getFavorites } from '../../services/favori
 import { getVehicleTypeLabel } from '../../constants/vehicleTypes';
 import {
   Send, MapPin, ShieldCheck, Car, MessageCircle, Heart, CheckCircle2,
-  Loader2, ChevronLeft, ChevronRight, Share2, Clock3, Navigation, LockKeyhole,
+  Loader2, ChevronLeft, ChevronRight, Clock3, Navigation, LockKeyhole,
   UserRound, FileText, Star, ExternalLink
 } from 'lucide-react';
 

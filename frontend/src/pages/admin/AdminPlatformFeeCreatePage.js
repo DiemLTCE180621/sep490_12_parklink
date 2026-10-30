@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Plus,
   Loader2, Calculator, CheckCircle2,
-  Sparkles, Power
+  Power
 } from 'lucide-react';
 import platformFeeService from '../../services/platformFeeService';
 import Toast from '../../components/common/Toast';

@@ -21,8 +21,7 @@ import {
   Mail,
   MapPin,
   Clock,
-  Eye,
-  Lock
+  Eye
 } from 'lucide-react';
 
 const ProviderCreateContractPage = () => {
