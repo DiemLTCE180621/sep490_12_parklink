@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  ArrowLeft, DollarSign, Save, AlertCircle, CheckCircle2,
+  ArrowLeft, DollarSign, Save, CheckCircle2,
   Loader2, Calculator, Sparkles, Power
 } from 'lucide-react';
 import platformFeeService from '../../services/platformFeeService';
+import Toast from '../../components/common/Toast';
 
 const AdminPlatformFeeEditPage = () => {
   const { id } = useParams();
@@ -12,45 +13,50 @@ const AdminPlatformFeeEditPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [toast, setToast] = useState(null);
+  const [existingFees, setExistingFees] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
     min_slots: '1',
     max_slots: '3',
-    is_unlimited_max: false,
     fee_amount: '',
     description: '',
     is_active: true
   });
 
-  // Tải thông tin gói biểu phí cần sửa
+  // Tải thông tin gói biểu phí cần sửa và danh sách các gói khác để check trùng
   useEffect(() => {
     const loadFeeData = async () => {
       try {
         setLoading(true);
-        setError('');
-        const res = await platformFeeService.getPlatformFeeById(id);
-        const fee = res?.data || res;
+
+        const [feeRes, allFeesRes] = await Promise.all([
+          platformFeeService.getPlatformFeeById(id),
+          platformFeeService.getPlatformFees()
+        ]);
+
+        const fee = feeRes?.data || feeRes;
+        const allFees = Array.isArray(allFeesRes?.data) ? allFeesRes.data : (Array.isArray(allFeesRes) ? allFeesRes : []);
+        setExistingFees(allFees);
 
         if (!fee) {
-          setError('Không tìm thấy thông tin gói biểu phí yêu cầu.');
+          setToast({ message: 'Không tìm thấy thông tin gói biểu phí yêu cầu.', type: 'error' });
           return;
         }
 
-        const isUnlimited = fee.max_slots === null || fee.max_slots === undefined || fee.max_slots >= 900;
+        const maxSlotsVal = (fee.max_slots === null || fee.max_slots === undefined) ? '15' : String(fee.max_slots);
 
         setFormData({
           name: fee.name || '',
           min_slots: fee.min_slots !== undefined && fee.min_slots !== null ? String(fee.min_slots) : '1',
-          max_slots: isUnlimited ? '' : String(fee.max_slots || ''),
-          is_unlimited_max: isUnlimited,
+          max_slots: maxSlotsVal,
           fee_amount: fee.fee_amount !== undefined && fee.fee_amount !== null ? String(fee.fee_amount) : '',
           description: fee.description || '',
           is_active: fee.is_active ?? true
         });
       } catch (err) {
-        setError(err.message || 'Không thể tải chi tiết gói phí nền tảng');
+        setToast({ message: err.message || 'Không thể tải chi tiết gói phí nền tảng', type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -72,31 +78,59 @@ const AdminPlatformFeeEditPage = () => {
   // Submit cập nhật gói biểu phí nền tảng (Khung Min - Max)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!formData.name.trim()) {
-      setError('Vui lòng nhập tên gói biểu phí.');
+      setToast({ message: 'Vui lòng nhập tên gói biểu phí.', type: 'error' });
       return;
     }
 
     const minSlots = parseInt(formData.min_slots, 10);
     if (isNaN(minSlots) || minSlots < 1) {
-      setError('Số lượng slot tối thiểu (Min) phải là số nguyên lớn hơn hoặc bằng 1.');
+      setToast({ message: 'Số lượng slot tối thiểu (Min) phải là số nguyên lớn hơn hoặc bằng 1.', type: 'error' });
       return;
     }
 
-    let maxSlots = null;
-    if (!formData.is_unlimited_max) {
-      maxSlots = parseInt(formData.max_slots, 10);
-      if (isNaN(maxSlots) || maxSlots < minSlots) {
-        setError(`Số lượng slot tối đa (Max) phải lớn hơn hoặc bằng slot tối thiểu (${minSlots}).`);
+    if (minSlots > 15) {
+      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      return;
+    }
+
+    if (!formData.max_slots) {
+      setToast({ message: 'Vui lòng nhập số lượng slot tối đa (Max).', type: 'error' });
+      return;
+    }
+
+    const maxSlots = parseInt(formData.max_slots, 10);
+    if (isNaN(maxSlots) || maxSlots < minSlots) {
+      setToast({ message: `Số lượng slot tối đa (Max) phải lớn hơn hoặc bằng slot tối thiểu (${minSlots}).`, type: 'error' });
+      return;
+    }
+
+    if (maxSlots > 15) {
+      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      return;
+    }
+
+    // Kiểm tra trùng lặp (chồng lấn) với các gói khác (loại trừ chính gói đang sửa)
+    for (const fee of existingFees) {
+      if (Number(fee.id) === Number(id)) continue; // Bỏ qua chính nó
+
+      const existingMin = fee.min_slots;
+      const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
+
+      // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
+      if (minSlots <= existingMax && maxSlots >= existingMin) {
+        setToast({
+          message: `Khung quy mô (${minSlots} - ${maxSlots} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ). Vui lòng điều chỉnh lại!`,
+          type: 'error'
+        });
         return;
       }
     }
 
     const amount = parseFloat(formData.fee_amount);
     if (isNaN(amount) || amount < 0) {
-      setError('Mức phí nền tảng phải là số dương hợp lệ.');
+      setToast({ message: 'Mức phí nền tảng phải là số dương hợp lệ.', type: 'error' });
       return;
     }
 
@@ -123,7 +157,7 @@ const AdminPlatformFeeEditPage = () => {
         }
       });
     } catch (err) {
-      setError(err.message || 'Lỗi khi cập nhật gói biểu phí');
+      setToast({ message: err.message || 'Lỗi khi cập nhật gói biểu phí', type: 'error' });
     } finally {
       setSaving(false);
     }
@@ -131,7 +165,7 @@ const AdminPlatformFeeEditPage = () => {
 
   const parsedAmount = parseFloat(formData.fee_amount) || 0;
   const parsedMin = parseInt(formData.min_slots, 10) || 1;
-  const parsedMax = formData.is_unlimited_max ? null : (parseInt(formData.max_slots, 10) || parsedMin);
+  const parsedMax = parseInt(formData.max_slots, 10) || parsedMin;
 
   if (loading) {
     return (
@@ -142,13 +176,17 @@ const AdminPlatformFeeEditPage = () => {
     );
   }
 
-  // Nhãn quy mô slot mô phỏng trên thẻ
-  const slotBadgeText = formData.is_unlimited_max
-    ? `Từ ${parsedMin} chỗ trở lên`
-    : (parsedMin === parsedMax ? `${parsedMin} chỗ` : `${parsedMin} – ${parsedMax} chỗ`);
-
   return (
     <div className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8 bg-slate-50 w-full">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          duration={2500}
+        />
+      )}
+
       <div className="w-full max-w-6xl mx-auto space-y-4">
         {/* Nút quay lại */}
         <button
@@ -162,42 +200,31 @@ const AdminPlatformFeeEditPage = () => {
         {/* Khung Form Duy Nhất Trải Rộng Toàn Màn Hình */}
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden w-full">
           {/* Header Card Banner */}
-          <div className="px-6 sm:px-8 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="px-6 sm:px-8 py-5 border-b border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-teal-500 text-slate-900 flex items-center justify-center font-black shadow-md">
-                <DollarSign className="w-6 h-6 text-slate-950" />
+              <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center font-black shadow-sm">
+                <DollarSign className="w-6 h-6 text-teal-600" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                   <span>Chỉnh Sửa Gói Biểu Phí</span>
-                  <span className="text-xs font-mono font-bold text-teal-300 bg-white/10 px-2 py-0.5 rounded-md border border-white/10">
+                  <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                     #{id}
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm text-teal-300/90 mt-0.5">
-                  Cấu hình mức phí nền tảng thu 1 lần theo khung quy mô chỗ đỗ (Khung Min – Max)
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Cấu hình mức phí nền tảng thu 1 lần theo quy mô chỗ đỗ hộ gia đình (Tối đa 15 chỗ)
                 </p>
               </div>
             </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-xl text-xs font-bold text-teal-200 border border-white/10 self-start sm:self-auto">
-              <Sparkles className="w-4 h-4 text-teal-400" />
-              <span>Ninh Kiều, Cần Thơ</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 rounded-xl text-xs font-bold text-amber-700 border border-amber-200 self-start sm:self-auto shrink-0">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span>Quy mô hộ gia đình: 1 – 15 chỗ</span>
             </div>
           </div>
 
           {/* Nội dung form bên trong khung */}
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5">
-            {/* Banner Lỗi nếu có */}
-            {error && (
-              <div className="p-3.5 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start gap-2.5 text-xs font-medium">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold">Không thể lưu thông tin</h4>
-                  <p className="mt-0.5">{error}</p>
-                </div>
-              </div>
-            )}
-
             {/* Hàng 1: Tên Gói & Mức Phí Nền Tảng */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -236,15 +263,19 @@ const AdminPlatformFeeEditPage = () => {
               </div>
             </div>
 
-            {/* Hàng 2: Slot Min & Slot Max (Cân đối 2 cột như Hàng 1) */}
+            {/* Hàng 2: Slot Min & Slot Max (Giới hạn 15 chỗ) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                  Slot Tối Thiểu (Min) <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-700">
+                    Slot Tối Thiểu (Min) <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-[11px] font-semibold text-slate-400">Từ 1 đến 15 chỗ</span>
+                </div>
                 <input
                   type="number"
                   min="1"
+                  max="15"
                   required
                   value={formData.min_slots}
                   onChange={(e) => handleChange('min_slots', e.target.value)}
@@ -256,32 +287,26 @@ const AdminPlatformFeeEditPage = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    Slot Tối Đa (Max) {!formData.is_unlimited_max && <span className="text-red-500">*</span>}
+                    Slot Tối Đa (Max) <span className="text-red-500">*</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-teal-700 font-bold cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_unlimited_max}
-                      onChange={(e) => handleChange('is_unlimited_max', e.target.checked)}
-                      className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 w-3.5 h-3.5"
-                    />
-                    <span>Không giới hạn</span>
-                  </label>
+                  <span className="text-[11px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                    Tối đa 15 chỗ
+                  </span>
                 </div>
                 <input
                   type="number"
                   min={parsedMin}
-                  disabled={formData.is_unlimited_max}
-                  required={!formData.is_unlimited_max}
-                  value={formData.is_unlimited_max ? '' : formData.max_slots}
+                  max="15"
+                  required
+                  value={formData.max_slots}
                   onChange={(e) => handleChange('max_slots', e.target.value)}
-                  placeholder={formData.is_unlimited_max ? 'Không giới hạn (∞)' : '3'}
-                  className={`w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold transition ${formData.is_unlimited_max ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500'}`}
+                  placeholder="3 (tối đa 15)"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold transition bg-slate-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                 />
               </div>
             </div>
 
-            {/* Hàng 3: Trạng Thái Hoạt Động (Xuống hàng riêng, 2 card cân đối rộng rãi và trực quan) */}
+            {/* Hàng 3: Trạng Thái Hoạt Động */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">
                 Trạng Thái Hoạt Động <span className="text-slate-400 font-normal">(Thiết lập hiệu lực áp dụng của gói biểu phí)</span>
@@ -348,23 +373,19 @@ const AdminPlatformFeeEditPage = () => {
             </div>
 
             {/* Thanh Tóm Tắt Quy Tắc Áp Dụng */}
-            {parsedAmount > 0 && !isNaN(parsedMin) && (
-              <div className="p-3.5 bg-teal-50/80 border border-teal-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
+            {parsedAmount > 0 && (
+              <div className="p-4 bg-teal-50/80 border border-teal-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
                 <div className="flex items-center gap-2.5 text-teal-950 font-medium">
-                  <Calculator className="w-4 h-4 text-teal-600 shrink-0" />
+                  <Calculator className="w-5 h-5 text-teal-600 shrink-0" />
                   <span>
                     Quy tắc áp dụng: Áp dụng mức phí cố định{' '}
                     <strong className="text-teal-900 font-extrabold">{parsedAmount.toLocaleString('vi-VN')} VNĐ</strong> cho bãi xe{' '}
                     <strong className="text-teal-900 font-extrabold">
-                      {formData.is_unlimited_max
-                        ? `từ ${parsedMin} chỗ trở lên`
-                        : (!isNaN(parsedMax) && parsedMin === parsedMax
-                            ? `đúng ${parsedMin} chỗ`
-                            : `từ ${parsedMin} – ${!isNaN(parsedMax) ? parsedMax : '...'} chỗ`)}
+                      {parsedMin === parsedMax ? `đúng ${parsedMin} chỗ` : `từ ${parsedMin} – ${parsedMax} chỗ`}
                     </strong>.
                   </span>
                 </div>
-                <span className="font-extrabold text-teal-800 bg-white px-3 py-1 rounded-xl border border-teal-200 shadow-2xs shrink-0 self-start sm:self-auto text-xs">
+                <span className="font-extrabold text-teal-800 bg-white px-3.5 py-1.5 rounded-xl border border-teal-200 shadow-2xs shrink-0 self-start sm:self-auto text-xs">
                   {parsedAmount.toLocaleString('vi-VN')} VNĐ / bãi
                 </span>
               </div>
@@ -376,7 +397,7 @@ const AdminPlatformFeeEditPage = () => {
                 Mô Tả Chi Tiết <span className="text-slate-400 font-normal">(Tùy chọn)</span>
               </label>
               <textarea
-                rows="2"
+                rows="3"
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Nhập ghi chú hoặc mô tả về gói biểu phí này..."
@@ -385,12 +406,12 @@ const AdminPlatformFeeEditPage = () => {
             </div>
 
             {/* Nút Hành Động */}
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 mt-4">
               <button
                 type="button"
                 disabled={saving}
                 onClick={() => navigate('/dashboard', { state: { adminTab: 'platform-fees' } })}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs sm:text-sm transition"
+                className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-sm transition"
               >
                 Hủy Bỏ
               </button>
@@ -398,7 +419,7 @@ const AdminPlatformFeeEditPage = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2"
+                className="px-8 py-2.5 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white rounded-xl font-bold text-sm shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-2"
               >
                 {saving ? (
                   <>

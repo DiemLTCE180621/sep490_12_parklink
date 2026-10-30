@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
@@ -22,6 +22,8 @@ const Navbar = () => {
         return <span className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-semibold">Admin</span>;
       case 'PROVIDER':
         return <span className="bg-teal-100 text-teal-800 text-xs px-2 py-0.5 rounded font-semibold">Chủ bãi đỗ</span>;
+      case 'FIELD_INSPECTOR':
+        return <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-semibold">Khảo sát viên</span>;
       default:
         return null;
     }
@@ -33,6 +35,8 @@ const Navbar = () => {
         return 'Trang quản trị';
       case 'PROVIDER':
         return 'Trang quản lý bãi xe';
+      case 'FIELD_INSPECTOR':
+        return 'Trang khảo sát';
       default:
         return 'Trang cá nhân';
     }
@@ -50,9 +54,15 @@ const Navbar = () => {
   };
 
   // Ẩn Navbar (Header) đối với Admin, Nhân viên khảo sát hoặc người dùng đang cần đổi mật khẩu lần đầu
-  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR' || user?.requires_password_change)) {
+  if (isAuthenticated && user?.requires_password_change) {
     return null;
   }
+
+  const canAccessChat = isAuthenticated && (
+    user?.role?.name === 'ADMIN' ||
+    user?.role?.name === 'PROVIDER' ||
+    user?.role?.name === 'CUSTOMER'
+  );
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -85,6 +95,16 @@ const Navbar = () => {
                 </Link>
               </>
             )}
+            {isAuthenticated && user?.role?.name === 'ADMIN' && (
+              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Trang Quản Trị
+              </Link>
+            )}
+            {isAuthenticated && user?.role?.name === 'FIELD_INSPECTOR' && (
+              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Công Việc Khảo Sát
+              </Link>
+            )}
             {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
               <>
                 <Link to="/my-reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
@@ -95,11 +115,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && (user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
-              <Link to="/chat" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
-              </Link>
-            )}
             {!isAuthenticated && (
               <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4 text-teal-600" /> Cho Thuê Bãi Xe
@@ -107,11 +122,24 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* User Auth Controls */}
+          {/* User Auth Controls (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
+                {/* Icon Tin Nhắn (nằm cạnh quả chuông thông báo) */}
+                {canAccessChat && (
+                  <Link
+                    to="/chat"
+                    className="p-2.5 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
+                    title="Tin nhắn"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </Link>
+                )}
+                
+                {/* Quả chuông thông báo */}
                 <NotificationDropdown />
+
                 <div className="relative">
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -196,9 +224,26 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center space-x-2">
-            {isAuthenticated && <NotificationDropdown />}
+          {/* Mobile Menu & Quick Actions Toggle (Khi thu nhỏ màn hình) */}
+          <div className="md:hidden flex items-center space-x-1 sm:space-x-2">
+            {isAuthenticated && (
+              <>
+                {/* Icon Tin Nhắn trên Mobile - Nằm ngay cạnh quả chuông thông báo */}
+                {canAccessChat && (
+                  <Link
+                    to="/chat"
+                    className="p-2 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
+                    title="Tin nhắn"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </Link>
+                )}
+
+                {/* Quả chuông thông báo trên Mobile */}
+                <NotificationDropdown />
+              </>
+            )}
+            
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -212,15 +257,13 @@ const Navbar = () => {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3">
-          {user?.role?.name !== "PROVIDER" && (
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-slate-700 font-medium hover:text-teal-600"
-            >
-              Trang Chủ
-            </Link>
-          )}
+          <Link
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 text-slate-700 font-medium hover:text-teal-600"
+          >
+            Trang Chủ
+          </Link>
           {!isAuthenticated && (
             <Link
               to="/register-provider"
@@ -232,13 +275,13 @@ const Navbar = () => {
           )}
           {isAuthenticated ? (
             <>
-              {(user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
+              {canAccessChat && (
                 <Link
                   to="/chat"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-slate-700 font-medium hover:text-teal-600"
+                  className="block py-2 text-slate-700 font-medium hover:text-teal-600 flex items-center gap-2"
                 >
-                  Tin nhắn
+                  <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
                 </Link>
               )}
               <Link

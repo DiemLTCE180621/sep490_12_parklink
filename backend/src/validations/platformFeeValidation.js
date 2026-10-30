@@ -11,16 +11,15 @@ const validateCreatePlatformFee = [
 
   body('min_slots')
     .notEmpty().withMessage('Số lượng slot tối thiểu (min_slots) không được để trống')
-    .isInt({ min: 1 }).withMessage('Số lượng slot tối thiểu phải là số nguyên lớn hơn hoặc bằng 1'),
+    .isInt({ min: 1, max: 15 }).withMessage('Mô hình hộ gia đình chỉ hỗ trợ từ 1 đến 15 chỗ đỗ (min_slots phải từ 1 đến 15)'),
 
   body('max_slots')
-    .optional({ nullable: true, checkFalsy: true })
+    .notEmpty().withMessage('Số lượng slot tối đa (max_slots) không được để trống')
     .custom((value, { req }) => {
-      if (value === null || value === undefined || value === '') return true;
       const maxSlots = parseInt(value, 10);
       const minSlots = parseInt(req.body.min_slots, 10);
-      if (isNaN(maxSlots) || maxSlots < 1) {
-        throw new Error('Số lượng slot tối đa phải là số nguyên dương lớn hơn hoặc bằng 1');
+      if (isNaN(maxSlots) || maxSlots < 1 || maxSlots > 15) {
+        throw new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ');
       }
       if (!isNaN(minSlots) && maxSlots < minSlots) {
         throw new Error('Số lượng slot tối đa (max_slots) phải lớn hơn hoặc bằng slot tối thiểu (min_slots)');
@@ -62,15 +61,15 @@ const validateUpdatePlatformFee = [
 
   body('min_slots')
     .optional()
-    .isInt({ min: 1 }).withMessage('Số lượng slot tối thiểu phải là số nguyên lớn hơn hoặc bằng 1'),
+    .isInt({ min: 1, max: 15 }).withMessage('Mô hình hộ gia đình chỉ hỗ trợ từ 1 đến 15 chỗ đỗ (min_slots phải từ 1 đến 15)'),
 
   body('max_slots')
     .optional({ nullable: true })
     .custom((value, { req }) => {
       if (value === null || value === undefined || value === '') return true;
       const maxSlots = parseInt(value, 10);
-      if (isNaN(maxSlots) || maxSlots < 1) {
-        throw new Error('Số lượng slot tối đa phải là số nguyên dương');
+      if (isNaN(maxSlots) || maxSlots < 1 || maxSlots > 15) {
+        throw new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ');
       }
       if (req.body.min_slots !== undefined) {
         const minSlots = parseInt(req.body.min_slots, 10);

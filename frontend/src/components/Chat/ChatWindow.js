@@ -24,16 +24,20 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
         return () => clearTimeout(timeoutId);
     }, [messages]);
 
-    // Gọi API đánh dấu đã xem khi vừa mở phòng hoặc có tin nhắn mới tới
+    // Đánh dấu đã xem khi có tin nhắn chưa đọc từ người khác (tối ưu: không gọi API thừa khi gửi tin của mình)
     useEffect(() => {
-        if (room && token) {
+        if (!room || !token || !user) return;
+
+        const hasUnreadFromOther = (room._count?.messages > 0) || 
+            messages.some(m => !m.is_read && Number(m.sender_id) !== Number(user.id));
+
+        if (hasUnreadFromOther) {
             chatService.markMessagesAsRead(room.id, token).catch(console.error);
-            // Báo qua màng nhĩ Socket cho người kia biết chữ "Đã xem"
             if (socket) {
                 socket.emit('mark_read', { roomId: room.id, readerId: user.id });
             }
         }
-    }, [room, token, messages.length, socket, user?.id]); 
+    }, [room?.id, token, messages, socket, user?.id, room?._count?.messages]); 
 
     if (!room) {
         return (
@@ -104,7 +108,7 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                         <ChatMessage 
                             key={msg.id} 
                             message={msg} 
-                            isMine={msg.sender_id === user.id} 
+                            isMine={Number(msg.sender_id) === Number(user?.id)} 
                         />
                     ))
                 )}

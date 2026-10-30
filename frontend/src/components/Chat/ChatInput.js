@@ -52,7 +52,7 @@ const ChatInput = ({ onSendMessage }) => {
     return (
         <form onSubmit={handleSendText} className="p-4 border-t border-slate-200 bg-white">
             <div className="flex items-center gap-2">
-                {/* Nút gửi ảnh */}
+                {/* Nút gửi ảnh & video */}
                 <button
                     type="button"
                     onClick={() => imageInputRef.current?.click()}
@@ -68,16 +68,16 @@ const ChatInput = ({ onSendMessage }) => {
                     ref={imageInputRef}
                     className="hidden"
                     onChange={handleFileChange}
-                    accept="image/jpeg,image/png,image/gif,image/webp,video/mp4"
+                    accept="image/*,video/*"
                 />
 
-                {/* Nút gửi File (PDF) */}
+                {/* Nút gửi File & Tài liệu (chuẩn Zalo) */}
                 <button
                     type="button"
                     onClick={() => docInputRef.current?.click()}
                     className="p-2.5 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-colors focus:outline-none"
                     disabled={loading}
-                    title="Gửi tài liệu (PDF)"
+                    title="Gửi file, tài liệu (Word, Excel, PDF, Zip...)"
                 >
                     <Paperclip size={20} />
                 </button>
@@ -87,7 +87,7 @@ const ChatInput = ({ onSendMessage }) => {
                     ref={docInputRef}
                     className="hidden"
                     onChange={handleFileChange}
-                    accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip"
                 />
                 
                 <input

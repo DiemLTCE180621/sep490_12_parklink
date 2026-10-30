@@ -25,7 +25,7 @@ class ChatRepository {
 
     // Lấy danh sách phòng chat của 1 user (dù là customer hay provider)
     async getUserRooms(userId) {
-        return await prisma.chat_Room.findMany({
+        const rooms = await prisma.chat_Room.findMany({
             where: {
                 OR: [
                     { customer_id: userId },
@@ -50,10 +50,18 @@ class ChatRepository {
                         }
                     }
                 }
-            },
-            orderBy: {
-                created_at: 'desc'
             }
+        });
+
+        // Sắp xếp theo tin nhắn mới nhất lên đầu tiên (chuẩn Zalo)
+        return rooms.sort((a, b) => {
+            const timeA = a.messages?.[0]?.created_at 
+                ? new Date(a.messages[0].created_at).getTime() 
+                : new Date(a.created_at).getTime();
+            const timeB = b.messages?.[0]?.created_at 
+                ? new Date(b.messages[0].created_at).getTime() 
+                : new Date(b.created_at).getTime();
+            return timeB - timeA;
         });
     }
 
@@ -78,7 +86,8 @@ class ChatRepository {
                 media_url: mediaUrl
             },
             include: {
-                sender: { select: { id: true, full_name: true } }
+                sender: { select: { id: true, full_name: true } },
+                room: { select: { customer_id: true, provider_id: true } }
             }
         });
     }
