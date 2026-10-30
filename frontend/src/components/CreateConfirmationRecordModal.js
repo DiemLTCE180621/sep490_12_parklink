@@ -25,7 +25,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     termination_conditions:
       '- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.',
     dispute_resolution:
-      '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.'
+      '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết'
   }), []);
 
   const [formData, setFormData] = useState({
@@ -495,8 +495,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('owner')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'owner'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 3: Nghĩa vụ Bên A (Chủ bãi)
@@ -505,8 +505,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('customer')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'customer'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 4: Nghĩa vụ Bên B (Khách thuê)
@@ -515,8 +515,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('dispute')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'dispute'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 5: Tranh Chấp
@@ -525,8 +525,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('termination')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'termination'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 6: Hiệu Lực HĐ
@@ -598,39 +598,39 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-      <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
-        <Info className="w-4 h-4 text-teal-700 shrink-0" />
-        <div>
-          Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
-        </div>
-      </div>
+          <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
+            <Info className="w-4 h-4 text-teal-700 shrink-0" />
+            <div>
+              Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
+            </div>
+          </div>
 
-      {/* ACTIONS */}
-      <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
-        >
-          Hủy Bỏ
-        </button>
+          {/* ACTIONS */}
+          <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
+            >
+              Hủy Bỏ
+            </button>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
-            </>
-          )}
-        </button>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>
