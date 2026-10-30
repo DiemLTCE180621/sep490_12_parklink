@@ -293,6 +293,7 @@ const SearchPage = () => {
     try {
       const location = await vietmapService.resolveAddressCoordinates(query, suggestion);
       if (location) {
+        setUserLocation(null);
         setSearchedLocation(location);
         setMapCenter(location);
         setMapZoom(16);
@@ -328,6 +329,7 @@ const SearchPage = () => {
     if (!marker) return;
     const pos = marker.getLatLng();
     const newCoords = [pos.lat, pos.lng];
+    setUserLocation(null);
     setSearchedLocation(newCoords);
 
     let updatedKeyword = keyword;
@@ -352,6 +354,7 @@ const SearchPage = () => {
     if (!marker) return;
     const pos = marker.getLatLng();
     const newCoords = [pos.lat, pos.lng];
+    setSearchedLocation(null);
     setUserLocation(newCoords);
 
     let updatedKeyword = keyword;
@@ -425,10 +428,11 @@ const SearchPage = () => {
         (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
+          setSearchedLocation(null);
           setUserLocation([lat, lng]);
           setMapCenter([lat, lng]);
           setMapZoom(14);
-          fetchFacilities(lat, lng);
+          fetchFacilities(lat, lng, keyword, true);
         },
         () => {
           alert('Không thể xác định vị trí của bạn. Vui lòng cho phép quyền truy cập vị trí.');

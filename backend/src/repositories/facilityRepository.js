@@ -76,6 +76,9 @@ class FacilityRepository {
   async getFacilityByProviderId(providerId) {
     return await prisma.facility.findUnique({
       where: { provider_id: providerId },
+      include: {
+        images: true,
+      },
     });
   }
 
@@ -498,6 +501,9 @@ class FacilityRepository {
 
     return await prisma.facility.update({
       where: { id: facilityId },
+      include: {
+        images: true,
+      },
       data: {
         visibility_status: newVisibility,
       },
@@ -518,6 +524,9 @@ class FacilityRepository {
 
     return await prisma.facility.update({
       where: { id: facilityId },
+      include: {
+        images: true,
+      },
       data: {
         name: updateData.name !== undefined ? updateData.name : undefined,
         address:

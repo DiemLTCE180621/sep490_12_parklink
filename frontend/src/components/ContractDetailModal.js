@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { getConfirmationRecordDetail, acceptConfirmationRecord } from '../services/confirmationRecordService';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './modals/ConfirmModal';
@@ -9,7 +10,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Clock,
   CheckSquare,
   Square,
   Printer
@@ -66,6 +66,17 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
       setLoading(false);
     }
   }, [contractId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('contract-modal-open');
+    } else {
+      document.body.classList.remove('contract-modal-open');
+    }
+    return () => {
+      document.body.classList.remove('contract-modal-open');
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen && contractId) {
@@ -137,14 +148,14 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn">
+  return createPortal(
+    <div className="contract-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn print:static print:bg-white print:p-0 print:m-0 print:block">
       <div
-        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-7xl overflow-hidden transform transition-all duration-200 h-[96vh] max-h-[96vh] flex flex-col"
+        className="contract-modal-dialog bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-7xl overflow-hidden transform transition-all duration-200 h-[96vh] max-h-[96vh] flex flex-col print:h-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:max-w-none print:block"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER BAR */}
-        <div className="bg-slate-900 px-6 py-4 text-white relative shrink-0 flex items-center justify-between border-b border-slate-800">
+        {/* HEADER BAR - HIDDEN ON PRINT */}
+        <div className="print:hidden bg-slate-900 px-6 py-4 text-white relative shrink-0 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-teal-600/30 border border-teal-500/40 text-teal-400 flex items-center justify-center">
               <FileText className="w-4 h-4" />
@@ -177,7 +188,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         </div>
 
         {/* DOCUMENT CONTAINER */}
-        <div className="p-4 sm:p-8 bg-slate-100/70 overflow-y-auto flex-grow text-slate-800 text-xs sm:text-sm">
+        <div className="contract-modal-body p-4 sm:p-8 bg-slate-100/70 overflow-y-auto flex-grow text-slate-800 text-xs sm:text-sm print:p-0 print:m-0 print:bg-white print:overflow-visible">
           {loading ? (
             <div className="py-16 text-center space-y-3 bg-white rounded-xl shadow-sm border border-slate-200">
               <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
@@ -189,158 +200,151 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
               <div>{error}</div>
             </div>
           ) : contract ? (
-            <div className="space-y-6">
+            <div className="space-y-6 print:space-y-0">
               {successMsg && (
-                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
+                <div className="print:hidden p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <div>{successMsg}</div>
                 </div>
               )}
 
-              {/* STANDARD VIETNAMESE LEGAL PAPER DOCUMENT CANVAS */}
+              {/* STANDARD VIETNAMESE LEGAL CONTRACT CANVAS */}
               <div
-                className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-12 space-y-6 w-full max-w-4xl mx-auto text-black leading-relaxed"
+                className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
                 style={{ fontFamily: "'Times New Roman', Times, serif" }}
               >
                 {/* QUỐC HIỆU VÀ TIÊU NGỮ */}
-                <div className="text-center space-y-1 mb-6">
-                  <p className="font-bold uppercase text-xs sm:text-sm tracking-wide text-black">
+                <div className="text-center space-y-1 mb-8">
+                  <p className="font-bold uppercase text-sm sm:text-base tracking-wide text-black">
                     CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
                   </p>
-                  <p className="font-bold text-xs sm:text-sm text-black">
+                  <p className="font-bold text-sm sm:text-base text-black">
                     Độc lập - Tự do - Hạnh phúc
                   </p>
-                  <div className="w-36 border-b border-black mx-auto mt-1 mb-4"></div>
+                  <div className="w-44 border-b border-black mx-auto mt-1 mb-6"></div>
 
-                  <h2 className="text-base sm:text-xl font-bold text-black uppercase tracking-tight mt-3">
+                  <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-black mt-4">
                     HỢP ĐỒNG GỬI GIỮ XE Ô TÔ
-                  </h2>
-                  <p className="text-xs font-semibold text-black mt-1">
+                  </h1>
+                  <p className="text-sm font-semibold text-black mt-1">
                     Số: {contract.contract_code || contractInfo.contract_code} / HĐDV-PL
                   </p>
                 </div>
 
-                {/* CĂN CỨ PHÁP LÝ */}
-                <div className="text-justify text-xs leading-relaxed space-y-1 mb-4 text-black italic">
-                  <p>- Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015 của Quốc hội nước CHXHCN Việt Nam;</p>
-                  <p>- Căn cứ Luật Giao dịch điện tử số 20/2023/QH15 ngày 22/06/2023 của Quốc hội nước CHXHCN Việt Nam;</p>
-                  <p>- Căn cứ vào nhu cầu gửi giữ xe của Bên B và khả năng đáp ứng của Bên A.</p>
-                </div>
-
                 {/* THỜI GIAN & ĐỊA ĐIỂM */}
-                <p className="text-xs leading-relaxed text-black mb-4">
+                <p className="text-xs sm:text-sm leading-relaxed text-black mb-4">
                   Hôm nay, ngày {contractIssueDate.getDate()} tháng {contractIssueDate.getMonth() + 1} năm {contractIssueDate.getFullYear()}, tại {ownerInfo.facility_name || contract.reservation?.facility?.name} (Địa chỉ: {ownerInfo.facility_address || contract.reservation?.facility?.address}), hai bên gồm có:
                 </p>
 
-                {/* THÔNG TIN CÁC BÊN */}
-                <div className="space-y-3 text-xs leading-relaxed text-black mb-5">
-                  {/* BÊN A */}
-                  <div className="space-y-0.5 pl-1">
+                {/* THÔNG TIN CÁC BÊN GIAO DỊCH */}
+                <div className="space-y-4 text-xs sm:text-sm leading-relaxed text-black mb-6">
+                  {/* 1. BÊN A */}
+                  <div className="space-y-1 pl-1">
                     <p className="font-bold uppercase text-black">1. BÊN A (BÊN NHẬN GỬI GIỮ XE Ô TÔ):</p>
-                    <p className="pl-4">- Tên cơ sở bãi đỗ xe: <strong>{ownerInfo.facility_name || contract.reservation?.facility?.name}</strong></p>
+                    <p className="pl-4">- Cơ sở bãi đỗ xe: <strong>{ownerInfo.facility_name || contract.reservation?.facility?.name}</strong></p>
                     <p className="pl-4">- Đại diện bởi: <strong>Ông (Bà) {ownerInfo.provider_name || contract.reservation?.facility?.provider?.full_name}</strong></p>
                     <p className="pl-4">- Địa chỉ bãi xe: {ownerInfo.facility_address || contract.reservation?.facility?.address}</p>
-                    <p className="pl-4">- Điện thoại: {ownerInfo.provider_phone || contract.reservation?.facility?.provider?.phone_number || 'Chưa cập nhật'}</p>
+                    <p className="pl-4">- Điện thoại liên hệ: {ownerInfo.provider_phone || contract.reservation?.facility?.provider?.phone_number || 'Chưa cập nhật'}</p>
                     {ownerInfo.provider_email && (
                       <p className="pl-4">- Email: {ownerInfo.provider_email}</p>
                     )}
                   </div>
 
-                  {/* BÊN B */}
-                  <div className="space-y-0.5 pl-1">
+                  {/* 2. BÊN B */}
+                  <div className="space-y-1 pl-1">
                     <p className="font-bold uppercase text-black">2. BÊN B (BÊN GỬI XE Ô TÔ):</p>
                     <p className="pl-4">- Ông (Bà): <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong></p>
                     <p className="pl-4">- Số CMND / Thẻ CCCD: <strong>{displayIdCard}</strong></p>
                     <p className="pl-4">- Địa chỉ thường trú / liên hệ: {displayAddress}</p>
-                    <p className="pl-4">- Điện thoại: {customerInfo.customer_phone || contract.reservation?.customer?.phone_number || 'Chưa cập nhật'}</p>
+                    <p className="pl-4">- Điện thoại liên hệ: {customerInfo.customer_phone || contract.reservation?.customer?.phone_number || 'Chưa cập nhật'}</p>
                     <p className="pl-4">- Email: {customerInfo.customer_email || contract.reservation?.customer?.email || 'Chưa cập nhật'}</p>
                   </div>
                 </div>
 
-                <p className="text-xs text-black mb-4 italic">
-                  Hai bên cùng thỏa thuận, tự nguyện ký kết Hợp đồng gửi giữ xe ô tô với các điều khoản sau:
+                <p className="text-xs sm:text-sm text-black mb-6 italic">
+                  Sau khi bàn bạc và thống nhất trên tinh thần tự nguyện, bình đẳng, hai bên nhất trí ký kết Hợp đồng gửi giữ xe ô tô với các điều khoản cụ thể sau đây:
                 </p>
 
                 {/* ĐIỀU 1 */}
-                <div className="space-y-1 mb-4">
-                  <p className="font-bold uppercase text-xs text-black">Điều 1. Đối tượng gửi, giữ</p>
-                  <p className="pl-4 text-xs text-black">
-                    1.1. Bên A đồng ý nhận trông giữ và Bên B đồng ý gửi phương tiện xe ô tô theo đúng thông tin sau:
+                <div className="space-y-1 mb-5">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 1. Đối tượng gửi, giữ</p>
+                  <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
+                    1.1. Bên A đồng ý nhận trông giữ và Bên B đồng ý gửi phương tiện xe ô tô theo đúng quy cách thông tin sau:
                   </p>
-                  <p className="pl-8 text-xs text-black">- Loại xe: <strong>{vehicleInfo.vehicle_type || 'Ô tô'}</strong></p>
-                  <p className="pl-8 text-xs text-black">- Biển kiểm soát: <strong>{vehicleInfo.license_plate || vehicleInfo.vehicle_info_raw || contract.reservation?.vehicle_info}</strong></p>
-                  <p className="pl-8 text-xs text-black">- Vị trí đỗ trong bãi: <strong>{rentalInfo.parking_spot || 'Vị trí đỗ tự do trong bãi'}</strong> tại {ownerInfo.facility_name || contract.reservation?.facility?.name}.</p>
+                  <p className="pl-8 text-xs sm:text-sm text-black">- Loại phương tiện / Dòng xe: <strong>{vehicleInfo.vehicle_type || 'Ô tô'}</strong></p>
+                  <p className="pl-8 text-xs sm:text-sm text-black">- Biển kiểm soát: <strong>{vehicleInfo.license_plate || vehicleInfo.vehicle_info_raw || contract.reservation?.vehicle_info}</strong></p>
+                  <p className="pl-8 text-xs sm:text-sm text-black">- Vị trí gửi đỗ: <strong>{rentalInfo.parking_spot || 'Vị trí đỗ tự do trong bãi'}</strong> tại {ownerInfo.facility_name || contract.reservation?.facility?.name}.</p>
                 </div>
 
                 {/* ĐIỀU 2 */}
-                <div className="space-y-1 mb-4">
-                  <p className="font-bold uppercase text-xs text-black">Điều 2. Thời hạn, giá cả dịch vụ và phương thức thanh toán</p>
-                  <p className="pl-4 text-xs text-black">
-                    2.1. <strong>Thời hạn gửi:</strong> Từ ngày <strong>{new Date(contract.start_date).toLocaleDateString('vi-VN')}</strong> đến ngày <strong>{new Date(contract.end_date).toLocaleDateString('vi-VN')}</strong>.
+                <div className="space-y-1 mb-5">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 2. Thời hạn, giá cả và phương thức thanh toán</p>
+                  <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
+                    2.1. <strong>Thời hạn gửi giữ:</strong> Kể từ ngày <strong>{new Date(contract.start_date).toLocaleDateString('vi-VN')}</strong> đến hết ngày <strong>{new Date(contract.end_date).toLocaleDateString('vi-VN')}</strong>.
                   </p>
-                  <p className="pl-4 text-xs text-black">
+                  <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
                     2.2. <strong>Giá dịch vụ trông giữ xe:</strong> <strong>{Number(contract.agreed_price || rentalInfo.agreed_price || 0).toLocaleString('vi-VN')} đồng/tháng/xe</strong>.
                   </p>
-                  <p className="pl-4 text-xs text-black">
-                    2.3. <strong>Thời hạn thanh toán:</strong> Định kỳ trước ngày <strong>{contract.payment_deadline_day || rentalInfo.payment_deadline_day || 5}</strong> hàng tháng.
+                  <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
+                    2.3. <strong>Thời hạn thanh toán:</strong> Bên B thực hiện thanh toán tiền dịch vụ định kỳ trước ngày <strong>{contract.payment_deadline_day || rentalInfo.payment_deadline_day || 5}</strong> hàng tháng.
                   </p>
-                  <p className="pl-4 text-xs text-black">
-                    2.4. <strong>Phương thức thanh toán:</strong> Trực tuyến qua hệ thống ParkLink hoặc tiền mặt/chuyển khoản cho Bên A.
+                  <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
+                    2.4. <strong>Phương thức thanh toán:</strong> Thanh toán trực tuyến qua cổng hệ thống ParkLink hoặc nộp chuyển khoản/tiền mặt cho Bên A.
                   </p>
                 </div>
 
                 {/* ĐIỀU 3 */}
-                <div className="space-y-1 mb-4">
-                  <p className="font-bold uppercase text-xs text-black">Điều 3. Quyền và nghĩa vụ của Bên A</p>
-                  <div className="pl-4 text-xs text-black text-justify whitespace-pre-line leading-relaxed">
+                <div className="space-y-1 mb-5">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 3. Quyền và nghĩa vụ của Bên A</p>
+                  <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
                     {terms.owner_obligations ||
                       '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.'}
                   </div>
                 </div>
 
                 {/* ĐIỀU 4 */}
-                <div className="space-y-1 mb-4">
-                  <p className="font-bold uppercase text-xs text-black">Điều 4. Quyền và nghĩa vụ của Bên B</p>
-                  <div className="pl-4 text-xs text-black text-justify whitespace-pre-line leading-relaxed">
+                <div className="space-y-1 mb-5">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 4. Quyền và nghĩa vụ của Bên B</p>
+                  <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
                     {terms.customer_obligations ||
                       '- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất 15 ngày.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.'}
                   </div>
                 </div>
 
                 {/* ĐIỀU 5 */}
-                <div className="space-y-1 mb-4">
-                  <p className="font-bold uppercase text-xs text-black">Điều 5. Giải quyết tranh chấp</p>
-                  <div className="pl-4 text-xs text-black text-justify whitespace-pre-line leading-relaxed">
+                <div className="space-y-1 mb-5">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 5. Giải quyết tranh chấp</p>
+                  <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
                     {terms.dispute_resolution ||
                       '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án có thẩm quyền để giải quyết.'}
                   </div>
                 </div>
 
                 {/* ĐIỀU 6 */}
-                <div className="space-y-1 mb-6">
-                  <p className="font-bold uppercase text-xs text-black">Điều 6. Hiệu lực của hợp đồng và điều khoản chung</p>
-                  <div className="pl-4 text-xs text-black text-justify whitespace-pre-line leading-relaxed">
+                <div className="space-y-1 mb-8">
+                  <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 6. Điều khoản chung và hiệu lực hợp đồng</p>
+                  <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
                     {terms.termination_conditions ||
-                      `- Hợp đồng này có hiệu lực từ ngày hai bên hoàn tất ký xác nhận điện tử đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`}
+                      `- Hợp đồng này có hiệu lực kể từ ngày hai bên hoàn tất ký xác nhận điện tử đến ngày ${new Date(contract.end_date).toLocaleDateString('vi-VN')}. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`}
                   </div>
                 </div>
 
-                {/* XÁC NHẬN CHỮ KÝ */}
-                <div className="pt-4 border-t border-black mt-6">
-                  <div className="grid grid-cols-2 gap-6 text-center text-xs text-black">
+                {/* PHẦN CHỮ KÝ CỦA HAI BÊN */}
+                <div className="pt-6 border-t border-black mt-8">
+                  <div className="grid grid-cols-2 gap-8 text-center text-xs sm:text-sm text-black">
                     {/* BÊN A */}
                     <div className="space-y-1">
                       <p className="font-bold uppercase">ĐẠI DIỆN BÊN A</p>
-                      <p className="text-[11px] italic">(Ký, ghi rõ họ tên)</p>
-                      <div className="h-20 flex flex-col items-center justify-center">
-                        <div className="border border-black px-2.5 py-0.5 text-[11px] font-semibold uppercase">
-                          ĐÃ KÝ ĐIỆN TỬ
+                      <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
+                      <div className="h-24 flex flex-col items-center justify-center">
+                        <div className="border border-black px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                          XÁC NHẬN ĐIỆN TỬ
                         </div>
-                        <p className="text-[10px] text-black mt-1">
+                        <p className="text-[11px] text-black mt-1">
                           Ngày: {new Date(contract.provider_agreed_at || contract.created_at).toLocaleDateString('vi-VN')}
                         </p>
                       </div>
-                      <p className="font-bold text-xs pt-1">
+                      <p className="font-bold text-xs sm:text-sm pt-2">
                         {ownerInfo.provider_name || contract.reservation?.facility?.provider?.full_name}
                       </p>
                     </div>
@@ -348,22 +352,22 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                     {/* BÊN B */}
                     <div className="space-y-1">
                       <p className="font-bold uppercase">ĐẠI DIỆN BÊN B</p>
-                      <p className="text-[11px] italic">(Ký, ghi rõ họ tên)</p>
-                      <div className="h-20 flex flex-col items-center justify-center">
+                      <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
+                      <div className="h-24 flex flex-col items-center justify-center">
                         {isActive || contract.customer_agreed_at ? (
                           <>
-                            <div className="border border-black px-2.5 py-0.5 text-[11px] font-semibold uppercase">
-                              ĐÃ KÝ ĐIỆN TỬ
+                            <div className="border border-black px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                              XÁC NHẬN ĐIỆN TỬ
                             </div>
-                            <p className="text-[10px] text-black mt-1">
+                            <p className="text-[11px] text-black mt-1">
                               Ngày: {new Date(contract.customer_agreed_at).toLocaleDateString('vi-VN')}
                             </p>
                           </>
                         ) : (
-                          <p className="text-[11px] italic text-black">(Chờ khách hàng ký)</p>
+                          <p className="text-xs italic text-black">(Chờ khách hàng xác nhận điện tử)</p>
                         )}
                       </div>
-                      <p className="font-bold text-xs pt-1">
+                      <p className="font-bold text-xs sm:text-sm pt-2">
                         {customerInfo.customer_name || contract.reservation?.customer?.full_name}
                       </p>
                     </div>
@@ -373,7 +377,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
 
               {/* CUSTOMER ACTION FOOTER */}
               {isCustomer && isPendingSignature && (
-                <div className="w-full max-w-4xl mx-auto p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
+                <div className="print:hidden w-full max-w-4xl mx-auto p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
                   <div className="border-b border-slate-100 pb-2.5">
                     <h5 className="text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5 text-teal-800">
                       <ShieldCheck className="w-4 h-4 text-teal-600" />
@@ -423,8 +427,8 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
           ) : null}
         </div>
 
-        {/* MODAL FOOTER */}
-        <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        {/* MODAL FOOTER - HIDDEN ON PRINT */}
+        <div className="print:hidden p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={onClose}
@@ -447,7 +451,8 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         type="primary"
         loading={accepting}
       />
-    </div>
+    </div>,
+    document.body
   );
 };
 

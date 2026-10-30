@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
+import { LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
@@ -58,14 +58,24 @@ const Navbar = () => {
     return null;
   }
 
+  const canAccessChat = isAuthenticated && (
+    user?.role?.name === 'ADMIN' ||
+    user?.role?.name === 'PROVIDER' ||
+    user?.role?.name === 'CUSTOMER'
+  );
+
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           {/* Logo & Brand */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
-              <MapPin className="w-6 h-6" />
+          <Link to={isAuthenticated && user?.role?.name === "PROVIDER" ? "/dashboard" : "/"} className="flex items-center space-x-3 group">
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+              <img
+                src="/logo.png"
+                alt="ParkLink Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
               <span className="text-2xl font-extrabold text-slate-900 tracking-tight">Park<span className="text-teal-600">Link</span></span>
@@ -75,12 +85,16 @@ const Navbar = () => {
 
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150">
-              Trang Chủ
-            </Link>
-            <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-              <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
-            </Link>
+            {user?.role?.name !== "PROVIDER" && (
+              <>
+                <Link to="/" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150">
+                  Trang Chủ
+                </Link>
+                <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                  <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
+                </Link>
+              </>
+            )}
             {isAuthenticated && user?.role?.name === 'ADMIN' && (
               <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-teal-600" /> Trang Quản Trị
@@ -101,11 +115,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
-              <Link to="/chat" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
-              </Link>
-            )}
             {!isAuthenticated && (
               <Link to="/register-provider" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <Building2 className="w-4 h-4 text-teal-600" /> Cho Thuê Bãi Xe
@@ -113,20 +122,24 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* User Auth Controls */}
+          {/* User Auth Controls (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                {user?.role?.name === 'PROVIDER' && (
+                {/* Icon Tin Nhắn (nằm cạnh quả chuông thông báo) */}
+                {canAccessChat && (
                   <Link
                     to="/chat"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-700 hover:text-teal-600 hover:bg-slate-100 transition duration-150 text-sm font-medium mr-0.5"
+                    className="p-2.5 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
                     title="Tin nhắn"
                   >
-                    <MessageCircle className="w-4 h-4 text-teal-600" />
+                    <MessageCircle className="w-5 h-5" />
                   </Link>
                 )}
+                
+                {/* Quả chuông thông báo */}
                 <NotificationDropdown />
+
                 <div className="relative">
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
@@ -211,9 +224,26 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden flex items-center space-x-2">
-            {isAuthenticated && <NotificationDropdown />}
+          {/* Mobile Menu & Quick Actions Toggle (Khi thu nhỏ màn hình) */}
+          <div className="md:hidden flex items-center space-x-1 sm:space-x-2">
+            {isAuthenticated && (
+              <>
+                {/* Icon Tin Nhắn trên Mobile - Nằm ngay cạnh quả chuông thông báo */}
+                {canAccessChat && (
+                  <Link
+                    to="/chat"
+                    className="p-2 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
+                    title="Tin nhắn"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </Link>
+                )}
+
+                {/* Quả chuông thông báo trên Mobile */}
+                <NotificationDropdown />
+              </>
+            )}
+            
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -245,13 +275,13 @@ const Navbar = () => {
           )}
           {isAuthenticated ? (
             <>
-              {(user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
+              {canAccessChat && (
                 <Link
                   to="/chat"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-slate-700 font-medium hover:text-teal-600"
+                  className="block py-2 text-slate-700 font-medium hover:text-teal-600 flex items-center gap-2"
                 >
-                  Tin nhắn
+                  <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
                 </Link>
               )}
               <Link

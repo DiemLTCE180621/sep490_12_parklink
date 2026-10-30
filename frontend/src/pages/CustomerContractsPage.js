@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
 import SubmitComplaintModal from '../components/common/SubmitComplaintModal';
 import Toast from '../components/common/Toast';
@@ -7,15 +7,10 @@ import {
   FileText,
   Calendar,
   MapPin,
-  Building2,
-  Clock,
-  CheckCircle2,
   Search,
   AlertCircle,
   RefreshCw,
   Loader2,
-  ArrowLeft,
-  ShieldCheck,
   Eye,
   PenTool
 } from 'lucide-react';
@@ -86,251 +81,202 @@ const CustomerContractsPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-6">
-        {/* HEADER SECTION */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+        {/* HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <Link
-              to="/my-reservations"
-              className="inline-flex items-center gap-2 text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline mb-2 transition"
-            >
-              <ArrowLeft className="w-4 h-4" /> Quay lại Yêu cầu thuê xe của tôi
-            </Link>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Hợp Đồng Điện Tử Của Tôi
+            <h1 className="text-2xl font-bold text-slate-900">
+              Hợp đồng điện tử của tôi
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Quản lý, xem và ký điện tử các biên bản xác nhận đăng ký thuê bãi đỗ xe theo tháng.
+            <p className="text-sm text-slate-500 mt-1">
+              Quản lý, xem và xác nhận các hợp đồng thuê bãi đỗ xe theo tháng.
             </p>
           </div>
 
           <button
             onClick={fetchContracts}
             disabled={loading}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-2 border border-slate-200 shrink-0"
+            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5 self-start sm:self-auto"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Tải Lại Danh Sách
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+            Làm mới
           </button>
         </div>
 
-        {/* STATS OVERVIEW CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div
-            onClick={() => setActiveTab('ALL')}
-            className={`p-5 rounded-2xl border cursor-pointer transition ${
-              activeTab === 'ALL'
-                ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="text-xs font-bold uppercase tracking-wider opacity-80 mb-1 flex items-center gap-1.5">
-              <FileText className="w-4 h-4" /> Tất Cả Hợp Đồng
-            </div>
-            <div className="text-2xl font-black">{totalCount}</div>
-          </div>
-
-          <div
-            onClick={() => setActiveTab('PENDING_SIGNATURE')}
-            className={`p-5 rounded-2xl border cursor-pointer transition ${
-              activeTab === 'PENDING_SIGNATURE'
-                ? 'bg-amber-500 text-white border-amber-500 shadow-md'
-                : 'bg-white text-amber-900 border-slate-200 hover:border-amber-300'
-            }`}
-          >
-            <div className="text-xs font-bold uppercase tracking-wider opacity-80 mb-1 flex items-center gap-1.5">
-              <Clock className="w-4 h-4" /> Chờ Ký / Chấp Nhận
-            </div>
-            <div className="text-2xl font-black">{pendingCount}</div>
-          </div>
-
-          <div
-            onClick={() => setActiveTab('ACTIVE')}
-            className={`p-5 rounded-2xl border cursor-pointer transition ${
-              activeTab === 'ACTIVE'
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-md'
-                : 'bg-white text-emerald-900 border-slate-200 hover:border-emerald-300'
-            }`}
-          >
-            <div className="text-xs font-bold uppercase tracking-wider opacity-80 mb-1 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4" /> Đã Ký - Có Hiệu Lực
-            </div>
-            <div className="text-2xl font-black">{activeCount}</div>
-          </div>
-        </div>
-
-        {/* TABS & SEARCH BAR */}
-        <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+        {/* FILTER TABS & SEARCH BAR */}
+        <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="flex items-center gap-1 overflow-x-auto">
             <button
               onClick={() => setActiveTab('ALL')}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
                 activeTab === 'ALL'
-                  ? 'bg-teal-600 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Tất Cả ({totalCount})
+              Tất cả ({totalCount})
             </button>
             <button
               onClick={() => setActiveTab('PENDING_SIGNATURE')}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
                 activeTab === 'PENDING_SIGNATURE'
-                  ? 'bg-amber-500 text-white shadow-sm'
-                  : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Chờ Ký ({pendingCount})
+              Chờ xác nhận ({pendingCount})
             </button>
             <button
               onClick={() => setActiveTab('ACTIVE')}
-              className={`px-4 py-2 rounded-xl text-xs font-extrabold transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
                 activeTab === 'ACTIVE'
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Đã Ký / Hiệu Lực ({activeCount})
+              Đang hiệu lực ({activeCount})
             </button>
           </div>
 
-          <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <div className="relative w-full md:w-64">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Tìm mã hợp đồng, bãi đỗ xe..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+              className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600 transition"
             />
           </div>
         </div>
 
-        {/* CONTENT CONTRACT LIST */}
+        {/* CONTRACT LIST */}
         {loading ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-4">
-            <Loader2 className="w-10 h-10 animate-spin text-teal-600 mx-auto" />
-            <p className="text-slate-600 font-semibold text-sm">
-              Đang tải danh sách hợp đồng điện tử...
+          <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
+            <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
+            <p className="text-slate-500 text-sm">
+              Đang tải danh sách hợp đồng...
             </p>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-3xl p-8 border border-red-200 shadow-sm text-center space-y-4">
-            <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-            <h3 className="text-lg font-bold text-slate-900">Không thể tải dữ liệu</h3>
+          <div className="bg-white rounded-xl p-8 border border-slate-200 text-center space-y-3">
+            <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900">Không thể tải dữ liệu</h3>
             <p className="text-sm text-slate-600">{error}</p>
             <button
               onClick={fetchContracts}
-              className="px-5 py-2.5 bg-teal-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-teal-700 transition"
+              className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử Lại
+              Thử lại
             </button>
           </div>
         ) : filteredContracts.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-4">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
-              <FileText className="w-8 h-8" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-800">Chưa có hợp đồng nào</h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <div className="bg-white rounded-xl py-14 px-6 text-center border border-slate-200 space-y-2.5">
+            <FileText className="w-10 h-10 text-slate-300 mx-auto" />
+            <h3 className="text-base font-semibold text-slate-800">Chưa có hợp đồng nào</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {searchTerm
                 ? 'Không tìm thấy hợp đồng phù hợp với từ khóa tìm kiếm.'
                 : 'Chưa có hợp đồng điện tử nào được tạo cho bạn.'}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-200 overflow-hidden">
             {filteredContracts.map((item) => (
               <div
                 key={item.id}
                 onClick={() => handleOpenDetail(item.id)}
-                className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-6 group"
+                className="p-5 hover:bg-slate-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4"
               >
-                <div className="space-y-4 flex-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-100">
-                        {item.contract_code}
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
+                    <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                      {item.contract_code}
+                    </span>
+                    <span>•</span>
+                    <span>Ngày lập: {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
+                    <span>•</span>
+                    {item.status === 'ACTIVE' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Đang hiệu lực
                       </span>
-                      <span className="text-xs text-slate-400 font-medium">
-                        • Ngày lập {new Date(item.created_at).toLocaleDateString('vi-VN')}
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        Chờ xác nhận
                       </span>
-                    </div>
-
-                    <div>
-                      {item.status === 'ACTIVE' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Đã Ký - Có Hiệu Lực
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
-                          <Clock className="w-3.5 h-3.5" /> Chờ Ký Điện Tử
-                        </span>
-                      )}
-                    </div>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    <div>
-                      <span className="font-bold text-slate-400 uppercase tracking-wider block">Bãi Đỗ Xe</span>
-                      <p className="font-bold text-slate-900 text-sm flex items-center gap-1.5 mt-0.5">
-                        <Building2 className="w-4 h-4 text-teal-600 shrink-0" />
-                        {item.reservation?.facility?.name}
-                      </p>
-                      <p className="text-slate-500 flex items-start gap-1 mt-1 truncate">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                        {item.reservation?.facility?.address}
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 truncate">
+                      {item.reservation?.facility?.name || 'Bãi đỗ xe'}
+                    </h3>
+                    <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">{item.reservation?.facility?.address}</span>
+                    </p>
+                  </div>
 
-                    <div>
-                      <span className="font-bold text-slate-400 uppercase tracking-wider block">Thời Hạn Thuê</span>
-                      <p className="font-bold text-teal-900 flex items-center gap-1.5 mt-0.5">
-                        <Calendar className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        {new Date(item.start_date).toLocaleDateString('vi-VN')} - {new Date(item.end_date).toLocaleDateString('vi-VN')}
-                      </p>
-                    </div>
-
-                    <div>
-                      <span className="font-bold text-slate-400 uppercase tracking-wider block">Giá Thuê / Tháng</span>
-                      <p className="font-black text-teal-700 text-base mt-0.5">
-                        {Number(item.agreed_price || 0).toLocaleString('vi-VN')} VNĐ/tháng
-                      </p>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 pt-1 text-xs text-slate-600">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>
+                        Thời hạn:{' '}
+                        <strong className="font-medium text-slate-800">
+                          {new Date(item.start_date).toLocaleDateString('vi-VN')} – {new Date(item.end_date).toLocaleDateString('vi-VN')}
+                        </strong>
+                      </span>
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0 justify-end pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-                  {item.status === 'PENDING_SIGNATURE' ? (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenDetail(item.id);
-                      }}
-                      className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-slate-950 font-black text-xs rounded-xl shadow-md transition flex items-center gap-1.5"
-                    >
-                      <PenTool className="w-4 h-4 text-slate-950" /> Xem & Ký Hợp Đồng
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
-                        className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5"
-                      >
-                        <AlertCircle className="w-4 h-4" /> Khiếu nại
-                      </button>
+                {/* PRICE & ACTIONS */}
+                <div className="flex sm:flex-row lg:flex-row items-center justify-between lg:justify-end gap-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
+                  <div className="text-left lg:text-right lg:mr-2">
+                    <span className="text-[11px] text-slate-400 block">Giá thuê</span>
+                    <span className="text-base font-bold text-teal-700">
+                      {Number(item.agreed_price || 0).toLocaleString('vi-VN')}{' '}
+                      <span className="text-xs font-normal text-slate-500">đ/tháng</span>
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {item.status === 'PENDING_SIGNATURE' ? (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenDetail(item.id);
                         }}
-                        className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-extrabold rounded-xl transition flex items-center gap-1.5"
+                        className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center gap-1.5"
                       >
-                        <Eye className="w-4 h-4" /> Xem Chi Tiết
+                        <PenTool className="w-3.5 h-3.5" />
+                        Xem & xác nhận
                       </button>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
+                          className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
+                        >
+                          Khiếu nại
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDetail(item.id);
+                          }}
+                          className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Chi tiết
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -339,7 +285,7 @@ const CustomerContractsPage = () => {
       </div>
 
       {/* SUBMIT COMPLAINT MODAL */}
-      <SubmitComplaintModal 
+      <SubmitComplaintModal
         isOpen={isComplaintModalOpen}
         onClose={() => {
           setIsComplaintModalOpen(false);

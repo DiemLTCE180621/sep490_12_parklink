@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, ShieldCheck, Mail, Phone } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 
@@ -50,11 +50,15 @@ const Footer = () => {
     return (
       <footer className="bg-slate-900 text-slate-300 pt-2.5 pb-2 border-t border-slate-800">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-            <div className="space-y-0.5">
-              <div className="flex items-center space-x-1.5">
-                <div className="w-4.5 h-4.5 rounded bg-teal-500 text-slate-900 flex items-center justify-center font-bold">
-                  <MapPin className="w-3 h-3" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+                  <img
+                    src="/logo.png"
+                    alt="ParkLink Logo"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="text-sm font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
               </div>
@@ -86,16 +90,20 @@ const Footer = () => {
     );
   }
 
-  // 3. GUEST và CUSTOMER: Footer đầy đủ, hiển thị trọn vẹn cả 4 cột mà không chiếm nhiều diện tích
+  // 3. GUEST và CUSTOMER: Footer đầy đủ, hiển thị trọn vẹn cả 4 cột
   return (
     <footer className="bg-slate-900 text-slate-300 pt-2.5 pb-2 sm:pt-3 sm:pb-2 border-t border-slate-800">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 items-start">
           {/* Brand Info */}
-          <div className="space-y-0.5">
-            <div className="flex items-center space-x-1.5">
-              <div className="w-4.5 h-4.5 rounded bg-teal-500 text-slate-900 flex items-center justify-center font-bold">
-                <MapPin className="w-3 h-3" />
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+                <img
+                  src="/logo.png"
+                  alt="ParkLink Logo"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <span className="text-sm font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
             </div>
