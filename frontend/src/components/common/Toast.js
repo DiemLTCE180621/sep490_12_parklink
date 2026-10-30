@@ -23,18 +23,21 @@ const Toast = ({
     switch (type) {
       case 'error':
         return {
-          bg: 'bg-slate-900 border-red-500/50 text-white',
-          icon: <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+          wrapper: 'bg-white/95 border-red-200 shadow-xl shadow-red-500/10 text-slate-800 ring-1 ring-red-500/10',
+          iconWrapper: 'bg-red-50 text-red-500 border border-red-100',
+          icon: <AlertCircle className="w-4 h-4 shrink-0" />
         };
       case 'info':
         return {
-          bg: 'bg-slate-900 border-teal-500/50 text-white',
-          icon: <Info className="w-5 h-5 text-teal-400 shrink-0" />
+          wrapper: 'bg-white/95 border-teal-200 shadow-xl shadow-teal-500/10 text-slate-800 ring-1 ring-teal-500/10',
+          iconWrapper: 'bg-teal-50 text-teal-600 border border-teal-100',
+          icon: <Info className="w-4 h-4 shrink-0" />
         };
       default:
         return {
-          bg: 'bg-slate-900 border-emerald-500/50 text-white',
-          icon: <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          wrapper: 'bg-white/95 border-emerald-200 shadow-xl shadow-emerald-500/10 text-slate-800 ring-1 ring-emerald-500/10',
+          iconWrapper: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+          icon: <CheckCircle2 className="w-4 h-4 shrink-0" />
         };
     }
   };
@@ -42,14 +45,15 @@ const Toast = ({
   const getPositionClass = () => {
     switch (position) {
       case 'top-center':
-        return 'top-20 sm:top-24 left-1/2 -translate-x-1/2';
+        return 'top-24 left-1/2 -translate-x-1/2';
       case 'top-left':
-        return 'top-20 sm:top-24 left-4 sm:left-6';
+        return 'top-24 left-5 sm:left-6';
       case 'bottom-right':
-        return 'bottom-6 right-6';
+        return 'bottom-5 right-5 sm:right-6';
       case 'top-right':
       default:
-        return 'top-20 sm:top-24 right-4 sm:right-6';
+        // Đặt ở top-24 (96px) để nằm ngay dưới Header Navbar (80px), không bị đè lên Header
+        return 'top-24 right-5 sm:right-6';
     }
   };
 
@@ -57,15 +61,26 @@ const Toast = ({
   const positionClass = getPositionClass();
 
   return (
-    <div className={`fixed ${positionClass} z-[9999] transition-all duration-300 ease-out animate-in fade-in slide-in-from-top-4`}>
-      <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl border shadow-2xl backdrop-blur-md ${style.bg}`}>
-        {style.icon}
-        <span className="text-sm font-semibold pr-2">{message}</span>
+    <div className={`fixed ${positionClass} z-[9999] transition-all duration-300 ease-out animate-in fade-in slide-in-from-top-3`}>
+      <div className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border backdrop-blur-md max-w-sm sm:max-w-md ${style.wrapper}`}>
+        {/* Icon thu nhỏ đặt trong khung tròn mềm */}
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.iconWrapper}`}>
+          {style.icon}
+        </div>
+        
+        {/* Nội dung thông báo nhỏ gọn, vừa mắt */}
+        <span className="text-xs sm:text-[13px] font-medium text-slate-700 leading-snug pr-1 break-words">
+          {message}
+        </span>
+
+        {/* Nút đóng nhỏ gọn */}
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white transition p-1 rounded-lg"
+          type="button"
+          aria-label="Đóng thông báo"
+          className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors p-1 rounded-md ml-auto shrink-0"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

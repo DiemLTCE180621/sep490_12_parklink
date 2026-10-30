@@ -73,7 +73,15 @@ const initSocket = (server) => {
                     newMessage.tempId = data.tempId;
                 }
 
-                io.to(roomId.toString()).emit('receive_message', newMessage);
+                // Chaining .to() để Socket.IO tự động gom danh sách phòng thành 1 Set duy nhất:
+                // Tránh tình trạng client vừa ở phòng chat vừa ở phòng cá nhân bị nhận trùng sự kiện emit 2 lần
+                let broadcaster = io.to(roomId.toString());
+                if (newMessage.room) {
+                    broadcaster = broadcaster
+                        .to(`user_${newMessage.room.customer_id}`)
+                        .to(`user_${newMessage.room.provider_id}`);
+                }
+                broadcaster.emit('receive_message', newMessage);
 
                 console.log(`[Socket] Đã phát tin nhắn vào phòng ${roomId}`);
             } catch (error) {

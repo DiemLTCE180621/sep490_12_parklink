@@ -22,6 +22,8 @@ const Navbar = () => {
         return <span className="bg-purple-100 text-purple-800 text-xs px-2 py-0.5 rounded font-semibold">Admin</span>;
       case 'PROVIDER':
         return <span className="bg-teal-100 text-teal-800 text-xs px-2 py-0.5 rounded font-semibold">Chủ bãi đỗ</span>;
+      case 'FIELD_INSPECTOR':
+        return <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-semibold">Khảo sát viên</span>;
       default:
         return null;
     }
@@ -33,6 +35,8 @@ const Navbar = () => {
         return 'Trang quản trị';
       case 'PROVIDER':
         return 'Trang quản lý bãi xe';
+      case 'FIELD_INSPECTOR':
+        return 'Trang khảo sát';
       default:
         return 'Trang cá nhân';
     }
@@ -50,7 +54,7 @@ const Navbar = () => {
   };
 
   // Ẩn Navbar (Header) đối với Admin, Nhân viên khảo sát hoặc người dùng đang cần đổi mật khẩu lần đầu
-  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR' || user?.requires_password_change)) {
+  if (isAuthenticated && user?.requires_password_change) {
     return null;
   }
 
@@ -77,6 +81,16 @@ const Navbar = () => {
             <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
               <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
             </Link>
+            {isAuthenticated && user?.role?.name === 'ADMIN' && (
+              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Trang Quản Trị
+              </Link>
+            )}
+            {isAuthenticated && user?.role?.name === 'FIELD_INSPECTOR' && (
+              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Công Việc Khảo Sát
+              </Link>
+            )}
             {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
               <>
                 <Link to="/my-reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
@@ -87,7 +101,7 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            {isAuthenticated && (user?.role?.name === 'CUSTOMER' || user?.role?.name === 'PROVIDER') && (
+            {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
               <Link to="/chat" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
                 <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
               </Link>
@@ -103,74 +117,83 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
+                {user?.role?.name === 'PROVIDER' && (
+                  <Link
+                    to="/chat"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-700 hover:text-teal-600 hover:bg-slate-100 transition duration-150 text-sm font-medium mr-0.5"
+                    title="Tin nhắn"
+                  >
+                    <MessageCircle className="w-4 h-4 text-teal-600" />
+                  </Link>
+                )}
                 <NotificationDropdown />
                 <div className="relative">
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                     className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-100 transition duration-150 border border-slate-200"
                   >
-                  <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
-                    {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-semibold text-slate-900 leading-tight">
-                      {user?.full_name}
+                    <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                      {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    {getRoleBadge(user?.role?.name) && (
-                      <div className="text-xs text-slate-500">
-                        {getRoleBadge(user?.role?.name)}
+                    <div className="text-left">
+                      <div className="text-sm font-semibold text-slate-900 leading-tight">
+                        {user?.full_name}
                       </div>
-                    )}
-                  </div>
-                </button>
-
-                {/* Dropdown Menu */}
-                {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50">
-                    <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="text-xs text-slate-400">Đăng nhập với email</p>
-                      <p className="text-sm font-medium text-slate-900 truncate">{user?.email}</p>
+                      {getRoleBadge(user?.role?.name) && (
+                        <div className="text-xs text-slate-500">
+                          {getRoleBadge(user?.role?.name)}
+                        </div>
+                      )}
                     </div>
+                  </button>
 
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
-                    >
-                      {getDashboardIcon(user?.role?.name)}
-                      {getDashboardLinkLabel(user?.role?.name)}
-                    </Link>
+                  {/* Dropdown Menu */}
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50">
+                      <div className="px-4 py-3 border-b border-slate-100">
+                        <p className="text-xs text-slate-400">Đăng nhập với email</p>
+                        <p className="text-sm font-medium text-slate-900 truncate">{user?.email}</p>
+                      </div>
 
-                    {user?.role?.name === 'CUSTOMER' && (
-                      <>
-                        <Link
-                          to="/my-favorites"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
-                        >
-                          <Heart className="w-4 h-4 mr-2.5 text-rose-500" /> Bãi xe yêu thích
-                        </Link>
-                        <Link
-                          to="/my-complaints"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
-                        >
-                          <AlertCircle className="w-4 h-4 mr-2.5 text-amber-500" /> Khiếu nại của tôi
-                        </Link>
-                      </>
-                    )}
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                      >
+                        {getDashboardIcon(user?.role?.name)}
+                        {getDashboardLinkLabel(user?.role?.name)}
+                      </Link>
 
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
-                    >
-                      <LogOut className="w-4 h-4 mr-2.5" /> Đăng xuất
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
+                      {user?.role?.name === 'CUSTOMER' && (
+                        <>
+                          <Link
+                            to="/my-favorites"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                          >
+                            <Heart className="w-4 h-4 mr-2.5 text-rose-500" /> Bãi xe yêu thích
+                          </Link>
+                          <Link
+                            to="/my-complaints"
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-teal-50 hover:text-teal-700 transition"
+                          >
+                            <AlertCircle className="w-4 h-4 mr-2.5 text-amber-500" /> Khiếu nại của tôi
+                          </Link>
+                        </>
+                      )}
+
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+                      >
+                        <LogOut className="w-4 h-4 mr-2.5" /> Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
               <>
                 <Link
                   to="/login"

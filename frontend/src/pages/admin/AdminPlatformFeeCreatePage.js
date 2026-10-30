@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Plus, AlertCircle,
+  ArrowLeft, Plus,
   Loader2, Calculator, CheckCircle2,
   Sparkles, Power
 } from 'lucide-react';
 import platformFeeService from '../../services/platformFeeService';
+import Toast from '../../components/common/Toast';
 
 const AdminPlatformFeeCreatePage = () => {
   const navigate = useNavigate();
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [toast, setToast] = useState(null);
+  const [existingFees, setExistingFees] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
     min_slots: '',
     max_slots: '',
-    is_unlimited_max: false,
     fee_amount: '',
     description: '',
     is_active: true
   });
+
+  // Tải danh sách các gói biểu phí hiện có để kiểm tra trùng khung slot ngay trên giao diện
+  useEffect(() => {
+    const fetchExistingFees = async () => {
+      try {
+        const res = await platformFeeService.getPlatformFees();
+        const fees = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        setExistingFees(fees);
+      } catch (err) {
+        console.error('Không thể tải danh sách biểu phí hiện có:', err);
+      }
+    };
+    fetchExistingFees();
+  }, []);
 
   // Xử lý thay đổi trường dữ liệu
   const handleChange = (field, value) => {
@@ -34,31 +49,57 @@ const AdminPlatformFeeCreatePage = () => {
   // Submit tạo mới gói biểu phí nền tảng theo quy mô Min - Max
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
 
     if (!formData.name.trim()) {
-      setError('Vui lòng nhập tên gói biểu phí.');
+      setToast({ message: 'Vui lòng nhập tên gói biểu phí.', type: 'error' });
       return;
     }
 
     const minSlots = parseInt(formData.min_slots, 10);
     if (isNaN(minSlots) || minSlots < 1) {
-      setError('Số lượng slot tối thiểu (Min) phải là số nguyên lớn hơn hoặc bằng 1.');
+      setToast({ message: 'Số lượng slot tối thiểu (Min) phải là số nguyên lớn hơn hoặc bằng 1.', type: 'error' });
       return;
     }
 
-    let maxSlots = null;
-    if (!formData.is_unlimited_max) {
-      maxSlots = parseInt(formData.max_slots, 10);
-      if (isNaN(maxSlots) || maxSlots < minSlots) {
-        setError(`Số lượng slot tối đa (Max) phải lớn hơn hoặc bằng slot tối thiểu (${minSlots}).`);
+    if (minSlots > 15) {
+      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      return;
+    }
+
+    if (!formData.max_slots) {
+      setToast({ message: 'Vui lòng nhập số lượng slot tối đa (Max).', type: 'error' });
+      return;
+    }
+
+    const maxSlots = parseInt(formData.max_slots, 10);
+    if (isNaN(maxSlots) || maxSlots < minSlots) {
+      setToast({ message: `Số lượng slot tối đa (Max) phải lớn hơn hoặc bằng slot tối thiểu (${minSlots}).`, type: 'error' });
+      return;
+    }
+
+    if (maxSlots > 15) {
+      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      return;
+    }
+
+    // Kiểm tra trùng lặp (chồng lấn) với các gói đã có trong hệ thống
+    for (const fee of existingFees) {
+      const existingMin = fee.min_slots;
+      const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
+
+      // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
+      if (minSlots <= existingMax && maxSlots >= existingMin) {
+        setToast({
+          message: `Khung quy mô (${minSlots} - ${maxSlots} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ). Vui lòng điều chỉnh lại!`,
+          type: 'error'
+        });
         return;
       }
     }
 
     const amount = parseFloat(formData.fee_amount);
     if (isNaN(amount) || amount < 0) {
-      setError('Mức phí nền tảng phải là số dương hợp lệ.');
+      setToast({ message: 'Mức phí nền tảng phải là số dương hợp lệ.', type: 'error' });
       return;
     }
 
@@ -85,7 +126,7 @@ const AdminPlatformFeeCreatePage = () => {
         }
       });
     } catch (err) {
-      setError(err.message || 'Lỗi khi tạo mới gói biểu phí');
+      setToast({ message: err.message || 'Lỗi khi tạo mới gói biểu phí', type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -93,17 +134,19 @@ const AdminPlatformFeeCreatePage = () => {
 
   const parsedAmount = parseFloat(formData.fee_amount) || 0;
   const parsedMin = parseInt(formData.min_slots, 10);
-  const parsedMax = formData.is_unlimited_max ? null : parseInt(formData.max_slots, 10);
-
-  // Nhãn quy mô slot mô phỏng trên thẻ
-  const slotBadgeText = formData.is_unlimited_max
-    ? (!isNaN(parsedMin) ? `Từ ${parsedMin} chỗ trở lên` : 'Từ ... chỗ')
-    : (!isNaN(parsedMin)
-        ? (!isNaN(parsedMax) && parsedMin === parsedMax ? `${parsedMin} chỗ` : `${parsedMin} – ${!isNaN(parsedMax) ? parsedMax : '...'} chỗ`)
-        : '... chỗ');
+  const parsedMax = parseInt(formData.max_slots, 10);
 
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8 bg-slate-50 w-full min-h-[calc(100vh-70px)] flex flex-col justify-between">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+          duration={2500}
+        />
+      )}
+
       <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col space-y-3">
         {/* Nút quay lại */}
         <button
@@ -117,40 +160,25 @@ const AdminPlatformFeeCreatePage = () => {
         {/* Khung Form Duy Nhất Trải Rộng Toàn Màn Hình */}
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden w-full flex-1 flex flex-col">
           {/* Header Card Banner */}
-          <div className="px-6 sm:px-8 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+          <div className="px-6 sm:px-8 py-5 border-b border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-teal-500 text-slate-900 flex items-center justify-center font-black shadow-md shrink-0">
-                <Plus className="w-6 h-6 text-slate-950" />
+              <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center font-black shadow-sm shrink-0">
+                <Plus className="w-6 h-6 text-teal-600" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                   Tạo Mới Gói Biểu Phí Nền Tảng
                 </h1>
-                <p className="text-xs sm:text-sm text-teal-300/90 mt-0.5">
-                  Cấu hình mức phí nền tảng thu 1 lần theo khung quy mô chỗ đỗ (Khung Min – Max)
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Cấu hình mức phí nền tảng thu 1 lần theo quy mô chỗ đỗ hộ gia đình (Tối đa 15 chỗ)
                 </p>
               </div>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md rounded-xl text-xs font-bold text-teal-200 border border-white/10 self-start sm:self-auto shrink-0">
-              <Sparkles className="w-4 h-4 text-teal-400" />
-              <span>Ninh Kiều, Cần Thơ</span>
             </div>
           </div>
 
           {/* Nội dung form bên trong khung */}
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
-              {/* Banner Lỗi nếu có */}
-              {error && (
-                <div className="p-3.5 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-start gap-2.5 text-xs font-medium">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-bold">Không thể tạo gói biểu phí</h4>
-                    <p className="mt-0.5">{error}</p>
-                  </div>
-                </div>
-              )}
-
               {/* Hàng 1: Tên Gói & Mức Phí Nền Tảng */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -189,15 +217,19 @@ const AdminPlatformFeeCreatePage = () => {
                 </div>
               </div>
 
-              {/* Hàng 2: Slot Min & Slot Max (Cân đối 2 cột như Hàng 1) */}
+              {/* Hàng 2: Slot Min & Slot Max (Giới hạn tối đa 15 chỗ) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Slot Tối Thiểu (Min) <span className="text-red-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-700">
+                      Slot Tối Thiểu (Min) <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[11px] font-semibold text-slate-400">Từ 1 đến 15 chỗ</span>
+                  </div>
                   <input
                     type="number"
                     min="1"
+                    max="15"
                     required
                     value={formData.min_slots}
                     onChange={(e) => handleChange('min_slots', e.target.value)}
@@ -209,32 +241,26 @@ const AdminPlatformFeeCreatePage = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs font-bold text-slate-700">
-                      Slot Tối Đa (Max) {!formData.is_unlimited_max && <span className="text-red-500">*</span>}
+                      Slot Tối Đa (Max) <span className="text-red-500">*</span>
                     </label>
-                    <label className="flex items-center gap-1.5 text-xs text-teal-700 font-bold cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={formData.is_unlimited_max}
-                        onChange={(e) => handleChange('is_unlimited_max', e.target.checked)}
-                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 w-3.5 h-3.5"
-                      />
-                      <span>Không giới hạn</span>
-                    </label>
+                    <span className="text-[11px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                      Tối đa 15 chỗ
+                    </span>
                   </div>
                   <input
                     type="number"
                     min={!isNaN(parsedMin) && parsedMin >= 1 ? parsedMin : 1}
-                    disabled={formData.is_unlimited_max}
-                    required={!formData.is_unlimited_max}
-                    value={formData.is_unlimited_max ? '' : formData.max_slots}
+                    max="15"
+                    required
+                    value={formData.max_slots}
                     onChange={(e) => handleChange('max_slots', e.target.value)}
-                    placeholder={formData.is_unlimited_max ? 'Không giới hạn (∞)' : 'Ví dụ: 3'}
-                    className={`w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold transition ${formData.is_unlimited_max ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-slate-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500'}`}
+                    placeholder="Ví dụ: 3 (tối đa 15)"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold transition bg-slate-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
 
-              {/* Hàng 3: Trạng Thái Áp Dụng (Xuống hàng riêng, 2 card cân đối rộng rãi và trực quan) */}
+              {/* Hàng 3: Trạng Thái Áp Dụng */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">
                   Trạng Thái Áp Dụng <span className="text-slate-400 font-normal">(Thiết lập hiệu lực áp dụng của gói biểu phí)</span>
@@ -309,11 +335,9 @@ const AdminPlatformFeeCreatePage = () => {
                       Quy tắc áp dụng: Áp dụng mức phí cố định{' '}
                       <strong className="text-teal-900 font-extrabold">{parsedAmount.toLocaleString('vi-VN')} VNĐ</strong> cho bãi xe{' '}
                       <strong className="text-teal-900 font-extrabold">
-                        {formData.is_unlimited_max
-                          ? `từ ${parsedMin} chỗ trở lên`
-                          : (!isNaN(parsedMax) && parsedMin === parsedMax
-                              ? `đúng ${parsedMin} chỗ`
-                              : `từ ${parsedMin} – ${!isNaN(parsedMax) ? parsedMax : '...'} chỗ`)}
+                        {!isNaN(parsedMax) && parsedMin === parsedMax
+                          ? `đúng ${parsedMin} chỗ`
+                          : `từ ${parsedMin} – ${!isNaN(parsedMax) ? parsedMax : '...'} chỗ`}
                       </strong>.
                     </span>
                   </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -17,6 +17,19 @@ const ChatPage = () => {
     const location = useLocation();
     const initialRoomId = location.state?.activeRoomId;
 
+    // Các Ref để lưu trạng thái mới nhất, tránh stale closure và tránh re-bind socket listener liên tục
+    const activeRoomIdRef = useRef(activeRoomId);
+    activeRoomIdRef.current = activeRoomId;
+
+    const userRef = useRef(user);
+    userRef.current = user;
+
+    const tokenRef = useRef(token);
+    tokenRef.current = token;
+
+    const roomsRef = useRef(rooms);
+    roomsRef.current = rooms;
+
     // Tự động chọn phòng nếu có truyền state từ trang khác sang (chỉ chọn lần đầu tiên)
     useEffect(() => {
         if (initialRoomId && rooms.length > 0 && !activeRoomId) {
@@ -27,10 +40,11 @@ const ChatPage = () => {
     // 1. Lấy danh sách phòng chat khi vừa vào trang
     useEffect(() => {
         if (!token) return;
+        let isMounted = true;
         const fetchRooms = async () => {
             try {
                 const res = await chatService.getUserRooms(token);
-                if (res.success) {
+                if (isMounted && res.success) {
                     setRooms(res.data);
                 }
             } catch (error) {
@@ -38,15 +52,20 @@ const ChatPage = () => {
             }
         };
         fetchRooms();
+        return () => {
+            isMounted = false;
+        };
     }, [token]);
 
     // 2. Lấy lịch sử tin nhắn khi bấm chọn 1 phòng bên cột trái
     useEffect(() => {
         if (!activeRoomId || !token) return;
+        let isMounted = true;
+
         const fetchMessages = async () => {
             try {
                 const res = await chatService.getRoomMessages(activeRoomId, token);
-                if (res.success) {
+                if (isMounted && res.success) {
                     setMessages(res.data);
                 }
             } catch (error) {
@@ -62,18 +81,60 @@ const ChatPage = () => {
             }
             return r;
         }));
+
+        return () => {
+            isMounted = false;
+        };
     }, [activeRoomId, token]);
 
-    // Ref để lưu danh sách phòng mới nhất cho socket (tránh re-render liên tục làm rớt sự kiện)
-    const roomsRef = React.useRef(rooms);
+    // Hàm phụ trợ: Đưa phòng có tin nhắn mới nhất lên đầu danh sách (chuẩn Zalo)
+    const bringRoomToTop = (roomId, latestMessage, isIncoming = false) => {
+        setRooms(prevRooms => {
+            const currentActiveRoomId = activeRoomIdRef.current;
+            const currentUser = userRef.current;
+            const currentToken = tokenRef.current;
+
+            const roomIndex = prevRooms.findIndex(r => Number(r.id) === Number(roomId));
+            
+            // Nếu phòng chưa có trong danh sách (người lạ nhắn tới lần đầu) -> gọi API tải lại
+            if (roomIndex === -1) {
+                if (currentToken) {
+                    chatService.getUserRooms(currentToken).then(res => {
+                        if (res.success) setRooms(res.data);
+                    });
+                }
+                return prevRooms;
+            }
+
+            const targetRoom = prevRooms[roomIndex];
+            const isMe = Number(latestMessage.sender_id) === Number(currentUser?.id);
+            const currentCount = targetRoom._count?.messages || 0;
+            
+            // Tăng số tin chưa đọc nếu người khác nhắn và mình đang không mở phòng đó
+            const newCount = (isIncoming && !isMe && Number(roomId) !== Number(currentActiveRoomId))
+                ? currentCount + 1 
+                : (Number(roomId) === Number(currentActiveRoomId) ? 0 : currentCount);
+
+            const updatedTargetRoom = {
+                ...targetRoom,
+                messages: [latestMessage],
+                _count: { ...targetRoom._count, messages: newCount }
+            };
+
+            // Lấy phòng này ra và đưa lên đầu danh sách
+            const otherRooms = prevRooms.filter((_, idx) => idx !== roomIndex);
+            return [updatedTargetRoom, ...otherRooms];
+        });
+    };
+
+    // Tự động join các phòng chat mỗi khi rooms cập nhật
     useEffect(() => {
-        roomsRef.current = rooms;
         if (socket && socket.connected && rooms.length > 0) {
             rooms.forEach(room => socket.emit('join_room', room.id));
         }
     }, [rooms, socket]);
 
-    // 3. Lắng nghe tin nhắn mới tới qua màng nhĩ Socket
+    // 3. Lắng nghe tin nhắn mới tới qua Socket (chỉ bind một lần, tối ưu hiệu năng)
     useEffect(() => {
         if (!socket) return;
 
@@ -81,22 +142,29 @@ const ChatPage = () => {
             roomsRef.current.forEach(room => socket.emit('join_room', room.id));
         };
 
-        // Đảm bảo join room khi socket connect hoặc khi có danh sách phòng
         if (socket.connected && roomsRef.current.length > 0) {
             joinRooms();
         }
 
-        socket.on('connect', joinRooms);
         const handleReceiveMessage = (newMessage) => {
-            if (activeRoomId && Number(newMessage.room_id) === Number(activeRoomId)) {
-                // Xóa đúng tin nhắn giả (is_sending) dựa vào tempId trước khi thêm tin thật
+            const currentActiveRoomId = activeRoomIdRef.current;
+            const currentUser = userRef.current;
+            const currentToken = tokenRef.current;
+
+            if (currentActiveRoomId && Number(newMessage.room_id) === Number(currentActiveRoomId)) {
+                // Xóa tin nhắn giả (is_sending) dựa vào tempId trước khi thêm tin thật
                 setMessages(prev => {
+                    // Kiểm tra chống trùng lặp: Nếu tin nhắn thật (ID từ DB) đã có thì bỏ qua
+                    if (newMessage.id && prev.some(m => m.id === newMessage.id)) {
+                        return prev;
+                    }
+
                     let wasRead = false;
                     const filtered = prev.filter(m => {
                         const isMatch = (newMessage.tempId && m.id === newMessage.tempId) ||
-                            (m.is_sending && m.content === newMessage.content);
+                            (m.is_sending && m.content === newMessage.content && Number(m.sender_id) === Number(newMessage.sender_id));
                         if (isMatch) {
-                            if (m.is_read) wasRead = true; // Lưu lại trạng thái Đã xem nếu bị chênh lệch nhịp Socket
+                            if (m.is_read) wasRead = true; // Giữ lại trạng thái Đã xem
                             return false;
                         }
                         return true;
@@ -105,56 +173,38 @@ const ChatPage = () => {
                 });
 
                 // Nếu mình đang mở phòng và đối phương gửi tới -> Đánh dấu Đã xem ngay lập tức
-                if (newMessage.sender_id !== user.id) {
-                    chatService.markMessagesAsRead(activeRoomId, token).catch(console.error);
-                    socket.emit('mark_read', { roomId: activeRoomId, readerId: user.id });
+                if (Number(newMessage.sender_id) !== Number(currentUser?.id)) {
+                    chatService.markMessagesAsRead(currentActiveRoomId, currentToken).catch(console.error);
+                    socket.emit('mark_read', { roomId: currentActiveRoomId, readerId: currentUser?.id });
                 }
             }
 
-            // Cập nhật lại danh sách phòng bên trái (Nhảy lên đầu + hiển thị tin nhắn mới nhất)
-            setRooms(prevRooms => {
-                const updatedRooms = prevRooms.map(r => {
-                    if (Number(r.id) === Number(newMessage.room_id)) {
-                        const isMe = newMessage.sender_id === user.id;
-                        // Nếu đối phương gửi và mình ĐANG KHÔNG mở phòng đó -> Tăng số tin chưa đọc lên 1
-                        const currentCount = r._count?.messages || 0;
-                        const newCount = (!isMe && Number(newMessage.room_id) !== Number(activeRoomId))
-                            ? currentCount + 1 : currentCount;
-
-                        return {
-                            ...r,
-                            messages: [newMessage], // Cập nhật tin nhắn mới nhất
-                            _count: { ...r._count, messages: newCount }
-                        };
-                    }
-                    return r;
-                });
-
-                // Sắp xếp lại: Phòng nào có tin nhắn mới nhất thì đưa lên đầu tiên
-                return updatedRooms.sort((a, b) => {
-                    const timeA = a.messages?.[0]?.created_at || a.created_at;
-                    const timeB = b.messages?.[0]?.created_at || b.created_at;
-                    return new Date(timeB) - new Date(timeA);
-                });
-            });
+            // Đưa phòng vừa nhận tin nhắn lên đầu danh sách cuộc trò chuyện bên trái (chuẩn Zalo)
+            bringRoomToTop(newMessage.room_id, newMessage, true);
         };
 
-        const handleMessagesRead = ({ roomId, readerId }) => {
-            if (activeRoomId && Number(roomId) === Number(activeRoomId)) {
-                setMessages(prev => prev.map(m => ({ ...m, is_read: true })));
+        const handleMessagesRead = ({ roomId }) => {
+            const currentActiveRoomId = activeRoomIdRef.current;
+            if (currentActiveRoomId && Number(roomId) === Number(currentActiveRoomId)) {
+                setMessages(prev => {
+                    const hasUnread = prev.some(m => !m.is_read);
+                    if (!hasUnread) return prev;
+                    return prev.map(m => m.is_read ? m : { ...m, is_read: true });
+                });
             }
         };
 
+        socket.on('connect', joinRooms);
         socket.on('receive_message', handleReceiveMessage);
         socket.on('messages_read', handleMessagesRead);
 
-        // Cleanup function: Tắt lắng nghe khi tắt trang
+        // Cleanup: Gỡ bỏ listener khi unmount
         return () => {
             socket.off('connect', joinRooms);
             socket.off('receive_message', handleReceiveMessage);
             socket.off('messages_read', handleMessagesRead);
         };
-    }, [socket, activeRoomId, user?.id, token]);
+    }, [socket]);
 
     // 4. Xử lý hành động bấm nút GỬI (chữ hoặc file) theo kiểu Optimistic UI
     const handleSendMessage = async (text, files) => {
@@ -163,10 +213,16 @@ const ChatPage = () => {
         // BƯỚC 1: TẠO FAKE MESSAGE CHO GIAO DIỆN (CHẠY TỨC THÌ)
         let localPreviewUrls = [];
         if (files && files.length > 0) {
-            localPreviewUrls = Array.from(files).map(file => URL.createObjectURL(file));
+            localPreviewUrls = Array.from(files).map(file => {
+                const isImg = file.type?.startsWith('image/');
+                const isVid = file.type?.startsWith('video/');
+                const tag = isImg ? 'image' : (isVid ? 'video' : 'doc');
+                const safeName = encodeURIComponent(file.name);
+                return `${URL.createObjectURL(file)}#type=${tag}&name=${safeName}`;
+            });
         }
 
-        const tempId = 'temp_' + Date.now();
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
         const fakeMessage = {
             id: tempId,
             room_id: activeRoomId,
@@ -179,6 +235,9 @@ const ChatPage = () => {
 
         // Đẩy ra màn hình ngay lập tức
         setMessages(prev => [...prev, fakeMessage]);
+
+        // Đẩy ngay phòng đang chat lên đầu danh sách cuộc trò chuyện bên trái
+        bringRoomToTop(activeRoomId, fakeMessage, false);
 
         // BƯỚC 2: ÂM THẦM CHẠY BACKGROUND ĐỂ UP LÊN SERVER
         try {
@@ -200,6 +259,9 @@ const ChatPage = () => {
             });
         } catch (error) {
             console.error("Lỗi gửi tin nhắn:", error);
+            // Gỡ bỏ tin nhắn tạm nếu upload lỗi và thông báo
+            setMessages(prev => prev.filter(m => m.id !== tempId));
+            alert(error.message || 'Không thể tải file lên. Vui lòng thử lại.');
         }
     };
 

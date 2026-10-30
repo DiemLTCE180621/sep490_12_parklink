@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import complaintService from '../../services/complaintService';
-import { AlertCircle, Calendar, CheckCircle2, Clock, Inbox, Loader2, ShieldAlert } from 'lucide-react';
+import { AlertCircle, Calendar, CheckCircle2, Clock, Inbox, Loader2, ShieldAlert, User, Building2 } from 'lucide-react';
 
 const AdminComplaintsPanel = () => {
   const [complaints, setComplaints] = useState([]);
@@ -113,56 +113,97 @@ const AdminComplaintsPanel = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="p-4 sm:p-5 space-y-4 bg-slate-50/50">
             {complaints.map((item) => (
-              <div key={item.id} className="bg-slate-50 rounded-2xl p-5 border border-slate-200 flex flex-col gap-4 hover:shadow-md transition">
-                <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-extrabold text-slate-900">{item.title}</h4>
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
-                      <span className="font-mono bg-white border border-slate-200 px-2 py-0.5 rounded text-slate-600">#{item.id}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> Gửi ngày: {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
-                    </div>
+              <div
+                key={item.id}
+                className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col gap-3.5"
+              >
+                {/* 1. Header của thẻ ID: Tiêu đề, Mã ID, Ngày gửi và Trạng thái */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs border border-slate-200">
+                      #{item.id}
+                    </span>
+                    <h4 className="text-base sm:text-lg font-extrabold text-slate-900">{item.title}</h4>
+                    <span className="text-slate-300">•</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      Gửi ngày: {new Date(item.created_at).toLocaleDateString('vi-VN')}
+                    </span>
                   </div>
                   <div>{getStatusBadge(item.status)}</div>
                 </div>
 
-                <div className="text-sm text-slate-700 bg-white p-4 rounded-xl border border-slate-100">
-                  <span className="font-bold block mb-1 text-slate-900">Nội dung khiếu nại:</span>
-                  <p className="whitespace-pre-wrap">{item.description}</p>
+                {/* 2. Nội dung khiếu nại (Không đóng khung nhỏ, hiển thị tự nhiên trong thẻ) */}
+                <div className="text-sm text-slate-700 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-slate-900 shrink-0">Nội dung khiếu nại:</span>
+                    <p className="text-slate-800 whitespace-pre-wrap flex-1">{item.description}</p>
+                  </div>
                   {Array.isArray(item.image_urls) && item.image_urls.length > 0 && (
-                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+                    <div className="pt-1 flex flex-wrap gap-2">
                       {item.image_urls.map((url, index) => (
-                        <a key={url} href={url} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white">
-                          <img src={url} alt={`Ảnh khiếu nại ${index + 1}`} className="h-full w-full object-cover hover:opacity-90" />
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="relative block w-20 h-20 rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition group"
+                        >
+                          <img
+                            src={url}
+                            alt={`Ảnh khiếu nại ${index + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                          />
                         </a>
                       ))}
                     </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-2">
-                  <div className="bg-white p-3 rounded-xl border border-slate-200">
-                    <span className="block text-xs font-bold text-slate-500 mb-1 uppercase">Khách hàng (Người gửi)</span>
-                    <p className="font-semibold text-slate-900">{item.customer?.full_name}</p>
-                    <p className="text-slate-600 text-xs">{item.customer?.phone_number || item.customer?.email}</p>
+                {/* 3. Thông tin người gửi & bãi xe (Mỗi thông tin nằm trên 1 dòng riêng biệt) */}
+                <div className="pt-3 border-t border-slate-100 flex flex-col gap-3 text-xs">
+                  <div className="flex items-start gap-2.5 text-slate-600">
+                    <User className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="block text-slate-400 font-medium">Khách hàng:</span>
+                      <p className="font-bold text-slate-900 text-sm leading-snug">{item.customer?.full_name || 'Khách hàng'}</p>
+                      {(item.customer?.phone_number || item.customer?.email) && (
+                        <p className="text-slate-500 text-xs">
+                          {item.customer?.phone_number || item.customer?.email}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="bg-red-50/50 p-3 rounded-xl border border-red-100">
-                    <span className="block text-xs font-bold text-red-800 mb-1 uppercase">Bãi đỗ xe bị khiếu nại</span>
-                    <p className="font-semibold text-slate-900">{item.facility?.name}</p>
-                    <p className="text-slate-600 text-xs mt-1">Chủ bãi: {item.facility?.provider?.full_name}</p>
+
+                  <div className="flex items-start gap-2.5 text-slate-600">
+                    <Building2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="block text-slate-400 font-medium">Bãi xe bị khiếu nại:</span>
+                      <p className="font-bold text-slate-900 text-sm leading-snug">{item.facility?.name}</p>
+                      {item.facility?.provider?.full_name && (
+                        <p className="text-slate-500 text-xs">
+                          Chủ bãi: <span className="font-semibold text-slate-700">{item.facility.provider.full_name}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
+                {/* 4. Trạng thái xử lý / Phản hồi (Tích hợp liền mạch dưới đáy thẻ) */}
                 {item.admin_response ? (
-                  <div className="mt-2 p-4 bg-teal-50 border border-teal-200 rounded-xl">
-                    <span className="font-bold block mb-1 text-teal-900 flex items-center gap-1.5"><AlertCircle className="w-4 h-4" /> Bạn (Admin) đã phản hồi:</span>
-                    <p className="text-sm text-teal-800 whitespace-pre-wrap">{item.admin_response}</p>
+                  <div className="pt-3 border-t border-slate-100 flex items-start gap-2 text-xs text-teal-800">
+                    <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold text-teal-900">Admin đã phản hồi: </span>
+                      <span className="text-slate-700">{item.admin_response}</span>
+                    </div>
                   </div>
                 ) : (
-                  <div className="mt-2 p-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                    <p className="text-sm text-amber-800 font-medium">Khiếu nại này chưa được xử lý. (Chức năng Reply sẽ ra mắt sau)</p>
+                  <div className="pt-3 border-t border-slate-100 flex items-center gap-2 text-xs text-amber-700">
+                    <Clock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span>Khiếu nại này chưa được xử lý. (Chức năng Reply sẽ ra mắt sau)</span>
                   </div>
                 )}
               </div>

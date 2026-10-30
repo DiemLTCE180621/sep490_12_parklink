@@ -57,11 +57,42 @@ class PlatformFeeService {
       throw error;
     }
 
-    let maxSlots = null;
-    if (max_slots !== null && max_slots !== undefined && max_slots !== '' && max_slots !== 'null') {
-      maxSlots = parseInt(max_slots, 10);
-      if (isNaN(maxSlots) || maxSlots < minSlots) {
-        const error = new Error('Số lượng slot tối đa (max_slots) phải lớn hơn hoặc bằng slot tối thiểu!');
+    if (minSlots > 15) {
+      const error = new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ!');
+      error.status = 400;
+      throw error;
+    }
+
+    if (max_slots === null || max_slots === undefined || max_slots === '' || max_slots === 'null') {
+      const error = new Error('Vui lòng nhập số lượng slot tối đa (Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ)!');
+      error.status = 400;
+      throw error;
+    }
+
+    const maxSlots = parseInt(max_slots, 10);
+    if (isNaN(maxSlots) || maxSlots < minSlots) {
+      const error = new Error('Số lượng slot tối đa (max_slots) phải lớn hơn hoặc bằng slot tối thiểu!');
+      error.status = 400;
+      throw error;
+    }
+
+    if (maxSlots > 15) {
+      const error = new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ!');
+      error.status = 400;
+      throw error;
+    }
+
+    // 2. Kiểm tra trùng lặp (chồng chéo) khung slot với các gói phí hiện có
+    const allFees = await platformFeeRepository.findAll();
+    for (const fee of allFees) {
+      const existingMin = fee.min_slots;
+      const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
+
+      // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
+      if (minSlots <= existingMax && maxSlots >= existingMin) {
+        const error = new Error(
+          `Khung quy mô (${minSlots} - ${maxSlots} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ)!`
+        );
         error.status = 400;
         throw error;
       }
@@ -118,13 +149,21 @@ class PlatformFeeService {
         error.status = 400;
         throw error;
       }
+      if (minSlots > 15) {
+        const error = new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ!');
+        error.status = 400;
+        throw error;
+      }
       targetMin = minSlots;
       updateData.min_slots = minSlots;
     }
 
+    let targetMax = existingFee.max_slots;
     if (data.max_slots !== undefined) {
       if (data.max_slots === null || data.max_slots === '' || data.max_slots === 'null') {
-        updateData.max_slots = null;
+        const error = new Error('Vui lòng nhập số lượng slot tối đa (Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ)!');
+        error.status = 400;
+        throw error;
       } else {
         const maxSlots = parseInt(data.max_slots, 10);
         if (isNaN(maxSlots) || maxSlots < targetMin) {
@@ -132,7 +171,34 @@ class PlatformFeeService {
           error.status = 400;
           throw error;
         }
+        if (maxSlots > 15) {
+          const error = new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ!');
+          error.status = 400;
+          throw error;
+        }
+        targetMax = maxSlots;
         updateData.max_slots = maxSlots;
+      }
+    }
+
+    // 2. Kiểm tra trùng lặp (loại trừ chính gói đang sửa)
+    const finalMin = updateData.min_slots !== undefined ? updateData.min_slots : existingFee.min_slots;
+    const finalMax = updateData.max_slots !== undefined ? updateData.max_slots : (existingFee.max_slots || 15);
+
+    const allFees = await platformFeeRepository.findAll();
+    for (const fee of allFees) {
+      if (fee.id === id) continue; // Bỏ qua gói hiện tại đang sửa
+
+      const existingMin = fee.min_slots;
+      const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
+
+      // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
+      if (finalMin <= existingMax && finalMax >= existingMin) {
+        const error = new Error(
+          `Khung quy mô (${finalMin} - ${finalMax} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ)!`
+        );
+        error.status = 400;
+        throw error;
       }
     }
 
@@ -174,14 +240,17 @@ class PlatformFeeService {
 
   /**
    * Tính toán phí nền tảng theo đề tài ParkLink (Theo quy mô số slot Min - Max):
-   * - 1 đến 3 slot: 2.000.000 VNĐ (Bãi 1 chỗ, 2 chỗ hoặc 3 chỗ đều thuộc khung này)
-   * - 4 đến 7 slot: 4.000.000 VNĐ
-   * - Từ 8 slot trở lên: 6.000.000 VNĐ
    */
   async calculateFeeBySlots(slotCount) {
     const slots = parseInt(slotCount, 10);
     if (isNaN(slots) || slots < 1) {
       const error = new Error('Số lượng chỗ đỗ xe (slots) phải là số nguyên dương!');
+      error.status = 400;
+      throw error;
+    }
+
+    if (slots > 15) {
+      const error = new Error('Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ!');
       error.status = 400;
       throw error;
     }
@@ -200,7 +269,7 @@ class PlatformFeeService {
       min_slots: matchedFee.min_slots,
       max_slots: matchedFee.max_slots,
       slots: slots,
-      fee_amount: parseFloat(matchedFee.fee_amount), // Mức phí trọn gói theo quy mô (Tiered fee)
+      fee_amount: parseFloat(matchedFee.fee_amount),
       description: matchedFee.description
     };
   }
