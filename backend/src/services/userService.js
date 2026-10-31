@@ -166,6 +166,7 @@ class UserService {
 
   /**
    * UC14 / UC15: Khóa / Mở khóa tài khoản người dùng (BLOCKED <-> ACTIVE)
+   * Nghiệp vụ bổ sung: Nếu khóa tài khoản của Provider (chủ bãi đỗ xe), đồng thời ẩn luôn cơ sở đó (visibility_status = 'HIDDEN')
    */
   async toggleUserStatus(userId) {
     const user = await userRepository.findUserDetailById(userId);
@@ -183,7 +184,25 @@ class UserService {
     }
 
     const newStatus = user.status === "ACTIVE" ? "BLOCKED" : "ACTIVE";
-    const updated = await userRepository.updateUser(userId, { status: newStatus });
+    let updated;
+
+    // Nếu khóa tài khoản:
+    // - Provider có cơ sở: ẩn cơ sở
+    // - Customer: hủy các yêu cầu đặt chỗ PENDING
+    const isProviderWithFacility = (user.role?.name === 'PROVIDER' || Boolean(user.facility)) && user.facility?.id;
+    const isCustomer = user.role?.name === 'CUSTOMER';
+
+    if (newStatus === "BLOCKED") {
+      if (isProviderWithFacility) {
+        updated = await userRepository.blockProviderAndHideFacility(userId, user.facility.id);
+      } else if (isCustomer) {
+        updated = await userRepository.blockCustomerAndCancelPendingReservations(userId);
+      } else {
+        updated = await userRepository.updateUser(userId, { status: newStatus });
+      }
+    } else {
+      updated = await userRepository.updateUser(userId, { status: newStatus });
+    }
 
     // Nếu tài khoản bị Khóa, lập tức đá phiên đăng nhập qua Socket
     if (newStatus === "BLOCKED") {

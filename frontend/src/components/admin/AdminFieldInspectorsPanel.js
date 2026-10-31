@@ -779,9 +779,14 @@ const AdminFieldInspectorsPanel = () => {
 
             <div className="text-base text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
               {confirmDialog.type === 'LOCK' && (
-                <p>
-                  Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{confirmDialog.inspector.full_name}</strong>? Khi bị khóa, nhân viên khảo sát này sẽ ngay lập tức bị từ chối đăng nhập và không thể thực hiện khảo sát trên hệ thống.
-                </p>
+                <div>
+                  <p>
+                    Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{confirmDialog.inspector.full_name}</strong>? Khi bị khóa, nhân viên khảo sát này sẽ ngay lập tức bị từ chối đăng nhập và không thể thực hiện khảo sát trên hệ thống.
+                  </p>
+                  <p className="text-amber-700 font-semibold text-sm mt-2">
+                    ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                  </p>
+                </div>
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>
