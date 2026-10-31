@@ -54,7 +54,7 @@ const Navbar = () => {
   };
 
   // Ẩn Navbar (Header) đối với Admin, Nhân viên khảo sát hoặc người dùng đang cần đổi mật khẩu lần đầu
-  if (isAuthenticated && user?.requires_password_change) {
+  if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR' || user?.requires_password_change)) {
     return null;
   }
 
