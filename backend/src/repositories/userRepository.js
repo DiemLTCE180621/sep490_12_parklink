@@ -120,6 +120,29 @@ class UserRepository {
         });
       }
 
+      // 5. Liên kết Danh mục loại phương tiện (Facility_Vehicle_Type)
+      const vehicleCodes = Array.isArray(facilityData.vehicle_types)
+        ? facilityData.vehicle_types
+        : (typeof facilityData.vehicle_types === 'string' ? JSON.parse(facilityData.vehicle_types) : []);
+
+      if (vehicleCodes && vehicleCodes.length > 0) {
+        const foundVehicleTypes = await tx.vehicle_Type.findMany({
+          where: {
+            type_code: { in: vehicleCodes }
+          }
+        });
+
+        if (foundVehicleTypes.length > 0) {
+          await tx.facility_Vehicle_Type.createMany({
+            data: foundVehicleTypes.map(vt => ({
+              facility_id: newFacility.id,
+              vehicle_type_id: vt.id
+            })),
+            skipDuplicates: true
+          });
+        }
+      }
+
       return await tx.user.findUnique({
         where: { id: newUser.id },
         include: {
@@ -130,6 +153,11 @@ class UserRepository {
               facility_amenities: {
                 include: {
                   amenity: true
+                }
+              },
+              facility_vehicle_types: {
+                include: {
+                  vehicle_type: true
                 }
               }
             }

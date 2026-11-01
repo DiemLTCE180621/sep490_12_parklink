@@ -84,7 +84,13 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const supportedVehicleTypes = getFacilitySupportedTypes(facility?.vehicle_types);
+  const supportedVehicleTypes = (facility?.facility_vehicle_types && facility.facility_vehicle_types.length > 0)
+    ? facility.facility_vehicle_types.map(fvt => ({
+        id: fvt.vehicle_type.type_code,
+        label: fvt.vehicle_type.name,
+        shortLabel: fvt.vehicle_type.name
+      }))
+    : getFacilitySupportedTypes(facility?.vehicle_types);
 
   const handleQuickPreset = (presetText) => {
     setVehicleBrand((prev) => {

@@ -173,6 +173,11 @@ function AppContent() {
               <AdminPlatformFeeEditPage />
             </RoleProtectedRoute>
           } />
+                    <Route path="/admin/vehicle-types" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <Navigate to="/dashboard?tab=vehicle-types" replace />
+            </RoleProtectedRoute>
+          } />
           <Route path="/admin/contracts" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminContractsPage />

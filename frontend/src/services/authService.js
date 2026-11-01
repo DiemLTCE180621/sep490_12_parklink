@@ -12,6 +12,13 @@ const authService = {
   },
 
   /**
+   * Lấy danh mục loại phương tiện toàn hệ thống từ bảng vehicle_types
+   */
+  async getVehicleTypes() {
+    return await api.get('/vehicle-types/active');
+  },
+
+  /**
    * Lấy thông tin liên hệ hệ thống (Hotline Admin, Email)
    */
   async getContactInfo() {
