@@ -66,6 +66,11 @@ class FacilityRepository {
             amenity: true,
           },
         },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
+          },
+        },
       },
     });
   }
@@ -78,7 +83,13 @@ class FacilityRepository {
       where: { provider_id: providerId },
       include: {
         images: true,
-      },
+        facility_amenities: {
+          include: { amenity: true },
+        },
+        facility_vehicle_types: {
+          include: { vehicle_type: true },
+        },
+      }
     });
   }
 
@@ -399,6 +410,11 @@ class FacilityRepository {
         facility_amenities: {
           include: {
             amenity: true,
+          },
+        },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
           },
         },
         reviews: {

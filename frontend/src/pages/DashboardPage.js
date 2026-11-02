@@ -15,6 +15,7 @@ import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspector
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
+import AdminVehicleTypesPanel from '../components/admin/AdminVehicleTypesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
@@ -30,7 +31,8 @@ const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations');
+  const searchParams = new URLSearchParams(location.search);
+  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'registrations');
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility');
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections');
   const [isMobileAdminMenuOpen, setIsMobileAdminMenuOpen] = useState(false);
@@ -67,6 +69,7 @@ const DashboardPage = () => {
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
+    { id: 'vehicle-types', label: 'Loại Phương Tiện', icon: Car },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
   ];
 
@@ -280,6 +283,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
+              {activeAdminTab === 'vehicle-types' && <AdminVehicleTypesPanel />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">

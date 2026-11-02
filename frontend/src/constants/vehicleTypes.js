@@ -1,3 +1,5 @@
+import vehicleTypeService from '../services/vehicleTypeService';
+
 /**
  * Danh mục loại phương tiện (Vehicle Types) dùng chung toàn hệ thống ParkLink
  */
@@ -29,6 +31,8 @@ export const VEHICLE_TYPES = [
 ];
 
 export const getVehicleTypeLabel = (typeId) => {
+  const cached = vehicleTypeService.getLabelByCode(typeId);
+  if (cached && cached !== typeId) return cached;
   const found = VEHICLE_TYPES.find(v => v.id === typeId);
   return found ? found.label : typeId;
 };
@@ -52,9 +56,19 @@ export const getFacilitySupportedTypes = (vehicleTypesData) => {
     return VEHICLE_TYPES;
   }
 
+  const cachedList = vehicleTypeService.getCachedActiveTypes();
+
   const mapped = raw
     .map((item) => {
       const typeId = typeof item === 'string' ? item : item?.id;
+      const dbType = cachedList.find(d => d.type_code === typeId);
+      if (dbType) {
+        return {
+          id: dbType.type_code,
+          label: dbType.name,
+          shortLabel: dbType.name
+        };
+      }
       const standard = VEHICLE_TYPES.find((v) => v.id === typeId);
       if (standard) return standard;
       return {
@@ -67,4 +81,3 @@ export const getFacilitySupportedTypes = (vehicleTypesData) => {
 
   return mapped.length > 0 ? mapped : VEHICLE_TYPES;
 };
-

@@ -1,12 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Shield, Calendar, ArrowRight, Clock } from 'lucide-react';
-import { VEHICLE_TYPES } from '../constants/vehicleTypes';
+import vehicleTypeService from '../services/vehicleTypeService';
 import VietmapAddressAutocomplete from '../components/common/VietmapAddressAutocomplete';
 
 const HomePage = () => {
   const [searchLocation, setSearchLocation] = useState('');
-  const [vehicleType, setVehicleType] = useState(VEHICLE_TYPES[0].id);
+  const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
+  const [vehicleType, setVehicleType] = useState('');
+
+  React.useEffect(() => {
+    vehicleTypeService.getActiveVehicleTypes()
+      .then(res => {
+        const list = res?.data || res || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setDbVehicleTypes(list);
+          setVehicleType(list[0].type_code);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayVehicleTypes = React.useMemo(() => {
+    return dbVehicleTypes.map(vt => ({
+      id: vt.type_code,
+      label: vt.name
+    }));
+  }, [dbVehicleTypes]);
   const navigate = useNavigate();
 
   const handleSearchClick = () => {
@@ -60,7 +80,7 @@ const HomePage = () => {
                       onChange={(e) => setVehicleType(e.target.value)}
                       className="w-full py-2 px-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-500"
                     >
-                      {VEHICLE_TYPES.map(vt => (
+                      {displayVehicleTypes.map(vt => (
                         <option key={vt.id} value={vt.id}>{vt.label}</option>
                       ))}
                     </select>

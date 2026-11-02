@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -10,7 +10,7 @@ import {
 import facilityService from '../../services/facilityService';
 import { addFavorite, removeFavorite, getFavorites } from '../../services/favoriteService';
 import { useAuth } from '../../context/AuthContext';
-import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
+import vehicleTypeService from '../../services/vehicleTypeService';
 import CompareModal from '../../components/modals/CompareModal';
 import { facilityCarIcon } from '../../utils/mapIcons';
 import Toast from '../../components/common/Toast';
@@ -85,6 +85,25 @@ const SearchPage = () => {
   // Trạng thái tìm kiếm
   const [keyword, setKeyword] = useState('');
   const [vehicleType, setVehicleType] = useState('');
+  const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
+
+  useEffect(() => {
+    vehicleTypeService.getActiveVehicleTypes()
+      .then(res => {
+        const list = res?.data || res || [];
+        if (Array.isArray(list) && list.length > 0) {
+          setDbVehicleTypes(list);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayVehicleTypes = useMemo(() => {
+    return dbVehicleTypes.map(vt => ({
+      id: vt.type_code,
+      label: vt.name
+    }));
+  }, [dbVehicleTypes]);
   const [radius, setRadius] = useState(3);
 
   const [facilities, setFacilities] = useState([]);
@@ -491,7 +510,7 @@ const SearchPage = () => {
               className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             >
               <option value="">Tất cả loại xe</option>
-              {VEHICLE_TYPES.map(vt => (
+              {displayVehicleTypes.map(vt => (
                 <option key={vt.id} value={vt.id}>{vt.label}</option>
               ))}
             </select>
