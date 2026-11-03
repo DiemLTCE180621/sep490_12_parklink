@@ -15,3 +15,49 @@ export const validateSubmitComplaint = (data) => {
     errors
   };
 };
+
+export const validateReplyComplaint = (data) => {
+  const { response, status } = data || {};
+  const errors = {};
+
+  if (!response || !response.trim()) {
+    errors.response = 'Vui lòng nhập nội dung phản hồi khiếu nại.';
+  } else if (response.trim().length < 5) {
+    errors.response = 'Nội dung phản hồi phải có ít nhất 5 ký tự.';
+  } else if (response.trim().length > 3000) {
+    errors.response = 'Nội dung phản hồi không được vượt quá 3000 ký tự.';
+  }
+
+  const validStatuses = ['OPEN', 'PENDING', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'CLOSED'];
+  if (status && !validStatuses.includes(status)) {
+    errors.status = 'Trạng thái khiếu nại không hợp lệ.';
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+
+/**
+ * Xác thực dữ liệu cập nhật trạng thái khiếu nại của Admin
+ */
+export const validateUpdateComplaintStatus = (data) => {
+  const { status, note } = data || {};
+  const errors = {};
+
+  const validStatuses = ['PENDING', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'CLOSED'];
+  if (!status || !validStatuses.includes(status)) {
+    errors.status = 'Vui lòng chọn trạng thái khiếu nại hợp lệ.';
+  }
+
+  if (note && typeof note === 'string' && note.trim().length > 2000) {
+    errors.note = 'Ghi chú phán quyết không được vượt quá 2000 ký tự.';
+  }
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
+

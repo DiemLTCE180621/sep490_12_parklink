@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const complaintController = require('../controllers/complaintController');
-const { validateCreateComplaint } = require('../validations/complaintValidation');
+const {
+  validateCreateComplaint,
+  validateReplyComplaint,
+  validateUpdateComplaintStatus,
+  validateEscalateComplaint
+} = require('../validations/complaintValidation');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
-// Route lấy danh sách khiếu nại của khách hàng
 router.get(
   '/my-complaints',
   authenticateToken,
@@ -12,7 +16,6 @@ router.get(
   complaintController.getMyComplaints
 );
 
-// Route chỉ dành cho Customer tạo khiếu nại
 router.post(
   '/',
   authenticateToken,
@@ -21,7 +24,15 @@ router.post(
   complaintController.createComplaint
 );
 
-// Route lấy danh sách khiếu nại liên quan đến cơ sở của Provider
+// chuyển cấp khiếu nại lên Admin (Chỉ dành cho Customer)
+router.post(
+  '/:id/escalate',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  validateEscalateComplaint,
+  complaintController.escalateComplaint
+);
+
 router.get(
   '/provider',
   authenticateToken,
@@ -29,12 +40,51 @@ router.get(
   complaintController.getProviderComplaints
 );
 
-// Route lấy toàn bộ danh sách khiếu nại cho Admin
 router.get(
   '/admin',
   authenticateToken,
   authorizeRoles('ADMIN'),
   complaintController.getAllComplaints
+);
+
+router.post(
+  '/:id/reply',
+  authenticateToken,
+  authorizeRoles('ADMIN', 'PROVIDER'),
+  validateReplyComplaint,
+  complaintController.replyToComplaint
+);
+
+router.patch(
+  '/:id/reply',
+  authenticateToken,
+  authorizeRoles('ADMIN', 'PROVIDER'),
+  validateReplyComplaint,
+  complaintController.replyToComplaint
+);
+
+router.patch(
+  '/:id/status',
+  authenticateToken,
+  authorizeRoles('ADMIN', 'PROVIDER'),
+  validateUpdateComplaintStatus,
+  complaintController.updateComplaintStatus
+);
+
+// Endpoint cập nhật trạng thái khiếu nại dành riêng cho Admin
+router.patch(
+  '/admin/:id/status',
+  authenticateToken,
+  authorizeRoles('ADMIN'),
+  validateUpdateComplaintStatus,
+  complaintController.updateComplaintStatusByAdmin
+);
+
+router.get(
+  '/:id',
+  authenticateToken,
+  authorizeRoles('ADMIN', 'PROVIDER', 'CUSTOMER'),
+  complaintController.getComplaintById
 );
 
 module.exports = router;

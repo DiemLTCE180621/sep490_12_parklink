@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('../controllers/reviewController');
-const { validateCreateReview, validateUpdateReview } = require('../validations/reviewValidation');
+const {
+  validateCreateReview,
+  validateUpdateReview,
+  validateReplyReview
+} = require('../validations/reviewValidation');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
 /**
@@ -40,6 +44,16 @@ router.patch(
 );
 
 /**
+ * 2.2 Admin bỏ ẩn đánh giá (Unhide review)
+ */
+router.patch(
+  '/:id/unhide',
+  authenticateToken,
+  authorizeRoles('ADMIN'),
+  reviewController.unhideReview
+);
+
+/**
  * 3. Provider xem đánh giá các bãi xe của mình
  */
 router.get(
@@ -47,6 +61,14 @@ router.get(
   authenticateToken,
   authorizeRoles('PROVIDER'),
   reviewController.getProviderReviews
+);
+
+router.post(
+  '/:id/reply',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  validateReplyReview,
+  reviewController.replyToReview
 );
 
 /**
