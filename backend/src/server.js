@@ -53,6 +53,9 @@ app.use("/api/platform-fees", platformFeeRoutes);
 const notificationRoutes = require("./routes/notificationRoutes");
 app.use("/api/notifications", notificationRoutes);
 
+const policyRoutes = require("./routes/policyRoutes");
+app.use("/api/policies", policyRoutes);
+
 // Simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the ParkLink API!" });

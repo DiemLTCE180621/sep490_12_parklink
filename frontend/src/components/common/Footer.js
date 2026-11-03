@@ -36,54 +36,68 @@ const Footer = () => {
     ? user.phone_number
     : adminPhone;
 
-  // 1. ADMIN và FIELD_INSPECTOR: Chỉ giữ mỗi dòng bản quyền tối giản
-  if (isAuthenticated && (roleName === 'ADMIN' || roleName === 'FIELD_INSPECTOR')) {
+  // 1. ADMIN: Chỉ giữ mỗi dòng bản quyền tối giản vì Admin đã có tab Quản lý Chính Sách riêng trong Dashboard
+  if (isAuthenticated && roleName === 'ADMIN') {
     return (
-      <footer className="bg-slate-900 text-slate-500 py-2 border-t border-slate-800 text-center text-xs">
+      <footer className="bg-slate-900 text-slate-500 py-2.5 border-t border-slate-800 text-center text-xs">
         <p>© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.</p>
       </footer>
     );
   }
 
-  // 2. PROVIDER: Footer gọn gàng hỗ trợ đối tác (ẩn các cột đăng ký/khách thuê)
+  // 2. PROVIDER: Footer đối tác có mục Quy định & Chính sách (UC-90)
   if (isAuthenticated && roleName === 'PROVIDER') {
     return (
-      <footer className="bg-slate-900 text-slate-300 pt-2.5 pb-2 border-t border-slate-800">
+      <footer className="bg-slate-900 text-slate-300 pt-4 pb-3 border-t border-slate-800">
         <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-start">
+            {/* Thông tin thương hiệu */}
+            <div className="space-y-2">
               <div className="flex items-center space-x-2.5">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md">
                   <img
                     src="/logo.png"
                     alt="ParkLink Logo"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
+                <span className="text-base font-extrabold text-white tracking-tight">Park<span className="text-teal-400">Link</span></span>
               </div>
-              <p className="text-[10px] text-slate-400 leading-tight">
-                Nền tảng kết nối người cần thuê bãi đỗ xe theo tháng uy tín, minh bạch và tiện lợi.
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Nền tảng kết nối đối tác chủ bãi xe theo tháng uy tín, minh bạch và an toàn.
               </p>
             </div>
 
-            <div className="md:text-right">
-              <h4 className="text-white font-semibold mb-0.5 text-xs tracking-wide">Hỗ Trợ Kỹ Thuật Đối Tác</h4>
-              <div className="text-[10px] text-slate-400 space-y-0.5 inline-flex flex-col md:items-end">
+            {/* Quy định & Chính sách đối tác (UC-90) */}
+            <div>
+              <h4 className="text-white font-semibold mb-2 text-xs uppercase tracking-wider">Quy Định & Chính Sách</h4>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <Link to="/policies" className="hover:text-teal-400 transition flex items-center gap-1.5">
+                    <span>•</span> Chính sách ParkLink
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Hỗ trợ kỹ thuật đối tác */}
+            <div className="sm:text-right">
+              <h4 className="text-white font-semibold mb-2 text-xs uppercase tracking-wider">Hỗ Trợ Kỹ Thuật Đối Tác</h4>
+              <div className="text-xs text-slate-400 space-y-1.5 inline-flex flex-col sm:items-end">
                 <a href="mailto:parklink.service@gmail.com" className="flex items-center gap-1.5 hover:text-teal-400 transition">
-                  <Mail className="w-3 h-3 text-teal-400 shrink-0" /> parklink.service@gmail.com
+                  <Mail className="w-3.5 h-3.5 text-teal-400 shrink-0" /> parklink.service@gmail.com
                 </a>
                 {displayPhone && (
                   <a href={`tel:${displayPhone}`} className="flex items-center gap-1.5 hover:text-teal-400 transition font-medium">
-                    <Phone className="w-3 h-3 text-teal-400 shrink-0" /> Hotline Quản Trị: {displayPhone}
+                    <Phone className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Hotline Quản Trị: {displayPhone}
                   </a>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="mt-1.5 pt-1 border-t border-slate-800/80 text-center text-[10px] text-slate-500">
-            <p>© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.</p>
+          <div className="mt-4 pt-2.5 border-t border-slate-800 text-center text-xs text-slate-500">
+            <span>© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.</span>
           </div>
         </div>
       </footer>
@@ -117,6 +131,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mb-0.5 text-xs tracking-wide">Khách Thuê</h4>
             <ul className="space-y-0.5 text-[10px] text-slate-400">
               <li><Link to="/search" className="hover:text-teal-400 transition">Tìm bãi đỗ gần bạn</Link></li>
+              <li><Link to="/policies/customer" className="hover:text-teal-400 transition">Chính sách thuê bãi xe</Link></li>
             </ul>
           </div>
 
@@ -124,7 +139,7 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-semibold mb-0.5 text-xs tracking-wide">Chủ Bãi Đỗ</h4>
             <ul className="space-y-0.5 text-[10px] text-slate-400">
-              <li className="text-slate-400">Kênh đối tác bãi đỗ xe</li>
+              <li><Link to="/policies/provider" className="hover:text-teal-400 transition">Quy chế hoạt động đối tác</Link></li>
             </ul>
           </div>
 
@@ -145,8 +160,12 @@ const Footer = () => {
         </div>
 
         {/* Copyright Footer */}
-        <div className="mt-1.5 pt-1 border-t border-slate-800/80 text-center text-[10px] text-slate-500">
-          <p>© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.</p>
+        <div className="mt-1.5 pt-1 border-t border-slate-800/80 text-center text-[10px] text-slate-500 flex flex-wrap items-center justify-center gap-2">
+          <span>© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.</span>
+          <span>•</span>
+          <Link to="/policies" className="text-slate-400 hover:text-teal-400 transition underline">
+            Chính sách & Điều khoản ParkLink
+          </Link>
         </div>
       </div>
     </footer>

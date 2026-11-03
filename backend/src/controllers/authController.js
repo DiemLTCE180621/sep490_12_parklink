@@ -1,12 +1,7 @@
 const authService = require('../services/authService');
 
-/**
- * Controller nhận HTTP Request và phản hồi JSON
- */
 class AuthController {
-  /**
-   * Lấy danh mục tiện ích toàn hệ thống từ bảng Amenity
-   */
+  
   async getAmenities(req, res, next) {
     try {
       const amenities = await authService.getAmenities();
@@ -19,9 +14,6 @@ class AuthController {
     }
   }
 
-  /**
-   * Lấy thông tin liên hệ hệ thống (Email, Hotline Admin)
-   */
   async getContactInfo(req, res, next) {
     try {
       const contactInfo = await authService.getContactInfo();
@@ -34,9 +26,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC01: Đăng ký Khách hàng (Sinh mật khẩu ngẫu nhiên gửi email)
-   */
   async registerCustomer(req, res, next) {
     try {
       const result = await authService.registerCustomer(req.body);
@@ -50,9 +39,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC02 / UC03: Đăng ký Provider & Cơ sở bãi xe (Tính phí 2tr/4tr theo slot)
-   */
   async registerProvider(req, res, next) {
     try {
       const result = await authService.registerProvider(req.body);
@@ -66,9 +52,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC03: Đăng nhập
-   */
   async login(req, res, next) {
     try {
       const result = await authService.login(req.body);
@@ -82,9 +65,22 @@ class AuthController {
     }
   }
 
-  /**
-   * Đổi mật khẩu lần đầu hoặc theo yêu cầu cá nhân
-   */
+  async googleLogin(req, res, next) {
+    try {
+      const result = await authService.googleLogin(req.body);
+      return res.status(200).json({
+        status: 'success',
+        message: result.message,
+        data: result
+      });
+    } catch (error) {
+      if (error.status) {
+        return res.status(error.status).json({ status: 'fail', message: error.message });
+      }
+      next(error);
+    }
+  }
+
   async changePassword(req, res, next) {
     try {
       const { oldPassword, newPassword } = req.body;
@@ -106,9 +102,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC07: Lấy thông tin tài khoản cá nhân hiện tại
-   */
   async getMe(req, res, next) {
     try {
       const user = await authService.getCurrentUser(req.user.userId);
@@ -121,9 +114,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC08: Cập nhật thông tin tài khoản cá nhân
-   */
   async updateProfile(req, res, next) {
     try {
       const user = await authService.updateProfile(req.user.userId, req.body);
@@ -140,9 +130,6 @@ class AuthController {
     }
   }
 
-  /**
-   * Yêu cầu gửi mã OTP quên mật khẩu
-   */
   async requestPasswordReset(req, res, next) {
     try {
       const result = await authService.requestPasswordReset(req.body.email);
@@ -156,9 +143,6 @@ class AuthController {
     }
   }
 
-  /**
-   * Xác nhận mã OTP và đổi mật khẩu mới
-   */
   async verifyAndResetPassword(req, res, next) {
     try {
       const result = await authService.verifyAndResetPassword(req.body);
@@ -171,9 +155,6 @@ class AuthController {
     }
   }
 
-  /**
-   * UC05: Đăng xuất
-   */
   async logout(req, res, next) {
     try {
       return res.status(200).json({

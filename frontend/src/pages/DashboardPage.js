@@ -17,6 +17,7 @@ import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
+import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -68,6 +69,7 @@ const DashboardPage = () => {
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
+    { id: 'policies', label: 'Chính Sách Hệ Thống', icon: ShieldCheck },
   ];
 
   const providerTabs = [
@@ -121,12 +123,18 @@ const DashboardPage = () => {
             >
               <Edit className="w-4 h-4" /> Sửa Hồ Sơ
             </button>
-            <button
-              onClick={() => setIsChangePasswordModalOpen(true)}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
-            >
-              <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
-            </button>
+            {user?.has_password === false ? (
+              <div className="px-3.5 py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-teal-400" /> Tài khoản Google
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsChangePasswordModalOpen(true)}
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
+              >
+                <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
@@ -281,6 +289,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
+              {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />

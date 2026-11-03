@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { X, Lock, KeyRound, AlertCircle, CheckCircle2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import authService from '../../services/authService';
+import { useAuth } from '../../context/AuthContext';
 import { isValidPassword } from '../../utils/validators';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     oldPassword: '',
     newPassword: '',
@@ -86,7 +88,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden relative transform transition-all">
-        {/* Header Modal */}
+        
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white px-8 py-6 relative">
           <button
             onClick={handleClose}
@@ -107,7 +109,26 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Form Body */}
+        {user?.has_password === false ? (
+          <div className="p-8 text-center space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto">
+              <KeyRound className="w-7 h-7 text-teal-600" />
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Tài Khoản Đăng Nhập Qua Google</h3>
+            <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
+              Tài khoản này được xác thực và bảo mật trực tiếp thông qua Google Sign-In, do đó không sử dụng mật khẩu trên hệ thống ParkLink.
+            </p>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        ) : (
         <div className="p-8 space-y-6">
           {errorList.length > 0 && (
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 animate-shake">
@@ -233,6 +254,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             </div>
           </form>
         </div>
+        )}
       </div>
     </div>
   );

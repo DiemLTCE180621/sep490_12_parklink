@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft, MapPin } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Trang Thông tin cá nhân & Cập nhật hồ sơ (UC07, UC08)
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
@@ -103,7 +102,6 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Form Chỉnh sửa thông tin */}
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-md space-y-6">
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-lg font-bold text-slate-900">Thông Tin Cá Nhân</h2>
@@ -124,8 +122,17 @@ const ProfilePage = () => {
             </div>
           )}
 
+          {!user?.phone_number && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs sm:text-sm">
+              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
+              <span>
+                Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.
+              </span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field (Cố định) */}
+            
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Mail className="w-4 h-4 text-slate-400" /> Địa Chỉ Email (Không thể thay đổi)
@@ -172,7 +179,6 @@ const ProfilePage = () => {
               <p className="text-[11px] text-slate-500">Gồm đúng 10 chữ số, bắt đầu bằng số 0.</p>
             </div>
 
-            {/* Địa chỉ người dùng (do Quản trị viên phân công) */}
             {roleName === 'FIELD_INSPECTOR' && (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -189,7 +195,6 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Role Info */}
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-teal-600" />
@@ -200,7 +205,20 @@ const ProfilePage = () => {
               </span>
             </div>
 
-            {/* Submit Button */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-teal-600" />
+                <span className="font-bold text-slate-600">Phương Thức Đăng Nhập:</span>
+              </div>
+              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                {user?.has_password === false
+                  ? 'Google'
+                  : localStorage.getItem('parklink_login_method') === 'google'
+                    ? 'Google & Mật khẩu'
+                    : 'Email & Mật khẩu'}
+              </span>
+            </div>
+
             <div className="flex justify-end pt-4 border-t border-slate-100">
               <button
                 type="submit"

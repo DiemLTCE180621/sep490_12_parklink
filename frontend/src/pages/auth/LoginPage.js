@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Eye, EyeOff } from 'lucide-react';
+import GoogleLoginButton from '../../components/common/GoogleLoginButton';
+import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
 
-/**
- * Trang Đăng nhập tài khoản hệ thống ParkLink (UC03)
- */
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Trang trước đó nếu user bị redirect về /login
   const fromPath = location.state?.from?.pathname || null;
 
   const [formData, setFormData] = useState({
@@ -22,6 +20,7 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
 
   const [sessionNotice] = useState(() => {
     const notice = sessionStorage.getItem('force_logout_notice');
@@ -50,7 +49,6 @@ const LoginPage = () => {
       setLoading(true);
       const res = await login(formData);
 
-      // Chuyển sang trang riêng nếu cần đổi mật khẩu lần đầu
       if (res?.data?.user?.requires_password_change) {
         navigate('/change-password-first-time', {
           replace: true,
@@ -71,9 +69,24 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleSuccess = async (credential) => {
+    try {
+      setLoading(true);
+      setError('');
+      const res = await googleLogin(credential);
+      const role = res?.data?.data?.user?.role?.name || res?.data?.user?.role?.name || 'CUSTOMER';
+      const redirectTo = fromPath || (role === 'CUSTOMER' ? '/' : '/dashboard');
+      navigate(redirectTo, { replace: true });
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || 'Đăng nhập Google thất bại!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-600 text-white shadow-lg mb-4">
           <LogIn className="w-7 h-7" />
         </div>
@@ -85,8 +98,8 @@ const LoginPage = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-2xl border border-slate-100 sm:px-10">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
+        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
           {sessionNotice && (
             <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
@@ -170,7 +183,38 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100 space-y-3">
+          <div className="mt-6">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
+                  Hoặc tiếp tục với
+                </span>
+              </div>
+            </div>
+
+            <GoogleLoginButton
+              onSuccess={handleGoogleSuccess}
+              onError={(msg) => setError(msg)}
+              disabled={loading}
+              showDisclaimer={false}
+            />
+          </div>
+
+          <p className="mt-5 text-[11px] text-slate-500 text-center leading-normal">
+            Bằng việc đăng nhập vào hệ thống ParkLink, bạn đồng ý tuân thủ{' '}
+            <button
+              type="button"
+              onClick={() => setPolicyModalOpen(true)}
+              className="text-teal-600 hover:text-teal-700 font-semibold underline"
+            >
+              Chính Sách & Điều Khoản Dịch Vụ
+            </button>.
+          </p>
+
+          <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
             <div className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Chưa có tài khoản?
             </div>
@@ -193,6 +237,12 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      <PolicyDetailModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        policyType="CUSTOMER"
+      />
     </div>
   );
 };
