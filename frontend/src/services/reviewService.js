@@ -1,8 +1,5 @@
 import api from './api';
 
-/**
- * Service giao tiếp API quản lý đánh giá của fe
- */
 const reviewService = {
 
   async getReviewsByFacilityId(facility_id) {
@@ -29,18 +26,26 @@ const reviewService = {
     return await api.get('/reviews/admin');
   },
 
-  /**
-   * Admin: Ẩn/Hiện đánh giá hoặc gỡ cắm cờ
-   */
   async updateReviewStatus(review_id, data) {
     return await api.patch(`/reviews/${review_id}/status`, data);
   },
 
   /**
-   * Provider: Xem đánh giá các cơ sở thuộc quyền sở hữu của mình
+   * Admin: Bỏ ẩn đánh giá (Unhide review)
    */
+  async unhideReview(review_id) {
+    return await api.patch(`/reviews/${review_id}/unhide`);
+  },
+
   async getProviderReviews() {
     return await api.get('/reviews/provider');
+  },
+
+  /**
+   * Parking Provider phản hồi đánh giá của khách hàng
+   */
+  async replyToReview(review_id, reply) {
+    return await api.post(`/reviews/${review_id}/reply`, { reply });
   }
 };
 

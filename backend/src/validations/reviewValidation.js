@@ -1,4 +1,3 @@
-
 const validateCreateReview = (req, res, next) => {
   const { facility_id, rating } = req.body;
   const errors = [];
@@ -48,7 +47,30 @@ const validateUpdateReview = (req, res, next) => {
   next();
 };
 
+const validateReplyReview = (req, res, next) => {
+  const reply = req.body.reply || req.body.provider_reply;
+  const errors = [];
+
+  if (!reply || !reply.trim()) {
+    errors.push('Nội dung phản hồi không được để trống.');
+  } else if (reply.trim().length > 1000) {
+    errors.push('Nội dung phản hồi không được vượt quá 1000 ký tự.');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Dữ liệu phản hồi không hợp lệ',
+      errors
+    });
+  }
+
+  req.body.reply = reply.trim();
+  next();
+};
+
 module.exports = {
   validateCreateReview,
-  validateUpdateReview
+  validateUpdateReview,
+  validateReplyReview
 };

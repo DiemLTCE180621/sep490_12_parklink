@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import reviewService from '../../services/reviewService';
 import { useSocket } from '../../context/SocketContext';
-import StarRating from '../common/StarRating';
+import ProviderReviewItem from './ProviderReviewItem';
+import Toast from '../common/Toast';
 import { 
   Star, 
   RotateCw, 
   MessageSquare, 
-  Calendar, 
   ThumbsUp, 
   Award,
-  Search,
-  Building2
+  Search
 } from 'lucide-react';
 
 const ProviderReviewsPanel = () => {
@@ -18,6 +17,8 @@ const ProviderReviewsPanel = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
+  const [submittingId, setSubmittingId] = useState(null);
 
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,41 +43,64 @@ const ProviderReviewsPanel = () => {
     fetchReviews(true);
   }, [fetchReviews]);
 
-  // LẮNG NGHE SỰ KIỆN SOCKET REALTIME: Tự động cập nhật cho Provider khi có review mới
   useEffect(() => {
     if (!socket) return;
 
-    const handleReviewUpdate = (payload) => {
-      console.log('[Provider Socket] Nhận sự kiện cập nhật đánh giá:', payload);
+    const handleReviewUpdate = () => {
       fetchReviews(false);
     };
 
     socket.on('review_updated', handleReviewUpdate);
-
     return () => {
       socket.off('review_updated', handleReviewUpdate);
     };
   }, [socket, fetchReviews]);
 
+  // Xử lý gửi phản hồi
+  const handleReplySubmit = useCallback(async (reviewId, replyText) => {
+    try {
+      setSubmittingId(reviewId);
+      const res = await reviewService.replyToReview(reviewId, replyText);
+      if (res.success) {
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, provider_reply: replyText } : r
+          )
+        );
+        setToastInfo({ message: 'Gửi phản hồi thành công!', type: 'success' });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      setToastInfo({
+        message: err.message || 'Lỗi khi gửi phản hồi',
+        type: 'error'
+      });
+      return false;
+    } finally {
+      setSubmittingId(null);
+    }
+  }, []);
+
   // Thống kê số liệu
   const stats = useMemo(() => {
     const total = reviews.length;
-    if (total === 0) return { total: 0, avg: 0, fiveStar: 0, satisfactionRate: 100 };
+    if (total === 0) return { total: 0, avg: 0, fiveStar: 0, satisfactionRate: 0 };
     const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
     const avg = (sum / total).toFixed(1);
-    const fiveStar = reviews.filter(r => r.rating === 5).length;
-    const positive = reviews.filter(r => r.rating >= 4).length;
+    const fiveStar = reviews.filter((r) => r.rating === 5).length;
+    const positive = reviews.filter((r) => r.rating >= 4).length;
     const satisfactionRate = Math.round((positive / total) * 100);
     return { total, avg, fiveStar, satisfactionRate };
   }, [reviews]);
 
   // Lọc đánh giá
   const filteredReviews = useMemo(() => {
-    return reviews.filter(r => {
+    return reviews.filter((r) => {
       const matchSearch =
         searchTerm.trim() === '' ||
-        (r.customer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (r.comment?.toLowerCase().includes(searchTerm.toLowerCase()));
+        r.customer?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.comment?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchStar =
         starFilter === 'ALL' || String(r.rating) === String(starFilter);
@@ -87,7 +111,7 @@ const ProviderReviewsPanel = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* HEADER PANEL */}
+      {/* Header panel */}
       <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2.5">
@@ -95,11 +119,12 @@ const ProviderReviewsPanel = () => {
             Đánh Giá Từ Khách Hàng
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            Theo dõi trải nghiệm và mức độ hài lòng của khách hàng đối với cơ sở bãi đỗ xe của bạn.
+            Theo dõi và phản hồi đánh giá của khách hàng đối với các bãi đỗ xe của bạn.
           </p>
         </div>
+
         <button
-          onClick={fetchReviews}
+          onClick={() => fetchReviews(true)}
           disabled={loading}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:text-teal-700 hover:bg-slate-50 text-sm font-semibold transition-all disabled:opacity-50 self-start sm:self-center"
         >
@@ -117,7 +142,7 @@ const ProviderReviewsPanel = () => {
         </div>
       )}
 
-      {/* STATS CARDS */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -166,7 +191,7 @@ const ProviderReviewsPanel = () => {
         </div>
       </div>
 
-      {/* FILTER & SEARCH */}
+      {/* Filter & Search */}
       <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -195,7 +220,7 @@ const ProviderReviewsPanel = () => {
         </div>
       </div>
 
-      {/* REVIEW LIST */}
+      {/* Danh sách Review */}
       <div className="space-y-4">
         {loading ? (
           <div className="space-y-4">
@@ -221,48 +246,22 @@ const ProviderReviewsPanel = () => {
           </div>
         ) : (
           filteredReviews.map((review) => (
-            <div
+            <ProviderReviewItem
               key={review.id}
-              className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow space-y-3"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                    {review.customer?.full_name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
-                      {review.customer?.full_name || 'Khách hàng'}
-                    </h4>
-                    <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {new Date(review.created_at).toLocaleDateString('vi-VN')}
-                      {review.facility?.name && (
-                        <>
-                          <span>•</span>
-                          <span className="text-teal-700 font-medium inline-flex items-center gap-1">
-                            <Building2 className="w-3 h-3" />
-                            {review.facility.name}
-                          </span>
-                        </>
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="self-start sm:self-center">
-                  <StarRating value={review.rating} disabled={true} />
-                </div>
-              </div>
-
-              {/* Bình luận */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-700 leading-relaxed">
-                {review.comment}
-              </div>
-            </div>
+              review={review}
+              onReplySubmit={handleReplySubmit}
+              submittingId={submittingId}
+            />
           ))
         )}
       </div>
+
+      {/* Toast thông báo */}
+      <Toast
+        message={toastInfo.message}
+        type={toastInfo.type}
+        onClose={() => setToastInfo({ message: '', type: 'success' })}
+      />
     </div>
   );
 };

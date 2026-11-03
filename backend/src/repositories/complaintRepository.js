@@ -36,7 +36,7 @@ class ComplaintRepository {
           provider_id: parseInt(provider_id)
         }
       },
-      include: { 
+      include: {
         customer: { select: { full_name: true, email: true, phone_number: true } },
         facility: { select: { name: true } }
       },
@@ -44,11 +44,23 @@ class ComplaintRepository {
     });
   }
 
-  async getAllComplaints() {
+  async getAllComplaints(filters = {}) {
+    const where = {};
+    if (filters.status && filters.status !== 'ALL') {
+      where.status = filters.status;
+    }
     return await prisma.complaint.findMany({
-      include: { 
-        customer: { select: { full_name: true, email: true, phone_number: true } },
-        facility: { select: { name: true, provider: { select: { full_name: true, email: true } } } }
+      where,
+      include: {
+        customer: { select: { id: true, full_name: true, email: true, phone_number: true } },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true,
+            provider: { select: { id: true, full_name: true, email: true, phone_number: true } }
+          }
+        }
       },
       orderBy: { created_at: 'desc' }
     });
@@ -67,7 +79,141 @@ class ComplaintRepository {
         customer_id: parseInt(customer_id),
         facility_id: parseInt(facility_id),
         confirmation_record: {
-            isNot: null 
+          isNot: null
+        }
+      }
+    });
+  }
+
+  async getComplaintById(complaint_id) {
+    return await prisma.complaint.findUnique({
+      where: { id: parseInt(complaint_id) },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true,
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  //Phản hồi khiếu nại (Admin hoặc Provider)
+  async replyComplaint(complaint_id, updateData) {
+    const dataToUpdate = {
+      admin_response: updateData.response
+    };
+
+    if (updateData.status) {
+      dataToUpdate.status = updateData.status;
+    }
+
+    return await prisma.complaint.update({
+      where: { id: parseInt(complaint_id) },
+      data: dataToUpdate,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true,
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  async updateStatus(complaint_id, status) {
+    return await prisma.complaint.update({
+      where: { id: parseInt(complaint_id) },
+      data: { status },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true
+          }
+        }
+      }
+    });
+  }
+
+  async updateComplaintStatus(complaint_id, updateData) {
+    const dataToUpdate = {};
+    if (updateData.status) {
+      dataToUpdate.status = updateData.status;
+    }
+    if (updateData.admin_response !== undefined) {
+      dataToUpdate.admin_response = updateData.admin_response;
+    }
+
+    return await prisma.complaint.update({
+      where: { id: parseInt(complaint_id) },
+      data: dataToUpdate,
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true,
+            provider: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            }
+          }
         }
       }
     });
