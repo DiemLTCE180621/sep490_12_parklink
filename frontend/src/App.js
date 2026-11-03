@@ -18,6 +18,8 @@ import CustomerReservationsPage from './pages/customer/CustomerReservationsPage'
 import CustomerReservationDetailPage from './pages/customer/CustomerReservationDetailPage';
 import CustomerContractsPage from './pages/CustomerContractsPage';
 import ContractDetailPage from './pages/ContractDetailPage';
+import RequestContractExtensionPage from './pages/customer/RequestContractExtensionPage';
+import RequestContractTerminationPage from './pages/customer/RequestContractTerminationPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
 import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
 import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
@@ -228,6 +230,26 @@ function AppContent() {
           <Route path="/my-contracts/:id" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <ContractDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/my-contracts/:id/extend" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <RequestContractExtensionPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/:id/extend" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <RequestContractExtensionPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/my-contracts/:id/terminate" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <RequestContractTerminationPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/:id/terminate" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <RequestContractTerminationPage />
             </RoleProtectedRoute>
           } />
           <Route path="/contracts/:id" element={

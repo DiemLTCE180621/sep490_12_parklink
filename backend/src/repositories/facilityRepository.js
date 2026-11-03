@@ -80,7 +80,7 @@ class FacilityRepository {
    */
   async getFacilityByProviderId(providerId) {
     return await prisma.facility.findUnique({
-      where: { provider_id: providerId },
+      where: { provider_id: parseInt(providerId, 10) },
       include: {
         images: true,
         facility_amenities: {
@@ -648,7 +648,7 @@ class FacilityRepository {
   async getActiveContractsCount(facilityId) {
     return await prisma.confirmation_Record.count({
       where: {
-        reservation: { facility_id: facilityId },
+        reservation: { facility_id: parseInt(facilityId, 10) },
         status: "ACTIVE"
       }
     });
