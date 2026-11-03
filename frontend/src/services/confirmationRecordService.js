@@ -59,3 +59,93 @@ export const getProviderActiveCustomers = async (params = {}) => {
   return await api.get('/confirmation-records/provider/active-customers', { params });
 };
 
+/**
+ * 8. [CUSTOMER] Gửi yêu cầu gia hạn hợp đồng thuê xe (Request lease extension)
+ * @param {number|string} contractId - ID của hợp đồng
+ * @param {Object} data - { extension_months, new_end_date, reason, vehicle_type, license_plate, customer_address, customer_phone }
+ */
+export const requestLeaseExtension = async (contractId, data) => {
+  return await api.post(`/confirmation-records/${contractId}/extend`, data);
+};
+
+/**
+ * 9. Xem chi tiết yêu cầu gia hạn của hợp đồng
+ * @param {number|string} contractId - ID của hợp đồng
+ */
+export const getLeaseExtensionDetail = async (contractId) => {
+  return await api.get(`/confirmation-records/${contractId}/extension-request`);
+};
+
+/**
+ * 10. [CUSTOMER] Hủy yêu cầu gia hạn đang chờ duyệt (Cancel extension request)
+ * @param {number|string} contractId - ID của hợp đồng
+ */
+export const cancelLeaseExtension = async (contractId) => {
+  return await api.patch(`/confirmation-records/${contractId}/extension-request/cancel`);
+};
+
+/**
+ * 11. [PROVIDER] Phản hồi yêu cầu gia hạn (Respond to lease extension: APPROVED / REJECTED)
+ * @param {number|string} contractId - ID của hợp đồng
+ * @param {Object} data - { status: 'APPROVED' | 'REJECTED', provider_note }
+ */
+export const respondToLeaseExtension = async (contractId, data) => {
+  return await api.patch(`/confirmation-records/${contractId}/extension-request/respond`, data);
+};
+
+/**
+ * 12. [CUSTOMER] Lấy danh sách các hợp đồng có yêu cầu gia hạn của mình
+ */
+export const getMyLeaseExtensions = async () => {
+  return await api.get('/confirmation-records/extension-requests/my');
+};
+
+/**
+ * 13. [CUSTOMER] Gửi yêu cầu chấm dứt hợp đồng / trả chỗ trước thời hạn (Request early termination)
+ * @param {number|string} contractId - ID của hợp đồng
+ * @param {Object} data - { termination_date, reason, bank_account_info }
+ */
+export const requestEarlyTermination = async (contractId, data) => {
+  return await api.post(`/confirmation-records/${contractId}/terminate-request`, data);
+};
+
+/**
+ * 14. [CUSTOMER] Hủy yêu cầu chấm dứt hợp đồng trước hạn đang chờ duyệt (Cancel termination request)
+ * @param {number|string} contractId - ID của hợp đồng
+ */
+export const cancelEarlyTermination = async (contractId) => {
+  return await api.patch(`/confirmation-records/${contractId}/termination-request/cancel`);
+};
+
+/**
+ * 15. Xem chi tiết yêu cầu chấm dứt hợp đồng
+ * @param {number|string} contractId - ID của hợp đồng
+ */
+export const getContractTerminationDetail = async (contractId) => {
+  return await api.get(`/confirmation-records/${contractId}/termination-request`);
+};
+
+/**
+ * 16. [PROVIDER] Xác nhận chấm dứt hợp đồng và thu hồi vị trí đỗ xe (Confirm contract termination & reclaim slot)
+ * @param {number|string} contractId - ID của hợp đồng
+ * @param {Object} data - { status: 'CONFIRMED' | 'REJECTED', provider_note, refund_amount }
+ */
+export const confirmContractTermination = async (contractId, data) => {
+  return await api.patch(`/confirmation-records/${contractId}/confirm-termination`, data);
+};
+
+/**
+ * 17. [CUSTOMER] Lấy danh sách hợp đồng có yêu cầu chấm dứt của mình
+ */
+export const getMyTerminationRequests = async () => {
+  return await api.get('/confirmation-records/termination-requests/my');
+};
+
+/**
+ * 18. [PROVIDER] Lấy danh sách hợp đồng có yêu cầu chấm dứt tại bãi của mình
+ */
+export const getProviderTerminationRequests = async () => {
+  return await api.get('/confirmation-records/termination-requests/provider');
+};
+
+

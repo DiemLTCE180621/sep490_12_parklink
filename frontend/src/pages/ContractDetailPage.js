@@ -2,7 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   getConfirmationRecordDetail,
-  acceptConfirmationRecord
+  acceptConfirmationRecord,
+  respondToLeaseExtension,
+  confirmContractTermination,
+  cancelEarlyTermination
 } from '../services/confirmationRecordService';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from '../components/modals/ConfirmModal';
@@ -13,7 +16,9 @@ import {
   Loader2,
   CheckSquare,
   Square,
-  Printer
+  Printer,
+  Clock,
+  RotateCcw
 } from 'lucide-react';
 
 const ContractDetailPage = () => {
@@ -21,11 +26,14 @@ const ContractDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const isCustomer = user?.role?.name === 'CUSTOMER' || user?.role === 'CUSTOMER';
-
   const [contract, setContract] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
+  const [processingExtension, setProcessingExtension] = useState(false);
+  const [processingTermination, setProcessingTermination] = useState(false);
+  const [cancellingTermination, setCancellingTermination] = useState(false);
+  const [terminationProviderNote, setTerminationProviderNote] = useState('');
+  const [terminationRefund, setTerminationRefund] = useState('');
   const [error, setError] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
@@ -34,6 +42,14 @@ const ContractDetailPage = () => {
 
   const [isTermsAgreed, setIsTermsAgreed] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [confirmTerminationModalOpen, setConfirmTerminationModalOpen] = useState(false);
+  const [cancelTerminationModalOpen, setCancelTerminationModalOpen] = useState(false);
+  const [rejectTerminationModalOpen, setRejectTerminationModalOpen] = useState(false);
+  const [rejectExtensionModalOpen, setRejectExtensionModalOpen] = useState(false);
+
+  const providerId = contract?.reservation?.facility?.provider_id || contract?.reservation?.facility?.provider?.id;
+  const isProvider = user?.role?.name === 'PROVIDER' || user?.role === 'PROVIDER' || (contract && user?.id === providerId);
+  const isCustomer = !isProvider;
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -99,15 +115,15 @@ const ContractDetailPage = () => {
 
   const displayIdCard =
     customerInfo.customer_id_card &&
-    customerInfo.customer_id_card !== 'Chưa cập nhật' &&
-    customerInfo.customer_id_card.trim() !== ''
+      customerInfo.customer_id_card !== 'Chưa cập nhật' &&
+      customerInfo.customer_id_card.trim() !== ''
       ? customerInfo.customer_id_card
       : fallbackCccd || customerIdCard || localStorage.getItem('customer_id_card') || 'Chưa cập nhật';
 
   const displayAddress =
     customerInfo.customer_address &&
-    customerInfo.customer_address !== 'Chưa cập nhật' &&
-    customerInfo.customer_address.trim() !== ''
+      customerInfo.customer_address !== 'Chưa cập nhật' &&
+      customerInfo.customer_address.trim() !== ''
       ? customerInfo.customer_address
       : fallbackAddress || customerAddress || localStorage.getItem('customer_address') || contract?.reservation?.customer?.address || 'Chưa cập nhật';
 
@@ -133,6 +149,100 @@ const ContractDetailPage = () => {
       });
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const pendingExtension = snapshot.extension_request && snapshot.extension_request.status === 'PENDING'
+    ? snapshot.extension_request
+    : null;
+
+  const pendingTermination = snapshot.termination_request && snapshot.termination_request.status === 'PENDING'
+    ? snapshot.termination_request
+    : null;
+
+  const executeTermination = async (status) => {
+    try {
+      setProcessingTermination(true);
+      const isConfirmed = status === 'CONFIRMED';
+
+      await confirmContractTermination(id, {
+        status,
+        provider_note: terminationProviderNote ? terminationProviderNote.trim() : (pendingTermination?.provider_note || undefined),
+        refund_amount: terminationRefund ? Number(terminationRefund) : (pendingTermination?.refund_amount !== null && pendingTermination?.refund_amount !== undefined ? Number(pendingTermination.refund_amount) : undefined)
+      });
+
+      setToastInfo({
+        message: isConfirmed
+          ? 'Đã xác nhận chấm dứt hợp đồng và thu hồi chỗ đỗ xe thành công!'
+          : 'Đã từ chối yêu cầu chấm dứt hợp đồng của khách hàng.',
+        type: 'success'
+      });
+      setConfirmTerminationModalOpen(false);
+      setRejectTerminationModalOpen(false);
+      fetchDetail();
+    } catch (err) {
+      setToastInfo({
+        message: err.response?.data?.message || err.message || 'Xử lý yêu cầu chấm dứt thất bại!',
+        type: 'error'
+      });
+    } finally {
+      setProcessingTermination(false);
+    }
+  };
+
+  const handleExecuteCancelTermination = async () => {
+    try {
+      setCancellingTermination(true);
+      await cancelEarlyTermination(id);
+      setToastInfo({
+        message: 'Đã hủy yêu cầu chấm dứt hợp đồng thành công! Hợp đồng tiếp tục có hiệu lực.',
+        type: 'success'
+      });
+      setCancelTerminationModalOpen(false);
+      fetchDetail();
+    } catch (err) {
+      setToastInfo({
+        message: err.response?.data?.message || err.message || 'Hủy yêu cầu chấm dứt thất bại!',
+        type: 'error'
+      });
+    } finally {
+      setCancellingTermination(false);
+    }
+  };
+
+  const handleRespondExtension = async (status) => {
+    if (status === 'REJECTED') {
+      setRejectExtensionModalOpen(true);
+      return;
+    }
+    await executeExtensionResponse('APPROVED');
+  };
+
+  const executeExtensionResponse = async (status) => {
+    try {
+      setProcessingExtension(true);
+      const isApproved = status === 'APPROVED';
+
+      await respondToLeaseExtension(id, {
+        status,
+        provider_note: isApproved ? undefined : 'Chủ bãi không thể gia hạn thêm cho kỳ thuê này.'
+      });
+
+      setToastInfo({
+        message: isApproved
+          ? 'Đã chấp thuận gia hạn hợp đồng thành công!'
+          : 'Đã từ chối yêu cầu gia hạn hợp đồng.',
+        type: 'success'
+      });
+      setRejectExtensionModalOpen(false);
+      fetchDetail();
+    } catch (err) {
+      setToastInfo({
+        message: err.response?.data?.message || err.message || 'Phản hồi yêu cầu gia hạn thất bại!',
+        type: 'error'
+      });
+    } finally {
+      setProcessingExtension(false);
     }
   };
 
@@ -165,11 +275,84 @@ const ContractDetailPage = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Đang hiệu lực
               </span>
+            ) : contract?.status === 'TERMINATED' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Đã chấm dứt
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Chờ xác nhận
               </span>
+            )}
+
+            {isCustomer && isActive && (
+              <>
+                {pendingExtension ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/extend`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition shadow-sm"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
+                    Xem gia hạn
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/extend`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition shadow-sm"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    Gia hạn
+                  </button>
+                )}
+
+                {pendingTermination ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/terminate`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition shadow-sm"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                    Xem trả chỗ
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/terminate`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition shadow-sm"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                    Chấm dứt trước hạn
+                  </button>
+                )}
+              </>
+            )}
+
+            {isProvider && isActive && (
+              <>
+                {pendingTermination ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/terminate`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition shadow-sm"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                    Xem chấm dứt
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/terminate`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition shadow-sm"
+                  >
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                    Chấm dứt trước hạn
+                  </button>
+                )}
+              </>
             )}
 
             <button
@@ -203,6 +386,421 @@ const ContractDetailPage = () => {
           </div>
         ) : contract ? (
           <div className="space-y-6">
+            {/* CUSTOMER PENDING EXTENSION BANNER */}
+            {isCustomer && pendingExtension && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-amber-900">
+                      Yêu cầu gia hạn hợp đồng đang chờ chủ bãi phê duyệt (+{pendingExtension.extension_months} tháng)
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-amber-700 mt-0.5">
+                      Thời hạn mới đề xuất: <strong>{pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString('vi-VN') : '---'}</strong> • Chi phí dự kiến: <strong>{Number(pendingExtension.total_estimated_amount || 0).toLocaleString('vi-VN')} đ</strong>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/contracts/${id}/extend`)}
+                  className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
+                >
+                  Xem chi tiết / Hủy
+                </button>
+              </div>
+            )}
+
+            {/* PROVIDER PENDING EXTENSION REVIEW CARD */}
+            {isProvider && pendingExtension && (
+              <div className="print:hidden bg-white rounded-xl p-5 sm:p-6 border-2 border-amber-400 sm:max-w-[900px] mx-auto space-y-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4 border-b border-amber-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                      <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                        Khách hàng yêu cầu gia hạn hợp đồng
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        Vui lòng kiểm tra thông tin thay đổi và phản hồi yêu cầu của khách hàng.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
+                    Chờ bạn duyệt
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+                  <div>
+                    <span className="text-slate-500 block">Số tháng xin gia hạn:</span>
+                    <strong className="text-slate-900 text-sm">+{pendingExtension.extension_months} tháng</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Ngày kết thúc mới đề xuất:</span>
+                    <strong className="text-teal-700 text-sm">
+                      {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString('vi-VN') : '---'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Tổng doanh thu dự kiến (+{pendingExtension.extension_months} tháng):</span>
+                    <strong className="text-emerald-700 text-sm font-bold">
+                      {Number(pendingExtension.total_estimated_amount || 0).toLocaleString('vi-VN')} đ
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-700 font-medium">
+                      {new Date(pendingExtension.requested_at).toLocaleDateString('vi-VN')}
+                    </span>
+                  </div>
+
+                  {pendingExtension.reason && (
+                    <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
+                      <span className="text-slate-500 block font-medium">Lý do từ khách hàng:</span>
+                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-amber-200">
+                        "{pendingExtension.reason}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* VEHICLE COMPARISON IF CHANGED */}
+                  {pendingExtension.vehicle_info?.is_changed && (
+                    <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
+                      <span className="text-slate-700 font-bold block mb-1">
+                        Khách hàng có đăng ký thay đổi thông tin xe:
+                      </span>
+                      <div className="p-2.5 bg-white rounded-lg border border-teal-200 grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-slate-400 block text-[11px]">Loại xe mới</span>
+                          <strong className="text-slate-900 font-semibold">{pendingExtension.vehicle_info.vehicle_type}</strong>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 block text-[11px]">Biển số mới</span>
+                          <strong className="text-teal-700 font-semibold">{pendingExtension.vehicle_info.license_plate}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={processingExtension}
+                    onClick={() => handleRespondExtension('REJECTED')}
+                    className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition"
+                  >
+                    Từ chối gia hạn
+                  </button>
+                  <button
+                    type="button"
+                    disabled={processingExtension}
+                    onClick={() => handleRespondExtension('APPROVED')}
+                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    {processingExtension ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                    Chấp thuận gia hạn
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* TERMINATED STATUS BANNER */}
+            {contract.status === 'TERMINATED' && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
+                <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Hợp đồng này đã được thanh lý & chấm dứt hiệu lực</h4>
+                  <p className="text-slate-600 mt-0.5">
+                    Vị trí đỗ xe đã được hoàn trả lại cho bãi xe. Văn bản hợp đồng dưới đây được lưu trữ phục vụ việc đối soát và tra cứu.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* CUSTOMER PENDING TERMINATION CARD */}
+            {isCustomer && pendingTermination && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-5 bg-white border-2 border-rose-400 rounded-xl space-y-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4 border-b border-rose-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center shrink-0 text-rose-700">
+                      <Clock className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                        {pendingTermination.requested_by === 'PROVIDER'
+                          ? 'Chủ bãi xe đã gửi yêu cầu chấm dứt hợp đồng trước hạn'
+                          : 'Yêu cầu chấm dứt hợp đồng đang chờ chủ bãi xác nhận'}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {pendingTermination.requested_by === 'PROVIDER'
+                          ? 'Chủ bãi đã thông báo dừng thuê trước hạn. Vui lòng kiểm tra lý do, tiền hoàn trả và bàn giao lại vị trí đỗ.'
+                          : 'Yêu cầu trả chỗ trước hạn của bạn đang chờ chủ bãi xe kiểm tra và xác nhận thu hồi.'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 shrink-0">
+                    {pendingTermination.requested_by === 'PROVIDER' ? 'Bên A (Chủ bãi) gửi' : 'Đang chờ xử lý'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
+                  <div>
+                    <span className="text-slate-500 block">
+                      {pendingTermination.requested_by === 'PROVIDER' ? 'Ngày dừng gửi dự kiến:' : 'Ngày đề xuất trả chỗ:'}
+                    </span>
+                    <strong className="text-rose-700 text-sm font-bold">
+                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString('vi-VN') : '---'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Hạn hợp đồng ban đầu:</span>
+                    <strong className="text-slate-800 text-sm font-semibold">
+                      {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-700 font-medium">
+                      {new Date(pendingTermination.requested_at).toLocaleDateString('vi-VN')} {new Date(pendingTermination.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+
+                  {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
+                    <div>
+                      <span className="text-slate-500 block">Số tiền chủ bãi hoàn lại (thỏa thuận):</span>
+                      <strong className="text-emerald-700 font-mono text-sm font-bold">
+                        {Number(pendingTermination.refund_amount).toLocaleString('vi-VN')} đ
+                      </strong>
+                    </div>
+                  )}
+
+                  {pendingTermination.bank_account_info && (
+                    <div>
+                      <span className="text-slate-500 block">Tài khoản nhận tiền hoàn lại (thỏa thuận):</span>
+                      <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
+                    </div>
+                  )}
+
+                  {pendingTermination.reason && (
+                    <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
+                      <span className="text-slate-500 block font-medium">
+                        {pendingTermination.requested_by === 'PROVIDER' ? 'Lý do từ chủ bãi xe:' : 'Lý do từ bạn:'}
+                      </span>
+                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                        "{pendingTermination.reason}"
+                      </p>
+                    </div>
+                  )}
+
+                  {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
+                    <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
+                      <span className="text-slate-500 block font-medium">Ghi chú hướng dẫn từ chủ bãi:</span>
+                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                        "{pendingTermination.provider_note}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+                  {pendingTermination.requested_by === 'CUSTOMER' && (
+                    <button
+                      type="button"
+                      disabled={cancellingTermination}
+                      onClick={() => setCancelTerminationModalOpen(true)}
+                      className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
+                    >
+                      {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                      Hủy yêu cầu chấm dứt
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/contracts/${id}/terminate`)}
+                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    {pendingTermination.requested_by === 'PROVIDER' ? 'Xem chi tiết & Bàn giao chỗ' : 'Xem chi tiết'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* PROVIDER PENDING TERMINATION CARD */}
+            {isProvider && pendingTermination && (
+              <div className="print:hidden bg-white rounded-xl p-5 sm:p-6 border-2 border-rose-400 sm:max-w-[900px] mx-auto space-y-4 shadow-sm">
+                <div className="flex items-start justify-between gap-4 border-b border-rose-100 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-rose-100 flex items-center justify-center shrink-0 text-rose-700">
+                      <Clock className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                        {pendingTermination.requested_by === 'PROVIDER'
+                          ? 'Yêu cầu chấm dứt hợp đồng do bạn khởi tạo'
+                          : 'Khách hàng yêu cầu chấm dứt hợp đồng & Trả chỗ trước hạn'}
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {pendingTermination.requested_by === 'PROVIDER'
+                          ? 'Yêu cầu đã gửi tới khách hàng. Khi khách hàng di chuyển xe và bàn giao vị trí, bạn hãy xác nhận đã thu hồi chỗ đỗ.'
+                          : 'Kiểm tra ngày bàn giao vị trí đỗ và thực hiện xác nhận để thanh lý hợp đồng & thu hồi lại chỗ đỗ xe.'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 shrink-0">
+                    {pendingTermination.requested_by === 'PROVIDER' ? 'Chờ thu hồi chỗ' : 'Chờ bạn xác nhận'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
+                  <div>
+                    <span className="text-slate-500 block">
+                      {pendingTermination.requested_by === 'PROVIDER' ? 'Ngày dừng gửi dự kiến:' : 'Ngày đề xuất trả chỗ:'}
+                    </span>
+                    <strong className="text-rose-700 text-sm font-bold">
+                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString('vi-VN') : '---'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Hạn hợp đồng ban đầu:</span>
+                    <strong className="text-slate-800 text-sm font-semibold">
+                      {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-700 font-medium">
+                      {new Date(pendingTermination.requested_at).toLocaleDateString('vi-VN')} {new Date(pendingTermination.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  {pendingTermination.bank_account_info && (
+                    <div>
+                      <span className="text-slate-500 block">Tài khoản nhận tiền hoàn lại (thỏa thuận):</span>
+                      <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
+                    </div>
+                  )}
+
+                  {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
+                    <div>
+                      <span className="text-slate-500 block">Số tiền hoàn trả dự kiến cho khách:</span>
+                      <strong className="text-emerald-700 font-mono text-sm font-bold">
+                        {Number(pendingTermination.refund_amount).toLocaleString('vi-VN')} đ
+                      </strong>
+                    </div>
+                  )}
+
+                  {pendingTermination.reason && (
+                    <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
+                      <span className="text-slate-500 block font-medium">
+                        {pendingTermination.requested_by === 'PROVIDER' ? 'Lý do từ chủ bãi xe (Bạn):' : 'Lý do từ khách hàng:'}
+                      </span>
+                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                        "{pendingTermination.reason}"
+                      </p>
+                    </div>
+                  )}
+
+                  {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
+                    <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
+                      <span className="text-slate-500 block font-medium">Ghi chú hướng dẫn cho khách hàng:</span>
+                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                        "{pendingTermination.provider_note}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* For Customer's request: Provider enters refund and review note */}
+                {pendingTermination.requested_by === 'CUSTOMER' ? (
+                  <>
+                    <div className="space-y-3 pt-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-700 block">
+                            Số tiền hoàn trả cho khách (nếu có thỏa thuận):
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            step={1000}
+                            value={terminationRefund}
+                            onChange={(e) => setTerminationRefund(e.target.value)}
+                            placeholder="Ví dụ: 500000..."
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 font-mono"
+                          />
+                          <span className="text-[11px] text-slate-400 block">Hai bên tự chuyển khoản / thanh toán trực tiếp ngoài web.</span>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-xs font-semibold text-slate-700 block">
+                            Ghi chú xác nhận / Phản hồi của chủ bãi:
+                          </label>
+                          <input
+                            type="text"
+                            value={terminationProviderNote}
+                            onChange={(e) => setTerminationProviderNote(e.target.value)}
+                            placeholder="Nhập ghi chú hoặc lý do nếu từ chối..."
+                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+                      <button
+                        type="button"
+                        disabled={processingTermination}
+                        onClick={() => setRejectTerminationModalOpen(true)}
+                        className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition"
+                      >
+                        Từ chối chấm dứt
+                      </button>
+                      <button
+                        type="button"
+                        disabled={processingTermination}
+                        onClick={() => setConfirmTerminationModalOpen(true)}
+                        className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
+                      >
+                        {processingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        Xác nhận chấm dứt & Thu hồi chỗ đỗ
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  /* For Provider's OWN request: provider can Cancel their request or Confirm Reclaim when customer vacated */
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-rose-100">
+                    <p className="text-[11px] text-slate-500 italic">
+                      * Bạn có thể hủy yêu cầu nếu muốn tiếp tục duy trì hợp đồng với khách hàng.
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={cancellingTermination || processingTermination}
+                        onClick={() => setCancelTerminationModalOpen(true)}
+                        className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
+                      >
+                        {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                        Hủy yêu cầu chấm dứt này
+                      </button>
+                      <button
+                        type="button"
+                        disabled={cancellingTermination || processingTermination}
+                        onClick={() => setConfirmTerminationModalOpen(true)}
+                        className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
+                      >
+                        {processingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                        Xác nhận đã thu hồi chỗ đỗ
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* STANDARD VIETNAMESE LEGAL CONTRACT CANVAS */}
             <div
               className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
@@ -226,7 +824,7 @@ const ContractDetailPage = () => {
                 </p>
               </div>
 
-          
+
 
               {/* THỜI GIAN & ĐỊA ĐIỂM */}
               <p className="text-xs sm:text-sm leading-relaxed text-black mb-4">
@@ -426,7 +1024,7 @@ const ContractDetailPage = () => {
         ) : null}
       </div>
 
-      {/* CONFIRMATION DIALOG */}
+      {/* CONFIRMATION DIALOG FOR SIGNING */}
       <ConfirmModal
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
@@ -437,6 +1035,62 @@ const ContractDetailPage = () => {
         cancelText="Bỏ Qua"
         type="primary"
         loading={accepting}
+      />
+
+      {/* CONFIRM TERMINATION MODAL FOR PROVIDER */}
+      <ConfirmModal
+        isOpen={confirmTerminationModalOpen}
+        onClose={() => setConfirmTerminationModalOpen(false)}
+        onConfirm={() => executeTermination('CONFIRMED')}
+        title={pendingTermination?.requested_by === 'PROVIDER' ? 'Xác Nhận Đã Thu Hồi Chỗ Đỗ' : 'Xác Nhận Chấm Dứt Hợp Đồng & Thu Hồi Chỗ Đỗ'}
+        message={
+          pendingTermination?.requested_by === 'PROVIDER'
+            ? 'Bạn có chắc chắn muốn xác nhận đã thu hồi lại chỗ đỗ xe? Sau khi xác nhận, hợp đồng sẽ chính thức được thanh lý và vị trí đỗ xe sẽ được mở lại cho khách hàng mới.'
+            : 'Bạn có chắc chắn muốn xác nhận chấm dứt hợp đồng này? Sau khi xác nhận, hợp đồng sẽ chính thức được thanh lý và hệ thống sẽ tự động thu hồi lại vị trí đỗ xe trống để đón khách mới.'
+        }
+        confirmText={pendingTermination?.requested_by === 'PROVIDER' ? 'Xác Nhận Đã Thu Hồi' : 'Xác Nhận Chấm Dứt'}
+        cancelText="Bỏ Qua"
+        type="danger"
+        loading={processingTermination}
+      />
+
+      {/* CANCEL TERMINATION MODAL */}
+      <ConfirmModal
+        isOpen={cancelTerminationModalOpen}
+        onClose={() => setCancelTerminationModalOpen(false)}
+        onConfirm={handleExecuteCancelTermination}
+        title="Hủy Yêu Cầu Chấm Dứt Hợp Đồng"
+        message="Bạn có chắc chắn muốn hủy yêu cầu chấm dứt hợp đồng này không? Hợp đồng sẽ tiếp tục có hiệu lực theo thời hạn đã ký ban đầu."
+        confirmText="Đồng Ý Hủy"
+        cancelText="Bỏ Qua"
+        type="warning"
+        loading={cancellingTermination}
+      />
+
+      {/* REJECT TERMINATION MODAL FOR PROVIDER */}
+      <ConfirmModal
+        isOpen={rejectTerminationModalOpen}
+        onClose={() => setRejectTerminationModalOpen(false)}
+        onConfirm={() => executeTermination('REJECTED')}
+        title="Từ Chối Yêu Cầu Chấm Dứt Hợp Đồng"
+        message="Bạn có chắc chắn muốn từ chối yêu cầu chấm dứt trước hạn này của khách hàng? Hợp đồng sẽ tiếp tục có hiệu lực theo thời hạn đã ký ban đầu."
+        confirmText="Từ Chối Yêu Cầu"
+        cancelText="Bỏ Qua"
+        type="warning"
+        loading={processingTermination}
+      />
+
+      {/* REJECT EXTENSION MODAL FOR PROVIDER */}
+      <ConfirmModal
+        isOpen={rejectExtensionModalOpen}
+        onClose={() => setRejectExtensionModalOpen(false)}
+        onConfirm={() => executeExtensionResponse('REJECTED')}
+        title="Từ Chối Yêu Cầu Gia Hạn Hợp Đồng"
+        message="Bạn có chắc chắn muốn từ chối yêu cầu gia hạn thời gian thuê của khách hàng không?"
+        confirmText="Từ Chối Gia Hạn"
+        cancelText="Bỏ Qua"
+        type="warning"
+        loading={processingExtension}
       />
     </div>
   );

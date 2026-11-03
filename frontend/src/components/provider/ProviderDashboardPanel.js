@@ -31,8 +31,9 @@ const ProviderDashboardPanel = () => {
     try {
       setLoading(true);
       const res = await providerService.getMyFacility();
-      if (res?.data?.facility) {
-        setFacilityStats(res.data.facility);
+      const facilityData = res?.facility || res?.data?.facility || res?.data || res;
+      if (facilityData && (facilityData.id || facilityData.capacity)) {
+        setFacilityStats(facilityData);
       }
     } catch (err) {
       console.warn("Không thể tải thông tin bãi đỗ xe chi tiết:", err);
@@ -42,18 +43,20 @@ const ProviderDashboardPanel = () => {
   }, []);
 
   useEffect(() => {
-    if (user?.facility) {
-      fetchFacilityData();
-    }
-  }, [user?.facility, fetchFacilityData]);
+    fetchFacilityData();
+  }, [fetchFacilityData]);
 
   // Thông tin bãi xe hiển thị (ưu tiên dữ liệu chi tiết có stats và images)
   const currentFacility = facilityStats || user?.facility;
   const totalCapacity = currentFacility?.capacity || 0;
-  const currentAvailableSlots = currentFacility?.available_slots !== undefined && currentFacility?.available_slots !== null
-    ? currentFacility.available_slots
-    : totalCapacity;
-  const occupiedSlots = Math.max(0, totalCapacity - currentAvailableSlots);
+  const activeContracts = currentFacility?.active_contracts !== undefined ? Number(currentFacility.active_contracts) : 0;
+  const rawAvailable = currentFacility?.available_slots !== undefined && currentFacility?.available_slots !== null
+    ? Number(currentFacility.available_slots)
+    : Math.max(0, totalCapacity - activeContracts);
+  const currentAvailableSlots = activeContracts > 0
+    ? Math.min(rawAvailable, Math.max(0, totalCapacity - activeContracts))
+    : rawAvailable;
+  const occupiedSlots = activeContracts > 0 ? activeContracts : Math.max(0, totalCapacity - currentAvailableSlots);
 
   const handleOpenEdit = () => {
     setEditData({
@@ -106,8 +109,9 @@ const ProviderDashboardPanel = () => {
         visibility_status: editData.visibility_status
       });
 
-      if (res?.data?.facility) {
-        setFacilityStats(res.data.facility);
+      const updatedFac = res?.facility || res?.data?.facility || res?.data || res;
+      if (updatedFac && (updatedFac.id || updatedFac.capacity)) {
+        setFacilityStats(updatedFac);
       }
 
       await refreshUser();

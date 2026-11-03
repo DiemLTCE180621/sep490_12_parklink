@@ -18,11 +18,16 @@ class ProviderService {
     // Đếm số lượng hợp đồng (xe) đang thuê gửi hiệu lực (ACTIVE) tại bãi
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facility.id);
 
+    // Tinh toan so cho trong kha dung thuc te:
+    // Dam bao nguyen ly: Khong vuot qua (capacity - activeContractsCount)
+    let calculatedAvailableSlots = Math.max(0, facility.capacity - activeContractsCount);
+    if (facility.available_slots !== undefined && facility.available_slots !== null) {
+      calculatedAvailableSlots = Math.min(facility.available_slots, calculatedAvailableSlots);
+    }
+
     return {
       ...facility,
-      available_slots: facility.available_slots !== undefined && facility.available_slots !== null 
-        ? facility.available_slots 
-        : facility.capacity,
+      available_slots: calculatedAvailableSlots,
       active_contracts: activeContractsCount
     };
   }
