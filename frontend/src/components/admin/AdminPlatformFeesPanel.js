@@ -98,7 +98,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
           <p className="text-slate-500 text-xs mt-1">
             {isReadOnly
               ? 'Phí nền tảng thu 1 lần dựa trên quy mô bãi đỗ (Khung Min – Max) sau khi khảo sát thực địa'
-              : 'Cấu hình các gói phí nền tảng thu 1 lần theo quy mô bãi đỗ (Khung Min – Max) sau khi khảo sát thực địa'}
+              : 'Cấu hình các gói phí nền tảng thu 1 lần theo quy mô bãi đỗ sau khi khảo sát thực địa'}
           </p>
         </div>
 
@@ -127,10 +127,6 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
 
       {/* Thông tin tóm tắt quy định thu phí đề tài */}
       <div className="p-3.5 bg-teal-50/70 border border-teal-100 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2 text-teal-900 font-semibold">
-          <Layers className="w-4 h-4 text-teal-600 shrink-0" />
-          <span>Biểu phí thí điểm: 1 – 3 chỗ (2.000.000 VNĐ) • 4 – 7 chỗ (4.000.000 VNĐ) • Từ 8 chỗ (6.000.000 VNĐ)</span>
-        </div>
         <span className="text-teal-700 font-medium">Thu 1 lần khi duyệt đưa cơ sở lên sàn</span>
       </div>
 

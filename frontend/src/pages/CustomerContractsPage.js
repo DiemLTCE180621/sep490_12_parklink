@@ -12,7 +12,8 @@ import {
   RefreshCw,
   Loader2,
   Eye,
-  PenTool
+  PenTool,
+  Clock
 } from 'lucide-react';
 
 const CustomerContractsPage = () => {
@@ -25,6 +26,7 @@ const CustomerContractsPage = () => {
 
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [selectedFacilityId, setSelectedFacilityId] = useState(null);
+
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const fetchContracts = useCallback(async () => {
@@ -55,10 +57,16 @@ const CustomerContractsPage = () => {
     setIsComplaintModalOpen(true);
   };
 
+  const handleOpenExtension = (contractItem, e) => {
+    if (e) e.stopPropagation();
+    navigate(`/contracts/${contractItem.id}/extend`);
+  };
+
   const filteredContracts = contracts.filter((item) => {
     let matchesTab = true;
     if (activeTab === 'PENDING_SIGNATURE') matchesTab = item.status === 'PENDING_SIGNATURE';
     else if (activeTab === 'ACTIVE') matchesTab = item.status === 'ACTIVE';
+    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED';
 
     const query = searchTerm.trim().toLowerCase();
     let matchesSearch = true;
@@ -75,6 +83,7 @@ const CustomerContractsPage = () => {
   const totalCount = contracts.length;
   const pendingCount = contracts.filter((c) => c.status === 'PENDING_SIGNATURE').length;
   const activeCount = contracts.filter((c) => c.status === 'ACTIVE').length;
+  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED').length;
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
@@ -134,6 +143,16 @@ const CustomerContractsPage = () => {
               }`}
             >
               Đang hiệu lực ({activeCount})
+            </button>
+            <button
+              onClick={() => setActiveTab('TERMINATED')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                activeTab === 'TERMINATED'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Đã chấm dứt ({terminatedCount})
             </button>
           </div>
 
@@ -200,11 +219,38 @@ const CustomerContractsPage = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         Đang hiệu lực
                       </span>
+                    ) : item.status === 'TERMINATED' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                        Đã chấm dứt
+                      </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                         Chờ xác nhận
                       </span>
+                    )}
+
+                    {item.contract_snapshot?.extension_request?.status === 'PENDING' && (
+                      <>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                          <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                          Chờ duyệt gia hạn (+{item.contract_snapshot.extension_request.extension_months} thg)
+                        </span>
+                      </>
+                    )}
+
+                    {item.contract_snapshot?.termination_request?.status === 'PENDING' && (
+                      <>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
+                          <AlertCircle className="w-3 h-3 text-rose-600 animate-pulse" />
+                          {item.contract_snapshot.termination_request.requested_by === 'PROVIDER'
+                            ? 'Chủ bãi yêu cầu chấm dứt'
+                            : 'Yêu cầu trả chỗ'}
+                        </span>
+                      </>
                     )}
                   </div>
 
@@ -254,6 +300,73 @@ const CustomerContractsPage = () => {
                         <PenTool className="w-3.5 h-3.5" />
                         Xem & xác nhận
                       </button>
+                    ) : item.status === 'ACTIVE' ? (
+                      <>
+                        {item.contract_snapshot?.extension_request?.status === 'PENDING' ? (
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenExtension(item, e)}
+                            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition inline-flex items-center gap-1.5"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-amber-600" />
+                            Xem gia hạn
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenExtension(item, e)}
+                            className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-medium rounded-lg border border-teal-200 transition inline-flex items-center gap-1.5"
+                          >
+                            <Clock className="w-3.5 h-3.5 text-teal-600" />
+                            Gia hạn
+                          </button>
+                        )}
+
+                        {item.contract_snapshot?.termination_request?.status === 'PENDING' ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/contracts/${item.id}/terminate`);
+                            }}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition inline-flex items-center gap-1.5"
+                          >
+                            <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                            {item.contract_snapshot?.termination_request?.requested_by === 'PROVIDER'
+                              ? 'Xem chấm dứt'
+                              : 'Xem trả chỗ'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/contracts/${item.id}/terminate`);
+                            }}
+                            className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
+                          >
+                            Trả chỗ
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
+                          className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
+                        >
+                          Khiếu nại
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDetail(item.id);
+                          }}
+                          className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Chi tiết
+                        </button>
+                      </>
                     ) : (
                       <>
                         <button

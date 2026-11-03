@@ -5,7 +5,7 @@ import reviewService from '../../services/reviewService';
 import { validateReviewForm } from '../../validations/reviewValidation';
 import StarRating from './StarRating';
 import Toast from './Toast';
-import { Edit, Trash2, Send, AlertTriangle } from 'lucide-react';
+import { Edit, Trash2, Send, AlertTriangle, CornerDownRight } from 'lucide-react';
 
 const ReviewSection = ({ facilityId }) => {
   const { user } = useAuth();
@@ -415,6 +415,17 @@ const ReviewSection = ({ facilityId }) => {
                   <p className="text-slate-700 leading-relaxed bg-white p-4 rounded-lg border border-slate-100">
                     {review.comment}
                   </p>
+                  {review.provider_reply && (
+                    <div className="mt-3 ml-2 sm:ml-4 pl-3.5 border-l-2 border-teal-500 bg-teal-50/50 p-3.5 rounded-r-xl">
+                      <span className="text-xs font-bold text-teal-800 flex items-center gap-1.5 mb-1">
+                        <CornerDownRight className="w-3.5 h-3.5 text-teal-600" />
+                        Phản hồi từ chủ bãi xe
+                      </span>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {review.provider_reply}
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>

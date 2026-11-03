@@ -271,7 +271,9 @@ const FacilityDetailPage = () => {
   const currentImage = images[activeImage] || images[0];
   const facilityCode = `FAC-${String(facility.id).padStart(4, '0')}`;
   const vehicleTypes = Array.isArray(facility.vehicle_types) ? facility.vehicle_types : [];
-  const vehicleTypeLabels = vehicleTypes.map(getVehicleTypeLabel);
+  const vehicleTypeLabels = (facility.facility_vehicle_types && facility.facility_vehicle_types.length > 0)
+    ? facility.facility_vehicle_types.map(fvt => fvt.vehicle_type?.name).filter(Boolean)
+    : vehicleTypes.map(getVehicleTypeLabel);
   const providerName = facility.provider?.full_name || 'Chủ bãi xe';
   const latitude = Number(facility.latitude);
   const longitude = Number(facility.longitude);

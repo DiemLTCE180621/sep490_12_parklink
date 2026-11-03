@@ -4,6 +4,7 @@ const userRepository = require('../repositories/userRepository');
 const roleRepository = require('../repositories/roleRepository');
 const emailService = require('../utils/emailService');
 const platformFeeService = require('./platformFeeService');
+const vehicleTypeRepository = require('../repositories/vehicleTypeRepository');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -151,6 +152,12 @@ class AuthService {
       requires_password_change: true
     };
 
+    let targetVehicleTypes = vehicle_types;
+    if (!targetVehicleTypes || !Array.isArray(targetVehicleTypes) || targetVehicleTypes.length === 0) {
+      const activeTypes = await vehicleTypeRepository.findActive();
+      targetVehicleTypes = activeTypes.length > 0 ? [activeTypes[0].type_code] : [];
+    }
+
     const facilityData = {
       name: facility_name,
       address: address || 'Phường Ninh Kiều, Thành phố Cần Thơ',
@@ -160,7 +167,7 @@ class AuthService {
       available_slots: slotCount,
       price_per_month: parseFloat(price_per_month),
       system_fee: system_fee,
-      vehicle_types: vehicle_types || ['CAR_4_5_SEATER'],
+      vehicle_types: targetVehicleTypes,
       verification_status: 'PENDING_REVIEW', // Chờ Admin duyệt
       payment_status: 'UNPAID',
       visibility_status: 'HIDDEN' // Ẩn cho đến khi được duyệt

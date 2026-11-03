@@ -66,6 +66,11 @@ class FacilityRepository {
             amenity: true,
           },
         },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
+          },
+        },
       },
     });
   }
@@ -75,10 +80,16 @@ class FacilityRepository {
    */
   async getFacilityByProviderId(providerId) {
     return await prisma.facility.findUnique({
-      where: { provider_id: providerId },
+      where: { provider_id: parseInt(providerId, 10) },
       include: {
         images: true,
-      },
+        facility_amenities: {
+          include: { amenity: true },
+        },
+        facility_vehicle_types: {
+          include: { vehicle_type: true },
+        },
+      }
     });
   }
 
@@ -401,6 +412,11 @@ class FacilityRepository {
             amenity: true,
           },
         },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
+          },
+        },
         reviews: {
           where: { status: "VISIBLE" },
           select: { rating: true },
@@ -632,7 +648,7 @@ class FacilityRepository {
   async getActiveContractsCount(facilityId) {
     return await prisma.confirmation_Record.count({
       where: {
-        reservation: { facility_id: facilityId },
+        reservation: { facility_id: parseInt(facilityId, 10) },
         status: "ACTIVE"
       }
     });

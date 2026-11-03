@@ -6,6 +6,10 @@ const authService = {
     return await api.get('/auth/amenities');
   },
 
+  async getVehicleTypes() {
+    return await api.get('/vehicle-types/active');
+  },
+
   async getContactInfo() {
     return await api.get('/auth/contact-info');
   },

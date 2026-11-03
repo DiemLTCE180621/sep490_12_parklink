@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import platformFeeService from '../../services/platformFeeService';
+import vehicleTypeService from '../../services/vehicleTypeService';
 import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, CheckSquare, Square, Phone, Mail } from 'lucide-react';
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
-import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../../utils/validators';
 import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
 
@@ -17,6 +17,9 @@ const RegisterProviderPage = () => {
   const [platformFees, setPlatformFees] = useState([]);
   const [agreedPolicy, setAgreedPolicy] = useState(false);
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  // State danh mục loại phương tiện lấy từ Database (Bảng vehicle_types)
+  const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
+  const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -26,9 +29,9 @@ const RegisterProviderPage = () => {
     address: '',
     latitude: '',
     longitude: '',
-    capacity: '',
-    price_per_month: '',
-    vehicle_types: [VEHICLE_TYPES[0].id],
+    capacity: '5',
+    price_per_month: '1500000',
+    vehicle_types: [],
     amenity_ids: []
   });
 
@@ -40,9 +43,11 @@ const RegisterProviderPage = () => {
     const fetchInitialData = async () => {
       try {
         setLoadingAmenities(true);
-        const [amenitiesRes, feesRes] = await Promise.allSettled([
+        setLoadingVehicleTypes(true);
+        const [amenitiesRes, feesRes, vehicleTypesRes] = await Promise.allSettled([
           authService.getAmenities(),
-          platformFeeService.getActiveFees()
+          platformFeeService.getActiveFees(),
+          vehicleTypeService.getActiveVehicleTypes()
         ]);
 
         if (amenitiesRes.status === 'fulfilled' && amenitiesRes.value?.data?.amenities) {
@@ -56,10 +61,24 @@ const RegisterProviderPage = () => {
           const feeList = feesRes.value?.data || feesRes.value || [];
           setPlatformFees(Array.isArray(feeList) ? feeList : []);
         }
+
+        if (vehicleTypesRes.status === 'fulfilled') {
+          const vList = vehicleTypesRes.value?.data || vehicleTypesRes.value || [];
+          if (Array.isArray(vList) && vList.length > 0) {
+            setDbVehicleTypes(vList);
+            setFormData(prev => ({
+              ...prev,
+              vehicle_types: prev.vehicle_types && prev.vehicle_types.length > 0
+                ? prev.vehicle_types
+                : [vList[0].type_code]
+            }));
+          }
+        }
       } catch (err) {
         console.error('Lỗi tải dữ liệu ban đầu từ DB:', err);
       } finally {
         setLoadingAmenities(false);
+        setLoadingVehicleTypes(false);
       }
     };
 
@@ -150,6 +169,8 @@ const RegisterProviderPage = () => {
 
     if (!agreedPolicy) {
       errs.push('Vui lòng đọc và tích chọn đồng ý với Chính sách & Quy định dành cho Chủ bãi đỗ xe của ParkLink.');
+    if (!formData.vehicle_types || formData.vehicle_types.length === 0) {
+      errs.push('Vui lòng chọn ít nhất một loại phương tiện nhận gửi.');
     }
 
     return { isValid: errs.length === 0, errs, cleanedName, cleanedEmail, cleanedPhone, cleanedFacilityName };
@@ -438,26 +459,38 @@ const RegisterProviderPage = () => {
                     </div>
                   </div>
 
-                  {/* Loại phương tiện nhận gửi */}
+                  {/* Loại phương tiện nhận gửi lấy động 100% từ Database */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Loại phương tiện nhận gửi
+                      Loại phương tiện nhận gửi <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex flex-wrap gap-3">
-                      {VEHICLE_TYPES.map(type => (
-                        <button
-                          type="button"
-                          key={type.id}
-                          onClick={() => handleVehicleTypeToggle(type.id)}
-                          className={`px-4 py-2.5 rounded-xl border text-sm font-semibold flex items-center gap-2 transition ${formData.vehicle_types.includes(type.id)
-                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-                            }`}
-                        >
-                          <Car className="w-4 h-4" /> {type.shortLabel}
-                        </button>
-                      ))}
-                    </div>
+                    {loadingVehicleTypes ? (
+                      <p className="text-xs text-slate-500">Đang tải danh mục loại phương tiện từ cơ sở dữ liệu...</p>
+                    ) : dbVehicleTypes.length === 0 ? (
+                      <p className="text-xs text-amber-600">Chưa có loại phương tiện nào đang hoạt động trên hệ thống.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {dbVehicleTypes.map(type => {
+                          const typeCode = type.type_code;
+                          const isSelected = formData.vehicle_types.includes(typeCode);
+                          return (
+                            <button
+                              type="button"
+                              key={typeCode}
+                              onClick={() => handleVehicleTypeToggle(typeCode)}
+                              title={type.description || type.name}
+                              className={`px-4 py-2.5 rounded-xl border text-sm font-semibold flex items-center gap-2 transition ${isSelected
+                                ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                                }`}
+                            >
+                              <Car className="w-4 h-4" />
+                              <span>{type.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

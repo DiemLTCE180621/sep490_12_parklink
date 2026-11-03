@@ -3,16 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ------------------------------------------------------
 // NHÓM HỆ THỐNG & NGƯỜI DÙNG
 // ------------------------------------------------------
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique @db.VarChar(50)
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(50)
   description String?
   users       User[]
 
@@ -20,72 +20,71 @@ model Role {
 }
 
 model User {
-  id                       Int       @id @default(autoincrement())
+  id                       Int      @id @default(autoincrement())
   role_id                  Int
-  email                    String    @unique
+  email                    String   @unique
   full_name                String    @db.VarChar(50)
   phone_number             String
   address                  String?
   password_hash            String?
-  requires_password_change Boolean   @default(true)
-  status                   String    @default("PENDING")
-  created_at               DateTime  @default(now())
-  updated_at               DateTime  @updatedAt
+  requires_password_change Boolean  @default(true)
+  status                   String   @default("PENDING")
+  created_at               DateTime @default(now())
+  updated_at               DateTime @updatedAt
 
-  role                     Role      @relation(fields: [role_id], references: [id])
-  facility                 Facility? @relation("ProviderFacility") 
-  assigned_facilities      Facility[] @relation("InspectorFacilities")
-  
+  role                Role       @relation(fields: [role_id], references: [id])
+  facility            Facility?  @relation("ProviderFacility")
+  assigned_facilities Facility[] @relation("InspectorFacilities")
   // Quan hệ ngược (Reverse relations)
-  transactions             System_Transaction[]
-  reservations             Reservation_Request[]
-  reviews                  Review[]
-  complaints               Complaint[]
-  notifications            Notification[]
-  chat_rooms_as_customer   Chat_Room[] @relation("CustomerRooms")
-  chat_rooms_as_provider   Chat_Room[] @relation("ProviderRooms")
-  messages                 Message[]
-  favorites                Favorite[]
-  updated_policies         System_Policy[] @relation("AdminUpdatedPolicies")
+  transactions           System_Transaction[]
+  reservations           Reservation_Request[]
+  reviews                Review[]
+  complaints             Complaint[]
+  notifications          Notification[]
+  chat_rooms_as_customer Chat_Room[]           @relation("CustomerRooms")
+  chat_rooms_as_provider Chat_Room[]           @relation("ProviderRooms")
+  messages               Message[]
+  favorites              Favorite[]
+  updated_policies       System_Policy[]       @relation("AdminUpdatedPolicies")
 
   @@map("users")
 }
 
 model Facility {
-  id                  Int      @id @default(autoincrement())
-  provider_id         Int      @unique
+  id                    Int      @id @default(autoincrement())
+  provider_id           Int      @unique
   assigned_inspector_id Int?
-  name                String
-  address             String
-  latitude            Float?   
-  longitude           Float?   
-  vehicle_types       Json
-  capacity            Int
-  available_slots     Int      @default(0)
-  price_per_month     Decimal
-  system_fee          Decimal?
-  platform_fee_id     Int?
-  payment_status      String   @default("UNPAID")
-  verification_status String   @default("PENDING_REVIEW")
-  visibility_status   String   @default("VISIBLE")
-  custom_terms        String?  @db.Text
-  created_at          DateTime @default(now())
-  updated_at          DateTime @updatedAt
+  name                  String
+  address               String
+  latitude              Float?
+  longitude             Float?
+  vehicle_types         Json
+  capacity              Int
+  available_slots       Int      @default(0)
+  price_per_month       Decimal
+  system_fee            Decimal?
+  platform_fee_id       Int?
+  payment_status        String   @default("UNPAID")
+  verification_status   String   @default("PENDING_REVIEW")
+  visibility_status     String   @default("VISIBLE")
+  custom_terms          String?  @db.Text
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
 
-  provider            User          @relation("ProviderFacility", fields: [provider_id], references: [id])
-  assigned_inspector  User?         @relation("InspectorFacilities", fields: [assigned_inspector_id], references: [id])
-  platform_fee        Platform_Fee? @relation(fields: [platform_fee_id], references: [id])
-  
-  images              Facility_Image[]
-  update_requests     Facility_Update_Request[]
-  facility_amenities  Facility_Amenity[]
+  provider           User          @relation("ProviderFacility", fields: [provider_id], references: [id])
+  assigned_inspector User?         @relation("InspectorFacilities", fields: [assigned_inspector_id], references: [id])
+  platform_fee       Platform_Fee? @relation(fields: [platform_fee_id], references: [id])
+
+  images                 Facility_Image[]
+  update_requests        Facility_Update_Request[]
+  facility_amenities     Facility_Amenity[]
   facility_vehicle_types Facility_Vehicle_Type[]
-  transactions        System_Transaction[]
-  reservations        Reservation_Request[]
-  reviews             Review[]
-  complaints          Complaint[]
-  chat_rooms          Chat_Room[]
-  favorites           Favorite[]
+  transactions           System_Transaction[]
+  reservations           Reservation_Request[]
+  reviews                Review[]
+  complaints             Complaint[]
+  chat_rooms             Chat_Room[]
+  favorites              Favorite[]
 
   @@map("facilities")
 }
@@ -94,12 +93,12 @@ model Facility {
 // NHÓM CẬP NHẬT CƠ SỞ & GIAO DỊCH
 // ------------------------------------------------------
 model Facility_Image {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   facility_id Int
   image_url   String
-  is_primary  Boolean  @default(false)
-  
-  facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  is_primary  Boolean @default(false)
+
+  facility Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@map("facility_images")
 }
@@ -114,7 +113,7 @@ model Facility_Update_Request {
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
-  facility       Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@map("facility_update_requests")
 }
@@ -129,8 +128,8 @@ model System_Transaction {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  provider         User     @relation(fields: [provider_id], references: [id])
-  facility         Facility @relation(fields: [facility_id], references: [id])
+  provider User     @relation(fields: [provider_id], references: [id])
+  facility Facility @relation(fields: [facility_id], references: [id])
 
   @@map("system_transactions")
 }
@@ -148,49 +147,49 @@ model Reservation_Request {
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
 
-  customer           User     @relation(fields: [customer_id], references: [id])
-  facility           Facility @relation(fields: [facility_id], references: [id])
-  
-  confirmation_record Confirmation_Record? 
+  customer User     @relation(fields: [customer_id], references: [id])
+  facility Facility @relation(fields: [facility_id], references: [id])
+
+  confirmation_record Confirmation_Record?
 
   @@map("reservation_requests")
 }
 
 model Confirmation_Record {
-  id                   Int      @id @default(autoincrement())
-  contract_code        String   @unique @db.VarChar(50)
-  reservation_id       Int      @unique
+  id                   Int       @id @default(autoincrement())
+  contract_code        String    @unique @db.VarChar(50)
+  reservation_id       Int       @unique
   agreed_price         Decimal
   payment_deadline_day Int?
-  start_date           DateTime @db.Date
-  end_date             DateTime @db.Date
+  start_date           DateTime  @db.Date
+  end_date             DateTime  @db.Date
   contract_snapshot    Json
   customer_agreed_at   DateTime?
   provider_agreed_at   DateTime?
-  status               String   @default("PENDING_SIGNATURE")
-  created_at           DateTime @default(now())
-  updated_at           DateTime @updatedAt
+  status               String    @default("PENDING_SIGNATURE")
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
 
-  reservation          Reservation_Request @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
+  reservation Reservation_Request @relation(fields: [reservation_id], references: [id], onDelete: Cascade)
 
   @@map("confirmation_records")
 }
 
 model Review {
-  id              Int      @id @default(autoincrement())
-  customer_id     Int
-  facility_id     Int
-  rating          Int
-  comment         String   @db.Text
-  provider_reply  String?  @db.Text
-  status          String   @default("VISIBLE")
-  is_flagged      Boolean  @default(false)
-  flagged_reason  String?  @db.Text
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  customer_id    Int
+  facility_id    Int
+  rating         Int
+  comment        String   @db.Text
+  provider_reply String?  @db.Text
+  status         String   @default("VISIBLE")
+  is_flagged     Boolean  @default(false)
+  flagged_reason String?  @db.Text
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-  customer        User     @relation(fields: [customer_id], references: [id])
-  facility        Facility @relation(fields: [facility_id], references: [id])
+  customer User     @relation(fields: [customer_id], references: [id])
+  facility Facility @relation(fields: [facility_id], references: [id])
 
   @@map("reviews")
 }
@@ -205,7 +204,6 @@ model Favorite {
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@unique([customer_id, facility_id]) 
-  @@map("favorites")
 }
 
 // ------------------------------------------------------
@@ -217,7 +215,6 @@ model Complaint {
   facility_id    Int
   title          String
   description    String   @db.Text
-  image_urls     String[] @default([])
   status         String   @default("OPEN")
   admin_response String?  @db.Text
   created_at     DateTime @default(now())
@@ -225,8 +222,6 @@ model Complaint {
 
   customer       User     @relation(fields: [customer_id], references: [id])
   facility       Facility @relation(fields: [facility_id], references: [id])
-
-  @@map("complaints")
 }
 
 model Notification {
@@ -237,16 +232,16 @@ model Notification {
   is_read    Boolean  @default(false)
   type       String
   created_at DateTime @default(now())
-  updated_at DateTime @updatedAt 
+  updated_at DateTime @updatedAt
 
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
 
 model Amenity {
-  id                 Int      @id @default(autoincrement())
-  name               String   @unique @db.VarChar(100)
+  id                 Int                @id @default(autoincrement())
+  name               String             @unique @db.VarChar(100)
   icon               String?
   type               String?
   facility_amenities Facility_Amenity[]
@@ -258,10 +253,10 @@ model Facility_Amenity {
   facility_id Int
   amenity_id  Int
 
-  facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-  amenity     Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
+  facility Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenity_id], references: [id], onDelete: Cascade)
 
-  @@id([facility_id, amenity_id]) 
+  @@id([facility_id, amenity_id])
   @@map("facility_amenities")
 }
 
@@ -275,11 +270,11 @@ model Chat_Room {
   facility_id Int
   created_at  DateTime @default(now())
 
-  customer    User     @relation("CustomerRooms", fields: [customer_id], references: [id])
-  provider    User     @relation("ProviderRooms", fields: [provider_id], references: [id])
-  facility    Facility @relation(fields: [facility_id], references: [id])
-  
-  messages    Message[]
+  customer User     @relation("CustomerRooms", fields: [customer_id], references: [id])
+  provider User     @relation("ProviderRooms", fields: [provider_id], references: [id])
+  facility Facility @relation(fields: [facility_id], references: [id])
+
+  messages Message[]
 
   @@map("chat_rooms")
 }
@@ -293,8 +288,8 @@ model Message {
   is_read    Boolean  @default(false)
   created_at DateTime @default(now())
 
-  room       Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
-  sender     User      @relation(fields: [sender_id], references: [id])
+  room   Chat_Room @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  sender User      @relation(fields: [sender_id], references: [id])
 
   @@map("messages")
 }
@@ -304,7 +299,7 @@ model Message {
 // ------------------------------------------------------
 model Platform_Fee {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(100)
+  name        String
   min_slots   Int
   max_slots   Int?
   fee_amount  Decimal
@@ -313,7 +308,7 @@ model Platform_Fee {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  facilities  Facility[]
+  facilities Facility[]
 
   @@map("platform_fees")
 }
@@ -323,7 +318,7 @@ model Platform_Fee {
 // ------------------------------------------------------
 model System_Policy {
   id          Int      @id @default(autoincrement())
-  policy_type String   @unique 
+  policy_type String   @unique
   title       String
   content     String   @db.Text
   is_active   Boolean  @default(true)
@@ -331,7 +326,7 @@ model System_Policy {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  admin       User?    @relation("AdminUpdatedPolicies", fields: [updated_by], references: [id])
+  admin User? @relation("AdminUpdatedPolicies", fields: [updated_by], references: [id])
 
   @@map("system_policies")
 }
@@ -341,8 +336,8 @@ model System_Policy {
 // ------------------------------------------------------
 model Vehicle_Type {
   id          Int      @id @default(autoincrement())
-  type_code   String   @unique 
-  name        String   
+  type_code   String   @unique
+  name        String
   description String?  @db.Text
   is_active   Boolean  @default(true)
   created_at  DateTime @default(now())
@@ -351,15 +346,4 @@ model Vehicle_Type {
   facility_vehicle_types Facility_Vehicle_Type[]
 
   @@map("vehicle_types")
-}
-
-model Facility_Vehicle_Type {
-  facility_id     Int
-  vehicle_type_id Int
-
-  facility        Facility     @relation(fields: [facility_id], references: [id], onDelete: Cascade)
-  vehicle_type    Vehicle_Type @relation(fields: [vehicle_type_id], references: [id], onDelete: Cascade)
-
-  @@id([facility_id, vehicle_type_id])
-  @@map("facility_vehicle_types")
 }

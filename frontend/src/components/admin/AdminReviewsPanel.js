@@ -118,24 +118,9 @@ const AdminReviewsPanel = () => {
   const currentStatus = statusOptions.find(o => o.value === statusFilter) || statusOptions[0];
   const CurrentStatusIcon = currentStatus.icon;
 
-  // Thao tác Admin: Ẩn hoặc Hiện đánh giá
-  const handleToggleHide = async (review) => {
-    const newStatus = review.status === 'HIDDEN' ? 'VISIBLE' : 'HIDDEN';
-    const actionLabel = newStatus === 'HIDDEN' ? 'Ẩn' : 'Bỏ ẩn';
 
-    try {
-      setActionLoadingId(review.id);
-      const res = await reviewService.updateReviewStatus(review.id, { status: newStatus });
-      if (res.success) {
-        setReviews(prev => prev.map(r => r.id === review.id ? { ...r, status: newStatus } : r));
-        setToast({ message: `${actionLabel} đánh giá thành công!`, type: 'success' });
-      }
-    } catch (err) {
-      setToast({ message: err.message || `Lỗi khi ${actionLabel.toLowerCase()} đánh giá`, type: 'error' });
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+
+
 
   // Thao tác Admin: Gỡ cắm cờ (xác nhận đánh giá an toàn & hiển thị lại)
   const handleDismissFlag = async (review) => {
@@ -154,6 +139,47 @@ const AdminReviewsPanel = () => {
       setToast({ message: err.message || 'Lỗi khi gỡ cắm cờ', type: 'error' });
     } finally {
       setActionLoadingId(null);
+    }
+  };
+
+  // State và hàm quản lý Modal Xác Nhận Bỏ Ẩn Đánh Giá
+  const [unhideModal, setUnhideModal] = useState({
+    isOpen: false,
+    review: null,
+    loading: false
+  });
+
+  const handleOpenUnhideModal = (review) => {
+    setUnhideModal({
+      isOpen: true,
+      review,
+      loading: false
+    });
+  };
+
+  const handleCloseUnhideModal = () => {
+    if (!unhideModal.loading) {
+      setUnhideModal({ isOpen: false, review: null, loading: false });
+    }
+  };
+
+  const handleConfirmUnhide = async () => {
+    if (!unhideModal.review) return;
+    const review = unhideModal.review;
+
+    try {
+      setUnhideModal(prev => ({ ...prev, loading: true }));
+      const res = await reviewService.unhideReview(review.id);
+      if (res.success) {
+        setReviews(prev =>
+          prev.map(r => r.id === review.id ? { ...r, status: 'VISIBLE', is_flagged: false, flagged_reason: null } : r)
+        );
+        setToast({ message: 'Bỏ ẩn đánh giá thành công! Đánh giá đã được hiển thị công khai.', type: 'success' });
+        setUnhideModal({ isOpen: false, review: null, loading: false });
+      }
+    } catch (err) {
+      setToast({ message: err.message || 'Lỗi khi bỏ ẩn đánh giá', type: 'error' });
+      setUnhideModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -533,17 +559,17 @@ const AdminReviewsPanel = () => {
                       <>
                         {/* Nút Hiện đánh giá: Cho phép Admin khôi phục hiển thị */}
                         <button
-                          onClick={() => handleToggleHide(review)}
+                          onClick={() => handleOpenUnhideModal(review)}
                           disabled={isActionLoading}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition-all disabled:opacity-50"
-                          title="Hiển thị lại đánh giá này cho khách xem"
+                          title="Bỏ ẩn và hiển thị lại đánh giá này"
                         >
                           {isActionLoading ? (
                             <RotateCw className="w-3.5 h-3.5 animate-spin" />
                           ) : (
                             <Eye className="w-3.5 h-3.5" />
                           )}
-                          Hiện đánh giá
+                          Bỏ ẩn đánh giá
                         </button>
 
                         {/* Nếu đang có cờ vi phạm: Admin có thể Gỡ cờ (cho hiện) hoặc Xác nhận ẩn vĩnh viễn */}
@@ -624,6 +650,23 @@ const AdminReviewsPanel = () => {
           })
         )}
       </div>
+
+      {/* MODAL XÁC NHẬN BỎ ẨN ĐÁNH GIÁ */}
+      <ConfirmModal
+        isOpen={unhideModal.isOpen}
+        onClose={handleCloseUnhideModal}
+        onConfirm={handleConfirmUnhide}
+        title="Xác Nhận Bỏ Ẩn Đánh Giá"
+        message={
+          unhideModal.review
+            ? `Bạn có chắc chắn muốn bỏ ẩn và hiển thị lại đánh giá của khách hàng "${unhideModal.review.customer?.full_name || 'Khách hàng'}" không? Bài viết sẽ xuất hiện công khai trở lại tại bãi đỗ xe.`
+            : 'Bạn có chắc chắn muốn bỏ ẩn đánh giá này không?'
+        }
+        confirmText="Bỏ Ẩn Ngay"
+        cancelText="Hủy Bỏ"
+        type="success"
+        loading={unhideModal.loading}
+      />
 
       {/* MODAL XÁC NHẬN ẨN VĨNH VIỄN */}
       <ConfirmModal

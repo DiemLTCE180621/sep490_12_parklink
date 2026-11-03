@@ -12,7 +12,7 @@ class ReviewController {
         data: reviews
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -30,7 +30,7 @@ class ReviewController {
         data: review || null
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -55,7 +55,7 @@ class ReviewController {
         data: newReview
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -76,7 +76,28 @@ class ReviewController {
         data: updatedReview
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  async replyToReview(req, res) {
+    try {
+      const provider_id = req.user.userId;
+      const { id: review_id } = req.params;
+      const { reply } = req.body;
+
+      const updatedReview = await reviewService.replyToReview(review_id, provider_id, reply);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Phản hồi đánh giá thành công',
+        data: updatedReview
+      });
+    } catch (error) {
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -95,7 +116,7 @@ class ReviewController {
         message: 'Xóa đánh giá thành công'
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -110,7 +131,7 @@ class ReviewController {
         data: reviews
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
@@ -126,16 +147,13 @@ class ReviewController {
         data: reviews
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });
     }
   }
 
-  /**
-   * Admin cập nhật trạng thái hiển thị (Ẩn/Hiện) hoặc gỡ cắm cờ
-   */
   async updateReviewStatus(req, res) {
     try {
       const { id: review_id } = req.params;
@@ -149,7 +167,28 @@ class ReviewController {
         data: updated
       });
     } catch (error) {
-      return res.status(400).json({
+      return res.status(error.status || 400).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * (Unhide review)
+   */
+  async unhideReview(req, res) {
+    try {
+      const { id: review_id } = req.params;
+      const updated = await reviewService.unhideReview(review_id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Bỏ ẩn đánh giá thành công',
+        data: updated
+      });
+    } catch (error) {
+      return res.status(error.status || 400).json({
         success: false,
         message: error.message
       });

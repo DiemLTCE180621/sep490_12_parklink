@@ -521,6 +521,275 @@ class ConfirmationRecordRepository {
       }
     };
   }
+
+  /**
+   * Cập nhật Snapshot hợp đồng và ngày kết thúc mới (Dùng cho Yêu cầu / Phê duyệt gia hạn hợp đồng)
+   */
+  async updateSnapshotAndEndDate(id, updatedSnapshot, newEndDate = null) {
+    const updateData = {
+      contract_snapshot: updatedSnapshot
+    };
+
+    if (newEndDate) {
+      updateData.end_date = new Date(newEndDate);
+    }
+
+    return await prisma.confirmation_Record.update({
+      where: { id: parseInt(id, 10) },
+      data: updateData,
+      include: {
+        reservation: {
+          include: {
+            customer: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true,
+                address: true
+              }
+            },
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true,
+                provider_id: true,
+                provider: {
+                  select: {
+                    id: true,
+                    full_name: true,
+                    email: true,
+                    phone_number: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Lấy danh sách hợp đồng có yêu cầu gia hạn của Khách hàng
+   */
+  async findExtensionRequestsByCustomerId(customerId) {
+    const records = await prisma.confirmation_Record.findMany({
+      where: {
+        reservation: {
+          customer_id: parseInt(customerId, 10)
+        }
+      },
+      include: {
+        reservation: {
+          include: {
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true,
+                provider: {
+                  select: {
+                    id: true,
+                    full_name: true,
+                    email: true,
+                    phone_number: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return records.filter((r) => {
+      const snap = r.contract_snapshot;
+      return snap && (snap.extension_request || (Array.isArray(snap.extension_history) && snap.extension_history.length > 0));
+    });
+  }
+
+  /**
+   * Lấy danh sách hợp đồng có yêu cầu gia hạn tại các bãi xe của Chủ bãi
+   */
+  async findExtensionRequestsByProviderId(providerId) {
+    const records = await prisma.confirmation_Record.findMany({
+      where: {
+        reservation: {
+          facility: {
+            provider_id: parseInt(providerId, 10)
+          }
+        }
+      },
+      include: {
+        reservation: {
+          include: {
+            customer: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            },
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return records.filter((r) => {
+      const snap = r.contract_snapshot;
+      return snap && (snap.extension_request || (Array.isArray(snap.extension_history) && snap.extension_history.length > 0));
+    });
+  }
+
+  /**
+   * Cập nhật trạng thái hợp đồng thành TERMINATED và lưu snapshot (Dùng cho Chấm dứt hợp đồng)
+   */
+  async updateStatusAndSnapshot(id, status, updatedSnapshot) {
+    const updateData = {
+      contract_snapshot: updatedSnapshot
+    };
+    if (status) {
+      updateData.status = status;
+    }
+
+    return await prisma.confirmation_Record.update({
+      where: { id: parseInt(id, 10) },
+      data: updateData,
+      include: {
+        reservation: {
+          include: {
+            customer: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true,
+                address: true
+              }
+            },
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true,
+                provider_id: true,
+                capacity: true,
+                available_slots: true,
+                provider: {
+                  select: {
+                    id: true,
+                    full_name: true,
+                    email: true,
+                    phone_number: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Lấy danh sách hợp đồng có yêu cầu chấm dứt trước hạn của Khách hàng
+   */
+  async findTerminationRequestsByCustomerId(customerId) {
+    const records = await prisma.confirmation_Record.findMany({
+      where: {
+        reservation: {
+          customer_id: parseInt(customerId, 10)
+        }
+      },
+      include: {
+        reservation: {
+          include: {
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true,
+                provider: {
+                  select: {
+                    id: true,
+                    full_name: true,
+                    email: true,
+                    phone_number: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return records.filter((r) => {
+      const snap = r.contract_snapshot;
+      return snap && (snap.termination_request || (Array.isArray(snap.termination_history) && snap.termination_history.length > 0));
+    });
+  }
+
+  /**
+   * Lấy danh sách hợp đồng có yêu cầu chấm dứt trước hạn tại bãi xe của Chủ bãi
+   */
+  async findTerminationRequestsByProviderId(providerId) {
+    const records = await prisma.confirmation_Record.findMany({
+      where: {
+        reservation: {
+          facility: {
+            provider_id: parseInt(providerId, 10)
+          }
+        }
+      },
+      include: {
+        reservation: {
+          include: {
+            customer: {
+              select: {
+                id: true,
+                full_name: true,
+                email: true,
+                phone_number: true
+              }
+            },
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                address: true,
+                price_per_month: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return records.filter((r) => {
+      const snap = r.contract_snapshot;
+      return snap && (snap.termination_request || (Array.isArray(snap.termination_history) && snap.termination_history.length > 0));
+    });
+  }
 }
 
 module.exports = new ConfirmationRecordRepository();
