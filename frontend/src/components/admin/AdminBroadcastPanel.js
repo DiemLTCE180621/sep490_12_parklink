@@ -52,7 +52,7 @@ const AdminBroadcastPanel = () => {
   // Toast feedback
   const [toast, setToast] = useState(null);
 
-  // ─── HANDLERS CHO WEB BROADCAST (UC-65) ───
+  //reset form handlers
   const handleResetWebForm = () => {
     setWebForm({
       targetRole: 'ALL',
@@ -65,7 +65,7 @@ const AdminBroadcastPanel = () => {
     });
     setWebSummary(null);
   };
-
+  //broadcast handler
   const handleSendWebBroadcast = async (isTestSelf = false) => {
     if (!webForm.title.trim()) {
       setToast({ message: 'Tiêu đề thông báo Web không được để trống!', type: 'error' });
@@ -105,7 +105,6 @@ const AdminBroadcastPanel = () => {
     }
   };
 
-  // ─── HANDLERS CHO EMAIL BROADCAST (UC-66) ───
   const handleResetEmailForm = () => {
     setEmailForm({
       recipientScope: 'ALL',
@@ -182,11 +181,10 @@ const AdminBroadcastPanel = () => {
           <span>Gmail Notification (Email SMTP)</span>
         </button>
       </div>
+      {/*web broadcast*/}
 
-      {/* TAB 1: THIẾT LẬP BẢN TIN WEB BROADCAST (UC-65) */}
       {activeTab === 'WEB' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
-          {/* Banner tiêu đề */}
           <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
@@ -204,7 +202,7 @@ const AdminBroadcastPanel = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
-            {/* Hàng 1: Nhóm đối tượng & Loại thông báo */}
+            {/* target user */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
@@ -244,7 +242,7 @@ const AdminBroadcastPanel = () => {
               </div>
             </div>
 
-            {/* Hàng 2: Mức độ ưu tiên trên Web */}
+            {/* priority */}
             <div>
               <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
                 Mức Độ Ưu Tiên Trên Web (Priority)
@@ -266,7 +264,6 @@ const AdminBroadcastPanel = () => {
               </div>
             </div>
 
-            {/* Hàng 3: Tiêu đề */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
@@ -286,7 +283,7 @@ const AdminBroadcastPanel = () => {
               />
             </div>
 
-            {/* Hàng 4: Nội dung chi tiết */}
+            {/* content */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
@@ -306,7 +303,6 @@ const AdminBroadcastPanel = () => {
               />
             </div>
 
-            {/* Hàng 5: Cấu hình hiển thị */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-wrap gap-6 items-center">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Cấu hình hiển thị trên giao diện web app:
@@ -331,7 +327,6 @@ const AdminBroadcastPanel = () => {
               </label>
             </div>
 
-            {/* Hộp tóm tắt kết quả gửi thành công */}
             {webSummary && (
               <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
@@ -382,8 +377,8 @@ const AdminBroadcastPanel = () => {
           </div>
         </div>
       )}
+      {/* email broadcast */}
 
-      {/* TAB 2: THIẾT LẬP BẢN TIN EMAIL BROADCAST (UC-66) */}
       {activeTab === 'EMAIL' && (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
           {/* Banner tiêu đề */}
@@ -404,7 +399,7 @@ const AdminBroadcastPanel = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
-            {/* Hàng 1: Nhóm đối tượng & Loại thư */}
+            {/* target user */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
@@ -443,7 +438,7 @@ const AdminBroadcastPanel = () => {
               </div>
             </div>
 
-            {/* Hàng 2: Tiêu đề email */}
+            {/* email */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
@@ -463,7 +458,7 @@ const AdminBroadcastPanel = () => {
               />
             </div>
 
-            {/* Hàng 3: Nội dung thư (HTML Body Content) */}
+            {/* content */}
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
@@ -486,7 +481,6 @@ const AdminBroadcastPanel = () => {
               </p>
             </div>
 
-            {/* Hàng 4: Tuỳ chọn bổ sung */}
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-wrap gap-6 items-center">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Tuỳ chọn bổ sung & Tiêu chuẩn gửi thư:
@@ -511,7 +505,6 @@ const AdminBroadcastPanel = () => {
               </label>
             </div>
 
-            {/* Hộp tóm tắt kết quả gửi email */}
             {emailSummary && (
               <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />

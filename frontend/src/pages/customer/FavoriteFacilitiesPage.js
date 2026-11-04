@@ -24,7 +24,7 @@ const FavoriteFacilitiesPage = () => {
       // Đảm bảo luôn là mảng để tránh lỗi .length trên undefined
       setFavorites(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message || 'Lỗi khi tải danh sách yêu thích');
+      setError(err.message || 'Không thể tải danh sách yêu thích. Vui lòng thử lại.');
       setFavorites([]);
     } finally {
       setLoading(false);
@@ -38,7 +38,10 @@ const FavoriteFacilitiesPage = () => {
       setFavorites(prev => prev.filter(f => f.id !== facilityId));
       setToast({ message: 'Đã xóa khỏi danh sách yêu thích', type: 'success' });
     } catch (err) {
-      setToast({ message: err.message || 'Có lỗi xảy ra', type: 'error' });
+      setToast({
+        message: err.message || 'Không thể xóa bãi đỗ xe khỏi danh sách yêu thích. Vui lòng thử lại.',
+        type: 'error'
+      });
     }
   };
 

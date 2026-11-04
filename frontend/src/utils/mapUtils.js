@@ -42,7 +42,10 @@ export const openGoogleMapsDirections = ({ origin, destination, travelMode = 'dr
     url += `&origin=${originStr}`;
   }
 
-  window.open(url, '_blank', 'noopener,noreferrer');
-  return true;
+  try {
+    const openedWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    return Boolean(openedWindow);
+  } catch (error) {
+    return false;
+  }
 };
-
