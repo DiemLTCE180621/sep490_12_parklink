@@ -5,6 +5,7 @@ import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
+import PolicyPage from './pages/PolicyPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForceChangePasswordPage from './pages/auth/ForceChangePasswordPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -123,6 +124,8 @@ function AppContent() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<PublicBrowseRoute><HomePage /></PublicBrowseRoute>} />
+          <Route path="/policies" element={<PolicyPage />} />
+          <Route path="/policies/:identifier" element={<PolicyPage />} />
           <Route path="/facilities" element={<Navigate to="/search" replace />} />
 
           {/* Guest only */}

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   X,
   Radio,
@@ -9,7 +10,8 @@ import {
   CheckCheck,
   Clock,
   ShieldAlert,
-  AlertTriangle
+  AlertTriangle,
+  ArrowRight
 } from 'lucide-react';
 import { markNotificationAsRead } from '../../services/notificationService';
 
@@ -122,6 +124,27 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead }
     })
     : '';
 
+  // Nhận diện liên kết chính sách phù hợp
+  const getPolicyUrl = () => {
+    const title = notification.title || '';
+    const content = notification.content || '';
+    const category = notification.category || notification.type || '';
+
+    if (title.includes('Chủ Bãi') || content.includes('chủ bãi') || content.includes('/policies/provider')) {
+      return '/policies/provider';
+    }
+    if (title.includes('Khách Hàng') || content.includes('khách hàng') || content.includes('/policies/customer')) {
+      return '/policies/customer';
+    }
+    if (category.includes('Chính sách') || title.includes('chính sách') || title.includes('Chính sách') || content.includes('/policies')) {
+      return '/policies';
+    }
+    return null;
+  };
+
+  const policyUrl = getPolicyUrl();
+  const displayContent = (notification.content || '').replace(/\s*(?:tại:?\s*)?\/policies[\w\-]*/gi, '');
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
       <div className="bg-white rounded-none w-[95vw] md:w-[70vw] max-w-[1400px] h-[75vh] md:h-[80vh] shadow-2xl border-2 border-slate-400 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
@@ -175,16 +198,28 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead }
             Nội dung thông báo chi tiết:
           </div>
           <div className="p-6 rounded-none bg-slate-50 border-2 border-slate-200 text-slate-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
-            {notification.content}
+            {displayContent}
           </div>
         </div>
 
         {/* Footer Modal */}
-        <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex justify-end shrink-0">
+        <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+          {policyUrl ? (
+            <Link
+              to={policyUrl}
+              onClick={onClose}
+              className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
+            >
+              <span>Xem Chính Sách</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <div />
+          )}
           <button
             type="button"
             onClick={onClose}
-            className="px-10 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
+            className="px-8 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
           >
             Đóng thông báo
           </button>

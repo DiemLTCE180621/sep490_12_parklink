@@ -1,6 +1,4 @@
-/**
- * Middleware validation kiểm tra tính hợp lệ của dữ liệu đầu vào cho Auth API
- */
+
 
 const {
   cleanText,
@@ -222,6 +220,17 @@ const validateUpdateProfile = (req, res, next) => {
   next();
 };
 
+const validateGoogleLogin = (req, res, next) => {
+  const { credential } = req.body;
+  if (!credential || typeof credential !== 'string' || !credential.trim()) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Mã xác thực Google (credential) không được để trống!'
+    });
+  }
+  next();
+};
+
 module.exports = {
   validateRegisterCustomer,
   validateRegisterProvider,
@@ -229,5 +238,6 @@ module.exports = {
   validateChangePassword,
   validateForgotPasswordRequest,
   validateVerifyResetPassword,
-  validateUpdateProfile
+  validateUpdateProfile,
+  validateGoogleLogin
 };

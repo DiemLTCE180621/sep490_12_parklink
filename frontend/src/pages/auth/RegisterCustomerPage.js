@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { User, Mail, Phone, ArrowRight, CheckCircle2, AlertCircle, Copy, Key, ShieldCheck } from 'lucide-react';
+import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
 
 import { cleanText, isValidName, isValidPhone, isValidEmail } from '../../utils/validators';
 
@@ -19,6 +20,8 @@ const RegisterCustomerPage = () => {
   const [loading, setLoading] = useState(false);
   const [successResult, setSuccessResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [agreedPolicy, setAgreedPolicy] = useState(false);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,6 +44,10 @@ const RegisterCustomerPage = () => {
 
     if (!isValidPhone(cleanedPhone)) {
       errs.push('Số điện thoại phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).');
+    }
+
+    if (!agreedPolicy) {
+      errs.push('Vui lòng đọc và tích chọn đồng ý với Chính sách & Điều khoản dịch vụ của ParkLink.');
     }
 
     return { isValid: errs.length === 0, errs, cleanedName, cleanedEmail, cleanedPhone };
@@ -84,7 +91,7 @@ const RegisterCustomerPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+      <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-600 text-white shadow-lg mb-4">
           <User className="w-8 h-8" />
         </div>
@@ -93,24 +100,34 @@ const RegisterCustomerPage = () => {
         </h2>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-2xl border border-slate-100 sm:px-10">
-          {/* HIỂN THỊ THÔNG BÁO LỖI NẾU CÓ */}
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
+        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
+          
           {errorList.length > 0 && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm space-y-2">
-              <div className="flex items-center gap-2 font-bold text-red-800">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-                <span>Vui lòng kiểm tra lại thông tin:</span>
+            <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3 animate-fadeIn">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                {errorList.length === 1 ? (
+                  <p className="text-xs sm:text-sm font-semibold text-red-700 leading-relaxed">
+                    {errorList[0]}
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    <p className="text-xs sm:text-sm font-bold text-red-800">Vui lòng kiểm tra lại thông tin:</p>
+                    <ul className="space-y-1 text-xs text-red-700">
+                      {errorList.map((errItem, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5">
+                          <span className="text-red-400 font-bold">•</span>
+                          <span>{errItem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <ul className="list-disc list-inside space-y-1 text-xs text-red-700 pl-1">
-                {errorList.map((errItem, idx) => (
-                  <li key={idx}>{errItem}</li>
-                ))}
-              </ul>
             </div>
           )}
 
-          {/* HIỂN THỊ KẾT QUẢ ĐĂNG KÝ THÀNH CÔNG VỚI MẬT KHẨU TẠM */}
           {successResult ? (
             <div className="space-y-6">
               <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 text-sm space-y-3">
@@ -121,7 +138,6 @@ const RegisterCustomerPage = () => {
                 <p>Hệ thống đã tạo tài khoản cho <strong>{formData.email}</strong>.</p>
               </div>
 
-              {/* KHỦNG MẬT KHẨU NGẪU NHIÊN DEMO */}
               {successResult.simulatedTempPassword && (
                 <div className="p-5 bg-slate-900 text-white rounded-2xl space-y-3 shadow-lg">
                   <div className="flex justify-between items-center text-xs text-slate-400 font-semibold uppercase">
@@ -227,6 +243,30 @@ const RegisterCustomerPage = () => {
                 </div>
               </div>
 
+              <div className="flex items-start gap-2.5 pt-1">
+                <input
+                  id="agreePolicyCustomer"
+                  type="checkbox"
+                  checked={agreedPolicy}
+                  onChange={(e) => {
+                    setAgreedPolicy(e.target.checked);
+                    if (errorList.length > 0) setErrorList([]);
+                  }}
+                  className="w-4 h-4 mt-0.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                />
+                <label htmlFor="agreePolicyCustomer" className="text-xs text-slate-600 leading-relaxed cursor-pointer select-none">
+                  Tôi đã đọc và đồng ý tuân thủ{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPolicyModalOpen(true)}
+                    className="text-teal-600 font-bold hover:underline"
+                  >
+                    Chính Sách & Điều Khoản Dành Cho Khách Hàng
+                  </button>{' '}
+                  của ParkLink. <span className="text-red-500">*</span>
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -249,6 +289,12 @@ const RegisterCustomerPage = () => {
           </div>
         </div>
       </div>
+
+      <PolicyDetailModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        policyType="CUSTOMER"
+      />
     </div>
   );
 };
