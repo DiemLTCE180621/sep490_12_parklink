@@ -165,6 +165,15 @@ const CustomerReservationDetailPage = () => {
               <div className="shrink-0">{getStatusBadge(reservation.status)}</div>
             </div>
 
+            {reservation.status === 'CANCELLED' && Number(reservation.facility?.available_slots) <= 0 && (
+              <div className="px-6 py-3.5 bg-amber-50 border-b border-amber-200 flex items-center gap-3 text-xs text-amber-800">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Yêu cầu đặt chỗ đã tự động hủy do bãi xe hết chỗ trống:</strong> Chỗ trống cuối cùng tại bãi đỗ xe này đã được chủ bãi và khách hàng khác hoàn tất ký kết hợp đồng trước đó.
+                </span>
+              </div>
+            )}
+
             {/* 2. BODY SECTION (MERGED IN SAME CONTAINER) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
               {/* LEFT COLUMN: FACILITY + REGISTRATION DETAILS */}
