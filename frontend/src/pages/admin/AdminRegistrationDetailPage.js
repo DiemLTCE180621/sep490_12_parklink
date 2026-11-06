@@ -29,6 +29,7 @@ import adminService from '../../services/adminService';
 import inspectorService from '../../services/inspectorService';
 import uploadService from '../../services/uploadService';
 import AssignInspectorModal from '../../components/admin/AssignInspectorModal';
+import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
 import Toast from '../../components/common/Toast';
 
 const AdminRegistrationDetailPage = () => {
@@ -54,6 +55,7 @@ const AdminRegistrationDetailPage = () => {
 
   // Inspector form states (Inline on page - NO POPUP)
   const [capacity, setCapacity] = useState('');
+  const [actualLocation, setActualLocation] = useState({ address: '', latitude: '', longitude: '' });
   const [uploadedFiles, setUploadedFiles] = useState({
     path: null,
     area: null,
@@ -87,6 +89,11 @@ const AdminRegistrationDetailPage = () => {
       if (data) {
         setFacility(data);
         setCapacity(data.capacity || '');
+        setActualLocation({
+          address: data.address || '',
+          latitude: data.latitude ?? '',
+          longitude: data.longitude ?? '',
+        });
       } else {
         setError('Không tìm thấy dữ liệu hồ sơ đăng ký.');
       }
@@ -137,6 +144,19 @@ const AdminRegistrationDetailPage = () => {
       return;
     }
 
+    const latitude = Number(actualLocation.latitude);
+    const longitude = Number(actualLocation.longitude);
+    if (
+      !actualLocation.address.trim() ||
+      actualLocation.latitude === '' ||
+      actualLocation.longitude === '' ||
+      !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+    ) {
+      showToast('error', 'Vui lòng xác định địa chỉ và ghim vị trí thực tế hợp lệ trên bản đồ!');
+      return;
+    }
+
     if (
       !uploadedFiles.path ||
       !uploadedFiles.area ||
@@ -170,6 +190,9 @@ const AdminRegistrationDetailPage = () => {
       await inspectorService.submitInspection(facility.id, {
         capacity: parseInt(capacity, 10),
         images: imageUrls,
+        address: actualLocation.address.trim(),
+        latitude,
+        longitude,
       });
 
       showToast(
@@ -521,7 +544,7 @@ const AdminRegistrationDetailPage = () => {
 
                 <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1">
                   <span className="text-slate-400 font-semibold uppercase flex items-center gap-1">
-                    <Car className="w-3.5 h-3.5 text-teal-600" /> Sức chứa đề xuất ban đầu
+                     <Car className="w-3.5 h-3.5 text-teal-600" /> {isInspected || isApproved ? 'Sức chứa sau khảo sát' : 'Sức chứa đề xuất ban đầu'}
                   </span>
                   <p className="text-sm font-bold text-slate-900">{facility.capacity} vị trí đỗ xe</p>
                 </div>
@@ -546,7 +569,7 @@ const AdminRegistrationDetailPage = () => {
 
                 <div className="sm:col-span-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-1">
                   <span className="text-slate-400 font-semibold uppercase flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-slate-500" /> Địa chỉ chính xác
+                     <MapPin className="w-3.5 h-3.5 text-slate-500" /> {isInspected || isApproved ? 'Địa chỉ sau khảo sát' : 'Địa chỉ đã khai báo'}
                   </span>
                   <p className="text-xs font-semibold text-slate-800 leading-relaxed">{facility.address}</p>
                 </div>
@@ -606,7 +629,7 @@ const AdminRegistrationDetailPage = () => {
                       Báo Cáo Kết Quả Khảo Sát Thực Địa
                     </h3>
                     <p className="text-slate-500 text-xs mt-0.5">
-                      Nhập sức chứa thực tế và đính kèm 4 hình ảnh hiện trạng bắt buộc của bãi xe
+                      Nhập sức chứa, xác định vị trí thực tế và đính kèm 4 hình ảnh hiện trạng bắt buộc của bãi xe
                     </p>
                   </div>
                 </div>
@@ -634,6 +657,23 @@ const AdminRegistrationDetailPage = () => {
                     <p className="text-[11px] text-slate-400 mt-1">
                       Số chỗ đỗ xe thực tế bạn đo đạc, kiểm tra tại hiện trường.
                     </p>
+                  </div>
+
+                  {/* Actual location */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wide mb-2">
+                      Vị trí thực tế của bãi xe <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-[11px] text-slate-500 mb-3">
+                      Kiểm tra địa chỉ đã khai báo, rồi kéo ghim hoặc chọn lại vị trí chính xác trên bản đồ.
+                    </p>
+                    <FacilityLocationPicker
+                      address={actualLocation.address}
+                      latitude={actualLocation.latitude}
+                      longitude={actualLocation.longitude}
+                      onChange={(location) => setActualLocation((prev) => ({ ...prev, ...location }))}
+                      required
+                    />
                   </div>
 
                   {/* 4 Required Photos */}
@@ -759,7 +799,10 @@ const AdminRegistrationDetailPage = () => {
                         !uploadedFiles.area ||
                         !uploadedFiles.gate ||
                         !uploadedFiles.other ||
-                        !capacity
+                        !capacity ||
+                        !actualLocation.address.trim() ||
+                        actualLocation.latitude === '' ||
+                        actualLocation.longitude === ''
                       }
                       className="px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg shadow-teal-600/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >

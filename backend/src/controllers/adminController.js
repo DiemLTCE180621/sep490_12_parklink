@@ -39,7 +39,7 @@ class AdminController {
   }
 
   /**
-   * M2-UC21 Bước 1: Admin duyệt sơ bộ → PREPARING & Phân công Nhân viên khảo sát
+   * Admin duyệt sơ bộ & Phân công Nhân viên khảo sát
    */
   async approveRegistration(req, res, next) {
     try {
