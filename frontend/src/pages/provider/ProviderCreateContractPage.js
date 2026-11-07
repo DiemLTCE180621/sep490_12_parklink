@@ -256,7 +256,12 @@ const ProviderCreateContractPage = () => {
         }
       }, 1200);
     } catch (err) {
-      setFormError(err.message || 'Không thể tạo hợp đồng điện tử. Vui lòng thử lại!');
+      const errMsg = err.response?.data?.message || err.message || 'Không thể tạo hợp đồng điện tử. Vui lòng thử lại!';
+      setFormError(errMsg);
+      setToastInfo({ message: errMsg, type: 'error' });
+      if (errMsg.includes('24 giờ')) {
+        setReservation((prev) => (prev ? { ...prev, status: 'CANCELLED' } : prev));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -322,6 +327,28 @@ const ProviderCreateContractPage = () => {
             >
               Thử Lại
             </button>
+          </div>
+        ) : reservation?.status === 'CANCELLED' ? (
+          /* EXPIRED 24H OR CANCELLED */
+          <div className="bg-white rounded-3xl p-10 border border-rose-200 shadow-md text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">
+              Đã hết thời hạn 24 giờ làm hợp đồng – Yêu cầu đặt chỗ đã tự động hủy!
+            </h3>
+            <p className="text-sm text-slate-600 max-w-lg mx-auto">
+              Quá thời hạn 24 giờ kể từ khi chấp nhận yêu cầu đặt chỗ mà chưa hoàn tất tạo hợp đồng điện tử, hệ thống đã tự động hủy yêu cầu đặt chỗ này.
+            </p>
+            <div className="pt-2 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard', { state: { providerTab: 'reservations' } })}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition"
+              >
+                Quay Lại Danh Sách Yêu Cầu
+              </button>
+            </div>
           </div>
         ) : reservation?.confirmation_record ? (
           /* ALREADY HAS CONTRACT */

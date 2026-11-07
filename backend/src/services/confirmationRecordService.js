@@ -40,9 +40,49 @@ class ConfirmationRecordService {
       throw error;
     }
 
-    // 3. Kiểm tra trạng thái yêu cầu thuê: Phải là APPROVED
+    // 3. Kiểm tra thời hạn 24 giờ kể từ lúc Provider bấm Chấp nhận (APPROVED) hoặc đơn đã bị tự động hủy (CANCELLED)
+    const approvedTimestamp = reservation.updated_at ? new Date(reservation.updated_at).getTime() : Date.now();
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+    const isExpired24h = Date.now() - approvedTimestamp > TWENTY_FOUR_HOURS_MS;
+
+    if (reservation.status === 'CANCELLED' || (reservation.status === 'APPROVED' && isExpired24h)) {
+      if (reservation.status !== 'CANCELLED') {
+        await reservationRepository.updateStatus(reservationId, 'CANCELLED');
+        try {
+          const facilityName = reservation.facility?.name || 'bãi đỗ xe';
+          if (reservation.customer?.id || reservation.customer_id) {
+            const targetCustId = reservation.customer?.id || reservation.customer_id;
+            await notificationRepository.createNotification({
+              user_id: Number(targetCustId),
+              title: `Yêu cầu đặt chỗ #${reservation.id} đã tự động hủy (Quá 24h lập hợp đồng)`,
+              content: `Yêu cầu đặt chỗ của bạn tại ${facilityName} đã tự động hủy do quá thời hạn 24 giờ kể từ khi chủ bãi chấp nhận nhưng chưa hoàn tất tạo hợp đồng.`,
+              type: 'RESERVATION_EXPIRED_24H'
+            });
+          }
+        } catch (notiErr) {
+          console.error('[24h Timeout Notification] Lỗi gửi thông báo quá hạn 24h:', notiErr.message);
+        }
+      }
+
+      const error = new Error('Đã hết thời hạn 24 giờ làm hợp đồng kể từ khi chấp nhận yêu cầu! Hệ thống đã tự động hủy yêu cầu đặt chỗ này.');
+      error.status = 400;
+      throw error;
+    }
+
+    // 3.1. Kiểm tra trạng thái yêu cầu thuê: Phải là APPROVED
     if (reservation.status !== 'APPROVED') {
       const error = new Error('Chỉ có thể tạo biên bản xác nhận điện tử cho yêu cầu thuê đã được duyệt (APPROVED)!');
+      error.status = 400;
+      throw error;
+    }
+
+    // 3.1. Kiểm tra bãi đỗ xe còn chỗ trống hay không trước khi tạo hợp đồng
+    if (
+      reservation.facility &&
+      reservation.facility.available_slots !== undefined &&
+      Number(reservation.facility.available_slots) <= 0
+    ) {
+      const error = new Error('Bãi đỗ xe hiện đã hết chỗ trống, không thể tạo hợp đồng điện tử mới!');
       error.status = 400;
       throw error;
     }
@@ -257,6 +297,25 @@ class ConfirmationRecordService {
       throw error;
     }
 
+    // 3.1. Kiểm tra chỗ trống trước khi cho phép hoàn tất ký hợp đồng (chống Overbooking khi chỉ còn 1 chỗ)
+    // Lưu ý: Nếu là hợp đồng gia hạn nối tiếp từ hợp đồng cũ (isRenewalContract), khách đã có sẵn chỗ đỗ nên không chặn và không trừ lại slot
+    const isRenewalContract = Boolean(
+      record.contract_snapshot?.contract_info?.is_renewal_contract ||
+      record.contract_snapshot?.contract_info?.renewed_from_contract_id
+    );
+    const facilityId = record.reservation?.facility_id || record.reservation?.facility?.id;
+    let facility = null;
+    if (facilityId) {
+      facility = await facilityRepository.findById(facilityId);
+      if (!isRenewalContract && facility && Number(facility.available_slots) <= 0) {
+        await reservationRepository.updateStatus(record.reservation_id, 'CANCELLED');
+        await confirmationRecordRepository.updateStatusAndSnapshot(recordId, 'CANCELLED', record.contract_snapshot);
+        const error = new Error('Rất tiếc, chỗ trống cuối cùng tại bãi đỗ xe vừa được hoàn tất ký hợp đồng với khách hàng khác! Yêu cầu đặt chỗ của bạn đã tự động hủy.');
+        error.status = 400;
+        throw error;
+      }
+    }
+
     // 4. Cập nhật trạng thái thành ACTIVE và ghi nhận ngày chấp nhận
     const now = new Date();
     const currentSnapshot = record.contract_snapshot || {};
@@ -302,20 +361,58 @@ class ConfirmationRecordService {
       updatedSnapshot
     );
 
-    // 5. Cập nhật trừ 1 chỗ trống (available_slots) tại bãi xe khi hợp đồng chính thức có hiệu lực (ACTIVE)
+    // 5. Cập nhật trừ 1 chỗ trống (available_slots) tại bãi xe khi 2 bên đã ký hợp đồng chính thức (ACTIVE)
+    // Nếu là hợp đồng gia hạn nối tiếp (isRenewalContract) thì giữ nguyên slot hiện tại của khách (không trừ trùng 2 lần)
+    // Nếu trừ xong mà hết chỗ (remainingSlots === 0), tự động hủy toàn bộ các yêu cầu đặt chỗ còn lại
     try {
-      const facilityId = record.reservation?.facility_id || record.reservation?.facility?.id;
-      if (facilityId) {
-        const facility = await facilityRepository.findById(facilityId);
-        if (facility && facility.available_slots > 0) {
-          await facilityRepository.update(facilityId, {
-            available_slots: Math.max(0, facility.available_slots - 1)
-          });
-          console.log(`[Deduct Slot] Đã trừ 1 chỗ trống tại bãi ${facility.name} khi khách ký hợp đồng (Available: ${facility.available_slots - 1}/${facility.capacity})`);
+      if (!isRenewalContract && facility && facility.available_slots > 0) {
+        const remainingSlots = Math.max(0, facility.available_slots - 1);
+        await facilityRepository.update(facilityId, {
+          available_slots: remainingSlots
+        });
+        console.log(`[Deduct Slot] Đã trừ 1 chỗ trống tại bãi ${facility.name} khi 2 bên ký hợp đồng (Available: ${remainingSlots}/${facility.capacity})`);
+
+        if (remainingSlots === 0) {
+          const cancelledReservations = await reservationRepository.cancelRemainingReservationsWhenFull(
+            facilityId,
+            record.reservation_id
+          );
+
+          if (cancelledReservations.length > 0) {
+            console.log(`[Auto Cancel] Đã tự động hủy ${cancelledReservations.length} yêu cầu đặt chỗ còn lại tại bãi ${facility.name} do đã hết chỗ trống.`);
+            const io = getIO();
+
+            for (const cancelledRes of cancelledReservations) {
+              const targetCustId = cancelledRes.customer_id || cancelledRes.customer?.id;
+              if (targetCustId) {
+                const notiTitle = `Tự động hủy yêu cầu đặt chỗ tại ${facility.name}`;
+                const notiContent = `Yêu cầu đặt chỗ của bạn tại ${facility.name} đã tự động hủy do chỗ trống cuối cùng vừa được chủ bãi và khách hàng khác hoàn tất ký hợp đồng.`;
+
+                await notificationRepository.createNotification({
+                  user_id: Number(targetCustId),
+                  title: notiTitle,
+                  content: notiContent,
+                  type: 'RESERVATION_AUTO_CANCELLED'
+                });
+
+                if (io) {
+                  io.to(`user_${targetCustId}`).emit('new_notification', {
+                    id: `noti_${Date.now()}_${targetCustId}`,
+                    title: notiTitle,
+                    content: notiContent,
+                    type: 'RESERVATION_AUTO_CANCELLED',
+                    reservation_id: cancelledRes.id,
+                    facility_id: facilityId,
+                    created_at: new Date().toISOString()
+                  });
+                }
+              }
+            }
+          }
         }
       }
     } catch (slotErr) {
-      console.error('[Deduct Slot] Lỗi khi cập nhật lại số chỗ trống sau khi ký hợp đồng:', slotErr.message);
+      console.error('[Deduct Slot] Lỗi khi cập nhật lại số chỗ trống và tự động hủy đặt chỗ sau khi ký hợp đồng:', slotErr.message);
     }
 
     return updatedRecord;
@@ -623,9 +720,9 @@ class ConfirmationRecordService {
       }
     }
 
-    // 6. Tính toán chi phí dự kiến cho đợt gia hạn
-    const agreedPrice = Number(record.agreed_price || record.reservation?.facility?.price_per_month || 0);
-    const estimatedTotalAmount = agreedPrice * (finalMonths || 1);
+    // 6. Tính toán chi phí dự kiến cho đợt gia hạn: LẤY GIÁ HIỆN TẠI CỦA BÃI XE (nếu chủ bãi cập nhật giá mới thì lấy giá mới)
+    const currentFacilityPrice = Number(record.reservation?.facility?.price_per_month || record.agreed_price || 0);
+    const estimatedTotalAmount = currentFacilityPrice * (finalMonths || 1);
 
     // 7. Kiểm tra & xử lý thông tin xe đăng ký (nếu khách hàng có đổi loại xe hoặc biển số xe mới)
     const currentVeh = currentSnapshot.vehicle_info || {};
@@ -663,7 +760,7 @@ class ConfirmationRecordService {
       extension_months: finalMonths,
       current_end_date: record.end_date,
       requested_end_date: finalNewEndDate ? finalNewEndDate.toISOString().slice(0, 10) : null,
-      monthly_price: agreedPrice,
+      monthly_price: currentFacilityPrice,
       total_estimated_amount: estimatedTotalAmount,
       reason: reason && reason.trim() ? reason.trim() : 'Khách hàng có nhu cầu tiếp tục thuê đỗ xe theo tháng',
       // Thông tin xe đăng ký (kế thừa cũ hoặc ghi nhận thông tin xe mới)
@@ -856,9 +953,128 @@ class ConfirmationRecordService {
     const now = new Date();
     const isApproved = status.toUpperCase() === 'APPROVED';
 
+    let newContractRecord = null;
+    const latestFacility = record.reservation?.facility?.id
+      ? await facilityRepository.findById(record.reservation.facility.id)
+      : record.reservation?.facility;
+
+    // Giá của hợp đồng gia hạn mới luôn lấy theo GIÁ HIỆN TẠI CỦA BÃI XE
+    const currentFacilityPrice = Number(
+      latestFacility?.price_per_month ||
+      record.reservation?.facility?.price_per_month ||
+      ext.monthly_price ||
+      record.agreed_price ||
+      0
+    );
+
+    if (isApproved) {
+      // Tạo HỢP ĐỒNG MỚI hoàn toàn (không ghi đè lên hợp đồng cũ)
+      const newContractCode = `HD-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const newStartDate = record.end_date ? new Date(record.end_date) : new Date();
+      const newEndDate = ext.requested_end_date
+        ? new Date(ext.requested_end_date)
+        : new Date(new Date(newStartDate).setMonth(newStartDate.getMonth() + Number(ext.extension_months || 1)));
+
+      const oldVeh = snapshot.vehicle_info || {};
+      const oldCust = snapshot.customer_info || {};
+      const oldOwner = snapshot.owner_info || {};
+      const oldRental = snapshot.rental_info || {};
+      const oldTerms = snapshot.terms_and_conditions || {};
+
+      // Nếu khách hàng có nhập thông tin thay đổi khi gửi gia hạn thì lấy thông tin mới, nếu không giữ nguyên thông tin cũ
+      const finalVehicleType = ext.vehicle_info?.is_changed && ext.vehicle_info?.vehicle_type
+        ? ext.vehicle_info.vehicle_type
+        : (oldVeh.vehicle_type || 'Phương tiện đăng ký đỗ');
+      const finalLicensePlate = ext.vehicle_info?.is_changed && ext.vehicle_info?.license_plate
+        ? ext.vehicle_info.license_plate
+        : (oldVeh.license_plate || record.reservation?.vehicle_info || 'Chưa cập nhật');
+
+      const finalCustomerAddress = ext.customer_info?.is_changed && ext.customer_info?.customer_address
+        ? ext.customer_info.customer_address
+        : (oldCust.customer_address || record.reservation?.customer?.address || 'Chưa cập nhật');
+      const finalCustomerPhone = ext.customer_info?.is_changed && ext.customer_info?.customer_phone
+        ? ext.customer_info.customer_phone
+        : (oldCust.customer_phone || record.reservation?.customer?.phone_number || 'Chưa cập nhật');
+      const finalCustomerIdCard = oldCust.customer_id_card || 'Chưa cập nhật';
+
+      const newVehicleInfoString = `${finalVehicleType} - Biển số: ${finalLicensePlate} [CCCD: ${finalCustomerIdCard} | ĐC: ${finalCustomerAddress}]`;
+
+      // Tạo bản ghi Reservation nối tiếp (APPROVED) để gắn với Hợp đồng gia hạn mới
+      const renewalReservation = await reservationRepository.createReservation({
+        customer_id: record.reservation.customer_id,
+        facility_id: record.reservation.facility_id || record.reservation.facility.id,
+        vehicle_info: newVehicleInfoString,
+        desired_start_date: newStartDate
+      });
+      await reservationRepository.updateStatus(renewalReservation.id, 'APPROVED');
+
+      const newContractSnapshot = {
+        contract_info: {
+          contract_code: newContractCode,
+          issue_date: now,
+          start_date: newStartDate.toISOString().slice(0, 10),
+          end_date: newEndDate.toISOString().slice(0, 10),
+          is_renewal_contract: true,
+          renewed_from_contract_id: record.id,
+          renewed_from_contract_code: record.contract_code
+        },
+        owner_info: {
+          ...oldOwner,
+          facility_id: record.reservation?.facility?.id || oldOwner.facility_id,
+          facility_name: record.reservation?.facility?.name || oldOwner.facility_name,
+          facility_address: record.reservation?.facility?.address || oldOwner.facility_address
+        },
+        customer_info: {
+          ...oldCust,
+          customer_id: record.reservation?.customer?.id || oldCust.customer_id,
+          customer_name: record.reservation?.customer?.full_name || oldCust.customer_name,
+          customer_email: record.reservation?.customer?.email || oldCust.customer_email,
+          customer_phone: finalCustomerPhone,
+          customer_address: finalCustomerAddress,
+          customer_id_card: finalCustomerIdCard
+        },
+        vehicle_info: {
+          vehicle_info_raw: newVehicleInfoString,
+          vehicle_type: finalVehicleType,
+          license_plate: finalLicensePlate
+        },
+        rental_info: {
+          ...oldRental,
+          parking_spot: oldRental.parking_spot || 'Vị trí đỗ tự do trong bãi',
+          agreed_price: currentFacilityPrice,
+          payment_deadline_day: record.payment_deadline_day || oldRental.payment_deadline_day || 5
+        },
+        terms_and_conditions: {
+          ...oldTerms
+        },
+        confirmation: {
+          provider_agreed_at: now,
+          customer_agreed_at: null,
+          is_agreed: false
+        }
+      };
+
+      newContractRecord = await confirmationRecordRepository.create({
+        contract_code: newContractCode,
+        reservation_id: renewalReservation.id,
+        parent_contract_id: record.id,
+        agreed_price: currentFacilityPrice,
+        payment_deadline_day: record.payment_deadline_day || 5,
+        start_date: newStartDate,
+        end_date: newEndDate,
+        contract_snapshot: newContractSnapshot,
+        provider_agreed_at: now,
+        status: 'PENDING_SIGNATURE'
+      });
+    }
+
     const processedExt = {
       ...ext,
       status: isApproved ? 'APPROVED' : 'REJECTED',
+      monthly_price: currentFacilityPrice,
+      total_estimated_amount: currentFacilityPrice * Number(ext.extension_months || 1),
+      new_contract_id: newContractRecord ? newContractRecord.id : null,
+      new_contract_code: newContractRecord ? newContractRecord.contract_code : null,
       responded_at: now.toISOString(),
       provider_note: providerNote ? providerNote.trim() : null
     };
@@ -866,48 +1082,17 @@ class ConfirmationRecordService {
     const history = Array.isArray(snapshot.extension_history) ? [...snapshot.extension_history] : [];
     history.push(processedExt);
 
-    let newEndDate = null;
-    let updatedSnapshot = {
+    // Giữ nguyên 100% nội dung gốc của hợp đồng cũ (KHÔNG ghi đè end_date, vehicle_info, customer_info của hợp đồng cũ)
+    const updatedSnapshot = {
       ...snapshot,
       extension_request: isApproved ? processedExt : null,
       extension_history: history
     };
 
-    if (isApproved) {
-      if (ext.requested_end_date) {
-        newEndDate = new Date(ext.requested_end_date);
-        // Cập nhật ngày kết thúc trong contract_info của snapshot
-        if (updatedSnapshot.contract_info) {
-          updatedSnapshot.contract_info = {
-            ...updatedSnapshot.contract_info,
-            end_date: newEndDate.toISOString().slice(0, 10)
-          };
-        }
-      }
-
-      // Cập nhật thông tin xe mới vào hợp đồng nếu khách hàng có yêu cầu đổi xe
-      if (ext.vehicle_info && ext.vehicle_info.is_changed) {
-        updatedSnapshot.vehicle_info = {
-          ...updatedSnapshot.vehicle_info,
-          vehicle_type: ext.vehicle_info.vehicle_type,
-          license_plate: ext.vehicle_info.license_plate
-        };
-      }
-
-      // Cập nhật thông tin liên hệ mới vào hợp đồng nếu có thay đổi
-      if (ext.customer_info && ext.customer_info.is_changed) {
-        updatedSnapshot.customer_info = {
-          ...updatedSnapshot.customer_info,
-          customer_address: ext.customer_info.customer_address,
-          customer_phone: ext.customer_info.customer_phone
-        };
-      }
-    }
-
     const updatedRecord = await confirmationRecordRepository.updateSnapshotAndEndDate(
       contractId,
       updatedSnapshot,
-      newEndDate
+      null
     );
 
     // Gửi thông báo cho Customer
@@ -915,10 +1100,10 @@ class ConfirmationRecordService {
     if (customerId) {
       try {
         const notiTitle = isApproved
-          ? `Yêu cầu gia hạn hợp đồng (${record.contract_code}) đã được chấp thuận!`
+          ? `Đã tạo hợp đồng gia hạn mới (${newContractRecord?.contract_code}) từ ${record.contract_code}!`
           : `Yêu cầu gia hạn hợp đồng (${record.contract_code}) đã bị từ chối`;
         const notiContent = isApproved
-          ? `Chủ bãi đã đồng ý gia hạn hợp đồng ${record.contract_code} đến ngày ${ext.requested_end_date}. Chúc mừng bạn!`
+          ? `Chủ bãi đã chấp thuận gia hạn và khởi tạo hợp đồng mới ${newContractRecord?.contract_code} (Thời hạn: đến ${ext.requested_end_date}, Giá hiện tại: ${currentFacilityPrice.toLocaleString('vi-VN')} đ/tháng). Vui lòng vào xem và ký xác nhận hợp đồng mới!`
           : `Chủ bãi đã từ chối yêu cầu gia hạn hợp đồng ${record.contract_code}.${providerNote ? ` Lý do: ${providerNote}` : ''}`;
 
         await notificationRepository.createNotification({
@@ -935,7 +1120,7 @@ class ConfirmationRecordService {
             title: notiTitle,
             content: notiContent,
             type: 'LEASE_EXTENSION',
-            contract_id: record.id,
+            contract_id: newContractRecord ? newContractRecord.id : record.id,
             status: processedExt.status,
             created_at: new Date().toISOString()
           });
@@ -947,6 +1132,7 @@ class ConfirmationRecordService {
 
     return {
       confirmation_record: updatedRecord,
+      new_confirmation_record: newContractRecord,
       extension_result: processedExt
     };
   }

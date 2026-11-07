@@ -84,7 +84,10 @@ const ProviderReservationsPanel = () => {
       setProcessingId(targetId);
       if (action === 'ACCEPT') {
         await acceptReservation(targetId);
-        setToastInfo({ message: 'Đã phê duyệt chấp nhận yêu cầu thuê xe thành công!', type: 'success' });
+        setToastInfo({
+          message: 'Đã chấp nhận yêu cầu thuê! Bạn có 24 giờ để khởi tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.',
+          type: 'success'
+        });
       } else if (action === 'REJECT') {
         await rejectReservation(targetId);
         setToastInfo({ message: 'Đã từ chối yêu cầu thuê xe!', type: 'success' });
@@ -168,7 +171,7 @@ const ProviderReservationsPanel = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Khách đã hủy
+            Đã hủy
           </span>
         );
       default:
@@ -257,7 +260,7 @@ const ProviderReservationsPanel = () => {
                   : 'text-slate-600 hover:bg-slate-200/70'
               }`}
             >
-              Khách hủy ({cancelledCount})
+              Đã hủy ({cancelledCount})
             </button>
           </div>
 
@@ -478,7 +481,7 @@ const ProviderReservationsPanel = () => {
         }
         message={
           confirmModalState.action === 'ACCEPT'
-            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không?`
+            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có 24 giờ để tạo hợp đồng điện tử. Nếu quá 24 giờ chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
             : `Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không?`
         }
         confirmText={confirmModalState.action === 'ACCEPT' ? 'Đồng ý chấp nhận' : 'Đồng ý từ chối'}

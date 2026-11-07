@@ -11,6 +11,7 @@ class ConfirmationRecordRepository {
     const {
       contract_code,
       reservation_id,
+      parent_contract_id,
       agreed_price,
       payment_deadline_day,
       start_date,
@@ -20,18 +21,30 @@ class ConfirmationRecordRepository {
       status
     } = data;
 
+    const createPayload = {
+      contract_code,
+      reservation_id: parseInt(reservation_id, 10),
+      agreed_price,
+      payment_deadline_day: payment_deadline_day ? parseInt(payment_deadline_day, 10) : 5,
+      start_date: new Date(start_date),
+      end_date: new Date(end_date),
+      contract_snapshot,
+      provider_agreed_at: provider_agreed_at || new Date(),
+      status: status || 'PENDING_SIGNATURE'
+    };
+
+    // Tự động nhận diện nếu bảng Confirmation_Record trong schema.prisma đã được thêm cột parent_contract_id
+    const hasParentContractColumn = Boolean(
+      prisma?._runtimeDataModel?.models?.Confirmation_Record?.fields?.some(
+        (field) => field.name === 'parent_contract_id'
+      )
+    );
+    if (hasParentContractColumn && parent_contract_id) {
+      createPayload.parent_contract_id = parseInt(parent_contract_id, 10);
+    }
+
     return await prisma.confirmation_Record.create({
-      data: {
-        contract_code,
-        reservation_id: parseInt(reservation_id, 10),
-        agreed_price,
-        payment_deadline_day: payment_deadline_day ? parseInt(payment_deadline_day, 10) : 5,
-        start_date: new Date(start_date),
-        end_date: new Date(end_date),
-        contract_snapshot,
-        provider_agreed_at: provider_agreed_at || new Date(),
-        status: status || 'PENDING_SIGNATURE'
-      },
+      data: createPayload,
       include: {
         reservation: {
           include: {
