@@ -169,6 +169,8 @@ const RegisterProviderPage = () => {
 
     if (!agreedPolicy) {
       errs.push('Vui lòng đọc và tích chọn đồng ý với Chính sách & Quy định dành cho Chủ bãi đỗ xe của ParkLink.');
+    }
+
     if (!formData.vehicle_types || formData.vehicle_types.length === 0) {
       errs.push('Vui lòng chọn ít nhất một loại phương tiện nhận gửi.');
     }

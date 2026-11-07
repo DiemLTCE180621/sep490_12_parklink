@@ -39,7 +39,7 @@ yarn-error.log*
 *.sw?
 .agent/rules
 .agents/
-
+.ai
 
 # Database files
 *.sql

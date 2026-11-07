@@ -66,23 +66,17 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
   // Chỉ đặt lowestPriceId khi duy nhất 1 bãi có giá thấp nhất
   const lowestPriceId = facilitiesWithMinPrice.length === 1 ? facilitiesWithMinPrice[0].id : null;
 
-  // ─── Tìm bãi có rating cao nhất ───
-  const highestRatingId = comparisonData.length > 0
-    ? comparisonData
-        .filter(f => f.avg_rating !== null)
-        .reduce((prev, curr) =>
-          curr.avg_rating > prev.avg_rating ? curr : prev
-        , comparisonData[0])?.id
-    : null;
+  const validRatings = comparisonData.filter(f => f.avg_rating !== null && f.avg_rating !== undefined && Number(f.avg_rating) > 0);
+  const maxRating = validRatings.length > 0 ? Math.max(...validRatings.map(f => Number(f.avg_rating))) : null;
+  const topRatingFacilities = validRatings.filter(f => Number(f.avg_rating) === maxRating);
+  const highestRatingId = topRatingFacilities.length === 1 ? topRatingFacilities[0].id : null;
 
-  // ─── Tìm bãi gần nhất (distance nhỏ nhất, nếu có) ───
-  const nearestId = comparisonData.length > 0
-    ? comparisonData
-        .filter(f => f.distance !== null && f.distance !== undefined)
-        .reduce((prev, curr) =>
-          prev && curr.distance < prev.distance ? curr : prev
-        , null)?.id
-    : null;
+  const validDistances = comparisonData.filter(f => f.distance !== null && f.distance !== undefined);
+  const minDistance = validDistances.length > 0 ? Math.min(...validDistances.map(f => Number(f.distance))) : null;
+  const nearestFacilities = validDistances.filter(f => Number(f.distance) === minDistance);
+  const nearestId = nearestFacilities.length === 1 ? nearestFacilities[0].id : null;
+
+
 
   return (
     <div
@@ -166,6 +160,8 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                   {comparisonData.map((fac) => {
                     const isCheapest = fac.id === lowestPriceId;
+                    const isNearest = fac.id === nearestId;
+                    const isHighestRated = fac.id === highestRatingId;
                     return (
                       <th
                         key={fac.id}
@@ -184,11 +180,20 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                           </button>
                         </div>
 
-                        {/* Badge Giá Thấp Nhất — chỉ hiện khi duy nhất 1 bãi rẻ nhất */}
-                        <div className="h-6 flex items-center justify-center mb-1">
+                        <div className="min-h-6 flex flex-wrap items-center justify-center gap-1 mb-1">
                           {isCheapest && (
                             <span className="inline-block px-2 py-0.5 bg-teal-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
                               Giá Thấp Nhất
+                            </span>
+                          )}
+                          {isNearest && (
+                            <span className="inline-block px-2 py-0.5 bg-sky-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
+                              Gần Bạn Nhất
+                            </span>
+                          )}
+                          {isHighestRated && (
+                            <span className="inline-block px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
+                              Đánh Giá Cao Nhất
                             </span>
                           )}
                         </div>
@@ -341,6 +346,11 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                               <span className="text-xs text-slate-400">/5.0</span>
                             </div>
                             <p className="text-[10px] text-slate-400">{fac.total_reviews} đánh giá</p>
+                            {highestRatingId && fac.id === highestRatingId && (
+                              <span className="mt-1 inline-block text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
+                                Đánh giá cao nhất
+                              </span>
+                            )}
                           </>
                         ) : (
                           <span className="text-slate-400 text-xs italic">Chưa có đánh giá</span>
