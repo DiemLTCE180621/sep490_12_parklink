@@ -107,7 +107,8 @@ const DraggableFacilityMarker = ({ position, address, onLocationChange }) => {
 };
 
 const FacilityLocationPicker = ({ address, latitude, longitude, onChange, required = false }) => {
-  const hasValidCoords = Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
+  const hasValidCoords = latitude !== '' && longitude !== '' && latitude != null && longitude != null &&
+    Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
   const currentCoords = hasValidCoords ? [Number(latitude), Number(longitude)] : null;
 
   const [mapCenter, setMapCenter] = useState(currentCoords || DEFAULT_CENTER);

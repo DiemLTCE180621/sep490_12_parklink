@@ -43,17 +43,36 @@ class InspectorController {
   async submitInspection(req, res, next) {
     try {
       const facilityId = parseInt(req.params.id, 10);
-      const { capacity, images } = req.body;
+      const { capacity, images, address, latitude, longitude } = req.body;
       
       if (isNaN(facilityId)) {
         return res.status(400).json({ status: "fail", message: "ID bãi đỗ xe không hợp lệ" });
       }
-      if (!capacity || !images || images.length === 0) {
+      const actualCapacity = Number(capacity);
+      if (!Number.isInteger(actualCapacity) || actualCapacity <= 0 ||
+          !Array.isArray(images) || images.length === 0 ||
+          images.some((image) => typeof image !== "string" || !image.trim())) {
         return res.status(400).json({ status: "fail", message: "Vui lòng cung cấp sức chứa và hình ảnh hợp lệ" });
       }
 
+      const actualLatitude = Number(latitude);
+      const actualLongitude = Number(longitude);
+      if (typeof address !== "string" || !address.trim() ||
+          latitude === undefined || latitude === null || latitude === "" ||
+          longitude === undefined || longitude === null || longitude === "" ||
+          !Number.isFinite(actualLatitude) || actualLatitude < -90 || actualLatitude > 90 ||
+          !Number.isFinite(actualLongitude) || actualLongitude < -180 || actualLongitude > 180) {
+        return res.status(400).json({ status: "fail", message: "Vui lòng cung cấp địa chỉ và tọa độ thực tế hợp lệ" });
+      }
+
       const inspectorId = req.user?.userId || req.user?.id;
-      await inspectorService.submitInspection(facilityId, capacity, images, inspectorId);
+      await inspectorService.submitInspection(facilityId, {
+        capacity: actualCapacity,
+        images,
+        address: address.trim(),
+        latitude: actualLatitude,
+        longitude: actualLongitude
+      }, inspectorId);
       res.json({
         status: "success",
         message: "Gửi kết quả khảo sát thành công. Đang chờ Admin phê duyệt cuối cùng."

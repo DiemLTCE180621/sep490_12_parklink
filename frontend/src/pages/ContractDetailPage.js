@@ -223,19 +223,28 @@ const ContractDetailPage = () => {
       setProcessingExtension(true);
       const isApproved = status === 'APPROVED';
 
-      await respondToLeaseExtension(id, {
+      const res = await respondToLeaseExtension(id, {
         status,
         provider_note: isApproved ? undefined : 'Chủ bãi không thể gia hạn thêm cho kỳ thuê này.'
       });
 
+      const newContract = res?.data?.new_confirmation_record || res?.new_confirmation_record;
+
       setToastInfo({
         message: isApproved
-          ? 'Đã chấp thuận gia hạn hợp đồng thành công!'
+          ? `Đã chấp thuận gia hạn và tạo hợp đồng mới ${newContract?.contract_code ? `(${newContract.contract_code})` : ''} theo giá hiện tại của bãi xe!`
           : 'Đã từ chối yêu cầu gia hạn hợp đồng.',
         type: 'success'
       });
       setRejectExtensionModalOpen(false);
-      fetchDetail();
+
+      if (isApproved && newContract?.id) {
+        setTimeout(() => {
+          navigate(`/contracts/${newContract.id}`);
+        }, 1200);
+      } else {
+        fetchDetail();
+      }
     } catch (err) {
       setToastInfo({
         message: err.response?.data?.message || err.message || 'Phản hồi yêu cầu gia hạn thất bại!',
@@ -279,6 +288,11 @@ const ContractDetailPage = () => {
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 Đã chấm dứt
+              </span>
+            ) : contract?.status === 'CANCELLED' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                Đã hủy (Hết chỗ)
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
@@ -412,6 +426,38 @@ const ContractDetailPage = () => {
               </div>
             )}
 
+            {/* APPROVED EXTENSION -> NEW CONTRACT CREATED BANNER */}
+            {snapshot.extension_request?.status === 'APPROVED' && snapshot.extension_request?.new_contract_id && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-teal-50 border border-teal-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckSquare className="w-4 h-4 text-teal-700" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-teal-900">
+                      Đã khởi tạo hợp đồng gia hạn mới ({snapshot.extension_request.new_contract_code || `#${snapshot.extension_request.new_contract_id}`})
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-teal-700 mt-0.5">
+                      Hợp đồng cũ này được giữ nguyên làm lịch sử đối soát. Vui lòng chuyển sang hợp đồng mới để xem và ký xác nhận!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      isCustomer
+                        ? `/my-contracts/${snapshot.extension_request.new_contract_id}`
+                        : `/contracts/${snapshot.extension_request.new_contract_id}`
+                    )
+                  }
+                  className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
+                >
+                  Xem hợp đồng mới
+                </button>
+              </div>
+            )}
+
             {/* PROVIDER PENDING EXTENSION REVIEW CARD */}
             {isProvider && pendingExtension && (
               <div className="print:hidden bg-white rounded-xl p-5 sm:p-6 border-2 border-amber-400 sm:max-w-[900px] mx-auto space-y-4 shadow-sm">
@@ -503,7 +549,7 @@ const ContractDetailPage = () => {
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
                   >
                     {processingExtension ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                    Chấp thuận gia hạn
+                    Chấp thuận & Tạo hợp đồng gia hạn mới
                   </button>
                 </div>
               </div>
@@ -517,6 +563,19 @@ const ContractDetailPage = () => {
                   <h4 className="text-sm font-bold text-slate-900">Hợp đồng này đã được thanh lý & chấm dứt hiệu lực</h4>
                   <p className="text-slate-600 mt-0.5">
                     Vị trí đỗ xe đã được hoàn trả lại cho bãi xe. Văn bản hợp đồng dưới đây được lưu trữ phục vụ việc đối soát và tra cứu.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* CANCELLED STATUS BANNER */}
+            {contract.status === 'CANCELLED' && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
+                <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Hợp đồng này đã tự động hủy do bãi xe hết chỗ trống</h4>
+                  <p className="text-slate-600 mt-0.5">
+                    Chỗ trống cuối cùng tại bãi xe đã được chủ bãi và khách hàng khác hoàn tất ký kết hợp đồng trước đó.
                   </p>
                 </div>
               </div>

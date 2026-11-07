@@ -260,18 +260,20 @@ class FacilityRepository {
   }
 
   /**
-   * Nhân viên khảo sát thực địa gửi dữ liệu hình ảnh và số chỗ (capacity)
+   * Nhân viên khảo sát thực địa gửi hình ảnh, số chỗ và vị trí thực tế
    * @param {number} facilityId
-   * @param {number} capacity
-   * @param {string[]} images
+   * @param {{capacity: number, images: string[], address: string, latitude: number, longitude: number}} inspection
    */
-  async inspectFacility(facilityId, capacity, images = []) {
+  async inspectFacility(facilityId, { capacity, images, address, latitude, longitude }) {
     return await prisma.$transaction(async (tx) => {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
           capacity: parseInt(capacity, 10),
           available_slots: parseInt(capacity, 10),
+          address,
+          latitude,
+          longitude,
           verification_status: "INSPECTED",
         },
       });

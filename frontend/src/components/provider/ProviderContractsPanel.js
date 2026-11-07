@@ -77,7 +77,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
     else if (activeTab === 'ACTIVE') matchesTab = item.status === 'ACTIVE';
     else if (activeTab === 'EXTENSION_PENDING') matchesTab = hasPendingExt;
     else if (activeTab === 'TERMINATION_PENDING') matchesTab = hasPendingTerm;
-    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED';
+    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED' || item.status === 'CANCELLED';
 
     const query = searchTerm.trim().toLowerCase();
     let matchesSearch = true;
@@ -110,7 +110,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
     const snap = getSnapshot(c);
     return snap?.termination_request?.status === 'PENDING';
   }).length;
-  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED').length;
+  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED' || c.status === 'CANCELLED').length;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -133,6 +133,13 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             Đã chấm dứt
+          </span>
+        );
+      case 'CANCELLED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            Đã hủy (Hết chỗ)
           </span>
         );
       default:

@@ -34,13 +34,12 @@ class InspectorService {
   }
 
   /**
-   * Nhân viên khảo sát gửi kết quả khảo sát (cập nhật capacity, tải ảnh)
+   * Nhân viên khảo sát gửi kết quả khảo sát (sức chứa, ảnh và vị trí thực tế)
    * @param {number} facilityId
-   * @param {number} capacity
-   * @param {string[]} images
+   * @param {{capacity: number, images: string[], address: string, latitude: number, longitude: number}} inspection
    * @param {number|null} inspectorId - ID của nhân viên đang đăng nhập
    */
-  async submitInspection(facilityId, capacity, images = [], inspectorId = null) {
+  async submitInspection(facilityId, inspection, inspectorId = null) {
     const facility = await facilityRepository.findById(facilityId);
     if (!facility) {
       throw Object.assign(new Error("Bãi đỗ xe không tồn tại!"), { status: 404 });
@@ -56,7 +55,7 @@ class InspectorService {
       );
     }
     
-    return await facilityRepository.inspectFacility(facilityId, capacity, images);
+    return await facilityRepository.inspectFacility(facilityId, inspection);
   }
 }
 

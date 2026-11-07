@@ -69,7 +69,10 @@ const ProviderReservationDetailPage = () => {
       setProcessingAction(true);
       if (action === 'ACCEPT') {
         await acceptReservation(id);
-        setToastInfo({ message: 'Đã phê duyệt chấp nhận yêu cầu thuê xe thành công!', type: 'success' });
+        setToastInfo({
+          message: 'Đã chấp nhận yêu cầu thuê! Bạn có 24 giờ để tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.',
+          type: 'success'
+        });
       } else if (action === 'REJECT') {
         await rejectReservation(id);
         setToastInfo({ message: 'Đã từ chối yêu cầu thuê xe!', type: 'success' });
@@ -326,7 +329,7 @@ const ProviderReservationDetailPage = () => {
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-2.5">
                       <h3 className="text-sm font-bold text-slate-900">Khởi tạo hợp đồng</h3>
                       <p className="text-xs text-slate-500">
-                        Yêu cầu đã được phê duyệt. Hãy tạo hợp đồng điện tử để gửi cho khách hàng xác nhận.
+                        Yêu cầu đã được phê duyệt. Bạn có <strong>24 giờ</strong> kể từ lúc chấp nhận để tạo hợp đồng điện tử gửi cho khách hàng (quá 24 giờ hệ thống sẽ tự động hủy).
                       </p>
                       <button
                         onClick={() =>
@@ -392,7 +395,7 @@ const ProviderReservationDetailPage = () => {
         }
         message={
           confirmModalState.action === 'ACCEPT'
-            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không?`
+            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có 24 giờ để khởi tạo hợp đồng điện tử. Nếu quá 24 giờ chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
             : `Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không?`
         }
         confirmText={confirmModalState.action === 'ACCEPT' ? 'Đồng ý chấp nhận' : 'Đồng ý từ chối'}

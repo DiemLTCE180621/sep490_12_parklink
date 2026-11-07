@@ -246,6 +246,109 @@ class ReservationRepository {
       }
     });
   }
+
+  /**
+   * Tự động hủy các yêu cầu đặt chỗ còn lại (PENDING / APPROVED chưa ký xong hợp đồng)
+   * tại bãi xe khi chỗ trống cuối cùng đã được 2 bên ký hợp đồng thành công (available_slots === 0)
+   */
+  async cancelRemainingReservationsWhenFull(facilityId, excludeReservationId) {
+    const parsedFacilityId = parseInt(facilityId, 10);
+    const parsedExcludeId = parseInt(excludeReservationId, 10);
+
+    // 1. Tìm tất cả các yêu cầu đặt chỗ khác đang chờ hoặc đã duyệt nhưng chưa hoàn tất ký hợp đồng ACTIVE
+    const affectedReservations = await prisma.reservation_Request.findMany({
+      where: {
+        facility_id: parsedFacilityId,
+        id: { not: parsedExcludeId },
+        status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          { confirmation_record: null },
+          { confirmation_record: { status: 'PENDING_SIGNATURE' } }
+        ]
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true
+          }
+        },
+        confirmation_record: true
+      }
+    });
+
+    if (affectedReservations.length === 0) {
+      return [];
+    }
+
+    const affectedIds = affectedReservations.map((r) => r.id);
+    const pendingContractIds = affectedReservations
+      .filter((r) => r.confirmation_record && r.confirmation_record.status === 'PENDING_SIGNATURE')
+      .map((r) => r.confirmation_record.id);
+
+    // 2. Chuyển trạng thái các Reservation_Request đó sang CANCELLED
+    await prisma.reservation_Request.updateMany({
+      where: { id: { in: affectedIds } },
+      data: { status: 'CANCELLED' }
+    });
+
+    // 3. Nếu có biên bản PENDING_SIGNATURE nào đang chờ khách ký thì cũng chuyển sang CANCELLED
+    if (pendingContractIds.length > 0) {
+      await prisma.confirmation_Record.updateMany({
+        where: { id: { in: pendingContractIds } },
+        data: { status: 'CANCELLED' }
+      });
+    }
+
+    return affectedReservations;
+  }
+
+  /**
+   * Tự động hủy các yêu cầu đặt chỗ đã được Provider chấp nhận (APPROVED)
+   * nhưng quá 24 giờ mà Provider vẫn chưa tạo hợp đồng điện tử (confirmation_record === null)
+   */
+  async cancelExpiredApprovedReservations() {
+    const deadline24hAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const expiredApprovedList = await prisma.reservation_Request.findMany({
+      where: {
+        status: 'APPROVED',
+        updated_at: { lt: deadline24hAgo },
+        confirmation_record: null
+      },
+      include: {
+        customer: {
+          select: {
+            id: true,
+            full_name: true,
+            email: true,
+            phone_number: true
+          }
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true
+          }
+        }
+      }
+    });
+
+    if (expiredApprovedList.length === 0) {
+      return [];
+    }
+
+    const expiredIds = expiredApprovedList.map((r) => r.id);
+    await prisma.reservation_Request.updateMany({
+      where: { id: { in: expiredIds } },
+      data: { status: 'CANCELLED' }
+    });
+
+    return expiredApprovedList;
+  }
 }
 
 module.exports = new ReservationRepository();

@@ -66,7 +66,7 @@ const CustomerContractsPage = () => {
     let matchesTab = true;
     if (activeTab === 'PENDING_SIGNATURE') matchesTab = item.status === 'PENDING_SIGNATURE';
     else if (activeTab === 'ACTIVE') matchesTab = item.status === 'ACTIVE';
-    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED';
+    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED' || item.status === 'CANCELLED';
 
     const query = searchTerm.trim().toLowerCase();
     let matchesSearch = true;
@@ -83,7 +83,7 @@ const CustomerContractsPage = () => {
   const totalCount = contracts.length;
   const pendingCount = contracts.filter((c) => c.status === 'PENDING_SIGNATURE').length;
   const activeCount = contracts.filter((c) => c.status === 'ACTIVE').length;
-  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED').length;
+  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED' || c.status === 'CANCELLED').length;
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
@@ -223,6 +223,11 @@ const CustomerContractsPage = () => {
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                         Đã chấm dứt
+                      </span>
+                    ) : item.status === 'CANCELLED' ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        Đã hủy (Hết chỗ)
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">

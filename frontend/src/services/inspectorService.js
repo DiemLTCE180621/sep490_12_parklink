@@ -19,7 +19,7 @@ const inspectorService = {
   /**
    * Submit kết quả khảo sát
    * @param {number} id 
-   * @param {object} data - { capacity, images }
+   * @param {object} data - { capacity, images, address, latitude, longitude }
    */
   submitInspection: async (id, data) => {
     return await api.put(`/inspector/facilities/${id}/inspect`, data);

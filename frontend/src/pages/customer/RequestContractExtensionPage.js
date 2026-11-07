@@ -103,13 +103,13 @@ const RequestContractExtensionPage = () => {
     ? snapshot.extension_request
     : null;
 
-  // Realtime calculations
+  // Realtime calculations: Lấy theo GIÁ HIỆN TẠI CỦA BÃI XE (nếu chủ bãi tăng/cập nhật giá thì lấy giá mới)
   const activeMonths = customMonths ? (parseInt(customMonths, 10) || 1) : extensionMonths;
   const currentEndDate = contract?.end_date ? new Date(contract.end_date) : new Date();
   const calculatedEndDate = new Date(currentEndDate);
   calculatedEndDate.setMonth(calculatedEndDate.getMonth() + Number(activeMonths));
 
-  const monthlyPrice = Number(contract?.agreed_price || contract?.reservation?.facility?.price_per_month || 0);
+  const monthlyPrice = Number(contract?.reservation?.facility?.price_per_month || contract?.agreed_price || 0);
   const estimatedTotalAmount = monthlyPrice * Number(activeMonths);
 
   const handleSelectPreset = (months) => {
@@ -316,9 +316,9 @@ const RequestContractExtensionPage = () => {
 
           <div className="flex items-center gap-4 text-xs shrink-0 bg-white px-4 py-2.5 rounded-xl border border-slate-200">
             <div>
-              <span className="text-slate-400 block text-[11px]">Đơn giá hiện tại</span>
+              <span className="text-slate-400 block text-[11px]">Đơn giá hiện tại của bãi</span>
               <strong className="text-teal-700 text-sm font-bold">
-                {Number(contract.agreed_price || 0).toLocaleString('vi-VN')} đ/tháng
+                {monthlyPrice.toLocaleString('vi-VN')} đ/tháng
               </strong>
             </div>
             <div className="w-px h-8 bg-slate-200" />
@@ -680,7 +680,7 @@ const RequestContractExtensionPage = () => {
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-100 pt-3">
-                    * Bạn vẫn sẽ thanh toán phí thuê định kỳ hàng tháng theo quy định hợp đồng. Phụ lục gia hạn sẽ có hiệu lực ngay khi chủ bãi chấp thuận.
+                    * Khi chủ bãi chấp thuận gia hạn, hệ thống sẽ khởi tạo hợp đồng mới theo đơn giá hiện tại của bãi xe để bạn kiểm tra và ký xác nhận (hợp đồng cũ được giữ nguyên).
                   </p>
 
                   {/* ACTION BUTTONS */}
