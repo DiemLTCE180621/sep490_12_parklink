@@ -154,7 +154,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         className="contract-modal-dialog bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-7xl overflow-hidden transform transition-all duration-200 h-[96vh] max-h-[96vh] flex flex-col print:h-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:max-w-none print:block"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER BAR - HIDDEN ON PRINT */}
+        
         <div className="print:hidden bg-slate-900 px-6 py-4 text-white relative shrink-0 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-teal-600/30 border border-teal-500/40 text-teal-400 flex items-center justify-center">
@@ -187,7 +187,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
           </div>
         </div>
 
-        {/* DOCUMENT CONTAINER */}
+        
         <div className="contract-modal-body p-4 sm:p-8 bg-slate-100/70 overflow-y-auto flex-grow text-slate-800 text-xs sm:text-sm print:p-0 print:m-0 print:bg-white print:overflow-visible">
           {loading ? (
             <div className="py-16 text-center space-y-3 bg-white rounded-xl shadow-sm border border-slate-200">
@@ -208,12 +208,12 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                 </div>
               )}
 
-              {/* STANDARD VIETNAMESE LEGAL CONTRACT CANVAS */}
+              
               <div
                 className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
                 style={{ fontFamily: "'Times New Roman', Times, serif" }}
               >
-                {/* QUỐC HIỆU VÀ TIÊU NGỮ */}
+                
                 <div className="text-center space-y-1 mb-8">
                   <p className="font-bold uppercase text-sm sm:text-base tracking-wide text-black">
                     CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
@@ -231,14 +231,14 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </p>
                 </div>
 
-                {/* THỜI GIAN & ĐỊA ĐIỂM */}
+                
                 <p className="text-xs sm:text-sm leading-relaxed text-black mb-4">
                   Hôm nay, ngày {contractIssueDate.getDate()} tháng {contractIssueDate.getMonth() + 1} năm {contractIssueDate.getFullYear()}, tại {ownerInfo.facility_name || contract.reservation?.facility?.name} (Địa chỉ: {ownerInfo.facility_address || contract.reservation?.facility?.address}), hai bên gồm có:
                 </p>
 
-                {/* THÔNG TIN CÁC BÊN GIAO DỊCH */}
+                
                 <div className="space-y-4 text-xs sm:text-sm leading-relaxed text-black mb-6">
-                  {/* 1. BÊN A */}
+                  
                   <div className="space-y-1 pl-1">
                     <p className="font-bold uppercase text-black">1. BÊN A (BÊN NHẬN GỬI GIỮ XE Ô TÔ):</p>
                     <p className="pl-4">- Cơ sở bãi đỗ xe: <strong>{ownerInfo.facility_name || contract.reservation?.facility?.name}</strong></p>
@@ -250,7 +250,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                     )}
                   </div>
 
-                  {/* 2. BÊN B */}
+                  
                   <div className="space-y-1 pl-1">
                     <p className="font-bold uppercase text-black">2. BÊN B (BÊN GỬI XE Ô TÔ):</p>
                     <p className="pl-4">- Ông (Bà): <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong></p>
@@ -265,7 +265,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   Sau khi bàn bạc và thống nhất trên tinh thần tự nguyện, bình đẳng, hai bên nhất trí ký kết Hợp đồng gửi giữ xe ô tô với các điều khoản cụ thể sau đây:
                 </p>
 
-                {/* ĐIỀU 1 */}
+                
                 <div className="space-y-1 mb-5">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 1. Đối tượng gửi, giữ</p>
                   <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
@@ -276,7 +276,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   <p className="pl-8 text-xs sm:text-sm text-black">- Vị trí gửi đỗ: <strong>{rentalInfo.parking_spot || 'Vị trí đỗ tự do trong bãi'}</strong> tại {ownerInfo.facility_name || contract.reservation?.facility?.name}.</p>
                 </div>
 
-                {/* ĐIỀU 2 */}
+                
                 <div className="space-y-1 mb-5">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 2. Thời hạn, giá cả và phương thức thanh toán</p>
                   <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
@@ -293,7 +293,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </p>
                 </div>
 
-                {/* ĐIỀU 3 */}
+                
                 <div className="space-y-1 mb-5">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 3. Quyền và nghĩa vụ của Bên A</p>
                   <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -302,7 +302,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </div>
                 </div>
 
-                {/* ĐIỀU 4 */}
+                
                 <div className="space-y-1 mb-5">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 4. Quyền và nghĩa vụ của Bên B</p>
                   <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -311,7 +311,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </div>
                 </div>
 
-                {/* ĐIỀU 5 */}
+                
                 <div className="space-y-1 mb-5">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 5. Giải quyết tranh chấp</p>
                   <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -320,7 +320,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </div>
                 </div>
 
-                {/* ĐIỀU 6 */}
+                
                 <div className="space-y-1 mb-8">
                   <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 6. Điều khoản chung và hiệu lực hợp đồng</p>
                   <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -329,10 +329,10 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   </div>
                 </div>
 
-                {/* PHẦN CHỮ KÝ CỦA HAI BÊN */}
+                
                 <div className="pt-6 border-t border-black mt-8">
                   <div className="grid grid-cols-2 gap-8 text-center text-xs sm:text-sm text-black">
-                    {/* BÊN A */}
+                    
                     <div className="space-y-1">
                       <p className="font-bold uppercase">ĐẠI DIỆN BÊN A</p>
                       <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
@@ -349,7 +349,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                       </p>
                     </div>
 
-                    {/* BÊN B */}
+                    
                     <div className="space-y-1">
                       <p className="font-bold uppercase">ĐẠI DIỆN BÊN B</p>
                       <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
@@ -375,7 +375,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                 </div>
               </div>
 
-              {/* CUSTOMER ACTION FOOTER */}
+              
               {isCustomer && isPendingSignature && (
                 <div className="print:hidden w-full max-w-4xl mx-auto p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-4">
                   <div className="border-b border-slate-100 pb-2.5">
@@ -427,7 +427,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
           ) : null}
         </div>
 
-        {/* MODAL FOOTER - HIDDEN ON PRINT */}
+        
         <div className="print:hidden p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <button
             type="button"
@@ -439,7 +439,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         </div>
       </div>
 
-      {/* CONFIRMATION DIALOG */}
+      
       <ConfirmModal
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}

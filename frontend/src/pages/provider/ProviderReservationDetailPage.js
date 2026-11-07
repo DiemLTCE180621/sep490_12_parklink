@@ -31,10 +31,9 @@ const ProviderReservationDetailPage = () => {
   const [error, setError] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Confirm Modal for Accept / Reject
   const [confirmModalState, setConfirmModalState] = useState({
     isOpen: false,
-    action: null // 'ACCEPT' | 'REJECT'
+    action: null
   });
   const [processingAction, setProcessingAction] = useState(false);
 
@@ -140,7 +139,6 @@ const ProviderReservationDetailPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-4">
-        {/* TOP BAR / NAVIGATION */}
         <div>
           <button
             onClick={() => navigate(-1)}
@@ -169,9 +167,7 @@ const ProviderReservationDetailPage = () => {
             </button>
           </div>
         ) : reservation ? (
-          /* UNIFIED SINGLE CARD CONTAINER */
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {/* 1. HEADER */}
             <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
@@ -189,11 +185,8 @@ const ProviderReservationDetailPage = () => {
               <div className="shrink-0">{getStatusBadge(reservation.status)}</div>
             </div>
 
-            {/* 2. BODY */}
             <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-              {/* LEFT COLUMN: CUSTOMER & VEHICLE DETAILS */}
               <div className="lg:col-span-8 divide-y divide-slate-200">
-                {/* CUSTOMER INFORMATION */}
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
                     Thông tin khách hàng đăng ký
@@ -229,7 +222,6 @@ const ProviderReservationDetailPage = () => {
                   </div>
                 </div>
 
-                {/* VEHICLE & REGISTRATION DETAILS */}
                 <div className="p-6 space-y-3">
                   <h2 className="text-base font-bold text-slate-900">
                     Thông tin đăng ký gửi giữ
@@ -273,7 +265,6 @@ const ProviderReservationDetailPage = () => {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: FACILITY, CONTRACT & ACTIONS */}
               <div className="lg:col-span-4 divide-y divide-slate-200 flex flex-col justify-between">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
@@ -302,7 +293,6 @@ const ProviderReservationDetailPage = () => {
                     </div>
                   </div>
 
-                  {/* CONTRACT STATUS */}
                   {reservation.confirmation_record ? (
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between gap-2">
@@ -346,7 +336,6 @@ const ProviderReservationDetailPage = () => {
                   ) : null}
                 </div>
 
-                {/* ACTION FOOTER */}
                 <div className="p-6 bg-slate-50/60 space-y-2.5">
                   {reservation.status === 'PENDING' && (
                     <div className="grid grid-cols-2 gap-2.5">
@@ -383,7 +372,6 @@ const ProviderReservationDetailPage = () => {
         ) : null}
       </div>
 
-      {/* CONFIRM MODAL FOR ACCEPT / REJECT */}
       <ConfirmModal
         isOpen={confirmModalState.isOpen}
         onClose={() => setConfirmModalState({ isOpen: false, action: null })}

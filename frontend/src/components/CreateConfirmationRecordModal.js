@@ -40,11 +40,9 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     ...defaultTerms
   });
 
-  const [activeTermsTab, setActiveTermsTab] = useState('owner'); // owner | customer | dispute | termination
+  const [activeTermsTab, setActiveTermsTab] = useState('owner');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Helper safety parsers
   const parseCleanNumber = (val) => {
     if (val === null || val === undefined) return 0;
     const cleanStr = String(val).replace(/[^0-9.]/g, '');
@@ -135,8 +133,6 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // Calculate rental duration in months for preview
   const getDurationMonths = () => {
     if (!formData.start_date || !formData.end_date) return null;
     const start = new Date(formData.start_date);
@@ -218,7 +214,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
         className="bg-white rounded-2xl shadow-2xl border border-slate-200/90 w-full max-w-6xl overflow-hidden transform transition-all duration-200 max-h-[94vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* DOCUMENT TOP BAR */}
+        
         <div className="bg-slate-900 px-6 py-4 text-white shrink-0 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center">
@@ -248,7 +244,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
           </button>
         </div>
 
-        {/* FORM CONTENT CANVAS */}
+        
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-grow bg-slate-50/50 text-xs sm:text-sm">
           {error && (
             <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2.5 shadow-xs">
@@ -257,7 +253,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           )}
 
-          {/* SECTION I: THÔNG TIN CÁC BÊN GIAO DỊCH */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -267,7 +263,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              {/* BÊN A (OWNER) */}
+              
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block border-b border-slate-200/60 pb-1">
                   Bên A (Chủ Bãi Đỗ Xe)
@@ -279,7 +275,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                 </p>
               </div>
 
-              {/* BÊN B (CUSTOMER) */}
+              
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-2">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block border-b border-slate-200/60 pb-1">
                   Bên B (Khách Hàng Thuê)
@@ -325,7 +321,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* ĐIỀU 1: ĐỐI TƯỢNG GỬI, GIỮ */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -369,7 +365,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* ĐIỀU 2: GIÁ CẢ VÀ PHƯƠNG THỨC VÀ THỜI HẠN THANH TOÁN */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -471,7 +467,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* CÁC ĐIỀU KHOẢN THỎA THUẬN (ĐIỀU 3 - ĐIỀU 6) */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -488,7 +484,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-              {/* TAB NAVIGATION */}
+              
               <div className="flex border-b border-slate-200 bg-slate-100/80 overflow-x-auto text-xs font-semibold">
                 <button
                   type="button"
@@ -532,7 +528,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                 </button>
               </div>
 
-              {/* TAB PANEL */}
+              
               <div className="p-3 bg-white">
                 {activeTermsTab === 'owner' && (
                   <div>
@@ -604,7 +600,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* ACTIONS */}
+          
           <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"

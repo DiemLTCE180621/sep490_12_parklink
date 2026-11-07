@@ -1,13 +1,6 @@
 const reservationService = require('../services/reservationService');
 
-/**
- * Controller tiếp nhận HTTP Request & gửi phản hồi JSON cho các API Reservation Request
- */
 class ReservationController {
-  /**
-   * [GET /api/reservations/available-facilities]
-   * Lấy danh sách các Bãi đỗ xe đã phê duyệt & khả dụng để Customer đăng ký
-   */
   async getAvailableFacilities(req, res, next) {
     try {
       const facilities = await reservationService.getAvailableFacilities();
@@ -20,10 +13,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [POST /api/reservations]
-   * Khách hàng gửi Yêu cầu thuê bãi đỗ xe theo tháng
-   */
   async createReservation(req, res, next) {
     try {
       const { facility_id, vehicle_info, desired_start_date } = req.body;
@@ -46,10 +35,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [GET /api/reservations/my-requests]
-   * Khách hàng xem danh sách các yêu cầu thuê đã gửi
-   */
   async getMyReservations(req, res, next) {
     try {
       const customerId = req.user.userId;
@@ -64,10 +49,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [GET /api/reservations/provider-requests]
-   * Chủ bãi đỗ xe xem danh sách các yêu cầu thuê gửi đến cơ sở của mình
-   */
   async getProviderReservations(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -82,10 +63,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [GET /api/reservations/:id]
-   * Xem chi tiết một Yêu cầu thuê đỗ xe
-   */
   async getReservationById(req, res, next) {
     try {
       const { id } = req.params;
@@ -103,10 +80,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [PATCH /api/reservations/:id/cancel]
-   * Khách hàng hủy Yêu cầu thuê đang chờ duyệt (PENDING)
-   */
   async cancelReservation(req, res, next) {
     try {
       const { id } = req.params;
@@ -124,10 +97,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [PATCH /api/reservations/:id/accept]
-   * Chủ bãi đỗ xe (Provider) Chấp nhận (Accept / APPROVED) Yêu cầu thuê xe
-   */
   async acceptReservation(req, res, next) {
     try {
       const { id } = req.params;
@@ -145,10 +114,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [PATCH /api/reservations/:id/reject]
-   * Chủ bãi đỗ xe (Provider) Từ chối (Reject / REJECTED) Yêu cầu thuê xe
-   */
   async rejectReservation(req, res, next) {
     try {
       const { id } = req.params;
@@ -166,10 +131,6 @@ class ReservationController {
     }
   }
 
-  /**
-   * [PATCH /api/reservations/:id/status]
-   * Chủ bãi đỗ xe chấp nhận (APPROVED) hoặc từ chối (REJECTED) Yêu cầu thuê
-   */
   async respondReservation(req, res, next) {
     try {
       const { id } = req.params;

@@ -101,7 +101,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
         className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* MODAL HEADER */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 p-6 text-white relative shrink-0">
           <button
             onClick={onClose}
@@ -117,7 +116,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Yêu Cầu Đăng Ký Thuê Bãi Xe</h2>
         </div>
 
-        {/* MODAL BODY */}
         <div className="p-6 overflow-y-auto space-y-6 flex-grow">
           {loading ? (
             <div className="py-12 text-center space-y-3">
@@ -131,7 +129,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
             </div>
           ) : reservation ? (
             <>
-              {/* MESSAGES */}
               {successMsg && (
                 <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -139,7 +136,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               )}
 
-              {/* STATUS BANNER */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
                   <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Trạng thái hiện tại</span>
@@ -150,7 +146,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               </div>
 
-              {/* SECTION 1: FACILITY INFO */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
                   <Building2 className="w-4 h-4 text-teal-600" /> Thông Tin Bãi Đỗ Xe
@@ -177,7 +172,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               </div>
 
-              {/* SECTION 2: RENTAL REQUEST DETAILS */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
                   <Car className="w-4 h-4 text-teal-600" /> Chi Tiết Thuê & Phương Tiện
@@ -201,7 +195,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               </div>
 
-              {/* SECTION 3: CUSTOMER CONTACT INFO */}
               {reservation.customer && (
                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
                   <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
@@ -243,7 +236,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               )}
 
-              {/* SECTION 4: PROVIDER CONTACT */}
               {reservation.facility?.provider && (
                 <div className="bg-teal-50/60 p-5 rounded-2xl border border-teal-100 space-y-3">
                   <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-teal-100 pb-2">
@@ -271,7 +263,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               )}
 
-              {/* SECTION 4: ELECTRONIC CONFIRMATION CONTRACT RECORD */}
               {reservation.confirmation_record && (
                 <div className="bg-emerald-50/80 p-5 rounded-2xl border border-emerald-200 space-y-2">
                   <div className="flex justify-between items-center">
@@ -289,7 +280,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
           ) : null}
         </div>
 
-        {/* MODAL FOOTER */}
         <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
@@ -320,7 +310,6 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
         </div>
       </div>
 
-      {/* CONFIRMATION MODAL */}
       <ConfirmModal
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
