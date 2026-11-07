@@ -14,10 +14,9 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { markNotificationAsRead } from '../../services/notificationService';
+import Toast from '../common/Toast';
 
-/**
- * Lấy Icon và màu sắc cho phân loại thông báo
- */
+//icon and collor for notification type and priority
 const getTypeStyle = (type = '', priority = '') => {
   const normType = (type || '').toUpperCase();
   const normPriority = (priority || '').toUpperCase();
@@ -78,16 +77,15 @@ const getTypeStyle = (type = '', priority = '') => {
   };
 };
 
-/**
- * Modal hiển thị chi tiết nội dung thông báo đầy đủ khi nội dung quá dài
- * Tự động đánh dấu đã đọc khi người dùng mở xem chi tiết
- */
-const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead }) => {
+//modal for full noti, auto mark as read when open
+const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, autoMarkAsRead = true }) => {
   const markedIdRef = React.useRef(null);
+  const [toast, setToast] = React.useState(null);
 
   useEffect(() => {
     if (
       isOpen &&
+      autoMarkAsRead &&
       notification &&
       !notification.is_read &&
       notification.id &&
@@ -102,12 +100,13 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead }
         })
         .catch((err) => {
           console.error('Lỗi tự động đánh dấu đã đọc khi xem chi tiết:', err);
+          setToast({ message: err.message || 'Không thể đánh dấu thông báo đã đọc.', type: 'error' });
         });
     }
     if (!isOpen) {
       markedIdRef.current = null;
     }
-  }, [isOpen, notification?.id, notification?.is_read]);
+  }, [autoMarkAsRead, isOpen, notification, onMarkedRead]);
 
   if (!isOpen || !notification) return null;
 
@@ -146,86 +145,89 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead }
   const displayContent = (notification.content || '').replace(/\s*(?:tại:?\s*)?\/policies[\w\-]*/gi, '');
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="bg-white rounded-none w-[95vw] md:w-[70vw] max-w-[1400px] h-[75vh] md:h-[80vh] shadow-2xl border-2 border-slate-400 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
-        {/* Header Modal */}
-        <div className="p-6 sm:p-7 border-b border-slate-200 bg-slate-50 flex items-start justify-between gap-4 shrink-0">
-          <div className="flex items-start gap-4">
-            <div className={`w-14 h-14 rounded-none flex items-center justify-center shrink-0 border ${style.bgColor} border-slate-300`}>
-              <IconComponent className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className={`text-xs font-black tracking-wider uppercase px-2.5 py-0.5 rounded-none border ${style.badgeColor}`}>
-                  {notification.category || style.label}
-                </span>
-                {notification.priority && (
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-none bg-slate-200 text-slate-800">
-                    {notification.priority}
-                  </span>
-                )}
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
+        <div className="bg-white rounded-none w-[95vw] md:w-[70vw] max-w-[1400px] h-[75vh] md:h-[80vh] shadow-2xl border-2 border-slate-400 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
+          {/* Header Modal */}
+          <div className="p-6 sm:p-7 border-b border-slate-200 bg-slate-50 flex items-start justify-between gap-4 shrink-0">
+            <div className="flex items-start gap-4">
+              <div className={`w-14 h-14 rounded-none flex items-center justify-center shrink-0 border ${style.bgColor} border-slate-300`}>
+                <IconComponent className="w-7 h-7" />
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-950 leading-snug">
-                {notification.title}
-              </h3>
+              <div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className={`text-xs font-black tracking-wider uppercase px-2.5 py-0.5 rounded-none border ${style.badgeColor}`}>
+                    {notification.category || style.label}
+                  </span>
+                  {notification.priority && (
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-none bg-slate-200 text-slate-800">
+                      {notification.priority}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-950 leading-snug">
+                  {notification.title}
+                </h3>
+              </div>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-200 rounded-none transition shrink-0"
-            title="Đóng modal"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Thông tin Meta: Thời gian & Trạng thái */}
-        <div className="px-6 sm:px-8 py-3 bg-white border-b border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600 font-medium shrink-0">
-          <span className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-400" />
-            {formattedDate}
-          </span>
-          <span className="flex items-center gap-1.5 text-teal-800 font-bold bg-teal-50 px-3 py-1 rounded-none border border-teal-200 text-xs uppercase tracking-wide">
-            <CheckCheck className="w-4 h-4 text-teal-600" />
-            Đã đánh dấu đã đọc
-          </span>
-        </div>
-
-        {/* Nội dung chi tiết thông báo (Cao ráo, thoáng đãng, lấp đầy không gian modal) */}
-        <div className="p-6 sm:p-8 flex-1 flex flex-col min-h-0 overflow-hidden">
-          <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 shrink-0">
-            Nội dung thông báo chi tiết:
+          {/* metadata */}
+          <div className="px-6 sm:px-8 py-3 bg-white border-b border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600 font-medium shrink-0">
+            <span className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-400" />
+              {formattedDate}
+            </span>
+            <span className={`flex items-center gap-1.5 font-bold px-3 py-1 rounded-none border text-xs uppercase tracking-wide ${notification.is_read
+                ? 'text-teal-800 bg-teal-50 border-teal-200'
+                : 'text-amber-800 bg-amber-50 border-amber-200'
+              }`}>
+              <CheckCheck className={`w-4 h-4 ${notification.is_read ? 'text-teal-600' : 'text-amber-600'}`} />
+              {notification.is_read ? 'Đã đánh dấu đã đọc' : 'Chưa đánh dấu đã đọc'}
+            </span>
           </div>
-          <div className="p-6 rounded-none bg-slate-50 border-2 border-slate-200 text-slate-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
-            {displayContent}
+          {/* Nội dung chi tiết thông báo */}
+          <div className="p-6 sm:p-8 flex-1 flex flex-col min-h-0 overflow-hidden">
+            <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 shrink-0">
+              Nội dung thông báo chi tiết:
+            </div>
+            <div className="p-6 rounded-none bg-slate-50 border-2 border-slate-200 text-slate-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
+              {displayContent || notification.content}
+            </div>
           </div>
-        </div>
 
-        {/* Footer Modal */}
-        <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
-          {policyUrl ? (
-            <Link
-              to={policyUrl}
+          {/* Footer Modal */}
+          <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+            {policyUrl ? (
+              <Link
+                to={policyUrl}
+                onClick={onClose}
+                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
+              >
+                <span>Xem Chính Sách</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <div />
+            )}
+            <button
+              type="button"
               onClick={onClose}
-              className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
+              className="px-8 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
             >
-              <span>Xem Chính Sách</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          ) : (
-            <div />
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-8 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
-          >
-            Đóng thông báo
-          </button>
+              Đóng thông báo
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -45,6 +45,8 @@ const searchedLocationIcon = new L.Icon({
 });
 
 const VIETMAP_TILE_KEY = process.env.REACT_APP_VIETMAP_TILE_KEY;
+const DEFAULT_MAP_CENTER = [10.0299, 105.7706];
+const DEFAULT_MAP_ZOOM = 13;
 
 const getFacilityRating = (facility) => {
   if (facility.avg_rating !== null && facility.avg_rating !== undefined && Number.isFinite(Number(facility.avg_rating))) {
@@ -70,19 +72,82 @@ const getFacilityRating = (facility) => {
 const MapUpdater = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    if (center && center[0] && center[1]) {
-      map.setView(center, zoom || map.getZoom());
+    if (center && Number.isFinite(Number(center[0])) && Number.isFinite(Number(center[1]))) {
+      map.setView([Number(center[0]), Number(center[1])], zoom || map.getZoom(), { animate: false });
     }
   }, [center, zoom, map]);
+  return null;
+};
+
+const MapInitialCenter = ({ center, zoom }) => {
+  const map = useMap();
+  const latestViewRef = useRef({ center, zoom });
+
+  useEffect(() => {
+    latestViewRef.current = { center, zoom };
+  }, [center, zoom]);
+
+  useEffect(() => {
+    let userInteracted = false;
+    const markUserInteraction = () => {
+      userInteracted = true;
+    };
+
+    const setDefaultCenter = () => {
+      if (userInteracted) return;
+      const { center: currentCenter, zoom: currentZoom } = latestViewRef.current;
+      map.setView(currentCenter, currentZoom, { animate: false });
+      map.invalidateSize({ pan: false });
+    };
+
+    map.on('dragstart zoomstart', markUserInteraction);
+    const frameId = window.requestAnimationFrame(() => {
+      map.whenReady(() => {
+        setDefaultCenter();
+        window.setTimeout(setDefaultCenter, 650);
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      map.off('dragstart zoomstart', markUserInteraction);
+    };
+  }, [map]);
+
+  return null;
+};
+
+const MapSizeInvalidator = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const invalidate = () => map.invalidateSize({ pan: false });
+    const frameId = window.requestAnimationFrame(invalidate);
+    const firstTimeout = window.setTimeout(invalidate, 100);
+    const secondTimeout = window.setTimeout(invalidate, 500);
+    const container = map.getContainer();
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(invalidate)
+      : null;
+
+    observer?.observe(container);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(firstTimeout);
+      window.clearTimeout(secondTimeout);
+      observer?.disconnect();
+    };
+  }, [map]);
+
   return null;
 };
 
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
 
-  // Trạng thái tìm kiếm
+  //search state  
   const [keyword, setKeyword] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
@@ -105,24 +170,31 @@ const SearchPage = () => {
     }));
   }, [dbVehicleTypes]);
   const [radius, setRadius] = useState(3);
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
 
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const [userLocation, setUserLocation] = useState(null); // [lat, lng]
+  const [locationAccuracy, setLocationAccuracy] = useState(null); // metres
   const [searchedLocation, setSearchedLocation] = useState(null); // [lat, lng]
-  const [mapCenter, setMapCenter] = useState([10.0299, 105.7706]); // Mặc định Cần Thơ
-  const [mapZoom, setMapZoom] = useState(13);
+  const [isFallbackLocation, setIsFallbackLocation] = useState(false);
+  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER); // Mặc định Ninh Kiều, Cần Thơ
+  const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
 
   const [amenitiesList, setAmenitiesList] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
 
-  // ─── State cho chức năng So sánh (Function 3.41) ───
+  //state for compare
   const [compareIds, setCompareIds] = useState([]);         // Danh sách ID bãi đang chọn so sánh
   const [isCompareOpen, setIsCompareOpen] = useState(false); // Trạng thái mở modal so sánh
   const [toastMsg, setToastMsg] = useState('');              // Toast thông báo lỗi giới hạn
   const [toastType, setToastType] = useState('error');
+  const [mapTileError, setMapTileError] = useState(false);
+  const latestSearchRequest = useRef(0);
+  const initialFacilitiesLoaded = useRef(false);
 
   const [favoriteIds, setFavoriteIds] = useState([]);
 
@@ -167,7 +239,7 @@ const SearchPage = () => {
       }
       setToastType('success');
     } catch (err) {
-      setToastMsg(err.message || 'Lỗi khi cập nhật danh sách yêu thích');
+      setToastMsg(err.message || 'Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.');
       setToastType('error');
     }
   };
@@ -213,15 +285,26 @@ const SearchPage = () => {
   }, []);
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) {
+      return;
+    }
+
     // Khởi tạo lấy params từ state (nếu từ HomePage chuyển qua)
     if (location.state) {
       if (location.state.keyword) setKeyword(location.state.keyword);
       if (location.state.vehicleType) setVehicleType(location.state.vehicleType);
+      if (location.state.facilityError) {
+        setToastMsg(location.state.facilityError);
+        setToastType('error');
+      }
     }
     fetchAmenities();
-    fetchFacilities();
+    if (!initialFacilitiesLoaded.current) {
+      initialFacilitiesLoaded.current = true;
+      fetchFacilities();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, isAuthenticated, user?.id, user?.role?.name]);
 
   const fetchAmenities = async () => {
     try {
@@ -240,6 +323,25 @@ const SearchPage = () => {
     searchKeyword = keyword,
     useUserLocation = true
   ) => {
+    const requestId = ++latestSearchRequest.current;
+    const parsedMinPrice = minPrice === '' ? null : Number(minPrice);
+    const parsedMaxPrice = maxPrice === '' ? null : Number(maxPrice);
+    if (
+      (parsedMinPrice !== null && (!Number.isFinite(parsedMinPrice) || parsedMinPrice < 0)) ||
+      (parsedMaxPrice !== null && (!Number.isFinite(parsedMaxPrice) || parsedMaxPrice < 0))
+    ) {
+      setError('Giá thuê phải là số không âm.');
+      setToastMsg('Giá thuê phải là số không âm.');
+      setToastType('error');
+      return;
+    }
+    if (parsedMinPrice !== null && parsedMaxPrice !== null && parsedMinPrice > parsedMaxPrice) {
+      setError('Giá tối thiểu không được lớn hơn giá tối đa.');
+      setToastMsg('Giá tối thiểu không được lớn hơn giá tối đa.');
+      setToastType('error');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
@@ -247,8 +349,10 @@ const SearchPage = () => {
       const params = {
         keyword: searchKeyword,
         vehicle_type: vehicleType,
-        radius,
       };
+
+      if (parsedMinPrice !== null) params.min_price = parsedMinPrice;
+      if (parsedMaxPrice !== null) params.max_price = parsedMaxPrice;
 
       if (selectedAmenities.length > 0) {
         params.amenities = selectedAmenities.join(',');
@@ -262,13 +366,24 @@ const SearchPage = () => {
         ? currentLng
         : (useUserLocation && userLocation ? userLocation[1] : null);
 
-      if (lat && lng) {
+      if (
+        lat !== null &&
+        lat !== undefined &&
+        lng !== null &&
+        lng !== undefined &&
+        Number.isFinite(Number(lat)) &&
+        Number.isFinite(Number(lng))
+      ) {
         params.lat = lat;
         params.lng = lng;
+        params.radius = radius;
       }
 
       const res = await facilityService.searchFacilities(params);
-      if (res.status === 'success') {
+      if (res.status !== 'success') {
+        throw new Error(res.message || 'Không thể tải danh sách bãi đỗ xe.');
+      }
+      if (requestId === latestSearchRequest.current) {
         setFacilities(res.data.map((facility) => ({
           ...facility,
           ...(() => {
@@ -278,9 +393,13 @@ const SearchPage = () => {
         })));
       }
     } catch (err) {
-      setError(err.message || 'Lỗi khi lấy dữ liệu bãi đỗ xe');
+      if (requestId === latestSearchRequest.current) {
+        setError(err.message || 'Không thể tải dữ liệu bãi đỗ xe. Vui lòng thử lại.');
+      }
     } finally {
-      setLoading(false);
+      if (requestId === latestSearchRequest.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -313,6 +432,7 @@ const SearchPage = () => {
       const location = await vietmapService.resolveAddressCoordinates(query, suggestion);
       if (location) {
         setUserLocation(null);
+        setIsFallbackLocation(false);
         setSearchedLocation(location);
         setMapCenter(location);
         setMapZoom(16);
@@ -409,14 +529,15 @@ const SearchPage = () => {
     }
 
     const origin = searchedLocation || userLocation;
-    setToastMsg(`Đang mở chỉ đường đến "${fac.name}" trên Google Maps...`);
-    setToastType('success');
-
-    openGoogleMapsDirections({
+    const opened = openGoogleMapsDirections({
       origin,
       destination,
       travelMode: 'driving',
     });
+    setToastMsg(opened
+      ? `Đang mở chỉ đường đến "${fac.name}" trên Google Maps...`
+      : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+    setToastType(opened ? 'success' : 'error');
   };
 
   const toggleAmenity = (id) => {
@@ -439,7 +560,19 @@ const SearchPage = () => {
       fetchFacilities();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAmenities, vehicleType, radius]);
+  }, [selectedAmenities, vehicleType, radius, minPrice, maxPrice]);
+
+  const handleLocationUnavailable = () => {
+    setSearchedLocation(null);
+    setUserLocation(DEFAULT_MAP_CENTER);
+    setIsFallbackLocation(true);
+    setLocationAccuracy(null);
+    setMapCenter(DEFAULT_MAP_CENTER);
+    setMapZoom(16);
+    fetchFacilities(DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1], keyword, true);
+    setToastMsg('Không thể xác định vị trí của bạn. Đã chuyển về khu vực Ninh Kiều, Cần Thơ.');
+    setToastType('error');
+  };
 
   const handleLocateMe = () => {
     if (navigator.geolocation) {
@@ -449,23 +582,32 @@ const SearchPage = () => {
           const lng = position.coords.longitude;
           setSearchedLocation(null);
           setUserLocation([lat, lng]);
+          setIsFallbackLocation(false);
+          setLocationAccuracy(Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null);
           setMapCenter([lat, lng]);
           setMapZoom(14);
           fetchFacilities(lat, lng, keyword, true);
         },
-        () => {
-          alert('Không thể xác định vị trí của bạn. Vui lòng cho phép quyền truy cập vị trí.');
-        }
+        handleLocationUnavailable
       );
     } else {
-      alert('Trình duyệt của bạn không hỗ trợ Geolocation.');
+      handleLocationUnavailable();
     }
   };
 
   const clearKeyword = () => {
     setKeyword('');
     setSearchedLocation(null);
+    setIsFallbackLocation(false);
     fetchFacilities();
+  };
+
+  const clearFilters = () => {
+    setVehicleType('');
+    setRadius(3);
+    setMinPrice('');
+    setMaxPrice('');
+    setSelectedAmenities([]);
   };
 
   return (
@@ -504,6 +646,27 @@ const SearchPage = () => {
           </div>
 
           <div className="flex items-center w-full md:w-auto gap-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min="0"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                placeholder="Giá từ"
+                aria-label="Giá thuê tối thiểu"
+                className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              />
+              <input
+                type="number"
+                min="0"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="Giá đến"
+                aria-label="Giá thuê tối đa"
+                className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              />
+            </div>
+
             <select
               value={vehicleType}
               onChange={(e) => setVehicleType(e.target.value)}
@@ -547,11 +710,27 @@ const SearchPage = () => {
           </div>
         </form>
 
+        <div className="max-w-7xl mx-auto mt-2 flex flex-wrap items-center gap-3 text-xs">
+          {locationAccuracy !== null && (
+            <span className="text-slate-500">
+              Độ chính xác GPS: khoảng {Math.round(locationAccuracy)} m
+            </span>
+          )}
+        </div>
+
         {/* Tiện ích Filter */}
-        {amenitiesList.length > 0 && (
+        {(amenitiesList.length > 0 || vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3) && (
           <div className="max-w-7xl mx-auto mt-3 flex flex-wrap gap-2 items-center">
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={!(vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3)}
+                className="px-3 py-1.5 text-xs font-semibold rounded-full border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-amber-50"
+              >
+                  Xóa bộ lọc
+              </button>
             <span className="text-xs font-bold text-slate-500 uppercase mr-2">Danh mục tiện ích:</span>
-            {amenitiesList.map(amenity => {
+            {amenitiesList.map((amenity) => {
               const isSelected = selectedAmenities.includes(amenity.id);
               return (
                 <button
@@ -713,14 +892,29 @@ const SearchPage = () => {
         {/* RIGHT PANEL: INTERACTIVE MAP */}
         <div className="flex-1 h-1/2 md:h-full min-h-0 relative z-0">
           <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }} zoomControl={false}>
+            <MapInitialCenter center={mapCenter} zoom={mapZoom} />
             <MapUpdater center={mapCenter} zoom={mapZoom} />
+            <MapSizeInvalidator />
             <TileLayer
               attribution='&copy; Vietmap'
               url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILE_KEY}`}
               keepBuffer={1}
               updateWhenIdle
               updateWhenZooming={false}
+              eventHandlers={{
+                tileerror: () => {
+                  setMapTileError(true);
+                  setToastMsg('Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được giữ lại.');
+                  setToastType('error');
+                },
+                tileload: () => setMapTileError(false),
+              }}
             />
+            {mapTileError && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] rounded-lg bg-white/95 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 shadow-lg">
+                Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được hiển thị.
+              </div>
+            )}
 
             {/* Phạm vi tìm kiếm, ưu tiên tâm là địa điểm được search bằng chữ */}
             {(searchedLocation || userLocation) && (
@@ -770,7 +964,9 @@ const SearchPage = () => {
                     <div className="font-bold text-teal-600 text-xs flex items-center gap-1">
                       <Navigation className="w-3.5 h-3.5" /> Vị trí hiện tại của bạn
                     </div>
-                    <p className="text-xs text-slate-700 mt-1">{keyword || 'Vị trí của bạn'}</p>
+                    <p className="text-xs text-slate-700 mt-1">
+                      {isFallbackLocation ? 'Vị trí mặc định: Ninh Kiều, Cần Thơ' : (keyword || 'Vị trí của bạn')}
+                    </p>
                     <p className="text-[10px] text-slate-400 mt-1 italic">
                       Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế hơn
                     </p>
@@ -781,7 +977,9 @@ const SearchPage = () => {
 
             {/* Các bãi đỗ xe */}
             {facilities.map(fac => {
-              if (fac.latitude && fac.longitude) {
+              const latitude = Number(fac.latitude);
+              const longitude = Number(fac.longitude);
+              if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
                 const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
                 const facilityRating = getFacilityRating(fac).average;
                 const amenityNames = (fac.facility_amenities || [])
@@ -790,7 +988,7 @@ const SearchPage = () => {
                   .slice(0, 3);
 
                 return (
-                  <Marker key={fac.id} position={[fac.latitude, fac.longitude]} icon={facilityCarIcon}>
+                  <Marker key={fac.id} position={[latitude, longitude]} icon={facilityCarIcon}>
                     <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
                       <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
                         <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">

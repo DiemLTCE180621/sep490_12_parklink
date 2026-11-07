@@ -33,11 +33,12 @@ class NotificationService {
     const validRoles = ['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'];
     const normalizedRole = validRoles.includes(targetRole) ? targetRole : 'ALL';
 
-    // 1. Truy vấn danh sách người dùng mục tiêu từ Database
+    //get target
     const targetUsers = await notificationRepository.getTargetUsers(normalizedRole);
     const recipientCount = targetUsers.length;
 
-    // 2. Lưu bản ghi vào PostgreSQL (nếu tuỳ chọn lưu được bật)
+    //optional save to db
+    let persistedNotifications = [];
     if (saveToDb && recipientCount > 0) {
       const notificationRecords = targetUsers.map((user) => ({
         user_id: user.id,
@@ -47,32 +48,48 @@ class NotificationService {
         is_read: false
       }));
 
-      await notificationRepository.createManyNotifications(notificationRecords);
+      persistedNotifications = await notificationRepository.createManyNotifications(notificationRecords);
     }
 
-    // 3. Phát sóng thời gian thực qua Socket.IO tới các client đang kết nối
+    //Broadcast throug socket.io
     const io = getIO();
     if (io) {
       const socketPayload = {
-        id: `broadcast_${Date.now()}`,
         title: title.trim(),
         content: content.trim(),
         category,
         priority,
         showToast: showToast !== false,
         targetRole: normalizedRole,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        is_persisted: saveToDb
       };
 
       const adminId = adminUser?.id || adminUser?.userId;
-      if (normalizedRole === 'ALL') {
-        // Miễn nhiễm cho Admin: Chỉ phát sóng tới khách hàng và chủ bãi xe
-        io.to('role_CUSTOMER').to('role_PROVIDER').emit('system_notification', socketPayload);
+      if (saveToDb && persistedNotifications.length > 0) {
+        persistedNotifications.forEach((notification) => {
+          io.to(`user_${notification.user_id}`).emit('system_notification', {
+            ...socketPayload,
+            id: notification.id
+          });
+        });
+      } else if (normalizedRole === 'ALL') {
+        //exclude admin
+        io.to('role_CUSTOMER').to('role_PROVIDER').emit('system_notification', {
+          ...socketPayload,
+          id: `broadcast_${Date.now()}`
+        });
       } else if (normalizedRole === 'ADMIN' && adminId) {
-        // Gửi thử nghiệm riêng cho Admin đang thao tác
-        io.to(`user_${adminId}`).emit('system_notification', socketPayload);
+        //feature test for admin
+        io.to(`user_${adminId}`).emit('system_notification', {
+          ...socketPayload,
+          id: `broadcast_${Date.now()}`
+        });
       } else {
-        io.to(`role_${normalizedRole}`).emit('system_notification', socketPayload);
+        io.to(`role_${normalizedRole}`).emit('system_notification', {
+          ...socketPayload,
+          id: `broadcast_${Date.now()}`
+        });
       }
       console.log(`[Socket Broadcast] Đã phát sóng thông báo (Priority: ${priority}, Toast: ${showToast}) tới nhóm ${normalizedRole}`);
     }
@@ -85,7 +102,7 @@ class NotificationService {
     };
   }
 
-  //Gửi email phát sóng cho toàn bộ người dùng hoặc theo nhóm vai trò
+  //email broadcast
   async broadcastEmailNotification(payload, adminUser) {
     const {
       subject,
@@ -94,7 +111,6 @@ class NotificationService {
       emailCategory = 'Bảo trì & Cập nhật kỹ thuật'
     } = payload;
 
-    // EX-01: Kiểm tra tính hợp lệ
     if (!subject || !subject.trim()) {
       const error = new Error('Tiêu đề Email không được để trống!');
       error.status = 400;
@@ -107,11 +123,13 @@ class NotificationService {
       throw error;
     }
 
-    const validScopes = ['ALL', 'CUSTOMER', 'PROVIDER'];
+    const validScopes = ['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'];
     const normalizedScope = validScopes.includes(recipientScope) ? recipientScope : 'ALL';
 
-    // 1. Lấy danh sách email người dùng hợp lệ
-    const targetUsers = await notificationRepository.getTargetUsers(normalizedScope);
+    //get target list
+    const targetUsers = normalizedScope === 'ADMIN' && adminUser?.email
+      ? [{ id: adminUser.id || adminUser.userId, email: adminUser.email }]
+      : await notificationRepository.getTargetUsers(normalizedScope);
     const recipientEmails = targetUsers
       .map((u) => u.email)
       .filter((email) => email && email.includes('@'));
@@ -122,7 +140,7 @@ class NotificationService {
       throw error;
     }
 
-    // 2. Định dạng nội dung HTML gửi đi kèm template ParkLink
+    //HTML with ParkLink template 
     const formattedHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
         <div style="text-align: center; margin-bottom: 20px;">
@@ -141,15 +159,14 @@ class NotificationService {
       </div>
     `;
 
-    // 3. Khởi tạo tác vụ gửi email chạy ngầm
+    //innit email sending task
     const taskResult = await emailService.sendBroadcastEmail({
       recipientEmails,
       subject: subject.trim(),
       htmlContent: formattedHtml
     });
 
-    // 4. Lưu 1 bản ghi đại diện cho Admin vào PostgreSQL (type = 'EMAIL_LOG')
-    // Bản ghi này lưu lịch sử đợt phát email mà không hiển thị lên quả chuông của user hay admin
+    // save 1 record for admin (type = 'EMAIL_LOG') to save email broadcast history
     const adminId = adminUser?.id || adminUser?.userId;
     if (adminId) {
       try {
@@ -158,7 +175,7 @@ class NotificationService {
           title: `[EMAIL PHÁT SÓNG] ${subject.trim()}`,
           content: `Đã phát sóng email tới ${recipientEmails.length} người dùng (Phạm vi: ${normalizedScope}, Thể loại: ${emailCategory}, Mã Batch: ${taskResult.batchId}).`,
           type: 'EMAIL_LOG',
-          is_read: true // Đánh dấu đã đọc để không gây badge unread cho Admin
+          is_read: true // mark read
         });
         console.log(`[Notification Service] Đã lưu 1 bản ghi EMAIL_LOG cho Admin (ID: ${adminId})`);
       } catch (dbErr) {
@@ -174,7 +191,7 @@ class NotificationService {
     };
   }
 
-  //Lấy danh sách thông báo của người dùng hiện tại
+  //get current user's notifications
   async getUserNotifications(userId, query = {}) {
     const { isRead, limit = 20, offset = 0 } = query;
 
@@ -189,7 +206,6 @@ class NotificationService {
     };
   }
 
-  //Đánh dấu 1 thông báo là đã đọc
   async markAsRead(notificationId, userId) {
     if (!notificationId) {
       const error = new Error('Thiếu ID thông báo!');
@@ -207,7 +223,6 @@ class NotificationService {
     };
   }
 
-  //Đánh dấu tất cả thông báo của người dùng là đã đọc
   async markAllAsRead(userId) {
     await notificationRepository.markAllAsRead(userId);
 

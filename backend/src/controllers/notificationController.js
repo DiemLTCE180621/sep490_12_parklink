@@ -8,7 +8,7 @@ class NotificationController {
   //Phát sóng thông báo đẩy Web App (Admin only)
   async broadcastPush(req, res, next) {
     try {
-      const result = await notificationService.broadcastPushNotification(req.body, req.user);
+      const result = await notificationService.broadcastPushNotification(req.body, req.currentUser || req.user);
       return res.status(200).json({
         status: 'success',
         message: 'Đã phát sóng thông báo Web App thành công!',
@@ -22,7 +22,7 @@ class NotificationController {
   //Phát sóng thông báo Email hàng loạt (Admin only)
   async broadcastEmail(req, res, next) {
     try {
-      const result = await notificationService.broadcastEmailNotification(req.body, req.user);
+      const result = await notificationService.broadcastEmailNotification(req.body, req.currentUser || req.user);
       return res.status(200).json({
         status: 'success',
         message: 'Đã khởi tạo tác vụ gửi email thông báo thành công!',

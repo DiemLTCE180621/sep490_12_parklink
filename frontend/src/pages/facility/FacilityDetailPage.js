@@ -108,6 +108,13 @@ const FacilityDetailPage = () => {
       }
     } catch (error) {
       console.error(error);
+      if (error.response?.status === 404 || error.message?.includes('Không tìm thấy')) {
+        navigate('/search', {
+          replace: true,
+          state: { facilityError: 'Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động' }
+        });
+        return;
+      }
       setToastMsg('Không thể tải thông tin bãi đỗ xe');
       setToastType('error');
     } finally {
@@ -117,7 +124,7 @@ const FacilityDetailPage = () => {
 
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập để lưu bãi đỗ xe!');
+      setToastMsg('Vui lòng đăng nhập bằng tài khoản Khách hàng để lưu bãi xe!');
       setToastType('error');
       setTimeout(() => navigate('/login'), 1500);
       return;
@@ -135,7 +142,7 @@ const FacilityDetailPage = () => {
       }
       setToastType('success');
     } catch (error) {
-      setToastMsg(error.message || 'Lỗi khi cập nhật danh sách yêu thích');
+      setToastMsg(error.message || 'Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.');
       setToastType('error');
     }
   };
@@ -209,37 +216,48 @@ const FacilityDetailPage = () => {
     const origin = preferredOriginCoords || preferredOriginAddress;
     if (origin) {
       const fromLabel = preferredOriginAddress ? `từ "${preferredOriginAddress}"` : 'từ điểm ghim tìm kiếm';
-      setToastMsg(`Đang mở chỉ đường ${fromLabel} trên Google Maps...`);
-      setToastType('success');
-      openGoogleMapsDirections({
+      const opened = openGoogleMapsDirections({
         origin,
         destination,
         travelMode: 'driving',
       });
+      setToastMsg(opened
+        ? `Đang mở chỉ đường ${fromLabel} trên Google Maps...`
+        : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+      setToastType(opened ? 'success' : 'error');
       return;
     }
 
     // 2. NẾU KHÔNG CÓ ĐỊA CHỈ/MARKER TÌM KIẾM TRƯỚC ĐÓ: Thử lấy GPS nếu được cấp quyền
-    setToastMsg('Đang mở chỉ đường trên Google Maps...');
-    setToastType('success');
-
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
-          openGoogleMapsDirections({
+          const opened = openGoogleMapsDirections({
             origin: [coords.latitude, coords.longitude],
             destination,
             travelMode: 'driving',
           });
+          setToastMsg(opened
+            ? 'Đang mở chỉ đường trên Google Maps...'
+            : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+          setToastType(opened ? 'success' : 'error');
         },
         () => {
           // Bị từ chối GPS hoặc lỗi: Mở Google Maps với điểm đến (Google Maps tự định vị thiết bị)
-          openGoogleMapsDirections({ destination, travelMode: 'driving' });
+          const opened = openGoogleMapsDirections({ destination, travelMode: 'driving' });
+          setToastMsg(opened
+            ? 'Đang mở chỉ đường trên Google Maps...'
+            : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+          setToastType(opened ? 'success' : 'error');
         },
         { enableHighAccuracy: true, timeout: 4000 }
       );
     } else {
-      openGoogleMapsDirections({ destination, travelMode: 'driving' });
+      const opened = openGoogleMapsDirections({ destination, travelMode: 'driving' });
+      setToastMsg(opened
+        ? 'Đang mở chỉ đường trên Google Maps...'
+        : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+      setToastType(opened ? 'success' : 'error');
     }
   };
 

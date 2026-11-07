@@ -4,8 +4,15 @@ class FacilityService {
   /**
    * Tìm kiếm bãi đỗ xe theo keyword, loại xe, tiện ích và khoảng cách (location)
    */
-  async searchFacilities({ keyword, vehicle_type, amenities, lat, lng, radius }) {
-    const facilities = await facilityRepository.searchActiveFacilities({ keyword, vehicle_type, amenities });
+  async searchFacilities({ keyword, vehicle_type, amenities, lat, lng, radius, bounds, minPrice, maxPrice }) {
+    const facilities = await facilityRepository.searchActiveFacilities({
+      keyword,
+      vehicle_type,
+      amenities,
+      bounds,
+      minPrice,
+      maxPrice
+    });
     const facilitiesWithRatings = facilities.map((facility) => {
       const ratings = facility.reviews || [];
       const avgRating = ratings.length > 0
@@ -19,9 +26,28 @@ class FacilityService {
       };
     });
 
-    if (!lat || !lng) {
+    if (bounds) {
+      return facilitiesWithRatings.filter((facility) => (
+        facility.latitude !== null &&
+        facility.longitude !== null
+      ));
+    }
+
+    const hasLocation = (
+      lat !== null &&
+      lat !== undefined &&
+      lng !== null &&
+      lng !== undefined &&
+      Number.isFinite(Number(lat)) &&
+      Number.isFinite(Number(lng))
+    );
+    if (!hasLocation) {
       return facilitiesWithRatings;
     }
+
+    const effectiveRadius = Number.isFinite(Number(radius)) && Number(radius) > 0
+      ? Number(radius)
+      : 3;
 
     // Tính khoảng cách nếu có tọa độ GPS
     const facilitiesWithDistance = facilitiesWithRatings.map(facility => {
@@ -31,9 +57,9 @@ class FacilityService {
       return { ...facility, distance };
     });
 
-    // Lọc theo bán kính (mặc định 3km) và sắp xếp theo khoảng cách
+    // Chỉ lọc theo bán kính khi có vị trí; không có vị trí thì đã trả toàn bộ ở trên.
     return facilitiesWithDistance
-      .filter(f => f.distance !== null && f.distance <= radius)
+      .filter(f => f.distance !== null && f.distance <= effectiveRadius)
       .sort((a, b) => a.distance - b.distance);
   }
 

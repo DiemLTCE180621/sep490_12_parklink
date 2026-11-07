@@ -370,11 +370,28 @@ class FacilityRepository {
   /**
    * Tìm kiếm bãi đỗ xe ACTIVE dựa theo từ khóa, loại xe và tiện ích
    */
-  async searchActiveFacilities({ keyword, vehicle_type, amenities }) {
+  async searchActiveFacilities({ keyword, vehicle_type, amenities, bounds, minPrice, maxPrice }) {
     let whereClause = {
       verification_status: "APPROVED",
       visibility_status: "VISIBLE",
     };
+
+    if (bounds) {
+      whereClause.latitude = {
+        gte: bounds.minLat,
+        lte: bounds.maxLat,
+      };
+      whereClause.longitude = {
+        gte: bounds.minLng,
+        lte: bounds.maxLng,
+      };
+    }
+
+    if (Number.isFinite(minPrice) || Number.isFinite(maxPrice)) {
+      whereClause.price_per_month = {};
+      if (Number.isFinite(minPrice)) whereClause.price_per_month.gte = minPrice;
+      if (Number.isFinite(maxPrice)) whereClause.price_per_month.lte = maxPrice;
+    }
 
     if (keyword) {
       const normalizedKeyword = keyword.trim().replace(/\s+/g, " ");
