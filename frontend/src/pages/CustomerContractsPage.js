@@ -21,7 +21,7 @@ const CustomerContractsPage = () => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
+  const [activeTab, setActiveTab] = useState('ALL'); 
   const [searchTerm, setSearchTerm] = useState('');
 
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
@@ -90,7 +90,7 @@ const CustomerContractsPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-6">
-        {/* HEADER */}
+        
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
@@ -111,7 +111,7 @@ const CustomerContractsPage = () => {
           </button>
         </div>
 
-        {/* FILTER TABS & SEARCH BAR */}
+        
         <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
@@ -168,7 +168,7 @@ const CustomerContractsPage = () => {
           </div>
         </div>
 
-        {/* CONTRACT LIST */}
+        
         {loading ? (
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -282,7 +282,7 @@ const CustomerContractsPage = () => {
                   </div>
                 </div>
 
-                {/* PRICE & ACTIONS */}
+                
                 <div className="flex sm:flex-row lg:flex-row items-center justify-between lg:justify-end gap-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
                   <div className="text-left lg:text-right lg:mr-2">
                     <span className="text-[11px] text-slate-400 block">Giá thuê</span>
@@ -402,7 +402,7 @@ const CustomerContractsPage = () => {
         )}
       </div>
 
-      {/* SUBMIT COMPLAINT MODAL */}
+      
       <SubmitComplaintModal
         isOpen={isComplaintModalOpen}
         onClose={() => {

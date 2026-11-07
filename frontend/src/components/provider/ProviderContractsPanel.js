@@ -24,7 +24,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
+  const [activeTab, setActiveTab] = useState('ALL'); 
   const [searchTerm, setSearchTerm] = useState('');
 
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
@@ -156,7 +156,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-        {/* 1. HEADER */}
+        
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -191,7 +191,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
           </div>
         </div>
 
-        {/* 2. FILTER TABS & SEARCH BAR */}
+        
         <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
@@ -279,7 +279,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
           </div>
         </div>
 
-        {/* 3. LIST OF CONTRACTS */}
+        
         {loading ? (
           <div className="p-16 text-center">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -355,7 +355,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
-                      {/* CUSTOMER INFO */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Khách thuê (Bên B)</span>
                         <p className="font-semibold text-slate-900 flex items-center gap-1.5">
@@ -376,7 +376,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         </div>
                       </div>
 
-                      {/* RENTAL INFO */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Chi phí & thời hạn</span>
                         <p className="font-bold text-teal-700">
@@ -394,7 +394,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         </p>
                       </div>
 
-                      {/* FACILITY & VEHICLE */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Bãi đỗ & phương tiện</span>
                         <p className="font-semibold text-slate-900 truncate">
@@ -412,7 +412,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                     </div>
                   </div>
 
-                  {/* ACTION BUTTON */}
+                  
                   <div className="flex items-center justify-end shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 gap-2">
                     {pendingTerm && (
                       <button

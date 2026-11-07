@@ -1,13 +1,6 @@
 const confirmationRecordService = require('../services/confirmationRecordService');
 
-/**
- * Controller tiếp nhận HTTP Request & gửi phản hồi cho Biên bản xác nhận / Hợp đồng điện tử (Confirmation Record)
- */
 class ConfirmationRecordController {
-  /**
-   * [POST /api/confirmation-records]
-   * Parking Provider tạo Biên bản xác nhận điện tử cho Yêu cầu thuê xe đã được duyệt (APPROVED)
-   */
   async createConfirmationRecord(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -50,10 +43,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/my-records]
-   * Khách hàng (Customer) xem danh sách các Biên bản xác nhận / Hợp đồng điện tử của mình
-   */
   async getMyConfirmationRecords(req, res, next) {
     try {
       const customerId = req.user.userId;
@@ -68,10 +57,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/provider-records]
-   * Chủ bãi (Provider) xem danh sách các Biên bản xác nhận điện tử do mình đã lập
-   */
   async getProviderConfirmationRecords(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -86,10 +71,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/:id]
-   * Xem thông tin chi tiết một Biên bản xác nhận điện tử
-   */
   async getConfirmationRecordById(req, res, next) {
     try {
       const { id } = req.params;
@@ -107,10 +88,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [PATCH /api/confirmation-records/:id/accept]
-   * Khách hàng (Customer) Chấp nhận / Ký Biên bản xác nhận điện tử
-   */
   async acceptConfirmationRecord(req, res, next) {
     try {
       const { id } = req.params;
@@ -132,10 +109,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   *  [GET /api/confirmation-records/admin/all] & [GET /api/admin/confirmation-records]
-   * Admin xem toàn bộ Hợp đồng / Biên bản xác nhận trên nền tảng
-   */
   async getAllConfirmationRecords(req, res, next) {
     try {
       const {
@@ -172,10 +145,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * UC-58: [GET /api/confirmation-records/provider/active-customers] & [GET /api/provider/active-customers]
-   * Parking Provider xem danh sách khách hàng có hợp đồng hiệu lực tại cơ sở bãi đỗ xe
-   */
   async getActiveCustomersAtFacility(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -199,10 +168,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [POST /api/confirmation-records/:id/extend] & [POST /api/confirmation-records/:id/extension-request]
-   * [CUSTOMER] Request lease extension (Khách hàng gửi yêu cầu gia hạn thời gian thuê đỗ xe)
-   */
   async requestLeaseExtension(req, res, next) {
     try {
       const contractId = req.params.id || req.body.contract_id;
@@ -239,10 +204,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/:id/extension-request]
-   * Xem thông tin chi tiết yêu cầu gia hạn của một Hợp đồng
-   */
   async getLeaseExtensionDetail(req, res, next) {
     try {
       const { id } = req.params;
@@ -260,10 +221,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [PATCH /api/confirmation-records/:id/extension-request/cancel]
-   * [CUSTOMER] Khách hàng hủy yêu cầu gia hạn đang chờ duyệt
-   */
   async cancelLeaseExtension(req, res, next) {
     try {
       const { id } = req.params;
@@ -281,10 +238,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [PATCH /api/confirmation-records/:id/extension-request/respond]
-   * [PROVIDER] Chủ bãi phản hồi yêu cầu gia hạn (APPROVED / REJECTED)
-   */
   async respondToLeaseExtension(req, res, next) {
     try {
       const { id } = req.params;
@@ -311,10 +264,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/extension-requests/my]
-   * [CUSTOMER] Khách hàng xem danh sách các hợp đồng có yêu cầu gia hạn của mình
-   */
   async getMyLeaseExtensions(req, res, next) {
     try {
       const customerId = req.user.userId;
@@ -329,10 +278,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/extension-requests/provider]
-   * [PROVIDER] Chủ bãi xem danh sách các hợp đồng có yêu cầu gia hạn tại các bãi xe của mình
-   */
   async getProviderLeaseExtensions(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -347,10 +292,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [POST /api/confirmation-records/:id/terminate-request] & [POST /api/confirmation-records/:id/termination-request]
-   * [CUSTOMER & PROVIDER] Request early termination (Gửi yêu cầu chấm dứt hợp đồng / trả chỗ trước hạn)
-   */
   async requestEarlyTermination(req, res, next) {
     try {
       const contractId = req.params.id || req.body.contract_id;
@@ -381,10 +322,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [PATCH /api/confirmation-records/:id/termination-request/cancel]
-   * [CUSTOMER & PROVIDER] Hủy yêu cầu chấm dứt trước hạn đang chờ duyệt
-   */
   async cancelEarlyTermination(req, res, next) {
     try {
       const { id } = req.params;
@@ -403,10 +340,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [PATCH /api/confirmation-records/:id/terminate-confirm] & [PATCH /api/confirmation-records/:id/confirm-termination]
-   * [PROVIDER & CUSTOMER] Confirm contract termination (Xác nhận chấm dứt hợp đồng & thu hồi vị trí đỗ xe)
-   */
   async confirmContractTermination(req, res, next) {
     try {
       const { id } = req.params;
@@ -436,10 +369,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/:id/termination-request]
-   * Xem chi tiết yêu cầu chấm dứt của một hợp đồng
-   */
   async getContractTerminationDetail(req, res, next) {
     try {
       const { id } = req.params;
@@ -457,10 +386,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/termination-requests/my]
-   * [CUSTOMER] Khách hàng xem danh sách các hợp đồng có yêu cầu chấm dứt
-   */
   async getMyTerminationRequests(req, res, next) {
     try {
       const customerId = req.user.userId;
@@ -475,10 +400,6 @@ class ConfirmationRecordController {
     }
   }
 
-  /**
-   * [GET /api/confirmation-records/termination-requests/provider]
-   * [PROVIDER] Chủ bãi xem danh sách các hợp đồng có yêu cầu chấm dứt tại bãi xe
-   */
   async getProviderTerminationRequests(req, res, next) {
     try {
       const providerId = req.user.userId;
@@ -495,4 +416,3 @@ class ConfirmationRecordController {
 }
 
 module.exports = new ConfirmationRecordController();
-

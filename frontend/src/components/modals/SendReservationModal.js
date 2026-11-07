@@ -21,7 +21,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
 
   if (!isOpen || !facility) return null;
 
-  // Tính ngày tối thiểu là ngày hôm nay
   const minDate = new Date().toISOString().split('T')[0];
 
   const handleSubmit = async (e) => {
@@ -106,7 +105,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
         className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 scale-100 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* MODAL HEADER */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 p-6 text-white relative">
           <button
             onClick={onClose}
@@ -126,7 +124,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
           </p>
         </div>
 
-        {/* FACILITY SUMMARY CARD */}
         <div className="p-6 bg-slate-50/80 border-b border-slate-100 flex items-start gap-4">
           <div className="w-20 h-20 rounded-2xl bg-slate-200 overflow-hidden shrink-0 border border-slate-200 shadow-inner">
             {facility.images && facility.images.length > 0 ? (
@@ -156,9 +153,7 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
           </div>
         </div>
 
-        {/* MODAL FORM */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* ALERT MESSAGES */}
           {error && (
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-start gap-3 animate-shake">
               <AlertCircle className="w-5 h-5 shrink-0 text-red-600 mt-0.5" />
@@ -173,7 +168,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          {/* USER INFO DISPLAY CARD */}
           {user && (
             <div className="p-3.5 bg-teal-50/60 border border-teal-100 rounded-2xl flex items-center justify-between text-xs">
               <div className="flex items-center gap-2.5">
@@ -196,7 +190,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </div>
           )}
 
-          {/* CCCD & ĐỊA CHỈ KHÁCH HÀNG */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -227,7 +220,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </div>
           </div>
 
-          {/* INPUT: TÁCH HÃNG XE VÀ BIỂN SỐ */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -245,7 +237,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
                 />
               </div>
 
-              {/* Quick Preset Badges Dynamic từ DB của Bãi xe */}
               {supportedVehicleTypes && supportedVehicleTypes.length > 0 && (
                 <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
                   <span className="text-slate-400 font-medium">Bãi tiếp nhận:</span>
@@ -280,7 +271,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </div>
           </div>
 
-          {/* INPUT 2: DESIRED START DATE */}
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
               Ngày mong muốn bắt đầu thuê <span className="text-red-500">*</span>
@@ -301,7 +291,6 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </p>
           </div>
 
-          {/* BUTTON ACTIONS */}
           <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
             <button
               type="button"

@@ -116,7 +116,6 @@ const CustomerReservationDetailPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-4">
-        {/* TOP NAVIGATION */}
         <div>
           <button
             onClick={() => navigate('/my-reservations')}
@@ -145,9 +144,7 @@ const CustomerReservationDetailPage = () => {
             </button>
           </div>
         ) : reservation ? (
-          /* UNIFIED SINGLE CARD CONTAINER */
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {/* 1. HEADER SECTION */}
             <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
@@ -174,11 +171,8 @@ const CustomerReservationDetailPage = () => {
               </div>
             )}
 
-            {/* 2. BODY SECTION (MERGED IN SAME CONTAINER) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-              {/* LEFT COLUMN: FACILITY + REGISTRATION DETAILS */}
               <div className="lg:col-span-8 divide-y divide-slate-200">
-                {/* FACILITY INFO */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-base font-bold text-slate-900">
@@ -217,7 +211,6 @@ const CustomerReservationDetailPage = () => {
                   </div>
                 </div>
 
-                {/* VEHICLE & CUSTOMER DETAILS */}
                 <div className="p-6 space-y-3">
                   <h2 className="text-base font-bold text-slate-900">
                     Thông tin đăng ký gửi giữ
@@ -261,7 +254,6 @@ const CustomerReservationDetailPage = () => {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: PROVIDER CONTACT & CONTRACT */}
               <div className="lg:col-span-4 divide-y divide-slate-200 flex flex-col justify-between">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
@@ -298,7 +290,6 @@ const CustomerReservationDetailPage = () => {
                     <p className="text-xs text-slate-500">Chưa có thông tin liên hệ.</p>
                   )}
 
-                  {/* CONTRACT SECTION IF EXISTS */}
                   {reservation.confirmation_record && (
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between gap-2">
@@ -328,7 +319,6 @@ const CustomerReservationDetailPage = () => {
                   )}
                 </div>
 
-                {/* ACTION BUTTONS IN SAME CONTAINER */}
                 <div className="p-6 bg-slate-50/60 space-y-2.5">
                   {reservation.status === 'PENDING' && (
                     <button
