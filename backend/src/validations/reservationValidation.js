@@ -1,19 +1,33 @@
 const { cleanText } = require('../utils/validators');
 
-/**
- * Middleware kiểm tra tính hợp lệ dữ liệu đầu vào cho các API Reservation Request
- */
+const validateReservationId = (req, res, next) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Mã yêu cầu thuê (id) không hợp lệ!'
+    });
+  }
+  req.params.id = id;
+  next();
+};
 
 const validateCreateReservation = (req, res, next) => {
-  let { facility_id, vehicle_info, desired_start_date, vehicle_brand, license_plate, customer_id_card, customer_address } = req.body;
+  let {
+    facility_id,
+    vehicle_info,
+    desired_start_date,
+    vehicle_brand,
+    license_plate,
+    customer_id_card,
+    customer_address
+  } = req.body;
   const errors = [];
 
-  // 1. Kiểm tra facility_id
   if (!facility_id || isNaN(facility_id) || Number(facility_id) <= 0) {
     errors.push('Mã bãi đỗ xe (facility_id) không hợp lệ!');
   }
 
-  // Hỗ trợ tự động ghép vehicle_info nếu phía Client/FE gửi các trường rời rạc
   if (!vehicle_info && (vehicle_brand || license_plate)) {
     const brand = cleanText(vehicle_brand) || 'Chưa cập nhật';
     const plate = cleanText(license_plate) || 'Chưa cập nhật';
@@ -24,13 +38,11 @@ const validateCreateReservation = (req, res, next) => {
     vehicle_info = `${brand} - Biển số: ${plate}${extra}`;
   }
 
-  // 2. Kiểm tra vehicle_info
   const cleanedVehicleInfo = cleanText(vehicle_info);
   if (!cleanedVehicleInfo || cleanedVehicleInfo.length < 3) {
     errors.push('Thông tin phương tiện (vehicle_info) phải từ 3 ký tự trở lên (Ví dụ: Toyota Camry 65A-123.45).');
   }
 
-  // 3. Kiểm tra desired_start_date
   if (!desired_start_date) {
     errors.push('Vui lòng chọn ngày mong muốn bắt đầu thuê!');
   } else {
@@ -76,6 +88,7 @@ const validateRespondReservation = (req, res, next) => {
 };
 
 module.exports = {
+  validateReservationId,
   validateCreateReservation,
   validateRespondReservation
 };

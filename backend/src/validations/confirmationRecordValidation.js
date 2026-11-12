@@ -1,9 +1,16 @@
 const { cleanText } = require('../utils/validators');
 
-/**
- * Middleware kiểm tra tính hợp lệ dữ liệu đầu vào cho Hợp đồng / Biên bản xác nhận điện tử (Confirmation Record)
- * Chuẩn hóa theo 7 mục hợp đồng tiêu chuẩn của hệ thống ParkLink
- */
+const validateConfirmationRecordId = (req, res, next) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Mã biên bản xác nhận / hợp đồng (id) không hợp lệ!'
+    });
+  }
+  req.params.id = id;
+  next();
+};
 
 const validateCreateConfirmationRecord = (req, res, next) => {
   const {
@@ -14,23 +21,19 @@ const validateCreateConfirmationRecord = (req, res, next) => {
     end_date,
     parking_spot,
     vehicle_type,
-    license_plate,
-    terms
+    license_plate
   } = req.body;
 
   const errors = [];
 
-  // 1. Kiểm tra reservation_id
   if (!reservation_id || isNaN(reservation_id) || Number(reservation_id) <= 0) {
     errors.push('Mã yêu cầu thuê bãi xe (reservation_id) không hợp lệ!');
   }
 
-  // 2. Kiểm tra agreed_price
   if (agreed_price === undefined || agreed_price === null || isNaN(agreed_price) || Number(agreed_price) <= 0) {
     errors.push('Giá thuê thỏa thuận hàng tháng (agreed_price) phải là số dương hợp lệ!');
   }
 
-  // 3. Kiểm tra payment_deadline_day (từ 1 đến 31)
   if (payment_deadline_day !== undefined && payment_deadline_day !== null && payment_deadline_day !== '') {
     const day = Number(payment_deadline_day);
     if (isNaN(day) || day < 1 || day > 31) {
@@ -38,7 +41,6 @@ const validateCreateConfirmationRecord = (req, res, next) => {
     }
   }
 
-  // 4. Kiểm tra start_date và end_date
   if (!start_date) {
     errors.push('Vui lòng chọn ngày bắt đầu hiệu lực hợp đồng (start_date)!');
   } else if (isNaN(Date.parse(start_date))) {
@@ -79,9 +81,6 @@ const validateCreateConfirmationRecord = (req, res, next) => {
   next();
 };
 
-/**
- *  [ADMIN] Kiểm tra tham số lọc danh sách Hợp đồng điện tử trên nền tảng
- */
 const validateAdminQueryConfirmationRecords = (req, res, next) => {
   const { page, limit, start_date, end_date, facility_id, provider_id, customer_id } = req.query;
   const errors = [];
@@ -131,9 +130,6 @@ const validateAdminQueryConfirmationRecords = (req, res, next) => {
   next();
 };
 
-/**
- * [PROVIDER] Kiểm tra tham số truy vấn khách hàng đang hoạt động tại bãi xe
- */
 const validateProviderActiveCustomersQuery = (req, res, next) => {
   const { facility_id, page, limit } = req.query;
   const errors = [];
@@ -161,9 +157,6 @@ const validateProviderActiveCustomersQuery = (req, res, next) => {
   next();
 };
 
-/**
- * [CUSTOMER] Kiểm tra tham số khi Khách hàng yêu cầu gia hạn thời gian thuê đỗ xe (Request lease extension)
- */
 const validateRequestLeaseExtension = (req, res, next) => {
   const contractId = req.params.id || req.body.contract_id;
   const {
@@ -177,12 +170,10 @@ const validateRequestLeaseExtension = (req, res, next) => {
   } = req.body;
   const errors = [];
 
-  // 1. Kiểm tra ID hợp đồng
   if (!contractId || isNaN(contractId) || Number(contractId) <= 0) {
     errors.push('Mã hợp đồng / biên bản xác nhận (contract_id) không hợp lệ!');
   }
 
-  // 2. Kiểm tra số tháng gia hạn hoặc ngày kết thúc mới
   const hasMonths = extension_months !== undefined && extension_months !== null && extension_months !== '';
   const hasEndDate = new_end_date !== undefined && new_end_date !== null && new_end_date !== '';
 
@@ -203,12 +194,10 @@ const validateRequestLeaseExtension = (req, res, next) => {
     }
   }
 
-  // 3. Kiểm tra độ dài lý do nếu có
   if (reason && typeof reason === 'string' && reason.trim().length > 500) {
     errors.push('Ghi chú / lý do gia hạn không được vượt quá 500 ký tự!');
   }
 
-  // 4. Kiểm tra độ dài loại xe và biển số xe nếu có cập nhật mới
   if (vehicle_type && typeof vehicle_type === 'string' && vehicle_type.trim().length > 100) {
     errors.push('Tên loại xe không được vượt quá 100 ký tự!');
   }
@@ -240,9 +229,6 @@ const validateRequestLeaseExtension = (req, res, next) => {
   next();
 };
 
-/**
- * [PROVIDER] Kiểm tra phản hồi yêu cầu gia hạn từ Chủ bãi đỗ xe
- */
 const validateRespondLeaseExtension = (req, res, next) => {
   const { status, provider_note } = req.body;
   const errors = [];
@@ -270,34 +256,27 @@ const validateRespondLeaseExtension = (req, res, next) => {
   next();
 };
 
-/**
- * [CUSTOMER] Kiểm tra tham số yêu cầu chấm dứt hợp đồng trước thời hạn (Request early termination)
- */
 const validateRequestEarlyTermination = (req, res, next) => {
   const contractId = req.params.id || req.body.contract_id;
   const { termination_date, reason, bank_account_info } = req.body;
   const errors = [];
 
-  // 1. Kiểm tra ID hợp đồng
   if (!contractId || isNaN(contractId) || Number(contractId) <= 0) {
     errors.push('Mã hợp đồng / biên bản xác nhận (contract_id) không hợp lệ!');
   }
 
-  // 2. Kiểm tra lý do chấm dứt (bắt buộc)
   if (!reason || typeof reason !== 'string' || reason.trim().length < 5) {
     errors.push('Vui lòng nêu rõ lý do chấm dứt hợp đồng trước hạn (tối thiểu 5 ký tự)!');
   } else if (reason.trim().length > 500) {
     errors.push('Lý do chấm dứt hợp đồng không được vượt quá 500 ký tự!');
   }
 
-  // 3. Kiểm tra ngày mong muốn chấm dứt nếu có truyền
   if (termination_date) {
     if (isNaN(Date.parse(termination_date))) {
       errors.push('Ngày chấm dứt hợp đồng (termination_date) không đúng định dạng YYYY-MM-DD!');
     }
   }
 
-  // 4. Kiểm tra thông tin tài khoản nếu có
   if (bank_account_info && typeof bank_account_info === 'string' && bank_account_info.trim().length > 200) {
     errors.push('Thông tin tài khoản nhận hoàn tiền không được vượt quá 200 ký tự!');
   }
@@ -317,9 +296,6 @@ const validateRequestEarlyTermination = (req, res, next) => {
   next();
 };
 
-/**
- * [PROVIDER] Kiểm tra tham số xác nhận chấm dứt hợp đồng (Confirm contract termination)
- */
 const validateConfirmContractTermination = (req, res, next) => {
   const { status, provider_note, refund_amount } = req.body;
   const errors = [];
@@ -357,6 +333,7 @@ const validateConfirmContractTermination = (req, res, next) => {
 };
 
 module.exports = {
+  validateConfirmationRecordId,
   validateCreateConfirmationRecord,
   validateAdminQueryConfirmationRecords,
   validateProviderActiveCustomersQuery,

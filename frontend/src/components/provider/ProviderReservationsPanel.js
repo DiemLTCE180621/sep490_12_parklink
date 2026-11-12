@@ -25,22 +25,19 @@ const ProviderReservationsPanel = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING, APPROVED, REJECTED, CANCELLED
+  const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // States for Confirm Modal (Accept / Reject)
   const [confirmModalState, setConfirmModalState] = useState({
     isOpen: false,
-    action: null, // 'ACCEPT' | 'REJECT'
+    action: null,
     targetId: null,
     targetName: ''
   });
   const [processingId, setProcessingId] = useState(null);
 
-  // Toast notifications
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Fetch reservation requests from backend
   const fetchProviderReservations = useCallback(async () => {
     try {
       setLoading(true);
@@ -59,12 +56,10 @@ const ProviderReservationsPanel = () => {
     fetchProviderReservations();
   }, [fetchProviderReservations]);
 
-  // Open Detail Page
   const handleOpenDetail = (id) => {
     navigate(`/provider/reservations/${id}`);
   };
 
-  // Open Confirm Modal for Accept or Reject
   const handleOpenConfirmModal = (id, action, customerName, e) => {
     if (e) e.stopPropagation();
     setConfirmModalState({
@@ -75,7 +70,6 @@ const ProviderReservationsPanel = () => {
     });
   };
 
-  // Execute Accept / Reject Action
   const handleExecuteAction = async () => {
     const { action, targetId } = confirmModalState;
     if (!targetId || !action) return;
@@ -108,7 +102,6 @@ const ProviderReservationsPanel = () => {
     return rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim() || 'Chưa cập nhật';
   };
 
-  // Filter List according to Tab & Search Keyword
   const filteredReservations = reservations.filter((item) => {
     let matchesTab = true;
     if (activeTab === 'PENDING') matchesTab = item.status === 'PENDING';
@@ -137,7 +130,6 @@ const ProviderReservationsPanel = () => {
     return matchesTab && matchesSearch;
   });
 
-  // Calculate statistics
   const totalCount = reservations.length;
   const pendingCount = reservations.filter((r) => r.status === 'PENDING').length;
   const approvedCount = reservations.filter((r) => r.status === 'APPROVED').length;
@@ -188,7 +180,6 @@ const ProviderReservationsPanel = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-        {/* 1. HEADER */}
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -209,7 +200,6 @@ const ProviderReservationsPanel = () => {
           </button>
         </div>
 
-        {/* 2. FILTER TABS & SEARCH BAR */}
         <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
@@ -276,7 +266,6 @@ const ProviderReservationsPanel = () => {
           </div>
         </div>
 
-        {/* 3. LIST OF RESERVATIONS */}
         {loading ? (
           <div className="p-16 text-center">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -317,7 +306,6 @@ const ProviderReservationsPanel = () => {
                   onClick={() => handleOpenDetail(item.id)}
                   className="p-6 hover:bg-slate-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
                 >
-                  {/* LEFT CONTENT */}
                   <div className="space-y-3 flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
                       <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
@@ -330,7 +318,6 @@ const ProviderReservationsPanel = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
-                      {/* CUSTOMER */}
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Khách hàng đăng ký</span>
                         <p className="font-semibold text-slate-900 flex items-center gap-1.5">
@@ -351,7 +338,6 @@ const ProviderReservationsPanel = () => {
                         </div>
                       </div>
 
-                      {/* VEHICLE & START DATE */}
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Phương tiện & ngày bắt đầu</span>
                         <p className="font-semibold text-slate-900 flex items-center gap-1.5">
@@ -364,7 +350,6 @@ const ProviderReservationsPanel = () => {
                         </p>
                       </div>
 
-                      {/* FACILITY */}
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Bãi đỗ xe</span>
                         <p className="font-semibold text-slate-900 truncate">
@@ -378,7 +363,6 @@ const ProviderReservationsPanel = () => {
                     </div>
                   </div>
 
-                  {/* RIGHT ACTIONS */}
                   <div className="flex flex-wrap sm:flex-row items-center gap-2 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 justify-end">
                     <button
                       type="button"
@@ -469,7 +453,6 @@ const ProviderReservationsPanel = () => {
         )}
       </div>
 
-      {/* CONFIRMATION MODAL FOR ACCEPT / REJECT */}
       <ConfirmModal
         isOpen={confirmModalState.isOpen}
         onClose={() => setConfirmModalState({ isOpen: false, action: null, targetId: null, targetName: '' })}

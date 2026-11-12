@@ -20,7 +20,7 @@ const CustomerReservationsPage = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING, APPROVED, CANCELLED
+  const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
 
@@ -148,7 +148,6 @@ const CustomerReservationsPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
       <div className="w-full space-y-6">
-        {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Yêu cầu thuê chỗ của tôi</h1>
@@ -177,7 +176,6 @@ const CustomerReservationsPage = () => {
           </div>
         </div>
 
-        {/* FILTER TABS & SEARCH BAR */}
         <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
@@ -234,7 +232,6 @@ const CustomerReservationsPage = () => {
           </div>
         </div>
 
-        {/* LIST CONTENT */}
         {loading ? (
           <div className="py-16 text-center bg-white rounded-xl border border-slate-200">
             <Loader2 className="w-7 h-7 text-teal-600 animate-spin mx-auto mb-2.5" />
@@ -276,7 +273,6 @@ const CustomerReservationsPage = () => {
                   onClick={() => handleOpenDetail(item.id)}
                   className="bg-white rounded-xl p-5 border border-slate-200 hover:border-slate-300 transition cursor-pointer"
                 >
-                  {/* TOP ROW */}
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
                     <div className="flex items-center gap-2.5 text-xs text-slate-500">
                       <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
@@ -289,7 +285,6 @@ const CustomerReservationsPage = () => {
                     {getStatusBadge(item.status)}
                   </div>
 
-                  {/* BODY ROW */}
                   <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <h3 className="text-base font-bold text-slate-900 truncate">
@@ -314,7 +309,6 @@ const CustomerReservationsPage = () => {
                       </div>
                     </div>
 
-                    {/* RIGHT PRICE & ACTIONS */}
                     <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
                       <div className="text-left sm:text-right">
                         <span className="text-[11px] text-slate-400 block">Giá thuê</span>
