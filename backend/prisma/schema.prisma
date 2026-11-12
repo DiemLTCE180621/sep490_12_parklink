@@ -244,6 +244,7 @@ model Amenity {
   name               String             @unique @db.VarChar(100)
   icon               String?
   type               String?
+  is_active          Boolean            @default(true)
   facility_amenities Facility_Amenity[]
 
   @@map("amenities")
@@ -346,4 +347,15 @@ model Vehicle_Type {
   facility_vehicle_types Facility_Vehicle_Type[]
 
   @@map("vehicle_types")
+}
+
+model Facility_Vehicle_Type {
+  facility_id     Int
+  vehicle_type_id Int
+
+  facility     Facility     @relation(fields: [facility_id], references: [id], onDelete: Cascade)
+  vehicle_type Vehicle_Type @relation(fields: [vehicle_type_id], references: [id], onDelete: Cascade)
+
+  @@id([facility_id, vehicle_type_id])
+  @@map("facility_vehicle_types")
 }

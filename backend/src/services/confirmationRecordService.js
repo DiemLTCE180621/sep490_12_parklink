@@ -5,6 +5,7 @@ const notificationRepository = require('../repositories/notificationRepository')
 const { getIO } = require('../config/socket');
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+const FIFTEEN_DAYS_MS = 15 * 24 * 60 * 60 * 1000;
 
 const DEFAULT_CONTRACT_TERMS = {
   customer_obligations:
@@ -22,6 +23,109 @@ class ConfirmationRecordService {
     const error = new Error(message);
     error.status = status;
     return error;
+  }
+
+  async checkAndCancelExpiredTerminationForRecord(record) {
+    if (!record || record.status !== 'ACTIVE') return record;
+
+    const snapshot = record.contract_snapshot || {};
+    const term = snapshot.termination_request;
+    if (!term || term.status !== 'PENDING') return record;
+
+    const requestedTimestamp = term.requested_at ? new Date(term.requested_at).getTime() : Date.now();
+    if (isNaN(requestedTimestamp) || Date.now() - requestedTimestamp <= FIFTEEN_DAYS_MS) {
+      return record;
+    }
+
+    const nowIso = new Date().toISOString();
+    const expiredTerm = {
+      ...term,
+      status: 'CANCELLED',
+      expired_after_15_days: true,
+      expired_reason:
+        'Sau 15 ngày kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.',
+      responded_at: nowIso
+    };
+
+    const history = Array.isArray(snapshot.termination_history) ? [...snapshot.termination_history] : [];
+    history.push(expiredTerm);
+
+    const updatedSnapshot = {
+      ...snapshot,
+      termination_request: null,
+      last_expired_termination: expiredTerm,
+      termination_history: history
+    };
+
+    try {
+      const updatedRecord = await confirmationRecordRepository.updateStatusAndSnapshot(
+        record.id,
+        null,
+        updatedSnapshot
+      );
+
+      const facilityName = record.reservation?.facility?.name || 'bãi đỗ xe';
+      const customerId = record.reservation?.customer_id || record.reservation?.customer?.id;
+      const providerId = record.reservation?.facility?.provider_id || record.reservation?.facility?.provider?.id;
+      const notiTitle = `Hết hạn 15 ngày xác nhận chấm dứt hợp đồng (${record.contract_code})`;
+      const notiContent = `Yêu cầu chấm dứt trước hạn của hợp đồng ${record.contract_code} tại ${facilityName} đã quá 15 ngày chưa được xác nhận nên tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.`;
+      const io = getIO();
+
+      if (customerId) {
+        await notificationRepository.createNotification({
+          user_id: Number(customerId),
+          title: notiTitle,
+          content: notiContent,
+          type: 'CONTRACT_TERMINATION_EXPIRED_15D'
+        });
+        if (io) {
+          io.to(`user_${customerId}`).emit('new_notification', {
+            id: `noti_${Date.now()}_${customerId}`,
+            title: notiTitle,
+            content: notiContent,
+            type: 'CONTRACT_TERMINATION_EXPIRED_15D',
+            contract_id: record.id,
+            contract_code: record.contract_code,
+            created_at: nowIso
+          });
+        }
+      }
+
+      if (providerId) {
+        await notificationRepository.createNotification({
+          user_id: Number(providerId),
+          title: notiTitle,
+          content: notiContent,
+          type: 'CONTRACT_TERMINATION_EXPIRED_15D'
+        });
+        if (io) {
+          io.to(`user_${providerId}`).emit('new_notification', {
+            id: `noti_${Date.now()}_${providerId}`,
+            title: notiTitle,
+            content: notiContent,
+            type: 'CONTRACT_TERMINATION_EXPIRED_15D',
+            contract_id: record.id,
+            contract_code: record.contract_code,
+            created_at: nowIso
+          });
+        }
+      }
+
+      return updatedRecord;
+    } catch (err) {
+      console.error(err.message);
+      return record;
+    }
+  }
+
+  async checkAndCancelExpiredTerminationList(records = []) {
+    if (!Array.isArray(records) || records.length === 0) return records;
+    const results = [];
+    for (const item of records) {
+      const checked = await this.checkAndCancelExpiredTerminationForRecord(item);
+      results.push(checked);
+    }
+    return results;
   }
 
   extractVehicleMetadata(rawVehicleInfo = '') {
@@ -189,15 +293,17 @@ class ConfirmationRecordService {
   }
 
   async getCustomerConfirmationRecords(customerId) {
-    return await confirmationRecordRepository.findByCustomerId(customerId);
+    const records = await confirmationRecordRepository.findByCustomerId(customerId);
+    return await this.checkAndCancelExpiredTerminationList(records);
   }
 
   async getProviderConfirmationRecords(providerId) {
-    return await confirmationRecordRepository.findByProviderId(providerId);
+    const records = await confirmationRecordRepository.findByProviderId(providerId);
+    return await this.checkAndCancelExpiredTerminationList(records);
   }
 
   async getConfirmationRecordDetail(recordId, userId, userRole) {
-    const record = await confirmationRecordRepository.findById(recordId);
+    let record = await confirmationRecordRepository.findById(recordId);
     if (!record) {
       throw this.createError('Không tìm thấy thông tin biên bản xác nhận điện tử!', 404);
     }
@@ -209,6 +315,8 @@ class ConfirmationRecordService {
     if (!isCustomerOwner && !isFacilityProvider && !isAdmin) {
       throw this.createError('Bạn không có quyền xem thông tin biên bản xác nhận điện tử này!', 403);
     }
+
+    record = await this.checkAndCancelExpiredTerminationForRecord(record);
 
     if (record.contract_snapshot && record.contract_snapshot.customer_info) {
       const custInfo = record.contract_snapshot.customer_info;
@@ -1040,7 +1148,8 @@ class ConfirmationRecordService {
       throw this.createError(`Chỉ có thể yêu cầu chấm dứt đối với hợp đồng đang có hiệu lực (Trạng thái hiện tại: ${statusLabel})!`, 400);
     }
 
-    const currentSnapshot = record.contract_snapshot || {};
+    const checkedRecord = await this.checkAndCancelExpiredTerminationForRecord(record);
+    const currentSnapshot = checkedRecord.contract_snapshot || {};
     if (currentSnapshot.termination_request && currentSnapshot.termination_request.status === 'PENDING') {
       const existingRequestedBy = currentSnapshot.termination_request.requested_by || 'CUSTOMER';
       const errorMsg = existingRequestedBy === finalRole
@@ -1070,7 +1179,8 @@ class ConfirmationRecordService {
 
     const updatedSnapshot = {
       ...currentSnapshot,
-      termination_request: terminationRequestData
+      termination_request: terminationRequestData,
+      last_expired_termination: null
     };
 
     const updatedRecord = await confirmationRecordRepository.updateStatusAndSnapshot(
@@ -1238,7 +1348,21 @@ class ConfirmationRecordService {
     }
 
     const snapshot = record.contract_snapshot || {};
-    const term = snapshot.termination_request || {};
+    const term = snapshot.termination_request;
+
+    if (!term || term.status !== 'PENDING') {
+      throw this.createError('Không có yêu cầu chấm dứt hợp đồng nào đang chờ xử lý để xác nhận!', 400);
+    }
+
+    const requestedTimestamp = term.requested_at ? new Date(term.requested_at).getTime() : Date.now();
+    if (!isNaN(requestedTimestamp) && Date.now() - requestedTimestamp > FIFTEEN_DAYS_MS) {
+      await this.checkAndCancelExpiredTerminationForRecord(record);
+      throw this.createError(
+        'Yêu cầu chấm dứt hợp đồng trước hạn đã quá 15 ngày chưa được xác nhận nên đã tự động hủy! Hợp đồng hiện vẫn tiếp tục có hiệu lực.',
+        400
+      );
+    }
+
     const now = new Date();
     const isConfirmed = status.toUpperCase() === 'CONFIRMED' || status.toUpperCase() === 'APPROVED';
 
@@ -1332,7 +1456,7 @@ class ConfirmationRecordService {
   }
 
   async getContractTerminationDetail(contractId, userId, userRole) {
-    const record = await confirmationRecordRepository.findById(contractId);
+    let record = await confirmationRecordRepository.findById(contractId);
     if (!record) {
       throw this.createError('Không tìm thấy thông tin hợp đồng thuê bãi xe!', 404);
     }
@@ -1345,6 +1469,7 @@ class ConfirmationRecordService {
       throw this.createError('Bạn không có quyền xem thông tin chấm dứt của hợp đồng này!', 403);
     }
 
+    record = await this.checkAndCancelExpiredTerminationForRecord(record);
     const snapshot = record.contract_snapshot || {};
     return {
       contract_id: record.id,
@@ -1352,16 +1477,19 @@ class ConfirmationRecordService {
       status: record.status,
       end_date: record.end_date,
       termination_request: snapshot.termination_request || null,
+      last_expired_termination: snapshot.last_expired_termination || null,
       termination_history: snapshot.termination_history || []
     };
   }
 
   async getMyTerminationRequests(customerId) {
-    return await confirmationRecordRepository.findTerminationRequestsByCustomerId(customerId);
+    const records = await confirmationRecordRepository.findTerminationRequestsByCustomerId(customerId);
+    return await this.checkAndCancelExpiredTerminationList(records);
   }
 
   async getProviderTerminationRequests(providerId) {
-    return await confirmationRecordRepository.findTerminationRequestsByProviderId(providerId);
+    const records = await confirmationRecordRepository.findTerminationRequestsByProviderId(providerId);
+    return await this.checkAndCancelExpiredTerminationList(records);
   }
 }
 

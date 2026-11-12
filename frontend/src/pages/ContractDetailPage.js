@@ -581,6 +581,21 @@ const ContractDetailPage = () => {
               </div>
             )}
 
+            {isActive && !pendingTermination && snapshot.last_expired_termination && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-start gap-3 text-xs text-amber-800 shadow-sm">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-bold text-amber-900">
+                    Yêu cầu chấm dứt hợp đồng trước hạn đã tự động hủy (Quá 15 ngày chưa được xác nhận)
+                  </h4>
+                  <p className="text-amber-700 mt-0.5">
+                    {snapshot.last_expired_termination.expired_reason ||
+                      'Sau 15 ngày kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng hiện vẫn tiếp tục có hiệu lực.'}
+                  </p>
+                </div>
+              </div>
+            )}
+
             
             {isCustomer && pendingTermination && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-5 bg-white border-2 border-rose-400 rounded-xl space-y-4 shadow-sm">
