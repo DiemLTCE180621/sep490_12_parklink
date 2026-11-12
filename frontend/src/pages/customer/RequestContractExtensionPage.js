@@ -36,17 +36,14 @@ const RequestContractExtensionPage = () => {
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState(null);
 
-  // Form states
   const [extensionMonths, setExtensionMonths] = useState(3);
   const [customMonths, setCustomMonths] = useState('');
   const [reason, setReason] = useState('');
 
-  // Optional vehicle change
   const [changeVehicle, setChangeVehicle] = useState(false);
   const [vehicleType, setVehicleType] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
 
-  // Optional contact change
   const [changeContact, setChangeContact] = useState(false);
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
@@ -103,7 +100,6 @@ const RequestContractExtensionPage = () => {
     ? snapshot.extension_request
     : null;
 
-  // Realtime calculations: Lấy theo GIÁ HIỆN TẠI CỦA BÃI XE (nếu chủ bãi tăng/cập nhật giá thì lấy giá mới)
   const activeMonths = customMonths ? (parseInt(customMonths, 10) || 1) : extensionMonths;
   const currentEndDate = contract?.end_date ? new Date(contract.end_date) : new Date();
   const calculatedEndDate = new Date(currentEndDate);
@@ -266,10 +262,10 @@ const RequestContractExtensionPage = () => {
         onClose={() => setToastInfo({ message: '', type: 'success' })}
       />
 
-      {/* TOP HEADER BAR */}
+      
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          {/* Breadcrumbs */}
+          
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Link to="/" className="hover:text-slate-900 transition">Trang chủ</Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -292,9 +288,9 @@ const RequestContractExtensionPage = () => {
         </div>
       </div>
 
-      {/* MAIN CONTAINER */}
+      
       <div className="w-full px-4 sm:px-6 lg:px-10 py-8 space-y-6">
-        {/* TITLE & OVERVIEW STRIP */}
+        
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -331,7 +327,7 @@ const RequestContractExtensionPage = () => {
           </div>
         </div>
 
-        {/* IF PENDING EXTENSION EXISTS */}
+        
         {pendingExtension ? (
           <div className="bg-white rounded-xl border border-amber-300 overflow-hidden shadow-xs">
             <div className="p-6 bg-amber-50/70 border-b border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -416,13 +412,13 @@ const RequestContractExtensionPage = () => {
             </div>
           </div>
         ) : (
-          /* FORM EXTENSION: 2-COLUMN FULL-WIDTH LAYOUT */
+          
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* LEFT / MAIN COLUMN: FORM CONTAINER (lg:col-span-8) */}
+              
               <div className="lg:col-span-8">
                 <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
-                  {/* PHẦN 1: CHỌN THỜI GIAN GIA HẠN */}
+                  
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
@@ -433,7 +429,7 @@ const RequestContractExtensionPage = () => {
                       </p>
                     </div>
 
-                    {/* PRESET CARDS */}
+                    
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {PRESET_OPTIONS.map((opt) => {
                         const isSelected = !customMonths && extensionMonths === opt.months;
@@ -458,7 +454,7 @@ const RequestContractExtensionPage = () => {
                       })}
                     </div>
 
-                    {/* CUSTOM MONTH INPUT */}
+                    
                     <div className="pt-1">
                       <label className="text-xs font-medium text-slate-700 block mb-1">
                         Hoặc nhập số tháng tùy chọn (từ 1 đến 24 tháng)
@@ -480,7 +476,7 @@ const RequestContractExtensionPage = () => {
                     </div>
                   </div>
 
-                  {/* PHẦN 2: THAY ĐỔI THÔNG TIN XE (TÙY CHỌN) */}
+                  
                   <div className="divide-y divide-slate-100">
                     <div className="p-6 flex items-start justify-between gap-4">
                       <div className="space-y-0.5">
@@ -540,7 +536,7 @@ const RequestContractExtensionPage = () => {
                     )}
                   </div>
 
-                  {/* PHẦN 3: CẬP NHẬT THÔNG TIN LIÊN HỆ (TÙY CHỌN) */}
+                  
                   <div className="divide-y divide-slate-100">
                     <div className="p-6 flex items-start justify-between gap-4">
                       <div className="space-y-0.5">
@@ -597,7 +593,7 @@ const RequestContractExtensionPage = () => {
                     )}
                   </div>
 
-                  {/* PHẦN 4: GHI CHÚ CHO CHỦ BÃI */}
+                  
                   <div className="p-6 space-y-3">
                     <label className="text-xs sm:text-sm font-bold text-slate-900 block">
                       Lời nhắn gửi chủ bãi xe (Tùy chọn)
@@ -616,21 +612,21 @@ const RequestContractExtensionPage = () => {
                 </div>
               </div>
 
-              {/* RIGHT / SIDEBAR COLUMN: SUMMARY & CONFIRMATION (lg:col-span-4, STICKY) */}
+              
               <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-16">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5 shadow-xs">
                   <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
                     Tóm tắt gia hạn hợp đồng
                   </h3>
 
-                  {/* Facility brief */}
+                  
                   <div className="space-y-1 text-xs">
                     <span className="text-slate-400 block text-[11px]">Bãi đỗ xe</span>
                     <p className="font-semibold text-slate-800">{facility?.name || 'Bãi đỗ xe'}</p>
                     <p className="text-slate-500 text-[11px] line-clamp-1">{facility?.address}</p>
                   </div>
 
-                  {/* Vehicle currently */}
+                  
                   <div className="space-y-1 text-xs border-t border-slate-100 pt-3">
                     <span className="text-slate-400 block text-[11px]">Phương tiện đang gửi</span>
                     <p className="font-medium text-slate-800">
@@ -641,7 +637,7 @@ const RequestContractExtensionPage = () => {
                     </p>
                   </div>
 
-                  {/* Dates timeline comparison */}
+                  
                   <div className="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
                       <span>Thời gian gia hạn thêm:</span>
@@ -661,7 +657,7 @@ const RequestContractExtensionPage = () => {
                     </div>
                   </div>
 
-                  {/* Financial calculation */}
+                  
                   <div className="space-y-2 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-500 text-[11px]">
                       <span>Đơn giá hợp đồng:</span>
@@ -683,7 +679,7 @@ const RequestContractExtensionPage = () => {
                     * Khi chủ bãi chấp thuận gia hạn, hệ thống sẽ khởi tạo hợp đồng mới theo đơn giá hiện tại của bãi xe để bạn kiểm tra và ký xác nhận (hợp đồng cũ được giữ nguyên).
                   </p>
 
-                  {/* ACTION BUTTONS */}
+                  
                   <div className="space-y-2 pt-2">
                     <button
                       type="submit"
@@ -718,7 +714,7 @@ const RequestContractExtensionPage = () => {
         )}
       </div>
 
-      {/* CONFIRM CANCEL MODAL */}
+      
       <ConfirmModal
         isOpen={confirmCancelOpen}
         onClose={() => setConfirmCancelOpen(false)}

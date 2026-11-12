@@ -19,12 +19,10 @@ import {
 } from 'lucide-react';
 
 const AdminContractsPanel = () => {
-  // State quản lý danh sách hợp đồng
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State thống kê & phân trang
   const [summary, setSummary] = useState({
     total_all: 0,
     total_active: 0,
@@ -39,20 +37,16 @@ const AdminContractsPanel = () => {
     total_pages: 1
   });
 
-  // State bộ lọc
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  // State Modal xem chi tiết
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // Toast
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Gọi API lấy dữ liệu
   const fetchContracts = useCallback(
     async (
       page = pagination.page,
@@ -92,7 +86,6 @@ const AdminContractsPanel = () => {
 
   useEffect(() => {
     fetchContracts(1, pagination.limit, statusFilter, searchTerm, startDate, endDate);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, pagination.limit]);
 
   const handleSearchSubmit = (e) => {
@@ -167,7 +160,6 @@ const AdminContractsPanel = () => {
     <div className="space-y-5">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      {/* HEADER */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -189,7 +181,6 @@ const AdminContractsPanel = () => {
         </button>
       </div>
 
-      {/* THỐNG KÊ (3 KPI CARDS - KHÔNG HIỂN THỊ DOANH THU THUÊ) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium uppercase tracking-wider">
@@ -225,10 +216,8 @@ const AdminContractsPanel = () => {
         </div>
       </div>
 
-      {/* FILTER TOOLBAR */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-          {/* Ô tìm kiếm */}
           <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -246,7 +235,6 @@ const AdminContractsPanel = () => {
             </button>
           </form>
 
-          {/* Bộ lọc trạng thái & Ngày */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <select
               value={statusFilter}
@@ -300,7 +288,6 @@ const AdminContractsPanel = () => {
         </div>
       </div>
 
-      {/* DANH SÁCH HỢP ĐỒNG - DẠNG TABLE CHUẨN DASHBOARD */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {loading ? (
           <div className="py-20 text-center">
@@ -347,7 +334,6 @@ const AdminContractsPanel = () => {
 
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                      {/* Mã HĐ & Ngày lập */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                           {item.contract_code}
@@ -357,7 +343,6 @@ const AdminContractsPanel = () => {
                         </div>
                       </td>
 
-                      {/* Khách hàng */}
                       <td className="px-4 py-3.5">
                         <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -366,7 +351,6 @@ const AdminContractsPanel = () => {
                         <div className="text-slate-500 text-[11px] mt-0.5">{customer?.phone_number || customer?.email}</div>
                       </td>
 
-                      {/* Bãi xe & Chủ bãi */}
                       <td className="px-4 py-3.5 max-w-[240px]">
                         <div className="font-semibold text-slate-900 truncate flex items-center gap-1.5" title={facility?.name}>
                           <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -380,7 +364,6 @@ const AdminContractsPanel = () => {
                         )}
                       </td>
 
-                      {/* Xe & Vị trí đỗ */}
                       <td className="px-4 py-3.5">
                         <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                           <Car className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -391,7 +374,6 @@ const AdminContractsPanel = () => {
                         </div>
                       </td>
 
-                      {/* Thời hạn */}
                       <td className="px-4 py-3.5 whitespace-nowrap text-slate-600 text-[11px]">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-slate-400" />
@@ -399,12 +381,10 @@ const AdminContractsPanel = () => {
                         </div>
                       </td>
 
-                      {/* Trạng thái */}
                       <td className="px-4 py-3.5 whitespace-nowrap">
                         {getStatusBadge(item.status)}
                       </td>
 
-                      {/* Thao tác */}
                       <td className="px-4 py-3.5 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleOpenDetailModal(item.id)}
@@ -422,7 +402,6 @@ const AdminContractsPanel = () => {
           </div>
         )}
 
-        {/* PHÂN TRANG */}
         {!loading && contracts.length > 0 && (
           <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
             <div>
@@ -456,7 +435,6 @@ const AdminContractsPanel = () => {
         )}
       </div>
 
-      {/* MODAL CHI TIẾT */}
       {selectedContractId && (
         <ContractDetailModal
           contractId={selectedContractId}

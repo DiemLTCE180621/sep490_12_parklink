@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound,
   UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users,
-  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers
 } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
@@ -16,6 +16,7 @@ import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
 import AdminVehicleTypesPanel from '../components/admin/AdminVehicleTypesPanel';
+import AdminAmenitiesPanel from '../components/admin/AdminAmenitiesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
@@ -71,6 +72,7 @@ const DashboardPage = () => {
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
     { id: 'vehicle-types', label: 'Loại Phương Tiện', icon: Car },
+    { id: 'amenities', label: 'Quản Lý Tiện Ích', icon: Layers },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
     { id: 'policies', label: 'Chính Sách Hệ Thống', icon: ShieldCheck },
   ];
@@ -287,6 +289,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
               {activeAdminTab === 'vehicle-types' && <AdminVehicleTypesPanel />}
+              {activeAdminTab === 'amenities' && <AdminAmenitiesPanel />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
               {activeAdminTab === 'transactions' && (

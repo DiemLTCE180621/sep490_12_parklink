@@ -54,6 +54,9 @@ app.use("/api/platform-fees", platformFeeRoutes);
 const vehicleTypeRoutes = require("./routes/vehicleTypeRoutes");
 app.use("/api/vehicle-types", vehicleTypeRoutes);
 
+const amenityRoutes = require("./routes/amenityRoutes");
+app.use("/api/amenities", amenityRoutes);
+
 const notificationRoutes = require("./routes/notificationRoutes");
 app.use("/api/notifications", notificationRoutes);
 
