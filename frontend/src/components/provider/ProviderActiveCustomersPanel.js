@@ -24,12 +24,10 @@ import {
 const ProviderActiveCustomersPanel = () => {
   const navigate = useNavigate();
 
-  // State danh sách khách hàng đang hoạt động
   const [activeCustomers, setActiveCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // State thống kê & phân trang
   const [summary, setSummary] = useState({
     total_active_customers: 0,
     total_matching: 0,
@@ -47,17 +45,13 @@ const ProviderActiveCustomersPanel = () => {
     total_pages: 1
   });
 
-  // State tìm kiếm từ khóa
   const [searchTerm, setSearchTerm] = useState('');
 
-  // State Modal xem chi tiết hợp đồng
   const [selectedContractId, setSelectedContractId] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  // State Toast thông báo
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Gọi API lấy danh sách khách hàng hoạt động tại bãi
   const fetchActiveCustomers = useCallback(
     async (page = pagination.page, limit = pagination.limit, search = searchTerm) => {
       try {
@@ -87,7 +81,6 @@ const ProviderActiveCustomersPanel = () => {
 
   useEffect(() => {
     fetchActiveCustomers(1, pagination.limit, searchTerm);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.limit]);
 
   const handleSearchSubmit = (e) => {
@@ -156,9 +149,7 @@ const ProviderActiveCustomersPanel = () => {
     <div className="space-y-4">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      {/* UNIFIED SINGLE CARD CONTAINER */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-        {/* 1. HEADER */}
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -179,7 +170,6 @@ const ProviderActiveCustomersPanel = () => {
           </button>
         </div>
 
-        {/* 2. KPI SUMMARY STRIP IN SAME CONTAINER */}
         <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
           <div className="p-5">
             <span className="text-xs text-slate-500 block">Khách đang gửi xe</span>
@@ -228,7 +218,6 @@ const ProviderActiveCustomersPanel = () => {
           </div>
         </div>
 
-        {/* 3. SEARCH TOOLBAR IN SAME CONTAINER */}
         <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
           <div className="text-xs text-slate-500 font-medium">
             Danh sách khách hàng đang thuê ({pagination.total || activeCustomers.length}):
@@ -252,7 +241,6 @@ const ProviderActiveCustomersPanel = () => {
           </form>
         </div>
 
-        {/* 4. CUSTOMER LIST IN SAME CONTAINER */}
         {loading ? (
           <div className="p-16 text-center">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -301,7 +289,6 @@ const ProviderActiveCustomersPanel = () => {
                   key={item.contract_id}
                   className="p-6 hover:bg-slate-50/60 transition space-y-4"
                 >
-                  {/* TOP ROW: CUSTOMER NAME + CONTRACT CODE + ACTIONS */}
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-teal-50 text-teal-700 font-bold flex items-center justify-center text-sm border border-teal-100 shrink-0">
@@ -343,9 +330,7 @@ const ProviderActiveCustomersPanel = () => {
                     </div>
                   </div>
 
-                  {/* DETAILS ROW IN SAME ITEM (NO SEPARATE BOXES) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-100 text-xs">
-                    {/* COL 1: CONTACT */}
                     <div className="space-y-1">
                       <span className="text-slate-400 block">Thông tin liên hệ</span>
                       <p className="text-slate-800 font-medium flex items-center gap-1.5">
@@ -372,7 +357,6 @@ const ProviderActiveCustomersPanel = () => {
                       )}
                     </div>
 
-                    {/* COL 2: VEHICLE */}
                     <div className="space-y-1">
                       <span className="text-slate-400 block">Phương tiện & vị trí đỗ</span>
                       <p className="font-semibold text-slate-900 flex items-center gap-1.5">
@@ -385,7 +369,6 @@ const ProviderActiveCustomersPanel = () => {
                       </p>
                     </div>
 
-                    {/* COL 3: PRICE & PAYMENT */}
                     <div className="space-y-1">
                       <span className="text-slate-400 block">Giá thuê & thanh toán</span>
                       <p className="text-sm font-bold text-teal-700">
@@ -403,7 +386,6 @@ const ProviderActiveCustomersPanel = () => {
           </div>
         )}
 
-        {/* 5. PAGINATION FOOTER IN SAME CONTAINER */}
         {!loading && activeCustomers.length > 0 && pagination.total_pages > 1 && (
           <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
             <div>
@@ -435,7 +417,6 @@ const ProviderActiveCustomersPanel = () => {
         )}
       </div>
 
-      {/* MODAL XEM CHI TIẾT */}
       {selectedContractId && (
         <ContractDetailModal
           contractId={selectedContractId}

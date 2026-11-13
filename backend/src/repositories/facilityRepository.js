@@ -66,6 +66,11 @@ class FacilityRepository {
             amenity: true,
           },
         },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
+          },
+        },
       },
     });
   }
@@ -75,10 +80,16 @@ class FacilityRepository {
    */
   async getFacilityByProviderId(providerId) {
     return await prisma.facility.findUnique({
-      where: { provider_id: providerId },
+      where: { provider_id: parseInt(providerId, 10) },
       include: {
         images: true,
-      },
+        facility_amenities: {
+          include: { amenity: true },
+        },
+        facility_vehicle_types: {
+          include: { vehicle_type: true },
+        },
+      }
     });
   }
 
@@ -249,18 +260,20 @@ class FacilityRepository {
   }
 
   /**
-   * Nhân viên khảo sát thực địa gửi dữ liệu hình ảnh và số chỗ (capacity)
+   * Nhân viên khảo sát thực địa gửi hình ảnh, số chỗ và vị trí thực tế
    * @param {number} facilityId
-   * @param {number} capacity
-   * @param {string[]} images
+   * @param {{capacity: number, images: string[], address: string, latitude: number, longitude: number}} inspection
    */
-  async inspectFacility(facilityId, capacity, images = []) {
+  async inspectFacility(facilityId, { capacity, images, address, latitude, longitude }) {
     return await prisma.$transaction(async (tx) => {
       const facility = await tx.facility.update({
         where: { id: facilityId },
         data: {
           capacity: parseInt(capacity, 10),
           available_slots: parseInt(capacity, 10),
+          address,
+          latitude,
+          longitude,
           verification_status: "INSPECTED",
         },
       });
@@ -359,11 +372,28 @@ class FacilityRepository {
   /**
    * Tìm kiếm bãi đỗ xe ACTIVE dựa theo từ khóa, loại xe và tiện ích
    */
-  async searchActiveFacilities({ keyword, vehicle_type, amenities }) {
+  async searchActiveFacilities({ keyword, vehicle_type, amenities, bounds, minPrice, maxPrice }) {
     let whereClause = {
       verification_status: "APPROVED",
       visibility_status: "VISIBLE",
     };
+
+    if (bounds) {
+      whereClause.latitude = {
+        gte: bounds.minLat,
+        lte: bounds.maxLat,
+      };
+      whereClause.longitude = {
+        gte: bounds.minLng,
+        lte: bounds.maxLng,
+      };
+    }
+
+    if (Number.isFinite(minPrice) || Number.isFinite(maxPrice)) {
+      whereClause.price_per_month = {};
+      if (Number.isFinite(minPrice)) whereClause.price_per_month.gte = minPrice;
+      if (Number.isFinite(maxPrice)) whereClause.price_per_month.lte = maxPrice;
+    }
 
     if (keyword) {
       const normalizedKeyword = keyword.trim().replace(/\s+/g, " ");
@@ -399,6 +429,11 @@ class FacilityRepository {
         facility_amenities: {
           include: {
             amenity: true,
+          },
+        },
+        facility_vehicle_types: {
+          include: {
+            vehicle_type: true,
           },
         },
         reviews: {
@@ -446,6 +481,7 @@ class FacilityRepository {
    */
   async getAllAmenities() {
     return await prisma.amenity.findMany({
+      where: { is_active: true },
       orderBy: { id: "asc" },
     });
   }
@@ -632,7 +668,7 @@ class FacilityRepository {
   async getActiveContractsCount(facilityId) {
     return await prisma.confirmation_Record.count({
       where: {
-        reservation: { facility_id: facilityId },
+        reservation: { facility_id: parseInt(facilityId, 10) },
         status: "ACTIVE"
       }
     });

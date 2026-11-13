@@ -17,10 +17,10 @@ import {
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import NotificationDetailModal from '../modals/NotificationDetailModal';
+import Toast from './Toast';
 
-/**
- * Format thời gian tương đối (Relative time)
- */
+//relative time format
+
 const formatRelativeTime = (dateString) => {
   if (!dateString) return '';
   const now = new Date();
@@ -37,9 +37,7 @@ const formatRelativeTime = (dateString) => {
   return past.toLocaleDateString('vi-VN');
 };
 
-/**
- * Lấy Icon và màu sắc phù hợp cho từng loại thông báo
- */
+//icon and collor for notification type and priority
 const getNotificationTypeDetails = (type = '') => {
   const normalized = (type || '').toUpperCase();
   if (normalized.includes('BẢO TRÌ') || normalized.includes('MAINTENANCE') || normalized.includes('HỆ THỐNG')) {
@@ -82,6 +80,7 @@ const getNotificationTypeDetails = (type = '') => {
   };
 };
 
+//notification dropdown
 /**
  * Component Dropdown hiển thị danh sách thông báo và đánh dấu đã đọc (UC-67, UC-68)
  */
@@ -91,12 +90,13 @@ const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' hoặc 'UNREAD'
+  const [activeTab, setActiveTab] = useState('ALL'); //all or unread
   const [loading, setLoading] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [toast, setToast] = useState(null);
   const dropdownRef = useRef(null);
 
-  // Tải danh sách thông báo từ API
+  //fetch notifications list
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) return;
     try {
@@ -106,6 +106,7 @@ const NotificationDropdown = () => {
       setUnreadCount(data.unreadCount || 0);
     } catch (error) {
       console.error('Lỗi lấy danh sách thông báo:', error);
+      setToast({ message: error.message || 'Không thể tải thông báo.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -115,22 +116,23 @@ const NotificationDropdown = () => {
     fetchNotifications();
   }, [fetchNotifications]);
 
-  // Lắng nghe sự kiện thông báo thời gian thực qua Socket.IO
+  //Socket real-time notification handling
   useEffect(() => {
     if (!socket) return;
 
     const handleRealtimeNotification = (payload) => {
       console.log('🔔 [Realtime Socket Notification Nhận được]:', payload);
-      // Tăng số lượng chưa đọc
+      //incease unread
       setUnreadCount((prev) => prev + 1);
 
-      // Thêm thông báo mới lên đầu danh sách
+      //add new notification to the top list
       const newNotificationItem = {
         id: payload.id || `realtime_${Date.now()}`,
         title: payload.title,
         content: payload.content,
         type: payload.category || payload.type || 'HỆ THỐNG',
         is_read: false,
+        is_persisted: payload.is_persisted !== false,
         created_at: payload.created_at || new Date().toISOString()
       };
 
@@ -146,7 +148,7 @@ const NotificationDropdown = () => {
     };
   }, [socket]);
 
-  // Đóng dropdown khi click ra bên ngoài
+  //close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -157,11 +159,11 @@ const NotificationDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Xử lý khi nhấn vào thông báo: CHỈ đánh dấu là đã đọc, KHÔNG mở modal chi tiết
+  //if click noti, mark as read
   const handleMarkAsRead = async (item) => {
     if (item.is_read) return;
 
-    // Cập nhật lạc quan (Optimistic update)
+    //optimistic update
     setNotifications((prev) =>
       prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n))
     );
@@ -174,24 +176,36 @@ const NotificationDropdown = () => {
         if (typeof serverUnread === 'number') {
           setUnreadCount(serverUnread);
         }
+        return true;
       } catch (error) {
         console.error('Lỗi đánh dấu đã đọc:', error);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === item.id ? { ...n, is_read: false } : n))
+        );
+        setUnreadCount((prev) => prev + 1);
+        setToast({ message: error.message || 'Không thể đánh dấu thông báo đã đọc.', type: 'error' });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  //detail button
+  const handleOpenDetail = async (e, item) => {
+    e.stopPropagation();
+    setSelectedNotification({ ...item, is_read: true });
+    if (!item.is_read) {
+      const marked = await handleMarkAsRead(item);
+      if (!marked) {
+        setSelectedNotification((previous) =>
+          previous?.id === item.id ? { ...previous, is_read: false } : previous
+        );
       }
     }
   };
 
-  // Xử lý khi nhấn vào nút "Chi tiết": Mở modal xem toàn bộ nội dung
-  const handleOpenDetail = async (e, item) => {
-    e.stopPropagation();
-    // Mở modal xem full nội dung
-    setSelectedNotification({ ...item, is_read: true });
-
-    // Đánh dấu đã đọc nếu chưa đọc
-    if (!item.is_read) {
-      await handleMarkAsRead(item);
-    }
-  };
-
+  //mark all as read
   // Xử lý đánh dấu tất cả là đã đọc (UC-68)
   const handleMarkAllAsRead = async () => {
     if (unreadCount === 0) return;
@@ -201,10 +215,10 @@ const NotificationDropdown = () => {
       setUnreadCount(0);
     } catch (error) {
       console.error('Lỗi đánh dấu tất cả đã đọc:', error);
+      setToast({ message: error.message || 'Không thể đánh dấu tất cả thông báo đã đọc.', type: 'error' });
     }
   };
 
-  // Lọc thông báo theo tab 'ALL' hoặc 'UNREAD'
   const filteredNotifications = notifications.filter((item) => {
     if (activeTab === 'UNREAD') return !item.is_read;
     return true;
@@ -212,7 +226,14 @@ const NotificationDropdown = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Nút quả chuông trên thanh điều hướng */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+      {/* bell button*/}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2.5 rounded-xl text-slate-600 hover:text-teal-600 hover:bg-slate-100 transition duration-150 focus:outline-none"
@@ -227,10 +248,10 @@ const NotificationDropdown = () => {
         )}
       </button>
 
-      {/* Menu thả xuống (Dropdown Popover) */}
+      {/* noti dropdown */}
       {isOpen && (
         <div className="absolute right-0 mt-3 w-84 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-          {/* Header Thông báo */}
+          {/* Header */}
           <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -250,7 +271,7 @@ const NotificationDropdown = () => {
               )}
             </div>
 
-            {/* Filter Pills (Tất cả / Chưa đọc) */}
+            {/* filter */}
             <div className="flex gap-2 mt-3">
               <button
                 onClick={() => setActiveTab('ALL')}
@@ -273,7 +294,7 @@ const NotificationDropdown = () => {
             </div>
           </div>
 
-          {/* Danh sách thông báo (Scrollable list) */}
+          {/* notif list */}
           <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
             {loading && notifications.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
@@ -303,12 +324,10 @@ const NotificationDropdown = () => {
                     className={`p-4 transition cursor-pointer flex items-start gap-3.5 hover:bg-slate-50/80 ${!item.is_read ? 'bg-teal-50/20' : ''
                       }`}
                   >
-                    {/* Icon đại diện phân loại */}
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${typeDetails.bgColor}`}>
                       <IconComponent className="w-4 h-4" />
                     </div>
 
-                    {/* Nội dung thông báo */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${typeDetails.badgeColor}`}>
@@ -335,7 +354,7 @@ const NotificationDropdown = () => {
                       </div>
                     </div>
 
-                    {/* Chấm tròn báo trạng thái chưa đọc (Unread dot) */}
+                    {/* Unread dot */}
                     {!item.is_read && (
                       <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shrink-0 mt-2 shadow-sm" title="Chưa đọc" />
                     )}
@@ -348,11 +367,12 @@ const NotificationDropdown = () => {
         </div>
       )}
 
-      {/* Modal hiển thị chi tiết nội dung khi thông báo dài */}
+      {/* long noti detail */}
       <NotificationDetailModal
         isOpen={Boolean(selectedNotification)}
         onClose={() => setSelectedNotification(null)}
         notification={selectedNotification}
+        autoMarkAsRead={false}
         onMarkedRead={(id, serverCount) => {
           setNotifications((prev) =>
             prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))

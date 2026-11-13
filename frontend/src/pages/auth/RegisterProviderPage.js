@@ -3,19 +3,23 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import platformFeeService from '../../services/platformFeeService';
+import vehicleTypeService from '../../services/vehicleTypeService';
 import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, CheckSquare, Square, Phone, Mail } from 'lucide-react';
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
-import { VEHICLE_TYPES } from '../../constants/vehicleTypes';
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../../utils/validators';
-
+import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
 
 const RegisterProviderPage = () => {
   const { registerProvider } = useAuth();
 
-  // State tiện ích được lấy động từ Database (Bảng Amenity)
   const [dbAmenities, setDbAmenities] = useState([]);
   const [loadingAmenities, setLoadingAmenities] = useState(true);
   const [platformFees, setPlatformFees] = useState([]);
+  const [agreedPolicy, setAgreedPolicy] = useState(false);
+  const [policyModalOpen, setPolicyModalOpen] = useState(false);
+  // State danh mục loại phương tiện lấy từ Database (Bảng vehicle_types)
+  const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
+  const [loadingVehicleTypes, setLoadingVehicleTypes] = useState(true);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -27,7 +31,7 @@ const RegisterProviderPage = () => {
     longitude: '',
     capacity: '5',
     price_per_month: '1500000',
-    vehicle_types: [VEHICLE_TYPES[0].id],
+    vehicle_types: [],
     amenity_ids: []
   });
 
@@ -35,19 +39,20 @@ const RegisterProviderPage = () => {
   const [loading, setLoading] = useState(false);
   const [successResult, setSuccessResult] = useState(null);
 
-  // Tải danh mục Tiện ích & Biểu phí nền tảng từ Database khi khởi tạo trang
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoadingAmenities(true);
-        const [amenitiesRes, feesRes] = await Promise.allSettled([
+        setLoadingVehicleTypes(true);
+        const [amenitiesRes, feesRes, vehicleTypesRes] = await Promise.allSettled([
           authService.getAmenities(),
-          platformFeeService.getActiveFees()
+          platformFeeService.getActiveFees(),
+          vehicleTypeService.getActiveVehicleTypes()
         ]);
 
         if (amenitiesRes.status === 'fulfilled' && amenitiesRes.value?.data?.amenities) {
           setDbAmenities(amenitiesRes.value.data.amenities);
-          // Tự động chọn 3 tiện ích đầu tiên mặc định
+          
           const defaultIds = amenitiesRes.value.data.amenities.slice(0, 3).map(a => a.id);
           setFormData(prev => ({ ...prev, amenity_ids: defaultIds }));
         }
@@ -56,17 +61,30 @@ const RegisterProviderPage = () => {
           const feeList = feesRes.value?.data || feesRes.value || [];
           setPlatformFees(Array.isArray(feeList) ? feeList : []);
         }
+
+        if (vehicleTypesRes.status === 'fulfilled') {
+          const vList = vehicleTypesRes.value?.data || vehicleTypesRes.value || [];
+          if (Array.isArray(vList) && vList.length > 0) {
+            setDbVehicleTypes(vList);
+            setFormData(prev => ({
+              ...prev,
+              vehicle_types: prev.vehicle_types && prev.vehicle_types.length > 0
+                ? prev.vehicle_types
+                : [vList[0].type_code]
+            }));
+          }
+        }
       } catch (err) {
         console.error('Lỗi tải dữ liệu ban đầu từ DB:', err);
       } finally {
         setLoadingAmenities(false);
+        setLoadingVehicleTypes(false);
       }
     };
 
     fetchInitialData();
   }, []);
 
-  // Tìm gói phí nền tảng phù hợp với quy mô chỗ đỗ (Theo khung Min - Max)
   const capacitySlots = parseInt(formData.capacity, 10);
 
   const matchedFee = useMemo(() => {
@@ -81,14 +99,12 @@ const RegisterProviderPage = () => {
 
   const systemFee = matchedFee ? Number(matchedFee.fee_amount) : 0;
 
-  // Chỉ cho phép nhập số nguyên cho Sức chứa
   const handleCapacityChange = (e) => {
     const rawVal = e.target.value.replace(/\D/g, '');
     setFormData((prev) => ({ ...prev, capacity: rawVal }));
     if (errorList.length > 0) setErrorList([]);
   };
 
-  // Chỉ cho phép nhập số cho Giá thuê và lưu số nguyên thuần
   const handlePriceChange = (e) => {
     const rawVal = e.target.value.replace(/\D/g, '');
     setFormData((prev) => ({ ...prev, price_per_month: rawVal }));
@@ -151,6 +167,13 @@ const RegisterProviderPage = () => {
       errs.push('Giá thuê theo tháng phải lớn hơn 0 VNĐ.');
     }
 
+    if (!agreedPolicy) {
+      errs.push('Vui lòng đọc và tích chọn đồng ý với Chính sách & Quy định dành cho Chủ bãi đỗ xe của ParkLink.');
+    }
+    if (!formData.vehicle_types || formData.vehicle_types.length === 0) {
+      errs.push('Vui lòng chọn ít nhất một loại phương tiện nhận gửi.');
+    }
+
     return { isValid: errs.length === 0, errs, cleanedName, cleanedEmail, cleanedPhone, cleanedFacilityName };
   };
 
@@ -206,16 +229,27 @@ const RegisterProviderPage = () => {
 
         <div className="bg-white shadow-xl rounded-3xl border border-slate-100 p-8 sm:p-10">
           {errorList.length > 0 && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm space-y-2">
-              <div className="flex items-center gap-2 font-bold text-red-800">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-                <span>Vui lòng kiểm tra lại thông tin khai báo:</span>
+            <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm flex items-start gap-3 animate-fadeIn">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                {errorList.length === 1 ? (
+                  <p className="text-xs sm:text-sm font-semibold text-red-700 leading-relaxed">
+                    {errorList[0]}
+                  </p>
+                ) : (
+                  <div className="space-y-1.5">
+                    <p className="text-xs sm:text-sm font-bold text-red-800">Vui lòng kiểm tra lại thông tin khai báo:</p>
+                    <ul className="space-y-1 text-xs text-red-700">
+                      {errorList.map((errItem, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5">
+                          <span className="text-red-400 font-bold">•</span>
+                          <span>{errItem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <ul className="list-disc list-inside space-y-1 text-xs text-red-700 pl-1">
-                {errorList.map((errItem, idx) => (
-                  <li key={idx}>{errItem}</li>
-                ))}
-              </ul>
             </div>
           )}
 
@@ -250,7 +284,7 @@ const RegisterProviderPage = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* PHẦN 1: THÔNG TIN TÀI KHOẢN ĐẠI DIỆN */}
+              
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <User className="w-5 h-5 text-teal-600" />
@@ -311,7 +345,6 @@ const RegisterProviderPage = () => {
                 </div>
               </div>
 
-              {/* PHẦN 2: CHI TIẾT BÃI ĐỖ XE & ĐỊA CHỈ GOOGLE MAPS */}
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <Building2 className="w-5 h-5 text-teal-600" />
@@ -361,7 +394,7 @@ const RegisterProviderPage = () => {
                         name="capacity"
                         value={formData.capacity}
                         onChange={handleCapacityChange}
-                        placeholder="5"
+                        placeholder="Nhập tổng số slot đỗ"
                         maxLength={4}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
@@ -385,7 +418,7 @@ const RegisterProviderPage = () => {
                         name="price_per_month"
                         value={formData.price_per_month}
                         onChange={handlePriceChange}
-                        placeholder="1500000"
+                        placeholder="Nhập giá thuê theo tháng"
                         maxLength={12}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium text-slate-800"
                         required
@@ -393,7 +426,6 @@ const RegisterProviderPage = () => {
                     </div>
                   </div>
 
-                  {/* THẺ TÍNH PHÍ NỀN TẢNG THEO ĐỀ TÀI (GÓI QUY MÔ MIN - MAX) */}
                   <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
@@ -428,31 +460,42 @@ const RegisterProviderPage = () => {
                     </div>
                   </div>
 
-                  {/* Loại phương tiện nhận gửi */}
+                  {/* Loại phương tiện nhận gửi lấy động 100% từ Database */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Loại phương tiện nhận gửi
+                      Loại phương tiện nhận gửi <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex flex-wrap gap-3">
-                      {VEHICLE_TYPES.map(type => (
-                        <button
-                          type="button"
-                          key={type.id}
-                          onClick={() => handleVehicleTypeToggle(type.id)}
-                          className={`px-4 py-2.5 rounded-xl border text-sm font-semibold flex items-center gap-2 transition ${formData.vehicle_types.includes(type.id)
-                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
-                            : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-                            }`}
-                        >
-                          <Car className="w-4 h-4" /> {type.shortLabel}
-                        </button>
-                      ))}
-                    </div>
+                    {loadingVehicleTypes ? (
+                      <p className="text-xs text-slate-500">Đang tải danh mục loại phương tiện từ cơ sở dữ liệu...</p>
+                    ) : dbVehicleTypes.length === 0 ? (
+                      <p className="text-xs text-amber-600">Chưa có loại phương tiện nào đang hoạt động trên hệ thống.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {dbVehicleTypes.map(type => {
+                          const typeCode = type.type_code;
+                          const isSelected = formData.vehicle_types.includes(typeCode);
+                          return (
+                            <button
+                              type="button"
+                              key={typeCode}
+                              onClick={() => handleVehicleTypeToggle(typeCode)}
+                              title={type.description || type.name}
+                              className={`px-4 py-2.5 rounded-xl border text-sm font-semibold flex items-center gap-2 transition ${isSelected
+                                ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                                }`}
+                            >
+                              <Car className="w-4 h-4" />
+                              <span>{type.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* PHẦN 3: DANH MỤC TIỆN ÍCH LẤY TỪ DATABASE (BẢNG AMENITY) */}
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <ShieldCheck className="w-5 h-5 text-teal-600" />
@@ -495,6 +538,30 @@ const RegisterProviderPage = () => {
                 </div>
               </div>
 
+              <div className="p-4 bg-teal-50/70 rounded-2xl border border-teal-200/80 flex items-start gap-3">
+                <input
+                  id="agreePolicyProvider"
+                  type="checkbox"
+                  checked={agreedPolicy}
+                  onChange={(e) => {
+                    setAgreedPolicy(e.target.checked);
+                    if (errorList.length > 0) setErrorList([]);
+                  }}
+                  className="w-4 h-4 mt-0.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                />
+                <label htmlFor="agreePolicyProvider" className="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
+                  Tôi cam kết thông tin bãi xe là chính xác, đã đọc kỹ và đồng ý tuân thủ{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPolicyModalOpen(true)}
+                    className="text-teal-700 font-bold hover:underline"
+                  >
+                    Chính Sách & Quy Định Dành Cho Chủ Bãi Đỗ Xe
+                  </button>{' '}
+                  của ParkLink. <span className="text-red-500">*</span>
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
@@ -517,6 +584,12 @@ const RegisterProviderPage = () => {
           </div>
         </div>
       </div>
+
+      <PolicyDetailModal
+        isOpen={policyModalOpen}
+        onClose={() => setPolicyModalOpen(false)}
+        policyType="PROVIDER"
+      />
     </div>
   );
 };

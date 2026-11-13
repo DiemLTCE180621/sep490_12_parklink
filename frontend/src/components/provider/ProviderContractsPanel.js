@@ -15,7 +15,8 @@ import {
   Mail,
   Car,
   Eye,
-  Users
+  Users,
+  Clock
 } from 'lucide-react';
 
 const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
@@ -23,7 +24,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
+  const [activeTab, setActiveTab] = useState('ALL'); 
   const [searchTerm, setSearchTerm] = useState('');
 
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
@@ -54,10 +55,29 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
     return rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim() || 'Chưa cập nhật';
   };
 
+  const getSnapshot = (contract) => {
+    if (!contract?.contract_snapshot) return {};
+    if (typeof contract.contract_snapshot === 'string') {
+      try {
+        return JSON.parse(contract.contract_snapshot);
+      } catch {
+        return {};
+      }
+    }
+    return contract.contract_snapshot;
+  };
+
   const filteredContracts = contracts.filter((item) => {
+    const snap = getSnapshot(item);
+    const hasPendingExt = snap?.extension_request?.status === 'PENDING';
+    const hasPendingTerm = snap?.termination_request?.status === 'PENDING';
+
     let matchesTab = true;
     if (activeTab === 'PENDING_SIGNATURE') matchesTab = item.status === 'PENDING_SIGNATURE';
     else if (activeTab === 'ACTIVE') matchesTab = item.status === 'ACTIVE';
+    else if (activeTab === 'EXTENSION_PENDING') matchesTab = hasPendingExt;
+    else if (activeTab === 'TERMINATION_PENDING') matchesTab = hasPendingTerm;
+    else if (activeTab === 'TERMINATED') matchesTab = item.status === 'TERMINATED' || item.status === 'CANCELLED';
 
     const query = searchTerm.trim().toLowerCase();
     let matchesSearch = true;
@@ -82,6 +102,15 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   const totalCount = contracts.length;
   const pendingCount = contracts.filter((c) => c.status === 'PENDING_SIGNATURE').length;
   const activeCount = contracts.filter((c) => c.status === 'ACTIVE').length;
+  const extensionPendingCount = contracts.filter((c) => {
+    const snap = getSnapshot(c);
+    return snap?.extension_request?.status === 'PENDING';
+  }).length;
+  const terminationPendingCount = contracts.filter((c) => {
+    const snap = getSnapshot(c);
+    return snap?.termination_request?.status === 'PENDING';
+  }).length;
+  const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED' || c.status === 'CANCELLED').length;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -99,6 +128,20 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
             Đang hiệu lực
           </span>
         );
+      case 'TERMINATED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            Đã chấm dứt
+          </span>
+        );
+      case 'CANCELLED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            Đã hủy (Hết chỗ)
+          </span>
+        );
       default:
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
@@ -113,7 +156,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
-        {/* 1. HEADER */}
+        
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -148,7 +191,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
           </div>
         </div>
 
-        {/* 2. FILTER TABS & SEARCH BAR */}
+        
         <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
@@ -183,6 +226,45 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
             >
               Đang hiệu lực ({activeCount})
             </button>
+
+            <button
+              onClick={() => setActiveTab('EXTENSION_PENDING')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
+                activeTab === 'EXTENSION_PENDING'
+                  ? 'bg-amber-600 text-white font-semibold'
+                  : extensionPendingCount > 0
+                  ? 'text-amber-800 bg-amber-50 hover:bg-amber-100/80 border border-amber-200'
+                  : 'text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              Chờ duyệt gia hạn ({extensionPendingCount})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('TERMINATION_PENDING')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
+                activeTab === 'TERMINATION_PENDING'
+                  ? 'bg-rose-600 text-white font-semibold'
+                  : terminationPendingCount > 0
+                  ? 'text-rose-800 bg-rose-50 hover:bg-rose-100/80 border border-rose-200'
+                  : 'text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              Yêu cầu trả chỗ ({terminationPendingCount})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('TERMINATED')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                activeTab === 'TERMINATED'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-200/70'
+              }`}
+            >
+              Đã chấm dứt ({terminatedCount})
+            </button>
           </div>
 
           <div className="relative w-full md:w-64">
@@ -197,7 +279,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
           </div>
         </div>
 
-        {/* 3. LIST OF CONTRACTS */}
+        
         {loading ? (
           <div className="p-16 text-center">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -231,6 +313,9 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
               const customer = item.reservation?.customer;
               const facility = item.reservation?.facility;
               const displayVehicle = cleanVehicleDisplay(item.reservation?.vehicle_info);
+              const snap = getSnapshot(item);
+              const pendingExt = snap?.extension_request?.status === 'PENDING' ? snap.extension_request : null;
+              const pendingTerm = snap?.termination_request?.status === 'PENDING' ? snap.termination_request : null;
 
               return (
                 <div
@@ -247,10 +332,30 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                       <span>Lập ngày {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
                       <span>•</span>
                       {getStatusBadge(item.status)}
+
+                      {pendingExt && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                            <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                            Chờ duyệt gia hạn (+{pendingExt.extension_months} thg)
+                          </span>
+                        </>
+                      )}
+
+                      {pendingTerm && (
+                        <>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
+                            <AlertCircle className="w-3 h-3 text-rose-600 animate-pulse" />
+                            Yêu cầu trả chỗ ({pendingTerm.requested_termination_date ? new Date(pendingTerm.requested_termination_date).toLocaleDateString('vi-VN') : ''})
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
-                      {/* CUSTOMER INFO */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Khách thuê (Bên B)</span>
                         <p className="font-semibold text-slate-900 flex items-center gap-1.5">
@@ -271,7 +376,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         </div>
                       </div>
 
-                      {/* RENTAL INFO */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Chi phí & thời hạn</span>
                         <p className="font-bold text-teal-700">
@@ -289,7 +394,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         </p>
                       </div>
 
-                      {/* FACILITY & VEHICLE */}
+                      
                       <div className="space-y-1">
                         <span className="text-xs text-slate-500 block">Bãi đỗ & phương tiện</span>
                         <p className="font-semibold text-slate-900 truncate">
@@ -307,8 +412,49 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                     </div>
                   </div>
 
-                  {/* ACTION BUTTON */}
-                  <div className="flex items-center justify-end shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                  
+                  <div className="flex items-center justify-end shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 gap-2">
+                    {pendingTerm && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetail(item.id);
+                        }}
+                        className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5"
+                      >
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Xác nhận trả chỗ
+                      </button>
+                    )}
+
+                    {pendingExt && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDetail(item.id);
+                        }}
+                        className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5"
+                      >
+                        <Clock className="w-3.5 h-3.5" />
+                        Duyệt gia hạn (+{pendingExt.extension_months} thg)
+                      </button>
+                    )}
+
+                    {item.status === 'ACTIVE' && !pendingTerm && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/contracts/${item.id}/terminate`);
+                        }}
+                        className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
+                      >
+                        Chấm dứt
+                      </button>
+                    )}
+
                     <button
                       type="button"
                       onClick={(e) => {

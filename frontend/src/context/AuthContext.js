@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error('Lỗi khi tải thông tin người dùng:', error);
           localStorage.removeItem('parklink_token');
+          localStorage.removeItem('parklink_login_method');
           setToken(null);
           setUser(null);
         }
@@ -35,6 +36,20 @@ export const AuthProvider = ({ children }) => {
     if (response?.data) {
       const { user: userData, token: jwtToken } = response.data;
       localStorage.setItem('parklink_token', jwtToken);
+      localStorage.setItem('parklink_login_method', 'password');
+      setToken(jwtToken);
+      setUser(userData);
+      return response;
+    }
+  };
+
+  const googleLogin = async (credential) => {
+    const response = await authService.googleLogin(credential);
+    const data = response?.data?.data || response?.data;
+    if (data) {
+      const { user: userData, token: jwtToken } = data;
+      localStorage.setItem('parklink_token', jwtToken);
+      localStorage.setItem('parklink_login_method', 'google');
       setToken(jwtToken);
       setUser(userData);
       return response;
@@ -84,6 +99,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await authService.logout();
+    localStorage.removeItem('parklink_token');
+    localStorage.removeItem('parklink_login_method');
     setToken(null);
     setUser(null);
   };
@@ -94,6 +111,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     isAuthenticated: !!user,
     login,
+    googleLogin,
     registerCustomer,
     registerProvider,
     changePassword,

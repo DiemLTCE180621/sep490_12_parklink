@@ -19,7 +19,7 @@ class NotificationRepository {
    */
   async createManyNotifications(dataArray) {
     if (!dataArray || dataArray.length === 0) return { count: 0 };
-    return await prisma.notification.createMany({
+    return await prisma.notification.createManyAndReturn({
       data: dataArray
     });
   }

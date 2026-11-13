@@ -66,16 +66,12 @@ const ProviderCreateContractPage = () => {
     ...defaultTerms
   });
 
-  const [activeTermsTab, setActiveTermsTab] = useState('customer'); // customer | owner | termination | dispute
-
-  // Helper safety parsers
+  const [activeTermsTab, setActiveTermsTab] = useState('customer');
   const parseCleanNumber = (val) => {
     if (val === null || val === undefined) return 0;
     const cleanStr = String(val).replace(/[^0-9.]/g, '');
     return parseFloat(cleanStr) || 0;
   };
-
-  // Fetch reservation if not passed or needed
   const fetchReservation = useCallback(async () => {
     if (!targetId) return;
     try {
@@ -99,8 +95,6 @@ const ProviderCreateContractPage = () => {
       fetchReservation();
     }
   }, [reservation, targetId, fetchReservation]);
-
-  // Sync form defaults once reservation is available
   useEffect(() => {
     if (reservation) {
       let initialPrice = '';
@@ -176,8 +170,6 @@ const ProviderCreateContractPage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // Calculate rental duration in months for preview
   const getDurationMonths = () => {
     if (!formData.start_date || !formData.end_date) return null;
     const start = new Date(formData.start_date);
@@ -256,7 +248,12 @@ const ProviderCreateContractPage = () => {
         }
       }, 1200);
     } catch (err) {
-      setFormError(err.message || 'Không thể tạo hợp đồng điện tử. Vui lòng thử lại!');
+      const errMsg = err.response?.data?.message || err.message || 'Không thể tạo hợp đồng điện tử. Vui lòng thử lại!';
+      setFormError(errMsg);
+      setToastInfo({ message: errMsg, type: 'error' });
+      if (errMsg.includes('24 giờ')) {
+        setReservation((prev) => (prev ? { ...prev, status: 'CANCELLED' } : prev));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -273,7 +270,7 @@ const ProviderCreateContractPage = () => {
       />
 
       <div className="w-full max-w-[1600px] mx-auto space-y-6">
-        {/* BREADCRUMB & BACK NAVIGATION */}
+        
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 flex-wrap">
             <Link
@@ -303,7 +300,7 @@ const ProviderCreateContractPage = () => {
           </button>
         </div>
 
-        {/* LOADING STATE */}
+        
         {loadingReservation ? (
           <div className="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm space-y-4">
             <Loader2 className="w-10 h-10 animate-spin text-teal-600 mx-auto" />
@@ -323,8 +320,30 @@ const ProviderCreateContractPage = () => {
               Thử Lại
             </button>
           </div>
+        ) : reservation?.status === 'CANCELLED' ? (
+          
+          <div className="bg-white rounded-3xl p-10 border border-rose-200 shadow-md text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertCircle className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">
+              Đã hết thời hạn 24 giờ làm hợp đồng – Yêu cầu đặt chỗ đã tự động hủy!
+            </h3>
+            <p className="text-sm text-slate-600 max-w-lg mx-auto">
+              Quá thời hạn 24 giờ kể từ khi chấp nhận yêu cầu đặt chỗ mà chưa hoàn tất tạo hợp đồng điện tử, hệ thống đã tự động hủy yêu cầu đặt chỗ này.
+            </p>
+            <div className="pt-2 flex items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard', { state: { providerTab: 'reservations' } })}
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition"
+              >
+                Quay Lại Danh Sách Yêu Cầu
+              </button>
+            </div>
+          </div>
         ) : reservation?.confirmation_record ? (
-          /* ALREADY HAS CONTRACT */
+          
           <div className="bg-white rounded-3xl p-10 border border-teal-200 shadow-md text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
@@ -354,7 +373,7 @@ const ProviderCreateContractPage = () => {
             </div>
           </div>
         ) : reservation?.status !== 'APPROVED' ? (
-          /* NOT APPROVED WARNING */
+          
           <div className="bg-white rounded-3xl p-10 border border-amber-200 shadow-md text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
               <Clock className="w-8 h-8" />
@@ -376,9 +395,9 @@ const ProviderCreateContractPage = () => {
             </button>
           </div>
         ) : (
-          /* MAIN FORM CANVAS */
+          
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-lg overflow-hidden">
-            {/* HEADER HERO */}
+            
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 px-6 sm:px-8 py-6 text-white border-b border-slate-800">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -405,7 +424,7 @@ const ProviderCreateContractPage = () => {
               </div>
             </div>
 
-            {/* FORM BODY */}
+            
             <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8 bg-slate-50/40 text-xs sm:text-sm">
               {formError && (
                 <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-3 shadow-xs">
@@ -414,7 +433,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               )}
 
-              {/* SECTION I: THÔNG TIN CÁC BÊN GIAO DỊCH */}
+              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between">
                   <span className="flex items-center gap-2 text-teal-900">
@@ -426,7 +445,7 @@ const ProviderCreateContractPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-                  {/* BÊN A (OWNER) */}
+                  
                   <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
                     <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
                       <span className="text-[11px] font-extrabold uppercase text-slate-600">
@@ -465,7 +484,7 @@ const ProviderCreateContractPage = () => {
                     )}
                   </div>
 
-                  {/* BÊN B (CUSTOMER) */}
+                  
                   <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
                     <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
                       <span className="text-[11px] font-extrabold uppercase text-slate-600">
@@ -532,7 +551,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              {/* ĐIỀU 1: ĐỐI TƯỢNG GỬI, GIỮ */}
+              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
@@ -582,7 +601,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              {/* ĐIỀU 2: GIÁ CẢ VÀ PHƯƠNG THỨC VÀ THỜI HẠN THANH TOÁN */}
+              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
@@ -686,7 +705,7 @@ const ProviderCreateContractPage = () => {
                   </div>
                 </div>
 
-                {/* Ghi chú phương thức thanh toán chuẩn hợp đồng */}
+                
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
                   <p className="font-bold text-slate-800">Phương thức thanh toán áp dụng trong hợp đồng:</p>
                   <p>• <strong>Chuyển khoản</strong> vào tài khoản Bên A: Nội dung chuyển khoản ghi rõ <em>Họ tên, Biển số xe, Tháng đóng tiền</em>.</p>
@@ -694,7 +713,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              {/* ĐIỀU 3 ĐẾN ĐIỀU 6: BẢN THẢO CÁC ĐIỀU KHOẢN PHÁP LÝ */}
+              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
@@ -711,7 +730,7 @@ const ProviderCreateContractPage = () => {
                 </div>
 
                 <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
-                  {/* TAB NAVIGATION */}
+                  
                   <div className="flex border-b border-slate-200 bg-slate-100/90 overflow-x-auto text-xs font-bold">
                     <button
                       type="button"
@@ -759,7 +778,7 @@ const ProviderCreateContractPage = () => {
                     </button>
                   </div>
 
-                  {/* TAB PANEL */}
+                  
                   <div className="p-4 sm:p-5 bg-white">
                     {activeTermsTab === 'owner' && (
                       <div className="space-y-2">
@@ -824,7 +843,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              {/* NOTICE BOX */}
+              
               <div className="p-4 bg-teal-50/80 rounded-2xl border border-teal-200/80 flex items-start gap-3 text-teal-950 text-xs font-medium leading-relaxed">
                 <Info className="w-5 h-5 text-teal-700 shrink-0 mt-0.5" />
                 <div>
@@ -835,7 +854,7 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              {/* ACTIONS */}
+              
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3.5">
                 <button
                   type="button"

@@ -5,6 +5,7 @@ import { SocketProvider } from './context/SocketContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import HomePage from './pages/HomePage';
+import PolicyPage from './pages/PolicyPage';
 import LoginPage from './pages/auth/LoginPage';
 import ForceChangePasswordPage from './pages/auth/ForceChangePasswordPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -18,6 +19,8 @@ import CustomerReservationsPage from './pages/customer/CustomerReservationsPage'
 import CustomerReservationDetailPage from './pages/customer/CustomerReservationDetailPage';
 import CustomerContractsPage from './pages/CustomerContractsPage';
 import ContractDetailPage from './pages/ContractDetailPage';
+import RequestContractExtensionPage from './pages/customer/RequestContractExtensionPage';
+import RequestContractTerminationPage from './pages/customer/RequestContractTerminationPage';
 import FavoriteFacilitiesPage from './pages/customer/FavoriteFacilitiesPage';
 import SubmitComplaintPage from './pages/customer/SubmitComplaintPage';
 import CustomerComplaintsPage from './pages/customer/CustomerComplaintsPage';
@@ -121,6 +124,8 @@ function AppContent() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<PublicBrowseRoute><HomePage /></PublicBrowseRoute>} />
+          <Route path="/policies" element={<PolicyPage />} />
+          <Route path="/policies/:identifier" element={<PolicyPage />} />
           <Route path="/facilities" element={<Navigate to="/search" replace />} />
 
           {/* Guest only */}
@@ -173,6 +178,11 @@ function AppContent() {
               <AdminPlatformFeeEditPage />
             </RoleProtectedRoute>
           } />
+                    <Route path="/admin/vehicle-types" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <Navigate to="/dashboard?tab=vehicle-types" replace />
+            </RoleProtectedRoute>
+          } />
           <Route path="/admin/contracts" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminContractsPage />
@@ -223,6 +233,26 @@ function AppContent() {
           <Route path="/my-contracts/:id" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <ContractDetailPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/my-contracts/:id/extend" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <RequestContractExtensionPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/:id/extend" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
+              <RequestContractExtensionPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/my-contracts/:id/terminate" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <RequestContractTerminationPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/contracts/:id/terminate" element={
+            <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
+              <RequestContractTerminationPage />
             </RoleProtectedRoute>
           } />
           <Route path="/contracts/:id" element={

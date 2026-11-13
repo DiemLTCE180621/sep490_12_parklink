@@ -4,16 +4,13 @@ const userRepository = require('../repositories/userRepository');
 const roleRepository = require('../repositories/roleRepository');
 const emailService = require('../utils/emailService');
 const platformFeeService = require('./platformFeeService');
+const vehicleTypeRepository = require('../repositories/vehicleTypeRepository');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-// In-memory Cache lưu trữ OTP Quên mật khẩu để không bị phụ thuộc permissions của DB PostgreSQL
 const otpStore = new Map();
 
-/**
- * Service xử lý toàn bộ Business Logic liên quan đến Xác thực (Auth) & Nghiệp vụ Thí điểm Ninh Kiều, Cần Thơ
- */
 class AuthService {
   generateToken(user) {
     const roleName = user.role?.name || user.role || '';
@@ -31,19 +28,16 @@ class AuthService {
 
   sanitizeUser(user) {
     const { password_hash, ...sanitized } = user;
-    return sanitized;
+    return {
+      ...sanitized,
+      has_password: Boolean(password_hash)
+    };
   }
 
-  /**
-   * Lấy danh mục tiện ích toàn hệ thống từ Database (Bảng Amenity)
-   */
   async getAmenities() {
     return await userRepository.findAmenities();
   }
 
-  /**
-   * Lấy thông tin liên hệ công khai của hệ thống (Email, Hotline Admin)
-   */
   async getContactInfo() {
     const admin = await userRepository.findAdminContact();
     return {
@@ -52,9 +46,6 @@ class AuthService {
     };
   }
 
-  /**
-   * UC01: Đăng ký Khách hàng (Customer) - Sinh mật khẩu ngẫu nhiên gửi qua Email
-   */
   async registerCustomer(data) {
     const { email, full_name, phone_number } = data;
 
@@ -106,9 +97,6 @@ class AuthService {
     };
   }
 
-  /**
-   * UC02 / UC03: Đăng ký Tài khoản Owner (Provider) & Bãi đỗ xe
-   */
   async registerProvider(data) {
     const {
       email,
@@ -147,7 +135,6 @@ class AuthService {
     }
 
     const slotCount = parseInt(capacity, 10);
-    // Tính phí nền tảng(theo quy mô chỗ đỗ)
     const feeCalculation = await platformFeeService.calculateFeeBySlots(slotCount);
     const system_fee = feeCalculation.fee_amount;
 
@@ -165,6 +152,12 @@ class AuthService {
       requires_password_change: true
     };
 
+    let targetVehicleTypes = vehicle_types;
+    if (!targetVehicleTypes || !Array.isArray(targetVehicleTypes) || targetVehicleTypes.length === 0) {
+      const activeTypes = await vehicleTypeRepository.findActive();
+      targetVehicleTypes = activeTypes.length > 0 ? [activeTypes[0].type_code] : [];
+    }
+
     const facilityData = {
       name: facility_name,
       address: address || 'Phường Ninh Kiều, Thành phố Cần Thơ',
@@ -174,7 +167,7 @@ class AuthService {
       available_slots: slotCount,
       price_per_month: parseFloat(price_per_month),
       system_fee: system_fee,
-      vehicle_types: vehicle_types || ['CAR_4_5_SEATER'],
+      vehicle_types: targetVehicleTypes,
       verification_status: 'PENDING_REVIEW', // Chờ Admin duyệt
       payment_status: 'UNPAID',
       visibility_status: 'HIDDEN' // Ẩn cho đến khi được duyệt
@@ -237,6 +230,70 @@ class AuthService {
     };
   }
 
+  async googleLogin({ credential }) {
+    if (!credential) {
+      const error = new Error('Thiếu mã xác thực Google Credential!');
+      error.status = 400;
+      throw error;
+    }
+
+    let payload;
+    try {
+      const googleResponse = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+      if (!googleResponse.ok) {
+        throw new Error('Token Google không hợp lệ hoặc đã hết hạn!');
+      }
+      payload = await googleResponse.json();
+    } catch (err) {
+      const error = new Error('Không thể xác thực danh tính với Google: ' + (err.message || 'Lỗi kết nối'));
+      error.status = 401;
+      throw error;
+    }
+
+    const { email, name, email_verified } = payload;
+    if (!email || !email_verified) {
+      const error = new Error('Tài khoản Google này chưa được xác minh email!');
+      error.status = 400;
+      throw error;
+    }
+
+    let user = await userRepository.findByEmail(email);
+
+    if (user) {
+      if (user.status === 'BLOCKED' || user.status === 'INACTIVE' || user.status === 'REJECTED') {
+        const error = new Error('Tài khoản của bạn đã bị khóa hoặc bị từ chối!');
+        error.status = 403;
+        throw error;
+      }
+    } else {
+      let customerRole = await roleRepository.findByName('CUSTOMER');
+      if (!customerRole) {
+        customerRole = await roleRepository.createRole({
+          name: 'CUSTOMER',
+          description: 'Khách hàng thuê bãi đỗ xe'
+        });
+      }
+
+      user = await userRepository.createUser({
+        email,
+        full_name: (name || email.split('@')[0]).slice(0, 50),
+        phone_number: '',
+        password_hash: null,
+        requires_password_change: false,
+        status: 'ACTIVE',
+        role_id: customerRole.id
+      });
+    }
+
+    const token = this.generateToken(user);
+
+    return {
+      user: this.sanitizeUser(user),
+      token,
+      message: 'Đăng nhập Google thành công!'
+    };
+  }
+
   async changePassword({ userId, oldPassword, newPassword }) {
     const user = await userRepository.findById(userId);
     if (!user) {
@@ -245,7 +302,6 @@ class AuthService {
       throw error;
     }
 
-    // Nếu người dùng đổi mật khẩu thông thường (không phải đổi lần đầu), bắt buộc kiểm tra oldPassword
     if (!user.requires_password_change) {
       if (!oldPassword) {
         const error = new Error('Vui lòng cung cấp mật khẩu hiện tại!');
@@ -262,7 +318,6 @@ class AuthService {
       }
     }
 
-    // Đảm bảo mật khẩu mới không trùng với mật khẩu hiện tại / tạm thời
     if (user.password_hash) {
       const isSamePassword = await bcrypt.compare(newPassword, user.password_hash);
       if (isSamePassword) {
@@ -275,7 +330,6 @@ class AuthService {
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
-    // Cập nhật mật khẩu mới và gỡ cờ requires_password_change
     const updatedUser = await userRepository.updateUserPassword(userId, newPasswordHash, false);
     const newToken = this.generateToken(updatedUser);
     return {
@@ -284,9 +338,6 @@ class AuthService {
     };
   }
 
-  /**
-   * Bước 1: Yêu cầu đặt lại mật khẩu - Sinh và gửi mã OTP qua Email
-   */
   async requestPasswordReset(email) {
     if (!email) {
       const error = new Error('Vui lòng nhập email!');
@@ -295,8 +346,6 @@ class AuthService {
     }
 
     const user = await userRepository.findByEmail(email);
-    // Chặn reset mật khẩu với tài khoản ADMIN qua flow OTP công khai nhằm bảo mật cấp cao,
-    // đồng thời trả về lỗi 404 hệt như email không tồn tại để tránh rò rỉ thông tin (User Enumeration Attack)
     if (!user || user.role?.name === 'ADMIN') {
       const error = new Error('Không tìm thấy tài khoản với email này trong hệ thống!');
       error.status = 404;
@@ -309,11 +358,9 @@ class AuthService {
       throw error;
     }
 
-    // Sinh mã OTP 6 chữ số
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 15 * 60 * 1000; // 15 phút
 
-    // Lưu thông tin OTP vào RAM Cache (otpStore)
     otpStore.set(user.email, {
       code: otpCode,
       expiresAt,
@@ -332,9 +379,6 @@ class AuthService {
     };
   }
 
-  /**
-   * Bước 2: Xác nhận mã OTP và đặt lại mật khẩu mới (Giới hạn nhập sai tối đa 5 lần)
-   */
   async verifyAndResetPassword({ email, otpCode, newPassword }) {
     if (!email || !otpCode || !newPassword) {
       const error = new Error('Vui lòng nhập đầy đủ email, mã OTP và mật khẩu mới!');
@@ -388,7 +432,6 @@ class AuthService {
       throw error;
     }
 
-    // Xác thực thành công -> tiến hành đổi mật khẩu và xóa OTP khỏi RAM Cache
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
@@ -410,9 +453,6 @@ class AuthService {
     return this.sanitizeUser(user);
   }
 
-  /**
-   * UC08: Cập nhật thông tin cá nhân (Họ tên, SĐT)
-   */
   async updateProfile(userId, { full_name, phone_number }) {
     const userService = require('./userService');
     return await userService.updateUserProfile(userId, { full_name, phone_number });

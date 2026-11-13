@@ -1,21 +1,14 @@
 const prisma = require('../config/prisma');
 
-/**
- * Repository chịu trách nhiệm truy vấn bảng User, Facility, Amenity, Facility_Image và System_Transaction qua Prisma Client
- */
 class UserRepository {
-  /**
-   * Lấy toàn bộ danh mục tiện ích từ bảng Amenity
-   */
+  
   async findAmenities() {
     return await prisma.amenity.findMany({
+      where: { is_active: true },
       orderBy: { id: 'asc' }
     });
   }
 
-  /**
-   * Tìm user theo địa chỉ email (bao gồm thông tin Role, Facility, Amenity và Images)
-   */
   async findByEmail(email) {
     return await prisma.user.findUnique({
       where: { email },
@@ -35,9 +28,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Tìm user theo số điện thoại ngoại trừ ID hiện tại (dùng cho kiểm tra trùng lặp khi cập nhật thông tin)
-   */
   async findByPhoneExceptId(phone_number, userId) {
     return await prisma.user.findFirst({
       where: {
@@ -47,9 +37,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Tìm user theo ID
-   */
   async findById(id) {
     return await prisma.user.findUnique({
       where: { id },
@@ -69,9 +56,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Tạo tài khoản Khách hàng (Customer) mới với mật khẩu ngẫu nhiên
-   */
   async createUser(userData) {
     return await prisma.user.create({
       data: userData,
@@ -81,17 +65,13 @@ class UserRepository {
     });
   }
 
-  /**
-   * Tạo tài khoản Provider + Bãi đỗ xe (Facility) + Tiện ích (Facility_Amenity) + 4 Ảnh bãi đỗ (Facility_Image) trong Transaction
-   */
   async createProviderWithFacility(userData, facilityData, amenityIds = [], images = []) {
     return await prisma.$transaction(async (tx) => {
-      // 1. Tạo User tài khoản Provider (status = PENDING)
+      
       const newUser = await tx.user.create({
         data: userData
       });
 
-      // 2. Tạo Cơ sở bãi đỗ xe gán provider_id bằng newUser.id
       const newFacility = await tx.facility.create({
         data: {
           ...facilityData,
@@ -99,7 +79,6 @@ class UserRepository {
         }
       });
 
-      // 3. Liên kết Danh mục tiện ích (Facility_Amenity)
       if (amenityIds && amenityIds.length > 0) {
         await tx.facility_Amenity.createMany({
           data: amenityIds.map(amenityId => ({
@@ -109,7 +88,6 @@ class UserRepository {
         });
       }
 
-      // 4. Lưu Danh sách Hình ảnh bãi đỗ (Cổng, đường vào, trong bãi, bao quát...)
       if (images && images.length > 0) {
         await tx.facility_Image.createMany({
           data: images.map((url, idx) => ({
@@ -118,6 +96,29 @@ class UserRepository {
             is_primary: idx === 0
           }))
         });
+      }
+
+      // 5. Liên kết Danh mục loại phương tiện (Facility_Vehicle_Type)
+      const vehicleCodes = Array.isArray(facilityData.vehicle_types)
+        ? facilityData.vehicle_types
+        : (typeof facilityData.vehicle_types === 'string' ? JSON.parse(facilityData.vehicle_types) : []);
+
+      if (vehicleCodes && vehicleCodes.length > 0) {
+        const foundVehicleTypes = await tx.vehicle_Type.findMany({
+          where: {
+            type_code: { in: vehicleCodes }
+          }
+        });
+
+        if (foundVehicleTypes.length > 0) {
+          await tx.facility_Vehicle_Type.createMany({
+            data: foundVehicleTypes.map(vt => ({
+              facility_id: newFacility.id,
+              vehicle_type_id: vt.id
+            })),
+            skipDuplicates: true
+          });
+        }
       }
 
       return await tx.user.findUnique({
@@ -131,6 +132,11 @@ class UserRepository {
                 include: {
                   amenity: true
                 }
+              },
+              facility_vehicle_types: {
+                include: {
+                  vehicle_type: true
+                }
               }
             }
           }
@@ -139,9 +145,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Cập nhật mật khẩu mới và thay đổi cờ yêu cầu đổi mật khẩu
-   */
   async updateUserPassword(userId, newPasswordHash, requiresChange = false) {
     return await prisma.user.update({
       where: { id: userId },
@@ -156,9 +159,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * UC-Admin: Lấy danh sách tài khoản người dùng có tìm kiếm, lọc theo Role, Status và Phân trang
-   */
   async findUsersPaginated({ search, role, status, page = 1, limit = 10 }) {
     const where = {};
 
@@ -215,9 +215,6 @@ class UserRepository {
     };
   }
 
-  /**
-   * UC-Admin: Lấy chi tiết thông tin tài khoản người dùng theo ID (không kèm thông tin nhạy cảm như password_hash)
-   */
   async findUserDetailById(id) {
     return await prisma.user.findUnique({
       where: { id },
@@ -262,9 +259,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Cập nhật thông tin tài khoản người dùng theo ID
-   */
   async updateUser(id, data) {
     return await prisma.user.update({
       where: { id },
@@ -278,14 +272,89 @@ class UserRepository {
         requires_password_change: true,
         created_at: true,
         updated_at: true,
-        role: true
+        role: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            visibility_status: true
+          }
+        }
       }
     });
   }
 
-  /**
-   * Lấy thông tin liên hệ của Admin (email, số điện thoại) phục vụ hiển thị Hotline
-   */
+  async blockProviderAndHideFacility(userId, facilityId) {
+    return await prisma.$transaction(async (tx) => {
+      
+      await tx.facility.update({
+        where: { id: facilityId },
+        data: { visibility_status: 'HIDDEN' }
+      });
+
+      return await tx.user.update({
+        where: { id: userId },
+        data: { status: 'BLOCKED' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true,
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              visibility_status: true
+            }
+          }
+        }
+      });
+    });
+  }
+
+  async blockCustomerAndCancelPendingReservations(userId) {
+    return await prisma.$transaction(async (tx) => {
+      
+      await tx.reservation_Request.updateMany({
+        where: {
+          customer_id: userId,
+          status: 'PENDING'
+        },
+        data: {
+          status: 'CANCELLED'
+        }
+      });
+
+      return await tx.user.update({
+        where: { id: userId },
+        data: { status: 'BLOCKED' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true,
+          facility: {
+            select: {
+              id: true,
+              name: true,
+              visibility_status: true
+            }
+          }
+        }
+      });
+    });
+  }
+
   async findAdminContact() {
     return await prisma.user.findFirst({
       where: {
@@ -300,9 +369,6 @@ class UserRepository {
     });
   }
 
-  /**
-   * Lấy thông tin user phục vụ middleware xác thực JWT và kiểm tra token version
-   */
   async findAuthUserById(id) {
     return await prisma.user.findUnique({
       where: { id },

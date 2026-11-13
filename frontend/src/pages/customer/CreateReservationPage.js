@@ -29,13 +29,11 @@ const CreateReservationPage = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Facility data
   const [facility, setFacility] = useState(location.state?.facility || null);
   const [availability, setAvailability] = useState(null);
   const [fetchingFacility, setFetchingFacility] = useState(!location.state?.facility);
   const [facilityError, setFacilityError] = useState(null);
 
-  // Form states
   const [customerIdCard, setCustomerIdCard] = useState(() => localStorage.getItem('customer_id_card') || '');
   const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
   const [vehicleBrand, setVehicleBrand] = useState('');
@@ -49,10 +47,8 @@ const CreateReservationPage = () => {
   const [formError, setFormError] = useState(null);
   const [createdReservation, setCreatedReservation] = useState(null);
 
-  // Min date is today
   const minDate = new Date().toISOString().split('T')[0];
 
-  // Fetch facility if not passed in location.state
   const fetchFacilityData = useCallback(async () => {
     const idToFetch = facilityId || location.state?.facility?.id;
     if (!idToFetch) return;
@@ -89,7 +85,13 @@ const CreateReservationPage = () => {
     }
   }, [facilityId, facility, fetchFacilityData, availability]);
 
-  const supportedVehicleTypes = getFacilitySupportedTypes(facility?.vehicle_types);
+  const supportedVehicleTypes = (facility?.facility_vehicle_types && facility.facility_vehicle_types.length > 0)
+    ? facility.facility_vehicle_types.map(fvt => ({
+        id: fvt.vehicle_type.type_code,
+        label: fvt.vehicle_type.name,
+        shortLabel: fvt.vehicle_type.name
+      }))
+    : getFacilitySupportedTypes(facility?.vehicle_types);
 
   const handleQuickPreset = (presetText) => {
     setVehicleBrand((prev) => {
@@ -187,7 +189,6 @@ const CreateReservationPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 w-full">
       <div className="w-full space-y-6">
-        {/* TOP BAR: BREADCRUMB & BACK BUTTON */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <nav className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
             <Link to="/" className="hover:text-teal-700 transition">
@@ -247,7 +248,6 @@ const CreateReservationPage = () => {
             </div>
           </div>
         ) : createdReservation ? (
-          /* SUCCESS SCREEN */
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto overflow-hidden">
             <div className="p-6 sm:p-8 border-b border-slate-100 flex items-start gap-4 bg-emerald-50/40">
               <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -320,11 +320,8 @@ const CreateReservationPage = () => {
             </div>
           </div>
         ) : (
-          /* MAIN FORM LAYOUT */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* LEFT COLUMN: RESERVATION FORM */}
             <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              {/* CLEAN PAGE HEADER */}
               <div className="px-6 sm:px-8 py-6 border-b border-slate-200 bg-white">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -337,7 +334,6 @@ const CreateReservationPage = () => {
                   </div>
                 </div>
 
-                {/* SUBTLE 3-STEP FLOW BAR */}
                 <div className="grid grid-cols-3 gap-2 mt-5 pt-4 border-t border-slate-100 text-xs">
                   <div className="flex items-center gap-2 text-teal-700 font-semibold">
                     <span className="w-5 h-5 rounded-full bg-teal-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
@@ -370,7 +366,6 @@ const CreateReservationPage = () => {
                   </div>
                 )}
 
-                {/* SECTION 1: CUSTOMER INFO */}
                 <div className="p-6 sm:px-8 space-y-4">
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
@@ -379,7 +374,6 @@ const CreateReservationPage = () => {
                     </h2>
                   </div>
 
-                  {/* ACCOUNT SUMMARY BAR */}
                   <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
@@ -444,7 +438,6 @@ const CreateReservationPage = () => {
                   </div>
                 </div>
 
-                {/* SECTION 2: VEHICLE INFO */}
                 <div className="p-6 sm:px-8 space-y-4">
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
@@ -506,7 +499,6 @@ const CreateReservationPage = () => {
                   </div>
                 </div>
 
-                {/* SECTION 3: START DATE */}
                 <div className="p-6 sm:px-8 space-y-4">
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
@@ -545,7 +537,6 @@ const CreateReservationPage = () => {
                   </div>
                 </div>
 
-                {/* FOOTER ACTIONS */}
                 <div className="px-6 sm:px-8 py-4 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-2 text-xs text-slate-500">
                     <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
@@ -584,7 +575,6 @@ const CreateReservationPage = () => {
               </form>
             </div>
 
-            {/* RIGHT COLUMN: FACILITY SUMMARY SIDEBAR */}
             <div className="lg:col-span-4 lg:sticky lg:top-6">
               <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
                 <div className="p-3 pb-0">
@@ -630,7 +620,6 @@ const CreateReservationPage = () => {
                     </p>
                   </div>
 
-                  {/* PRICE BOX */}
                   <div className="p-4 rounded-xl bg-teal-50/60 border border-teal-200/70 flex items-baseline justify-between">
                     <span className="text-xs font-semibold text-slate-600">
                       Giá thuê theo tháng
@@ -641,7 +630,6 @@ const CreateReservationPage = () => {
                     </div>
                   </div>
 
-                  {/* FACILITY METADATA */}
                   <div className="space-y-2.5 pt-1 text-xs">
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                       <span className="text-slate-500 flex items-center gap-1.5">
@@ -676,7 +664,6 @@ const CreateReservationPage = () => {
                     )}
                   </div>
 
-                  {/* AMENITIES */}
                   {facility?.facility_amenities && facility.facility_amenities.length > 0 && (
                     <div className="space-y-2 pt-1">
                       <span className="text-xs font-semibold text-slate-700 block">

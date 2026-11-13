@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound, 
-  UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users, 
-  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X 
+import {
+  User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound,
+  UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users,
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers
 } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
@@ -15,8 +15,11 @@ import FieldInspectorRegistrationsPanel from '../components/admin/FieldInspector
 import AdminComplaintsPanel from '../components/admin/AdminComplaintsPanel';
 import AdminReviewsPanel from '../components/admin/AdminReviewsPanel';
 import AdminPlatformFeesPanel from '../components/admin/AdminPlatformFeesPanel';
+import AdminVehicleTypesPanel from '../components/admin/AdminVehicleTypesPanel';
+import AdminAmenitiesPanel from '../components/admin/AdminAmenitiesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
+import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -30,7 +33,8 @@ const DashboardPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeAdminTab, setActiveAdminTab] = useState(location.state?.adminTab || 'registrations');
+  const searchParams = new URLSearchParams(location.search);
+  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'registrations');
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility');
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections');
   const [isMobileAdminMenuOpen, setIsMobileAdminMenuOpen] = useState(false);
@@ -67,7 +71,10 @@ const DashboardPage = () => {
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
+    { id: 'vehicle-types', label: 'Loại Phương Tiện', icon: Car },
+    { id: 'amenities', label: 'Quản Lý Tiện Ích', icon: Layers },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
+    { id: 'policies', label: 'Chính Sách Hệ Thống', icon: ShieldCheck },
   ];
 
   const providerTabs = [
@@ -121,12 +128,18 @@ const DashboardPage = () => {
             >
               <Edit className="w-4 h-4" /> Sửa Hồ Sơ
             </button>
-            <button
-              onClick={() => setIsChangePasswordModalOpen(true)}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
-            >
-              <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
-            </button>
+            {user?.has_password === false ? (
+              <div className="px-3.5 py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-teal-400" /> Tài khoản Google
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsChangePasswordModalOpen(true)}
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
+              >
+                <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
@@ -157,11 +170,10 @@ const DashboardPage = () => {
                 </div>
                 <button
                   onClick={() => setIsMobileAdminMenuOpen(!isMobileAdminMenuOpen)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
-                    isMobileAdminMenuOpen
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${isMobileAdminMenuOpen
                       ? 'bg-slate-900 text-white'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
+                    }`}
                 >
                   {isMobileAdminMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
                   <span>{isMobileAdminMenuOpen ? 'Đóng' : 'Tất cả menu'}</span>
@@ -180,11 +192,10 @@ const DashboardPage = () => {
                           setActiveAdminTab(tab.id);
                           setIsMobileAdminMenuOpen(false);
                         }}
-                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${
-                          isActive
+                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${isActive
                             ? 'bg-teal-600 text-white shadow-sm'
                             : 'bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-700'
-                        }`}
+                          }`}
                       >
                         <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                         <span className="truncate">{tab.label}</span>
@@ -202,11 +213,10 @@ const DashboardPage = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveAdminTab(tab.id)}
-                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
-                        isActive
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${isActive
                           ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
                           : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span>{tab.label}</span>
@@ -242,19 +252,17 @@ const DashboardPage = () => {
                       <button
                         key={tab.id}
                         onClick={() => setActiveAdminTab(tab.id)}
-                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
-                          isActive
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${isActive
                             ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
                             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
-                              isActive
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${isActive
                                 ? 'bg-white/20 text-white shadow-inner'
                                 : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
-                            }`}
+                              }`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>
@@ -280,7 +288,10 @@ const DashboardPage = () => {
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
+              {activeAdminTab === 'vehicle-types' && <AdminVehicleTypesPanel />}
+              {activeAdminTab === 'amenities' && <AdminAmenitiesPanel />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
+              {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
                   <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -309,11 +320,10 @@ const DashboardPage = () => {
                 </div>
                 <button
                   onClick={() => setIsMobileProviderMenuOpen(!isMobileProviderMenuOpen)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${
-                    isMobileProviderMenuOpen
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition shrink-0 ${isMobileProviderMenuOpen
                       ? 'bg-slate-900 text-white'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
+                    }`}
                 >
                   {isMobileProviderMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
                   <span>{isMobileProviderMenuOpen ? 'Đóng' : 'Tất cả menu'}</span>
@@ -332,11 +342,10 @@ const DashboardPage = () => {
                           setActiveProviderTab(tab.id);
                           setIsMobileProviderMenuOpen(false);
                         }}
-                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${
-                          isActive
+                        className={`p-2.5 rounded-xl font-bold text-xs flex items-center gap-2 text-left transition ${isActive
                             ? 'bg-teal-600 text-white shadow-sm'
                             : 'bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-700'
-                        }`}
+                          }`}
                       >
                         <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
                         <span className="truncate">{tab.label}</span>
@@ -354,11 +363,10 @@ const DashboardPage = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveProviderTab(tab.id)}
-                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
-                        isActive
+                      className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${isActive
                           ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
                           : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900'
-                      }`}
+                        }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
                       <span>{tab.label}</span>
@@ -394,19 +402,17 @@ const DashboardPage = () => {
                       <button
                         key={tab.id}
                         onClick={() => setActiveProviderTab(tab.id)}
-                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
-                          isActive
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${isActive
                             ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
                             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
-                              isActive
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${isActive
                                 ? 'bg-white/20 text-white shadow-inner'
                                 : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
-                            }`}
+                              }`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>
@@ -491,11 +497,10 @@ const DashboardPage = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveInspectorTab(tab.id)}
-                    className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${
-                      isActive
+                    className={`whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shrink-0 ${isActive
                         ? 'bg-teal-600 text-white shadow-md shadow-teal-700/20'
                         : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-3.5 h-3.5 shrink-0" />
                     <span>{tab.label}</span>
@@ -530,19 +535,17 @@ const DashboardPage = () => {
                       <button
                         key={tab.id}
                         onClick={() => setActiveInspectorTab(tab.id)}
-                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${
-                          isActive
+                        className={`w-full text-left px-3 py-2.5 rounded-2xl font-semibold text-sm flex items-center justify-between transition-all duration-200 group ${isActive
                             ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-md shadow-teal-700/20'
                             : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${
-                              isActive
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 ${isActive
                                 ? 'bg-white/20 text-white shadow-inner'
                                 : 'bg-slate-100 text-slate-500 group-hover:bg-teal-50 group-hover:text-teal-600 group-hover:scale-105'
-                            }`}
+                              }`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>

@@ -4,15 +4,16 @@ const router = express.Router();
 const confirmationRecordController = require('../controllers/confirmationRecordController');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 const {
+  validateConfirmationRecordId,
   validateCreateConfirmationRecord,
   validateAdminQueryConfirmationRecords,
-  validateProviderActiveCustomersQuery
+  validateProviderActiveCustomersQuery,
+  validateRequestLeaseExtension,
+  validateRespondLeaseExtension,
+  validateRequestEarlyTermination,
+  validateConfirmContractTermination
 } = require('../validations/confirmationRecordValidation');
 
-/**
- * Route: POST /api/confirmation-records
- * 1. [PROVIDER] Create e-confirmation record (Tạo biên bản xác nhận / hợp đồng điện tử)
- */
 router.post(
   '/',
   authenticateToken,
@@ -21,10 +22,6 @@ router.post(
   confirmationRecordController.createConfirmationRecord
 );
 
-/**
- * Route: GET /api/confirmation-records/my-records
- * 2. [CUSTOMER] View confirmation record list (Xem danh sách biên bản xác nhận của khách hàng)
- */
 router.get(
   '/my-records',
   authenticateToken,
@@ -32,10 +29,6 @@ router.get(
   confirmationRecordController.getMyConfirmationRecords
 );
 
-/**
- * Route: GET /api/confirmation-records/provider-records
- * [PROVIDER] Xem danh sách biên bản xác nhận điện tử do bãi xe lập
- */
 router.get(
   '/provider-records',
   authenticateToken,
@@ -43,10 +36,6 @@ router.get(
   confirmationRecordController.getProviderConfirmationRecords
 );
 
-/**
- * UC-57: Route: GET /api/confirmation-records/admin/all
- * [ADMIN] View confirmation records on platform (Admin xem toàn bộ hợp đồng thuê trên hệ thống)
- */
 router.get(
   '/admin/all',
   authenticateToken,
@@ -55,10 +44,6 @@ router.get(
   confirmationRecordController.getAllConfirmationRecords
 );
 
-/**
- * UC-58: Route: GET /api/confirmation-records/provider/active-customers
- * [PROVIDER] View active customers at facility (Chủ bãi xem danh sách khách hàng đang có hợp đồng hiệu lực tại cơ sở)
- */
 router.get(
   '/provider/active-customers',
   authenticateToken,
@@ -67,31 +52,128 @@ router.get(
   confirmationRecordController.getActiveCustomersAtFacility
 );
 
-/**
- * Route: GET /api/confirmation-records/:id
- * Xem thông tin chi tiết một Biên bản xác nhận điện tử
- */
+router.get(
+  '/extension-requests/my',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  confirmationRecordController.getMyLeaseExtensions
+);
+
+router.get(
+  '/extension-requests/provider',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  confirmationRecordController.getProviderLeaseExtensions
+);
+
+router.post(
+  '/extension-request',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  validateRequestLeaseExtension,
+  confirmationRecordController.requestLeaseExtension
+);
+
+router.get(
+  '/termination-requests/my',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  confirmationRecordController.getMyTerminationRequests
+);
+
+router.get(
+  '/termination-requests/provider',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  confirmationRecordController.getProviderTerminationRequests
+);
+
+router.post(
+  '/termination-request',
+  authenticateToken,
+  authorizeRoles('CUSTOMER', 'PROVIDER'),
+  validateRequestEarlyTermination,
+  confirmationRecordController.requestEarlyTermination
+);
+
 router.get(
   '/:id',
   authenticateToken,
+  validateConfirmationRecordId,
   confirmationRecordController.getConfirmationRecordById
 );
 
-/**
- * Route: PATCH /api/confirmation-records/:id/accept & PUT /api/confirmation-records/:id/accept
- * 3. [CUSTOMER] Accept confirmation record (Chấp nhận / xác nhận biên bản điện tử)
- */
+router.post(
+  '/:id/extend',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  validateConfirmationRecordId,
+  validateRequestLeaseExtension,
+  confirmationRecordController.requestLeaseExtension
+);
+
+router.get(
+  '/:id/extension-request',
+  authenticateToken,
+  validateConfirmationRecordId,
+  confirmationRecordController.getLeaseExtensionDetail
+);
+
+router.patch(
+  '/:id/extension-request/cancel',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  validateConfirmationRecordId,
+  confirmationRecordController.cancelLeaseExtension
+);
+
+router.patch(
+  '/:id/extension-request/respond',
+  authenticateToken,
+  authorizeRoles('PROVIDER'),
+  validateConfirmationRecordId,
+  validateRespondLeaseExtension,
+  confirmationRecordController.respondToLeaseExtension
+);
+
+router.post(
+  '/:id/terminate-request',
+  authenticateToken,
+  authorizeRoles('CUSTOMER', 'PROVIDER'),
+  validateConfirmationRecordId,
+  validateRequestEarlyTermination,
+  confirmationRecordController.requestEarlyTermination
+);
+
+router.get(
+  '/:id/termination-request',
+  authenticateToken,
+  validateConfirmationRecordId,
+  confirmationRecordController.getContractTerminationDetail
+);
+
+router.patch(
+  '/:id/termination-request/cancel',
+  authenticateToken,
+  authorizeRoles('CUSTOMER', 'PROVIDER'),
+  validateConfirmationRecordId,
+  confirmationRecordController.cancelEarlyTermination
+);
+
+router.patch(
+  '/:id/confirm-termination',
+  authenticateToken,
+  authorizeRoles('PROVIDER', 'CUSTOMER'),
+  validateConfirmationRecordId,
+  validateConfirmContractTermination,
+  confirmationRecordController.confirmContractTermination
+);
+
 router.patch(
   '/:id/accept',
   authenticateToken,
   authorizeRoles('CUSTOMER'),
-  confirmationRecordController.acceptConfirmationRecord
-);
-
-router.put(
-  '/:id/accept',
-  authenticateToken,
-  authorizeRoles('CUSTOMER'),
+  validateConfirmationRecordId,
   confirmationRecordController.acceptConfirmationRecord
 );
 

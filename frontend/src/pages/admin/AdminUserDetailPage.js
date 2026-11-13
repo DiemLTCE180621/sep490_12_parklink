@@ -96,7 +96,13 @@ const AdminUserDetailPage = () => {
       if (type === 'LOCK' || type === 'UNLOCK') {
         const res = await userService.toggleUserStatus(user.id);
         const newStatus = type === 'LOCK' ? 'BLOCKED' : 'ACTIVE';
-        setUser((prev) => ({ ...prev, status: newStatus }));
+        setUser((prev) => ({
+          ...prev,
+          status: newStatus,
+          ...(type === 'LOCK' && prev?.facility
+            ? { facility: { ...prev.facility, visibility_status: 'HIDDEN' } }
+            : {})
+        }));
         setSuccessMessage(res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!'));
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(user.id);
@@ -547,9 +553,26 @@ const AdminUserDetailPage = () => {
 
             <div className="text-base text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
               {confirmDialog.type === 'LOCK' && (
-                <p>
-                  Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{user.full_name}</strong>? Khi bị khóa, tài khoản này sẽ ngay lập tức bị từ chối đăng nhập vào hệ thống ParkLink.
-                </p>
+                <div>
+                  <p>
+                    Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{user.full_name}</strong>? Khi bị khóa, tài khoản này sẽ ngay lập tức bị từ chối đăng nhập vào hệ thống ParkLink.
+                  </p>
+                  {user.role?.name === 'PROVIDER' && user.facility && (
+                    <p className="text-rose-600 font-semibold text-sm mt-2">
+                      ⚠️ Lưu ý: Cơ sở bãi đỗ xe "{user.facility.name}" của đối tác này cũng sẽ tự động chuyển sang trạng thái ẨN để đảm bảo an toàn giao dịch.
+                    </p>
+                  )}
+                  {user.role?.name === 'CUSTOMER' && (
+                    <p className="text-amber-700 font-semibold text-sm mt-2">
+                      ⚠️ Lưu ý: Các yêu cầu đặt chỗ đang chờ duyệt của khách hàng này sẽ tự động được hủy.
+                    </p>
+                  )}
+                  {user.role?.name === 'FIELD_INSPECTOR' && (
+                    <p className="text-amber-700 font-semibold text-sm mt-2">
+                      ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                    </p>
+                  )}
+                </div>
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>

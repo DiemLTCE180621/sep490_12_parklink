@@ -31,10 +31,9 @@ const ProviderReservationDetailPage = () => {
   const [error, setError] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Confirm Modal for Accept / Reject
   const [confirmModalState, setConfirmModalState] = useState({
     isOpen: false,
-    action: null // 'ACCEPT' | 'REJECT'
+    action: null
   });
   const [processingAction, setProcessingAction] = useState(false);
 
@@ -69,7 +68,10 @@ const ProviderReservationDetailPage = () => {
       setProcessingAction(true);
       if (action === 'ACCEPT') {
         await acceptReservation(id);
-        setToastInfo({ message: 'Đã phê duyệt chấp nhận yêu cầu thuê xe thành công!', type: 'success' });
+        setToastInfo({
+          message: 'Đã chấp nhận yêu cầu thuê! Bạn có 24 giờ để tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.',
+          type: 'success'
+        });
       } else if (action === 'REJECT') {
         await rejectReservation(id);
         setToastInfo({ message: 'Đã từ chối yêu cầu thuê xe!', type: 'success' });
@@ -137,7 +139,6 @@ const ProviderReservationDetailPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-4">
-        {/* TOP BAR / NAVIGATION */}
         <div>
           <button
             onClick={() => navigate(-1)}
@@ -166,9 +167,7 @@ const ProviderReservationDetailPage = () => {
             </button>
           </div>
         ) : reservation ? (
-          /* UNIFIED SINGLE CARD CONTAINER */
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            {/* 1. HEADER */}
             <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
@@ -186,11 +185,8 @@ const ProviderReservationDetailPage = () => {
               <div className="shrink-0">{getStatusBadge(reservation.status)}</div>
             </div>
 
-            {/* 2. BODY */}
             <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-              {/* LEFT COLUMN: CUSTOMER & VEHICLE DETAILS */}
               <div className="lg:col-span-8 divide-y divide-slate-200">
-                {/* CUSTOMER INFORMATION */}
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
                     Thông tin khách hàng đăng ký
@@ -226,7 +222,6 @@ const ProviderReservationDetailPage = () => {
                   </div>
                 </div>
 
-                {/* VEHICLE & REGISTRATION DETAILS */}
                 <div className="p-6 space-y-3">
                   <h2 className="text-base font-bold text-slate-900">
                     Thông tin đăng ký gửi giữ
@@ -270,7 +265,6 @@ const ProviderReservationDetailPage = () => {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: FACILITY, CONTRACT & ACTIONS */}
               <div className="lg:col-span-4 divide-y divide-slate-200 flex flex-col justify-between">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
@@ -299,7 +293,6 @@ const ProviderReservationDetailPage = () => {
                     </div>
                   </div>
 
-                  {/* CONTRACT STATUS */}
                   {reservation.confirmation_record ? (
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between gap-2">
@@ -326,7 +319,7 @@ const ProviderReservationDetailPage = () => {
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-2.5">
                       <h3 className="text-sm font-bold text-slate-900">Khởi tạo hợp đồng</h3>
                       <p className="text-xs text-slate-500">
-                        Yêu cầu đã được phê duyệt. Hãy tạo hợp đồng điện tử để gửi cho khách hàng xác nhận.
+                        Yêu cầu đã được phê duyệt. Bạn có <strong>24 giờ</strong> kể từ lúc chấp nhận để tạo hợp đồng điện tử gửi cho khách hàng (quá 24 giờ hệ thống sẽ tự động hủy).
                       </p>
                       <button
                         onClick={() =>
@@ -343,7 +336,6 @@ const ProviderReservationDetailPage = () => {
                   ) : null}
                 </div>
 
-                {/* ACTION FOOTER */}
                 <div className="p-6 bg-slate-50/60 space-y-2.5">
                   {reservation.status === 'PENDING' && (
                     <div className="grid grid-cols-2 gap-2.5">
@@ -380,7 +372,6 @@ const ProviderReservationDetailPage = () => {
         ) : null}
       </div>
 
-      {/* CONFIRM MODAL FOR ACCEPT / REJECT */}
       <ConfirmModal
         isOpen={confirmModalState.isOpen}
         onClose={() => setConfirmModalState({ isOpen: false, action: null })}
@@ -392,7 +383,7 @@ const ProviderReservationDetailPage = () => {
         }
         message={
           confirmModalState.action === 'ACCEPT'
-            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không?`
+            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có 24 giờ để khởi tạo hợp đồng điện tử. Nếu quá 24 giờ chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
             : `Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không?`
         }
         confirmText={confirmModalState.action === 'ACCEPT' ? 'Đồng ý chấp nhận' : 'Đồng ý từ chối'}

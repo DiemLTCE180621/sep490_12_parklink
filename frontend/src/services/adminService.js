@@ -89,6 +89,47 @@ const adminService = {
    */
   updateFacility: async (id, data) => {
     return await api.put(`/admin/facilities/${id}`, data);
+  },
+
+  /**
+   * M2-UC99: Lấy danh sách loại phương tiện
+   * @param {object} params - { keyword, is_active }
+   */
+  getVehicleTypes: async (params = {}) => {
+    return await api.get('/vehicle-types', { params });
+  },
+
+  /**
+   * M2-UC98: Tạo mới loại phương tiện
+   * @param {object} data - { type_code, name, description, is_active }
+   */
+  createVehicleType: async (data) => {
+    return await api.post('/vehicle-types', data);
+  },
+
+  /**
+   * M2-UC100: Cập nhật thông tin loại phương tiện
+   * @param {number} id
+   * @param {object} data
+   */
+  updateVehicleType: async (id, data) => {
+    return await api.put(`/vehicle-types/${id}`, data);
+  },
+
+  /**
+   * M2-UC101: Vô hiệu hóa loại phương tiện
+   * @param {number} id
+   */
+  deactivateVehicleType: async (id) => {
+    return await api.patch(`/vehicle-types/${id}/deactivate`);
+  },
+
+  /**
+   * Bật / Tắt trạng thái hoạt động của loại phương tiện
+   * @param {number} id
+   */
+  toggleVehicleTypeStatus: async (id) => {
+    return await api.patch(`/vehicle-types/${id}/toggle-status`);
   }
 };
 

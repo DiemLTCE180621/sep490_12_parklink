@@ -24,7 +24,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     termination_conditions:
       '- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.',
     dispute_resolution:
-      '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.'
+      '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết'
   }), []);
 
   const [formData, setFormData] = useState({
@@ -40,11 +40,9 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     ...defaultTerms
   });
 
-  const [activeTermsTab, setActiveTermsTab] = useState('owner'); // owner | customer | dispute | termination
+  const [activeTermsTab, setActiveTermsTab] = useState('owner');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Helper safety parsers
   const parseCleanNumber = (val) => {
     if (val === null || val === undefined) return 0;
     const cleanStr = String(val).replace(/[^0-9.]/g, '');
@@ -135,8 +133,6 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // Calculate rental duration in months for preview
   const getDurationMonths = () => {
     if (!formData.start_date || !formData.end_date) return null;
     const start = new Date(formData.start_date);
@@ -218,7 +214,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
         className="bg-white rounded-2xl shadow-2xl border border-slate-200/90 w-full max-w-6xl overflow-hidden transform transition-all duration-200 max-h-[94vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* DOCUMENT TOP BAR */}
+        
         <div className="bg-slate-900 px-6 py-4 text-white shrink-0 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-400 flex items-center justify-center">
@@ -248,7 +244,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
           </button>
         </div>
 
-        {/* FORM CONTENT CANVAS */}
+        
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-grow bg-slate-50/50 text-xs sm:text-sm">
           {error && (
             <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium flex items-center gap-2.5 shadow-xs">
@@ -257,7 +253,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           )}
 
-          {/* SECTION I: THÔNG TIN CÁC BÊN GIAO DỊCH */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -267,7 +263,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              {/* BÊN A (OWNER) */}
+              
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-1">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block border-b border-slate-200/60 pb-1">
                   Bên A (Chủ Bãi Đỗ Xe)
@@ -279,7 +275,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                 </p>
               </div>
 
-              {/* BÊN B (CUSTOMER) */}
+              
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/70 space-y-2">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block border-b border-slate-200/60 pb-1">
                   Bên B (Khách Hàng Thuê)
@@ -325,7 +321,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* ĐIỀU 1: ĐỐI TƯỢNG GỬI, GIỮ */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -369,7 +365,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* ĐIỀU 2: GIÁ CẢ VÀ PHƯƠNG THỨC VÀ THỜI HẠN THANH TOÁN */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-4">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -471,7 +467,7 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-          {/* CÁC ĐIỀU KHOẢN THỎA THUẬN (ĐIỀU 3 - ĐIỀU 6) */}
+          
           <div className="bg-white p-4.5 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
             <div className="text-[11px] font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-teal-800">
@@ -488,14 +484,14 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
 
             <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/50">
-              {/* TAB NAVIGATION */}
+              
               <div className="flex border-b border-slate-200 bg-slate-100/80 overflow-x-auto text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setActiveTermsTab('owner')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'owner'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 3: Nghĩa vụ Bên A (Chủ bãi)
@@ -504,8 +500,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('customer')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'customer'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 4: Nghĩa vụ Bên B (Khách thuê)
@@ -514,8 +510,8 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('dispute')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'dispute'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 5: Tranh Chấp
@@ -524,15 +520,15 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
                   type="button"
                   onClick={() => setActiveTermsTab('termination')}
                   className={`px-4 py-2.5 border-b-2 whitespace-nowrap transition ${activeTermsTab === 'termination'
-                      ? 'border-teal-700 text-teal-800 bg-white font-bold'
-                      : 'border-transparent text-slate-600 hover:text-slate-900'
+                    ? 'border-teal-700 text-teal-800 bg-white font-bold'
+                    : 'border-transparent text-slate-600 hover:text-slate-900'
                     }`}
                 >
                   Điều 6: Hiệu Lực HĐ
                 </button>
               </div>
 
-              {/* TAB PANEL */}
+              
               <div className="p-3 bg-white">
                 {activeTermsTab === 'owner' && (
                   <div>
@@ -597,39 +593,39 @@ const CreateConfirmationRecordModal = ({ isOpen, onClose, reservation, onSuccess
             </div>
           </div>
 
-      <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
-        <Info className="w-4 h-4 text-teal-700 shrink-0" />
-        <div>
-          Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
-        </div>
-      </div>
+          <div className="p-3.5 bg-teal-50/70 rounded-xl border border-teal-200/80 flex items-center gap-2.5 text-teal-900 text-xs font-medium">
+            <Info className="w-4 h-4 text-teal-700 shrink-0" />
+            <div>
+              Hợp đồng sau khi gửi sẽ ở trạng thái <strong>CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách hàng sẽ nhận được thông báo để xem xét và ký xác nhận điện tử.
+            </div>
+          </div>
 
-      {/* ACTIONS */}
-      <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
-        >
-          Hủy Bỏ
-        </button>
+          
+          <div className="pt-2 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition"
+            >
+              Hủy Bỏ
+            </button>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
-            </>
-          ) : (
-            <>
-              <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
-            </>
-          )}
-        </button>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Gửi Hợp Đồng Điện Tử
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

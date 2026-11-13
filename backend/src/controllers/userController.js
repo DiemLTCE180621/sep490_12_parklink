@@ -97,7 +97,17 @@ class UserController {
           .json({ status: "fail", message: "ID tài khoản không hợp lệ" });
       }
       const updatedUser = await userService.toggleUserStatus(userId);
-      const actionMessage = updatedUser.status === "BLOCKED" ? "Khóa tài khoản thành công!" : "Mở khóa tài khoản thành công!";
+      const isBlocked = updatedUser.status === "BLOCKED";
+      let actionMessage = "Mở khóa tài khoản thành công!";
+      if (isBlocked) {
+        if (updatedUser.facility) {
+          actionMessage = "Đã khóa tài khoản và tạm ẩn cơ sở bãi đỗ xe thành công!";
+        } else if (updatedUser.role?.name === "CUSTOMER") {
+          actionMessage = "Đã khóa tài khoản và hủy các yêu cầu đặt chỗ đang chờ!";
+        } else {
+          actionMessage = "Khóa tài khoản thành công!";
+        }
+      }
       res.json({ status: "success", message: actionMessage, data: { user: updatedUser } });
     } catch (error) {
       if (error.status) {
