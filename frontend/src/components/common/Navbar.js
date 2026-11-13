@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useSocket } from '../../context/SocketContext';
+import chatService from '../../services/chatService';
 import { LogOut, ShieldCheck, Car, Building2, Menu, X, User, MessageCircle, FileText, Heart, AlertCircle } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, token, isAuthenticated, logout } = useAuth();
+  const socket = useSocket();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const handleLogout = async () => {
     await logout();
@@ -53,16 +58,56 @@ const Navbar = () => {
     }
   };
 
+  const userRole = user?.role?.name || user?.role;
+  const canAccessChat = isAuthenticated && (
+    userRole === 'PROVIDER' ||
+    userRole === 'CUSTOMER'
+  );
+
+  const syncUnreadCount = useCallback(() => {
+    if (!isAuthenticated || !token || !canAccessChat) {
+      setUnreadChatCount(0);
+      return;
+    }
+
+    chatService.getUnreadCount(token).then((res) => {
+      if (res?.success) {
+        setUnreadChatCount(res.count || 0);
+      }
+    }).catch(() => { });
+  }, [isAuthenticated, token, canAccessChat]);
+
+  // Đồng bộ ban đầu và mỗi khi chuyển trang
+  useEffect(() => {
+    syncUnreadCount();
+  }, [syncUnreadCount, location.pathname]);
+
+  // Tự động đồng bộ lại ngay khi người dùng bấm/chuyển tab trình duyệt quay lại
+  useEffect(() => {
+    window.addEventListener('focus', syncUnreadCount);
+    return () => {
+      window.removeEventListener('focus', syncUnreadCount);
+    };
+  }, [syncUnreadCount]);
+
+  useEffect(() => {
+    if (!socket || !canAccessChat) return;
+
+    const handleUnreadCount = (count) => {
+      setUnreadChatCount(typeof count === 'number' ? count : 0);
+    };
+
+    socket.on('unread_chat_count', handleUnreadCount);
+
+    return () => {
+      socket.off('unread_chat_count', handleUnreadCount);
+    };
+  }, [socket, canAccessChat]);
+
   // Ẩn Navbar (Header) đối với Admin, Nhân viên khảo sát hoặc người dùng đang cần đổi mật khẩu lần đầu
   if (isAuthenticated && (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR' || user?.requires_password_change)) {
     return null;
   }
-
-  const canAccessChat = isAuthenticated && (
-    user?.role?.name === 'ADMIN' ||
-    user?.role?.name === 'PROVIDER' ||
-    user?.role?.name === 'CUSTOMER'
-  );
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -130,13 +175,18 @@ const Navbar = () => {
                 {canAccessChat && (
                   <Link
                     to="/chat"
-                    className="p-2.5 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
+                    className="relative p-2.5 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
                     title="Tin nhắn"
                   >
                     <MessageCircle className="w-5 h-5" />
+                    {unreadChatCount > 0 && (
+                      <span className="absolute top-1 right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-sm pointer-events-none animate-scaleIn">
+                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                      </span>
+                    )}
                   </Link>
                 )}
-                
+
                 {/* Quả chuông thông báo */}
                 <NotificationDropdown />
 
@@ -232,10 +282,15 @@ const Navbar = () => {
                 {canAccessChat && (
                   <Link
                     to="/chat"
-                    className="p-2 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
+                    className="relative p-2 rounded-xl text-teal-600 hover:bg-teal-50 hover:text-teal-700 transition duration-150 focus:outline-none"
                     title="Tin nhắn"
                   >
                     <MessageCircle className="w-5 h-5" />
+                    {unreadChatCount > 0 && (
+                      <span className="absolute top-0.5 right-0.5 bg-rose-500 text-white text-[9px] font-bold rounded-full h-3.5 min-w-[14px] px-0.5 flex items-center justify-center shadow-sm pointer-events-none animate-scaleIn">
+                        {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                      </span>
+                    )}
                   </Link>
                 )}
 
@@ -243,7 +298,7 @@ const Navbar = () => {
                 <NotificationDropdown />
               </>
             )}
-            
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
@@ -279,9 +334,16 @@ const Navbar = () => {
                 <Link
                   to="/chat"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block py-2 text-slate-700 font-medium hover:text-teal-600 flex items-center gap-2"
+                  className="py-2 text-slate-700 font-medium hover:text-teal-600 flex items-center justify-between"
                 >
-                  <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
+                  <span className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-teal-600" /> Tin nhắn
+                  </span>
+                  {unreadChatCount > 0 && (
+                    <span className="bg-rose-500 text-white text-xs font-bold rounded-full px-2 py-0.5 shadow-sm">
+                      {unreadChatCount > 99 ? '99+' : unreadChatCount}
+                    </span>
+                  )}
                 </Link>
               )}
               <Link

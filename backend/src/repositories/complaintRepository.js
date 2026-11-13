@@ -9,7 +9,7 @@ class ComplaintRepository {
         title: data.title,
         description: data.description,
         image_urls: Array.isArray(data.image_urls) ? data.image_urls : [],
-        status: 'PENDING'
+        status: data.status || 'PENDING_ADMIN'
       }
     });
   }
@@ -17,7 +17,7 @@ class ComplaintRepository {
   async getReservationById(reservation_id) {
     return await prisma.reservation_Request.findUnique({
       where: { id: parseInt(reservation_id) },
-      include: { facility: true }
+      include: { facility: true, confirmation_record: true }
     });
   }
 
@@ -34,6 +34,9 @@ class ComplaintRepository {
       where: {
         facility: {
           provider_id: parseInt(provider_id)
+        },
+        status: {
+          notIn: ['PENDING_ADMIN']
         }
       },
       include: {

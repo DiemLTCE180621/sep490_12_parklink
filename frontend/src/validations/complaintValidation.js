@@ -28,7 +28,7 @@ export const validateReplyComplaint = (data) => {
     errors.response = 'Nội dung phản hồi không được vượt quá 3000 ký tự.';
   }
 
-  const validStatuses = ['OPEN', 'PENDING', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'CLOSED'];
+  const validStatuses = ['OPEN', 'PENDING', 'PENDING_ADMIN', 'WAITING_PROVIDER', 'PROVIDER_REPLIED', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'REJECTED', 'CLOSED'];
   if (status && !validStatuses.includes(status)) {
     errors.status = 'Trạng thái khiếu nại không hợp lệ.';
   }
@@ -46,7 +46,7 @@ export const validateUpdateComplaintStatus = (data) => {
   const { status, note } = data || {};
   const errors = {};
 
-  const validStatuses = ['PENDING', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'CLOSED'];
+  const validStatuses = ['PENDING_ADMIN', 'WAITING_PROVIDER', 'PROVIDER_REPLIED', 'PENDING', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'REJECTED', 'CLOSED'];
   if (!status || !validStatuses.includes(status)) {
     errors.status = 'Vui lòng chọn trạng thái khiếu nại hợp lệ.';
   }

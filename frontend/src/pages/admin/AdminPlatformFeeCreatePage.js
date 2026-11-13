@@ -24,7 +24,6 @@ const AdminPlatformFeeCreatePage = () => {
     is_active: true
   });
 
-  // Tải danh sách các gói biểu phí hiện có để kiểm tra trùng khung slot ngay trên giao diện
   useEffect(() => {
     const fetchExistingFees = async () => {
       try {
@@ -38,7 +37,6 @@ const AdminPlatformFeeCreatePage = () => {
     fetchExistingFees();
   }, []);
 
-  // Xử lý thay đổi trường dữ liệu
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -46,7 +44,6 @@ const AdminPlatformFeeCreatePage = () => {
     }));
   };
 
-  // Submit tạo mới gói biểu phí nền tảng theo quy mô Min - Max
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -82,7 +79,7 @@ const AdminPlatformFeeCreatePage = () => {
       return;
     }
 
-    // Kiểm tra trùng lặp (chồng lấn) với các gói đã có trong hệ thống
+    // Kiểm tra trùng lặp  với các gói đã có trong hệ thống
     for (const fee of existingFees) {
       const existingMin = fee.min_slots;
       const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
@@ -116,7 +113,6 @@ const AdminPlatformFeeCreatePage = () => {
 
       await platformFeeService.createPlatformFee(payload);
 
-      // Chuyển hướng về tab biểu phí của admin dashboard kèm thông báo thành công
       navigate('/dashboard', {
         replace: true,
         state: {

@@ -262,7 +262,7 @@ const ContractDetailPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full max-w-[1400px] mx-auto space-y-6 print:m-0 print:p-0 print:max-w-none">
-        
+
         <div className="print:hidden flex flex-wrap items-center justify-between gap-4 sm:max-w-[900px] mx-auto">
           <button
             onClick={() => {
@@ -299,6 +299,21 @@ const ContractDetailPage = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Chờ xác nhận
               </span>
+            )}
+
+            {isCustomer && ['ACTIVE', 'COMPLETED'].includes(contract?.status) && (
+              <button
+                type="button"
+                onClick={() => {
+                  const resId = contract?.reservation_id || contract?.reservation?.id;
+                  if (resId) navigate(`/submit-complaint/${resId}`);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg transition shadow-sm"
+                title="Gửi khiếu nại liên quan đến hợp đồng và bãi đỗ xe này"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                Khiếu nại bãi xe
+              </button>
             )}
 
             {isCustomer && isActive && (
@@ -400,7 +415,7 @@ const ContractDetailPage = () => {
           </div>
         ) : contract ? (
           <div className="space-y-6">
-            
+
             {isCustomer && pendingExtension && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-start gap-3">
@@ -426,7 +441,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {snapshot.extension_request?.status === 'APPROVED' && snapshot.extension_request?.new_contract_id && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-teal-50 border border-teal-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-start gap-3">
@@ -458,7 +473,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {isProvider && pendingExtension && (
               <div className="print:hidden bg-white rounded-xl p-5 sm:p-6 border-2 border-amber-400 sm:max-w-[900px] mx-auto space-y-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4 border-b border-amber-100 pb-3">
@@ -513,7 +528,7 @@ const ContractDetailPage = () => {
                     </div>
                   )}
 
-                  
+
                   {pendingExtension.vehicle_info?.is_changed && (
                     <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
                       <span className="text-slate-700 font-bold block mb-1">
@@ -555,7 +570,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {contract.status === 'TERMINATED' && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
                 <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
@@ -568,7 +583,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {contract.status === 'CANCELLED' && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
                 <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
@@ -596,7 +611,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {isCustomer && pendingTermination && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-5 bg-white border-2 border-rose-400 rounded-xl space-y-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4 border-b border-rose-100 pb-3">
@@ -704,7 +719,7 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             {isProvider && pendingTermination && (
               <div className="print:hidden bg-white rounded-xl p-5 sm:p-6 border-2 border-rose-400 sm:max-w-[900px] mx-auto space-y-4 shadow-sm">
                 <div className="flex items-start justify-between gap-4 border-b border-rose-100 pb-3">
@@ -788,7 +803,7 @@ const ContractDetailPage = () => {
                   )}
                 </div>
 
-                
+
                 {pendingTermination.requested_by === 'CUSTOMER' ? (
                   <>
                     <div className="space-y-3 pt-1">
@@ -845,7 +860,7 @@ const ContractDetailPage = () => {
                     </div>
                   </>
                 ) : (
-                  
+
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-rose-100">
                     <p className="text-[11px] text-slate-500 italic">
                       * Bạn có thể hủy yêu cầu nếu muốn tiếp tục duy trì hợp đồng với khách hàng.
@@ -875,12 +890,12 @@ const ContractDetailPage = () => {
               </div>
             )}
 
-            
+
             <div
               className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
               style={{ fontFamily: "'Times New Roman', Times, serif" }}
             >
-              
+
               <div className="text-center space-y-1 mb-8">
                 <p className="font-bold uppercase text-sm sm:text-base tracking-wide text-black">
                   CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
@@ -898,14 +913,14 @@ const ContractDetailPage = () => {
                 </p>
               </div>
 
-              
+
               <p className="text-xs sm:text-sm leading-relaxed text-black mb-4">
                 Hôm nay, ngày {contractIssueDate.getDate()} tháng {contractIssueDate.getMonth() + 1} năm {contractIssueDate.getFullYear()}, tại {ownerInfo.facility_name || contract.reservation?.facility?.name} (Địa chỉ: {ownerInfo.facility_address || contract.reservation?.facility?.address}), hai bên gồm có:
               </p>
 
-              
+
               <div className="space-y-4 text-xs sm:text-sm leading-relaxed text-black mb-6">
-                
+
                 <div className="space-y-1 pl-1">
                   <p className="font-bold uppercase text-black">1. BÊN A (BÊN NHẬN GỬI GIỮ XE Ô TÔ):</p>
                   <p className="pl-4">- Cơ sở bãi đỗ xe: <strong>{ownerInfo.facility_name || contract.reservation?.facility?.name}</strong></p>
@@ -917,7 +932,7 @@ const ContractDetailPage = () => {
                   )}
                 </div>
 
-                
+
                 <div className="space-y-1 pl-1">
                   <p className="font-bold uppercase text-black">2. BÊN B (BÊN GỬI XE Ô TÔ):</p>
                   <p className="pl-4">- Ông (Bà): <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong></p>
@@ -932,7 +947,7 @@ const ContractDetailPage = () => {
                 Sau khi bàn bạc và thống nhất trên tinh thần tự nguyện, bình đẳng, hai bên nhất trí ký kết Hợp đồng gửi giữ xe ô tô với các điều khoản cụ thể sau đây:
               </p>
 
-              
+
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 1. Đối tượng gửi, giữ</p>
                 <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
@@ -943,7 +958,7 @@ const ContractDetailPage = () => {
                 <p className="pl-8 text-xs sm:text-sm text-black">- Vị trí gửi đỗ: <strong>{rentalInfo.parking_spot || 'Vị trí đỗ tự do trong bãi'}</strong> tại {ownerInfo.facility_name || contract.reservation?.facility?.name}.</p>
               </div>
 
-              
+
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 2. Thời hạn, giá cả và phương thức thanh toán</p>
                 <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
@@ -960,7 +975,7 @@ const ContractDetailPage = () => {
                 </p>
               </div>
 
-              
+
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 3. Quyền và nghĩa vụ của Bên A</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -969,7 +984,7 @@ const ContractDetailPage = () => {
                 </div>
               </div>
 
-              
+
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 4. Quyền và nghĩa vụ của Bên B</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -978,7 +993,7 @@ const ContractDetailPage = () => {
                 </div>
               </div>
 
-              
+
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 5. Giải quyết tranh chấp</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -987,7 +1002,7 @@ const ContractDetailPage = () => {
                 </div>
               </div>
 
-              
+
               <div className="space-y-1 mb-8">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 6. Điều khoản chung và hiệu lực hợp đồng</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
@@ -996,10 +1011,10 @@ const ContractDetailPage = () => {
                 </div>
               </div>
 
-              
+
               <div className="pt-6 border-t border-black mt-8">
                 <div className="grid grid-cols-2 gap-8 text-center text-xs sm:text-sm text-black">
-                  
+
                   <div className="space-y-1">
                     <p className="font-bold uppercase">ĐẠI DIỆN BÊN A</p>
                     <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
@@ -1016,7 +1031,7 @@ const ContractDetailPage = () => {
                     </p>
                   </div>
 
-                  
+
                   <div className="space-y-1">
                     <p className="font-bold uppercase">ĐẠI DIỆN BÊN B</p>
                     <p className="text-xs italic">(Ký, ghi rõ họ tên hoặc xác nhận điện tử)</p>
@@ -1043,7 +1058,7 @@ const ContractDetailPage = () => {
 
             </div>
 
-            
+
             {isCustomer && isPendingSignature && (
               <div className="print:hidden bg-white rounded-xl p-6 border border-slate-200 sm:max-w-[900px] mx-auto space-y-4">
                 <div className="border-b border-slate-100 pb-3">
@@ -1096,7 +1111,7 @@ const ContractDetailPage = () => {
         ) : null}
       </div>
 
-      
+
       <ConfirmModal
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
@@ -1109,7 +1124,7 @@ const ContractDetailPage = () => {
         loading={accepting}
       />
 
-      
+
       <ConfirmModal
         isOpen={confirmTerminationModalOpen}
         onClose={() => setConfirmTerminationModalOpen(false)}
@@ -1126,7 +1141,7 @@ const ContractDetailPage = () => {
         loading={processingTermination}
       />
 
-      
+
       <ConfirmModal
         isOpen={cancelTerminationModalOpen}
         onClose={() => setCancelTerminationModalOpen(false)}
@@ -1139,7 +1154,7 @@ const ContractDetailPage = () => {
         loading={cancellingTermination}
       />
 
-      
+
       <ConfirmModal
         isOpen={rejectTerminationModalOpen}
         onClose={() => setRejectTerminationModalOpen(false)}
@@ -1152,7 +1167,7 @@ const ContractDetailPage = () => {
         loading={processingTermination}
       />
 
-      
+
       <ConfirmModal
         isOpen={rejectExtensionModalOpen}
         onClose={() => setRejectExtensionModalOpen(false)}
