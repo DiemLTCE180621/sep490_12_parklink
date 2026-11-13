@@ -41,6 +41,7 @@ model User {
   reviews                Review[]
   complaints             Complaint[]
   notifications          Notification[]
+  notification_reads     Notification_Read[]
   chat_rooms_as_customer Chat_Room[]           @relation("CustomerRooms")
   chat_rooms_as_provider Chat_Room[]           @relation("ProviderRooms")
   messages               Message[]
@@ -204,6 +205,7 @@ model Favorite {
   facility    Facility @relation(fields: [facility_id], references: [id], onDelete: Cascade)
 
   @@unique([customer_id, facility_id]) 
+  @@map("favorites")
 }
 
 // ------------------------------------------------------
@@ -215,6 +217,7 @@ model Complaint {
   facility_id    Int
   title          String
   description    String   @db.Text
+  image_urls     String[]
   status         String   @default("OPEN")
   admin_response String?  @db.Text
   created_at     DateTime @default(now())
@@ -222,21 +225,37 @@ model Complaint {
 
   customer       User     @relation(fields: [customer_id], references: [id])
   facility       Facility @relation(fields: [facility_id], references: [id])
+
+  @@map("complaints")
 }
 
 model Notification {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  title      String
-  content    String   @db.Text
-  is_read    Boolean  @default(false)
-  type       String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  user_id     Int?
+  target_role String?
+  title       String
+  content     String   @db.Text
+  is_read     Boolean  @default(false)
+  type        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user  User?               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  reads Notification_Read[]
 
   @@map("notifications")
+}
+
+model Notification_Read {
+  notification_id Int
+  user_id         Int
+  read_at         DateTime @default(now())
+
+  notification Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([notification_id, user_id])
+  @@map("notification_reads")
 }
 
 model Amenity {

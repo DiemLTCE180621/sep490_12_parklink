@@ -43,6 +43,7 @@ const AdminBroadcastPanel = () => {
     category: 'Bảo trì & Cập nhật kỹ thuật',
     subject: '',
     htmlContent: '',
+    testEmail: user?.email || '',
     attachSignature: true,
     canSpamCompliance: true
   });
@@ -111,6 +112,7 @@ const AdminBroadcastPanel = () => {
       category: 'Bảo trì & Cập nhật kỹ thuật',
       subject: '',
       htmlContent: '',
+      testEmail: user?.email || '',
       attachSignature: true,
       canSpamCompliance: true
     });
@@ -126,6 +128,10 @@ const AdminBroadcastPanel = () => {
       setToast({ message: 'Nội dung thư không được để trống!', type: 'error' });
       return;
     }
+    if (isTestSelf && emailForm.testEmail && !emailForm.testEmail.includes('@')) {
+      setToast({ message: 'Địa chỉ email nhận thử nghiệm không hợp lệ (cần chứa ký tự @)!', type: 'error' });
+      return;
+    }
 
     try {
       setEmailLoading(true);
@@ -133,15 +139,17 @@ const AdminBroadcastPanel = () => {
         subject: isTestSelf ? `[TEST ADMIN] ${emailForm.subject}` : emailForm.subject,
         htmlContent: emailForm.htmlContent,
         recipientScope: isTestSelf ? 'ADMIN' : emailForm.recipientScope,
-        emailCategory: emailForm.category
+        emailCategory: emailForm.category,
+        testEmail: emailForm.testEmail?.trim()
       };
 
       const res = await broadcastEmailNotification(payload);
       const data = res?.data || res;
       setEmailSummary(data);
+      const destinationEmail = isTestSelf ? (emailForm.testEmail?.trim() || user?.email) : null;
       setToast({
         message: isTestSelf
-          ? `Đã gửi email thử nghiệm thành công tới hộp thư ${user?.email}!`
+          ? `Đã gửi email thử nghiệm thành công tới hộp thư ${destinationEmail}!`
           : `Đã khởi tạo tác vụ gửi email hàng loạt tới ${data?.totalQueued || 0} người dùng!`,
         type: 'success'
       });
@@ -527,15 +535,24 @@ const AdminBroadcastPanel = () => {
                 <RotateCcw className="w-4 h-4" /> Làm mới form
               </button>
 
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={emailLoading}
-                  onClick={() => handleSendEmailBroadcast(true)}
-                  className="px-5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 font-bold text-xs text-indigo-800 flex items-center gap-2 transition disabled:opacity-50"
-                >
-                  <Sparkles className="w-4 h-4 text-indigo-600" /> Gửi thử nghiệm tới Admin ({user?.email || 'me'})
-                </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="email"
+                    placeholder="Email nhận thử (VD: test@gmail.com)..."
+                    value={emailForm.testEmail}
+                    onChange={(e) => setEmailForm({ ...emailForm, testEmail: e.target.value })}
+                    className="px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:bg-white focus:ring-2 focus:ring-indigo-500 font-medium text-xs text-slate-800 transition w-56 sm:w-64"
+                  />
+                  <button
+                    type="button"
+                    disabled={emailLoading}
+                    onClick={() => handleSendEmailBroadcast(true)}
+                    className="px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 font-bold text-xs text-indigo-800 flex items-center gap-2 transition disabled:opacity-50 whitespace-nowrap"
+                  >
+                    <Sparkles className="w-4 h-4 text-indigo-600" /> Gửi thử nghiệm
+                  </button>
+                </div>
 
                 <button
                   type="button"

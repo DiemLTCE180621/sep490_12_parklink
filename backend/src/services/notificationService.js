@@ -37,61 +37,42 @@ class NotificationService {
     const targetUsers = await notificationRepository.getTargetUsers(normalizedRole);
     const recipientCount = targetUsers.length;
 
-    //optional save to db
-    let persistedNotifications = [];
+    // optional save to db (chỉ lưu 1 bản ghi duy nhất, áp dụng Fan-out on Read)
+    let persistedNotification = null;
     if (saveToDb && recipientCount > 0) {
-      const notificationRecords = targetUsers.map((user) => ({
-        user_id: user.id,
+      persistedNotification = await notificationRepository.createBroadcastNotification({
         title: title.trim(),
         content: content.trim(),
         type: category || 'HỆ THỐNG',
-        is_read: false
-      }));
-
-      persistedNotifications = await notificationRepository.createManyNotifications(notificationRecords);
+        targetRole: normalizedRole
+      });
     }
 
-    //Broadcast throug socket.io
+    // Broadcast throug socket.io
     const io = getIO();
     if (io) {
+      const notificationId = persistedNotification ? persistedNotification.id : `broadcast_${Date.now()}`;
       const socketPayload = {
+        id: notificationId,
         title: title.trim(),
         content: content.trim(),
         category,
         priority,
         showToast: showToast !== false,
         targetRole: normalizedRole,
-        created_at: new Date().toISOString(),
+        created_at: persistedNotification?.created_at?.toISOString() || new Date().toISOString(),
         is_persisted: saveToDb
       };
 
       const adminId = adminUser?.id || adminUser?.userId;
-      if (saveToDb && persistedNotifications.length > 0) {
-        persistedNotifications.forEach((notification) => {
-          io.to(`user_${notification.user_id}`).emit('system_notification', {
-            ...socketPayload,
-            id: notification.id
-          });
-        });
-      } else if (normalizedRole === 'ALL') {
-        //exclude admin
-        io.to('role_CUSTOMER').to('role_PROVIDER').emit('system_notification', {
-          ...socketPayload,
-          id: `broadcast_${Date.now()}`
-        });
+      if (normalizedRole === 'ALL') {
+        io.to('role_CUSTOMER').to('role_PROVIDER').emit('system_notification', socketPayload);
       } else if (normalizedRole === 'ADMIN' && adminId) {
-        //feature test for admin
-        io.to(`user_${adminId}`).emit('system_notification', {
-          ...socketPayload,
-          id: `broadcast_${Date.now()}`
-        });
+        io.to(`user_${adminId}`).emit('system_notification', socketPayload);
       } else {
-        io.to(`role_${normalizedRole}`).emit('system_notification', {
-          ...socketPayload,
-          id: `broadcast_${Date.now()}`
-        });
+        io.to(`role_${normalizedRole}`).emit('system_notification', socketPayload);
       }
-      console.log(`[Socket Broadcast] Đã phát sóng thông báo (Priority: ${priority}, Toast: ${showToast}) tới nhóm ${normalizedRole}`);
+      console.log(`[Socket Broadcast] Đã phát sóng thông báo (ID: ${notificationId}, Priority: ${priority}, Toast: ${showToast}) tới nhóm ${normalizedRole}`);
     }
 
     return {
@@ -108,7 +89,8 @@ class NotificationService {
       subject,
       htmlContent,
       recipientScope = 'ALL',
-      emailCategory = 'Bảo trì & Cập nhật kỹ thuật'
+      emailCategory = 'Bảo trì & Cập nhật kỹ thuật',
+      testEmail
     } = payload;
 
     if (!subject || !subject.trim()) {
@@ -127,12 +109,24 @@ class NotificationService {
     const normalizedScope = validScopes.includes(recipientScope) ? recipientScope : 'ALL';
 
     //get target list
-    const targetUsers = normalizedScope === 'ADMIN' && adminUser?.email
-      ? [{ id: adminUser.id || adminUser.userId, email: adminUser.email }]
-      : await notificationRepository.getTargetUsers(normalizedScope);
-    const recipientEmails = targetUsers
-      .map((u) => u.email)
-      .filter((email) => email && email.includes('@'));
+    let recipientEmails = [];
+    if (normalizedScope === 'ADMIN') {
+      const emailToUse = testEmail && typeof testEmail === 'string' && testEmail.trim().includes('@')
+        ? testEmail.trim()
+        : adminUser?.email;
+
+      if (!emailToUse || !emailToUse.includes('@')) {
+        const error = new Error('Vui lòng cung cấp một địa chỉ email hợp lệ để nhận email thử nghiệm!');
+        error.status = 400;
+        throw error;
+      }
+      recipientEmails = [emailToUse];
+    } else {
+      const targetUsers = await notificationRepository.getTargetUsers(normalizedScope);
+      recipientEmails = targetUsers
+        .map((u) => u.email)
+        .filter((email) => email && email.includes('@'));
+    }
 
     if (recipientEmails.length === 0) {
       const error = new Error('Không tìm thấy người dùng nào phù hợp với phạm vi nhận email đã chọn!');
@@ -191,13 +185,13 @@ class NotificationService {
     };
   }
 
-  //get current user's notifications
-  async getUserNotifications(userId, query = {}) {
+  // get current user's notifications (hỗ trợ cả personal notifications và broadcast)
+  async getUserNotifications(userId, userRole = null, query = {}) {
     const { isRead, limit = 20, offset = 0 } = query;
 
     const [notifications, unreadCount] = await Promise.all([
-      notificationRepository.getNotificationsByUserId(userId, { isRead, limit, offset }),
-      notificationRepository.countUnreadByUserId(userId)
+      notificationRepository.getNotificationsByUserId(userId, userRole, { isRead, limit, offset }),
+      notificationRepository.countUnreadByUserId(userId, userRole)
     ]);
 
     return {
@@ -206,7 +200,7 @@ class NotificationService {
     };
   }
 
-  async markAsRead(notificationId, userId) {
+  async markAsRead(notificationId, userId, userRole = null) {
     if (!notificationId) {
       const error = new Error('Thiếu ID thông báo!');
       error.status = 400;
@@ -214,7 +208,7 @@ class NotificationService {
     }
 
     await notificationRepository.markAsRead(notificationId, userId);
-    const unreadCount = await notificationRepository.countUnreadByUserId(userId);
+    const unreadCount = await notificationRepository.countUnreadByUserId(userId, userRole);
 
     return {
       id: Number(notificationId),
@@ -223,8 +217,8 @@ class NotificationService {
     };
   }
 
-  async markAllAsRead(userId) {
-    await notificationRepository.markAllAsRead(userId);
+  async markAllAsRead(userId, userRole = null) {
+    await notificationRepository.markAllAsRead(userId, userRole);
 
     return {
       success: true,
