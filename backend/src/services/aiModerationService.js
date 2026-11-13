@@ -50,17 +50,17 @@ Nội dung bình luận: "${trimmedComment.replace(/"/g, '\\"')}"`;
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
             generationConfig: {
-              temperature: 0.1, // Nhiệt độ thấp để kết quả phân loại chuẩn xác và ổn định
+              temperature: 0.1,
               maxOutputTokens: 200
             }
           }),
-          signal: AbortSignal.timeout(4000) // Timeout 4 giây để bảo toàn hiệu năng hệ thống
+          signal: AbortSignal.timeout(4000)
         });
 
         if (!response.ok) {
           const errData = await response.text();
           console.warn(`[AI Moderation] Model ${model} trả về lỗi HTTP ${response.status}:`, errData.slice(0, 100));
-          continue; // Thử model tiếp theo
+          continue;
         }
 
         const data = await response.json();

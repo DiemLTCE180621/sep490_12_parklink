@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
-import SubmitComplaintModal from '../components/common/SubmitComplaintModal';
 import Toast from '../components/common/Toast';
 import {
   FileText,
@@ -22,9 +21,6 @@ const CustomerContractsPage = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('ALL'); // ALL, PENDING_SIGNATURE, ACTIVE
   const [searchTerm, setSearchTerm] = useState('');
-
-  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
-  const [selectedFacilityId, setSelectedFacilityId] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const fetchContracts = useCallback(async () => {
@@ -49,10 +45,11 @@ const CustomerContractsPage = () => {
     navigate(`/my-contracts/${id}`);
   };
 
-  const handleOpenComplaint = (facilityId, e) => {
+  const handleOpenComplaint = (reservationId, e) => {
     e.stopPropagation();
-    setSelectedFacilityId(facilityId);
-    setIsComplaintModalOpen(true);
+    if (reservationId) {
+      navigate(`/submit-complaint/${reservationId}`);
+    }
   };
 
   const filteredContracts = contracts.filter((item) => {
@@ -256,13 +253,15 @@ const CustomerContractsPage = () => {
                       </button>
                     ) : (
                       <>
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
-                          className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
-                        >
-                          Khiếu nại
-                        </button>
+                        {['ACTIVE', 'COMPLETED'].includes(item.status) && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenComplaint(item.reservation_id, e)}
+                            className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
+                          >
+                            Khiếu nại
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -283,16 +282,6 @@ const CustomerContractsPage = () => {
           </div>
         )}
       </div>
-
-      {/* SUBMIT COMPLAINT MODAL */}
-      <SubmitComplaintModal
-        isOpen={isComplaintModalOpen}
-        onClose={() => {
-          setIsComplaintModalOpen(false);
-          setSelectedFacilityId(null);
-        }}
-        facilityId={selectedFacilityId}
-      />
     </div>
   );
 };

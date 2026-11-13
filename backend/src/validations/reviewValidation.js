@@ -1,5 +1,5 @@
 const validateCreateReview = (req, res, next) => {
-  const { facility_id, rating } = req.body;
+  const { facility_id, rating, comment } = req.body;
   const errors = [];
 
   if (!facility_id) {
@@ -12,20 +12,27 @@ const validateCreateReview = (req, res, next) => {
     errors.push('Rating phải là một số nằm trong khoảng từ 1 đến 5.');
   }
 
+  if (!comment || typeof comment !== 'string' || !comment.trim()) {
+    errors.push('Nội dung đánh giá là bắt buộc và không được để trống.');
+  } else if (comment.trim().length > 2000) {
+    errors.push('Nội dung đánh giá không được vượt quá 2000 ký tự.');
+  }
+
   if (errors.length > 0) {
     return res.status(400).json({
-      status: 'fail',
+      success: false,
       message: 'Dữ liệu đánh giá không hợp lệ',
       errors
     });
   }
 
   req.body.rating = Number(rating);
+  req.body.comment = comment.trim();
   next();
 };
 
 const validateUpdateReview = (req, res, next) => {
-  const { rating } = req.body;
+  const { rating, comment } = req.body;
   const errors = [];
 
   if (rating !== undefined && rating !== null) {
@@ -36,9 +43,19 @@ const validateUpdateReview = (req, res, next) => {
     }
   }
 
+  if (comment !== undefined && comment !== null) {
+    if (typeof comment !== 'string' || !comment.trim()) {
+      errors.push('Nội dung đánh giá không được để trống.');
+    } else if (comment.trim().length > 2000) {
+      errors.push('Nội dung đánh giá không được vượt quá 2000 ký tự.');
+    } else {
+      req.body.comment = comment.trim();
+    }
+  }
+
   if (errors.length > 0) {
     return res.status(400).json({
-      status: 'fail',
+      success: false,
       message: 'Dữ liệu cập nhật đánh giá không hợp lệ',
       errors
     });

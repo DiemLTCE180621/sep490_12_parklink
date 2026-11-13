@@ -67,7 +67,6 @@ const AdminPlatformFeeEditPage = () => {
     }
   }, [id]);
 
-  // Xử lý thay đổi trường dữ liệu
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -75,7 +74,6 @@ const AdminPlatformFeeEditPage = () => {
     }));
   };
 
-  // Submit cập nhật gói biểu phí nền tảng (Khung Min - Max)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -118,7 +116,6 @@ const AdminPlatformFeeEditPage = () => {
       const existingMin = fee.min_slots;
       const existingMax = fee.max_slots !== null ? fee.max_slots : 15;
 
-      // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
       if (minSlots <= existingMax && maxSlots >= existingMin) {
         setToast({
           message: `Khung quy mô (${minSlots} - ${maxSlots} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ). Vui lòng điều chỉnh lại!`,
@@ -147,7 +144,6 @@ const AdminPlatformFeeEditPage = () => {
 
       await platformFeeService.updatePlatformFee(id, payload);
 
-      // Chuyển hướng về tab biểu phí của admin dashboard kèm thông báo thành công
       navigate('/dashboard', {
         replace: true,
         state: {

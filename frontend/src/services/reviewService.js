@@ -30,9 +30,6 @@ const reviewService = {
     return await api.patch(`/reviews/${review_id}/status`, data);
   },
 
-  /**
-   * Admin: Bỏ ẩn đánh giá (Unhide review)
-   */
   async unhideReview(review_id) {
     return await api.patch(`/reviews/${review_id}/unhide`);
   },
@@ -41,9 +38,6 @@ const reviewService = {
     return await api.get('/reviews/provider');
   },
 
-  /**
-   * Parking Provider phản hồi đánh giá của khách hàng
-   */
   async replyToReview(review_id, reply) {
     return await api.post(`/reviews/${review_id}/reply`, { reply });
   }

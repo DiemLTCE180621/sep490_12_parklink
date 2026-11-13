@@ -172,6 +172,21 @@ const ContractDetailPage = () => {
               </span>
             )}
 
+            {isCustomer && ['ACTIVE', 'COMPLETED'].includes(contract?.status) && (
+              <button
+                type="button"
+                onClick={() => {
+                  const resId = contract?.reservation_id || contract?.reservation?.id;
+                  if (resId) navigate(`/submit-complaint/${resId}`);
+                }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg transition shadow-sm"
+                title="Gửi khiếu nại liên quan đến hợp đồng và bãi đỗ xe này"
+              >
+                <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                Khiếu nại bãi xe
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => window.print()}

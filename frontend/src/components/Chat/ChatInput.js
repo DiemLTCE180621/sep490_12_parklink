@@ -11,16 +11,14 @@ const ChatInput = ({ onSendMessage }) => {
     const handleFileChange = async (e) => {
         const selectedFiles = Array.from(e.target.files);
         if (selectedFiles.length === 0) return;
-        
-        // Gọi validation để kiểm tra file ngay tại Frontend
+
         const validation = validateChatFiles(selectedFiles);
         if (!validation.valid) {
             alert(validation.error);
             e.target.value = '';
             return;
         }
-        
-        // Gửi ngay lập tức giống Zalo
+
         setLoading(true);
         try {
             await onSendMessage('', selectedFiles);
@@ -28,7 +26,7 @@ const ChatInput = ({ onSendMessage }) => {
             console.error('Lỗi gửi file', error);
             alert('Có lỗi xảy ra khi gửi file đính kèm');
         } finally {
-            e.target.value = ''; // Reset input
+            e.target.value = '';
             setLoading(false);
         }
     };
@@ -71,7 +69,7 @@ const ChatInput = ({ onSendMessage }) => {
                     accept="image/*,video/*"
                 />
 
-                {/* Nút gửi File & Tài liệu (chuẩn Zalo) */}
+                {/* Nút gửi File & Tài liệu*/}
                 <button
                     type="button"
                     onClick={() => docInputRef.current?.click()}
@@ -89,7 +87,7 @@ const ChatInput = ({ onSendMessage }) => {
                     onChange={handleFileChange}
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip,.rar,.7z,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip"
                 />
-                
+
                 <input
                     type="text"
                     value={text}
@@ -98,7 +96,7 @@ const ChatInput = ({ onSendMessage }) => {
                     className="flex-1 bg-slate-100 border border-slate-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-full px-5 py-2.5 outline-none transition-all"
                     disabled={loading}
                 />
-                
+
                 <button
                     type="submit"
                     disabled={loading || !text.trim()}

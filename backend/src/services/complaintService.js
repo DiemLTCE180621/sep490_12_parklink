@@ -23,15 +23,40 @@ function parseComplaintHistory(raw) {
   return [];
 }
 
+function calculateBusinessDaysDeadline(startDate = new Date(), days = 3) {
+  const date = new Date(startDate);
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
 function formatComplaintItem(complaint) {
   if (!complaint) return null;
   const history = parseComplaintHistory(complaint.admin_response);
   const lastItem = history.length > 0 ? history[history.length - 1] : null;
 
+  const forwardEntries = history.filter(
+    (h) => h.action === 'FORWARDED_TO_PROVIDER' || h.deadline
+  );
+  const latestForward = forwardEntries.length > 0 ? forwardEntries[forwardEntries.length - 1] : null;
+  let deadline = latestForward?.deadline || null;
+  if (latestForward && latestForward.created_at) {
+    const forwardDate = new Date(latestForward.created_at);
+    forwardDate.setDate(forwardDate.getDate() + 3);
+    deadline = forwardDate.toISOString();
+  }
+
+  const isOverdue = Boolean(
+    complaint.status === 'WAITING_PROVIDER' &&
+    deadline &&
+    new Date() > new Date(deadline)
+  );
+
   return {
     ...complaint,
     response_history: history,
-    latest_reply: lastItem ? (lastItem.message || lastItem.reason) : complaint.admin_response
+    latest_reply: lastItem ? (lastItem.message || lastItem.reason) : complaint.admin_response,
+    deadline,
+    is_overdue: isOverdue
   };
 }
 
@@ -53,8 +78,8 @@ class ComplaintService {
       throw error;
     }
 
-    if (reservation.status === 'PENDING' || reservation.status === 'REJECTED' || reservation.status === 'CANCELLED') {
-      const error = new Error('Lượt thuê này không đủ điều kiện khiếu nại.');
+    if (!reservation.confirmation_record || !['ACTIVE', 'COMPLETED'].includes(reservation.confirmation_record.status)) {
+      const error = new Error('Chỉ những lượt thuê xe đã có Hợp đồng chính thức có hiệu lực (ACTIVE) hoặc vừa hoàn tất (COMPLETED) mới đủ điều kiện khiếu nại.');
       error.status = 400;
       throw error;
     }
@@ -64,29 +89,31 @@ class ComplaintService {
       facility_id: reservation.facility_id,
       title,
       description,
-      image_urls
+      image_urls,
+      status: 'PENDING_ADMIN'
     });
 
     try {
-      const facility = await complaintRepository.getFacilityById(reservation.facility_id);
-      if (facility?.provider_id) {
-        await notificationRepository.createNotification({
-          user_id: facility.provider_id,
-          title: `Khiếu nại mới tại bãi xe "${facility.name}"`,
-          content: `Khách hàng vừa gửi khiếu nại #${newComplaint.id}: "${title}". Vui lòng kiểm tra và xử lý.`,
-          type: 'COMPLAINT'
-        });
+      await notificationRepository.createNotification({
+        user_id: 1,
+        title: `Khiếu nại mới #${newComplaint.id} cần tiếp nhận`,
+        content: `Khách hàng vừa gửi khiếu nại #${newComplaint.id}: "${title}". Vui lòng kiểm duyệt và xử lý.`,
+        type: 'COMPLAINT'
+      });
 
-        const io = getIO();
-        if (io) {
-          io.to(`user_${facility.provider_id}`).emit('complaint_updated', {
-            action: 'CREATED',
-            complaint: formatComplaintItem(newComplaint)
-          });
-        }
+      const io = getIO();
+      if (io) {
+        io.to('role_ADMIN').emit('complaint_updated', {
+          action: 'CREATED',
+          complaint: formatComplaintItem(newComplaint)
+        });
+        io.to(`user_${customer_id}`).emit('complaint_updated', {
+          action: 'CREATED',
+          complaint: formatComplaintItem(newComplaint)
+        });
       }
     } catch (notifErr) {
-      console.warn('[ComplaintService] Thông báo cho Provider:', notifErr.message);
+      console.warn('[ComplaintService] Thông báo cho Admin:', notifErr.message);
     }
 
     return formatComplaintItem(newComplaint);
@@ -154,26 +181,16 @@ class ComplaintService {
         throw error;
       }
 
-      if (complaint.status === 'ESCALATED') {
-        const error = new Error('Khiếu nại này đã được chuyển cấp lên Ban Quản Trị can thiệp. Chủ bãi xe không thể phản hồi trực tiếp lúc này.');
+      if (complaint.status === 'PENDING_ADMIN') {
+        const error = new Error('Khiếu nại này đang chờ Ban Quản Trị thẩm định trước khi chuyển cho bãi xe.');
         error.status = 400;
         throw error;
       }
 
-      if (!newStatus || !['PROCESSING', 'RESOLVED'].includes(newStatus)) {
-        newStatus = complaint.status === 'PENDING' ? 'PROCESSING' : (replyPayload.status || 'PROCESSING');
-      }
+      newStatus = replyPayload.status || 'RESOLVED';
 
     } else if (role === 'ADMIN') {
-      if (complaint.status !== 'ESCALATED') {
-        const error = new Error(`Admin chỉ tiếp nhận và xử lý những khiếu nại có trạng thái ESCALATED. Khiếu nại #${complaint.id} hiện đang ở trạng thái ${complaint.status} do Chủ bãi xe phụ trách xử lý trước.`);
-        error.status = 400;
-        throw error;
-      }
-
-      if (!newStatus || !['RESOLVED', 'ESCALATED'].includes(newStatus)) {
-        newStatus = 'RESOLVED';
-      }
+      newStatus = replyPayload.status || 'RESOLVED';
 
     } else {
       const error = new Error('Bạn không có quyền thực hiện phản hồi khiếu nại.');
@@ -237,6 +254,83 @@ class ComplaintService {
     return formattedComplaint;
   }
 
+  // Admin chuyển tiếp khiếu nại cho Chủ bãi xe
+  async forwardToProvider(complaint_id, currentUser, payload = {}) {
+    const complaint = await complaintRepository.getComplaintById(complaint_id);
+    if (!complaint) {
+      const error = new Error('Khiếu nại không tồn tại hoặc đã bị xóa.');
+      error.status = 404;
+      throw error;
+    }
+
+    const role = currentUser?.role;
+    if (role !== 'ADMIN') {
+      const error = new Error('Chỉ Ban Quản Trị mới có quyền chuyển tiếp khiếu nại cho Chủ bãi xe.');
+      error.status = 403;
+      throw error;
+    }
+
+    const adminNote = payload.note?.trim() || payload.message?.trim() || 'Ban Quản Trị yêu cầu Chủ bãi xe kiểm tra sự việc và gửi phản hồi giải trình.';
+    const history = parseComplaintHistory(complaint.admin_response);
+    const deadline = calculateBusinessDaysDeadline(new Date(), 3);
+
+    history.push({
+      sender_role: 'ADMIN',
+      sender_name: 'Ban Quản Trị ParkLink',
+      action: 'FORWARDED_TO_PROVIDER',
+      message: adminNote,
+      created_at: new Date().toISOString(),
+      deadline: deadline
+    });
+
+    const updatedComplaint = await complaintRepository.replyComplaint(complaint_id, {
+      response: JSON.stringify(history),
+      status: 'WAITING_PROVIDER'
+    });
+
+    const formattedComplaint = formatComplaintItem(updatedComplaint);
+
+    try {
+      if (complaint.facility?.provider_id) {
+        await notificationRepository.createNotification({
+          user_id: complaint.facility.provider_id,
+          title: `[YÊU CẦU GIẢI TRÌNH] Khiếu nại #${complaint.id}`,
+          content: `Admin đã chuyển tiếp khiếu nại #${complaint.id} kèm yêu cầu: "${adminNote.length > 80 ? adminNote.slice(0, 80) + '...' : adminNote}". Thời hạn phản hồi: 3 ngày làm việc.`,
+          type: 'COMPLAINT'
+        });
+      }
+
+      await notificationRepository.createNotification({
+        user_id: complaint.customer_id,
+        title: `Khiếu nại #${complaint.id} đã chuyển cho bãi xe`,
+        content: `Ban Quản Trị đã yêu cầu Chủ bãi xe "${complaint.facility?.name}" giải trình trong vòng 3 ngày làm việc.`,
+        type: 'COMPLAINT'
+      });
+    } catch (notifErr) {
+      console.warn('[ComplaintService] Thông báo forwardToProvider:', notifErr.message);
+    }
+
+    try {
+      const io = getIO();
+      if (io) {
+        const eventPayload = {
+          action: 'FORWARDED',
+          complaint: formattedComplaint,
+          admin_note: adminNote
+        };
+        io.to('role_ADMIN').emit('complaint_updated', eventPayload);
+        io.to(`user_${complaint.customer_id}`).emit('complaint_updated', eventPayload);
+        if (complaint.facility?.provider_id) {
+          io.to(`user_${complaint.facility.provider_id}`).emit('complaint_updated', eventPayload);
+        }
+      }
+    } catch (socketErr) {
+      console.warn('[ComplaintService] Socket emit error:', socketErr.message);
+    }
+
+    return formattedComplaint;
+  }
+
   // Customer yêu cầu chuyển cấp khiếu nại lên Admin 
   async escalateComplaint(complaint_id, currentUser, reason) {
     const complaint = await complaintRepository.getComplaintById(complaint_id);
@@ -286,7 +380,7 @@ class ComplaintService {
 
     try {
       await notificationRepository.createNotification({
-        user_id: 1, // Admin notification
+        user_id: 1,
         title: `[CẦN CAN THIỆP] Khiếu nại #${complaint.id} đã chuyển cấp lên Admin`,
         content: `Khách hàng ${complaint.customer?.full_name || ''} yêu cầu Admin can thiệp khiếu nại tại "${complaint.facility?.name}". Lý do: ${escalationReason}`,
         type: 'COMPLAINT'
@@ -316,7 +410,6 @@ class ComplaintService {
     return formattedComplaint;
   }
 
-  // Cập nhật trạng thái khiếu nại độc lập (Dành cho Admin & Provider)
   async updateComplaintStatus(complaint_id, currentUser, payload) {
     const status = typeof payload === 'object' ? payload.status : payload;
     const note = typeof payload === 'object' ? (payload.note || payload.admin_note || payload.reason) : null;
@@ -358,7 +451,6 @@ class ComplaintService {
       throw error;
     }
 
-    // Ghi nhận thay đổi trạng thái vào lịch sử
     const history = parseComplaintHistory(complaint.admin_response);
     const noteText = note?.trim() || `Chủ bãi xe đã cập nhật trạng thái sang ${status}.`;
 
@@ -380,7 +472,6 @@ class ComplaintService {
 
     const formattedComplaint = formatComplaintItem(updatedComplaint);
 
-    // Gửi thông báo đến Customer
     try {
       await notificationRepository.createNotification({
         user_id: complaint.customer_id,
@@ -431,7 +522,7 @@ class ComplaintService {
     const userId = parseInt(currentUser?.userId || currentUser?.id, 10);
     const targetStatus = status ? status.toUpperCase().trim() : 'RESOLVED';
 
-    const allowedAdminStatuses = ['RESOLVED', 'PROCESSING', 'CLOSED'];
+    const allowedAdminStatuses = ['RESOLVED', 'REJECTED', 'CLOSED', 'PROCESSING', 'WAITING_PROVIDER'];
     if (!allowedAdminStatuses.includes(targetStatus)) {
       const error = new Error(
         `Trạng thái không hợp lệ cho Admin. Cho phép: ${allowedAdminStatuses.join(', ')}`
@@ -440,25 +531,17 @@ class ComplaintService {
       throw error;
     }
 
-    // Quy tắc nghiệp vụ Hội đồng:
-    // Khiếu nại PENDING là trách nhiệm ban đầu của Chủ bãi xe xử lý.
-    if (complaint.status === 'PENDING') {
-      const error = new Error(
-        `Khiếu nại #${complaint.id} đang ở trạng thái PENDING do Chủ bãi xe phụ trách xử lý ban đầu. Khách hàng cần chuyển cấp (ESCALATED) hoặc Chủ bãi phản hồi trước khi Admin can thiệp.`
-      );
-      error.status = 400;
-      throw error;
-    }
-
-    // Ghi nhận vào lịch sử tiến trình khiếu nại (Audit Trail)
+    // Ghi nhận lịch sử tiến trình khiếu nại 
     const history = parseComplaintHistory(complaint.admin_response);
     const noteText = (typeof note === 'string' && note.trim().length > 0)
       ? note.trim()
       : (targetStatus === 'RESOLVED'
         ? 'Ban Quản Trị đã thẩm tra và đánh dấu khiếu nại đã được giải quyết dứt điểm.'
-        : targetStatus === 'PROCESSING'
-          ? 'Ban Quản Trị đang tiếp nhận và trực tiếp thẩm tra đối soát với các bên liên quan.'
-          : `Ban Quản Trị đã đóng khiếu nại với trạng thái ${targetStatus}.`);
+        : targetStatus === 'REJECTED'
+          ? 'Ban Quản Trị đã bác bỏ khiếu nại do không đủ căn cứ hoặc vi phạm điều khoản dịch vụ.'
+          : targetStatus === 'PROCESSING'
+            ? 'Ban Quản Trị đang tiếp nhận và trực tiếp thẩm tra đối soát với các bên liên quan.'
+            : `Ban Quản Trị đã cập nhật khiếu nại sang trạng thái ${targetStatus}.`);
 
     history.push({
       sender_role: 'ADMIN',
@@ -478,7 +561,6 @@ class ComplaintService {
 
     const formattedComplaint = formatComplaintItem(updatedComplaint);
 
-    // Gửi thông báo đến Khách hàng
     try {
       await notificationRepository.createNotification({
         user_id: complaint.customer_id,
@@ -490,7 +572,6 @@ class ComplaintService {
       console.warn('[ComplaintService.updateComplaintStatusByAdmin] Lỗi thông báo Customer:', notifErr.message);
     }
 
-    // 2. Gửi thông báo đến Chủ bãi xe
     if (complaint.facility?.provider_id) {
       try {
         await notificationRepository.createNotification({

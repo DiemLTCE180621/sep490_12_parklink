@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -46,10 +46,36 @@ const FacilityDetailPage = () => {
   const [toastMsg, setToastMsg] = useState('');
   const [toastType, setToastType] = useState('success');
 
+  const fetchData = useCallback(async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      const res = await facilityService.getFacilityDetails(facilityId);
+      const data = res.data?.data || res.data;
+      setFacility(data);
+      if (showLoading) setActiveImage(0);
+
+      // Dong bo thong tin tinh trang cho trong truc tiep tu chi tiet bai xe
+      if (data) {
+        setAvailability({
+          facility_id: facilityId,
+          capacity: data.capacity,
+          active_contracts: data.active_contracts,
+          available_slots: data.available_slots
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      setToastMsg('Không thể tải thông tin bãi đỗ xe');
+      setToastType('error');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  }, [facilityId]);
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facilityId, isAuthenticated]);
+  }, [fetchData, isAuthenticated]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,32 +114,6 @@ const FacilityDetailPage = () => {
       cancelled = true;
     };
   }, [facilityId, isAuthenticated, user?.role?.name]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await facilityService.getFacilityDetails(facilityId);
-      const data = res.data?.data || res.data;
-      setFacility(data);
-      setActiveImage(0);
-
-      // Dong bo thong tin tinh trang cho trong truc tiep tu chi tiet bai xe
-      if (data) {
-        setAvailability({
-          facility_id: facilityId,
-          capacity: data.capacity,
-          active_contracts: data.active_contracts,
-          available_slots: data.available_slots
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      setToastMsg('Không thể tải thông tin bãi đỗ xe');
-      setToastType('error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
@@ -493,7 +493,7 @@ const FacilityDetailPage = () => {
           </div>
         </section>
 
-        <ReviewSection facilityId={facilityId} />
+        <ReviewSection facilityId={facilityId} onReviewChanged={() => fetchData(false)} />
       </div>
     </div>
   );

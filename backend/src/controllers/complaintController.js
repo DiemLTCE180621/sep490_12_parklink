@@ -225,6 +225,31 @@ class ComplaintController {
     }
   }
 
+  // Admin chuyển tiếp khiếu nại cho Chủ bãi xe kèm chỉ đạo giải trình
+  async forwardToProvider(req, res) {
+    try {
+      const complaint_id = parseInt(req.params.id, 10);
+      const { note, message } = req.body;
+      const updatedComplaint = await complaintService.forwardToProvider(
+        complaint_id,
+        req.user,
+        { note: note || message }
+      );
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Đã chuyển tiếp khiếu nại cho Chủ bãi xe kèm chỉ đạo xử lý thành công.',
+        data: updatedComplaint
+      });
+    } catch (error) {
+      console.error('[ComplaintController.forwardToProvider] Error:', error);
+      res.status(error.status || 400).json({
+        status: 'error',
+        message: error.message || 'Lỗi khi chuyển tiếp khiếu nại'
+      });
+    }
+  }
+
 }
 
 module.exports = new ComplaintController();

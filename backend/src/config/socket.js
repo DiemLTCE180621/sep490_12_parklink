@@ -29,17 +29,13 @@ const initSocket = (server) => {
                 return next(new Error('Authentication error: Invalid token'));
             }
 
-            // Cho phép các vai trò hợp lệ trong hệ thống kết nối Socket
             socket.user = decodedUser;
             next();
         });
     });
 
-    // Lắng nghe kết nối từ client
     io.on('connection', (socket) => {
         console.log(`[Socket] Client kết nối: ${socket.id}`);
-
-        // Tự động tham gia phòng cá nhân (user_${userId}) và phòng theo vai trò (role_${userRole})
         const userId = socket.user?.id || socket.user?.userId;
         const userRole = socket.user?.role;
         if (userId) {
@@ -51,16 +47,21 @@ const initSocket = (server) => {
             console.log(`[Socket] User ${socket.id} (Role: ${userRole}) đã vào phòng role_${userRole}`);
         }
 
-        // Client yêu cầu tham gia phòng chat
-        socket.on('join_room', (roomId) => {
-            socket.join(roomId.toString());
-            console.log(`[Socket] User ${socket.id} đã vào phòng: ${roomId}`);
+        socket.on('join_room', async (roomId) => {
+            const currentUserId = socket.user?.id || socket.user?.userId;
+            if (currentUserId && await chatRepository.isUserInRoom(roomId, currentUserId)) {
+                socket.join(roomId.toString());
+            }
         });
 
-        // Client gửi tin nhắn mới
         socket.on('send_message', async (data) => {
             try {
-                const { roomId, senderId, content, mediaUrl } = data;
+                const { roomId, content, mediaUrl } = data;
+                const senderId = socket.user?.id || socket.user?.userId;
+
+                if (!senderId || !roomId || !(await chatRepository.isUserInRoom(roomId, senderId))) {
+                    return socket.emit('message_error', { message: 'Không có quyền gửi tin nhắn vào phòng này' });
+                }
 
                 const newMessage = await chatRepository.createMessage(
                     Number(roomId),
@@ -73,8 +74,6 @@ const initSocket = (server) => {
                     newMessage.tempId = data.tempId;
                 }
 
-                // Chaining .to() để Socket.IO tự động gom danh sách phòng thành 1 Set duy nhất:
-                // Tránh tình trạng client vừa ở phòng chat vừa ở phòng cá nhân bị nhận trùng sự kiện emit 2 lần
                 let broadcaster = io.to(roomId.toString());
                 if (newMessage.room) {
                     broadcaster = broadcaster
@@ -83,17 +82,26 @@ const initSocket = (server) => {
                 }
                 broadcaster.emit('receive_message', newMessage);
 
-                console.log(`[Socket] Đã phát tin nhắn vào phòng ${roomId}`);
+                if (newMessage.room) {
+                    const recipientId = Number(senderId) === Number(newMessage.room.customer_id)
+                        ? newMessage.room.provider_id
+                        : newMessage.room.customer_id;
+                    const recipientUnread = await chatRepository.getUnreadCount(recipientId);
+                    io.to(`user_${recipientId}`).emit('unread_chat_count', recipientUnread);
+                }
             } catch (error) {
                 console.error('[Socket] Lỗi gửi tin nhắn:', error.message);
                 socket.emit('message_error', { message: 'Không thể gửi tin nhắn' });
             }
         });
 
-        // Lắng nghe sự kiện người dùng báo đã xem
-        socket.on('mark_read', ({ roomId, readerId }) => {
-            socket.to(roomId.toString()).emit('messages_read', { roomId, readerId });
-            console.log(`[Socket] Đã báo Đã xem cho phòng ${roomId}`);
+        socket.on('mark_read', async ({ roomId, readerId }) => {
+            const currentUserId = socket.user?.id || socket.user?.userId || readerId;
+            socket.to(roomId.toString()).emit('messages_read', { roomId, readerId: currentUserId });
+            if (currentUserId) {
+                const count = await chatRepository.getUnreadCount(Number(currentUserId));
+                io.to(`user_${currentUserId}`).emit('unread_chat_count', count);
+            }
         });
 
         socket.on('disconnect', () => {
