@@ -8,14 +8,8 @@ const {
 } = require('../validations/reviewValidation');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
-/**
- * 1. Guest/Customer/Owner/Admin đều xem được (View facility reviews)
- */
 router.get('/facility/:facility_id', reviewController.getReviewsByFacilityId);
 
-/**
- * 1.1 Customer lấy bài đánh giá của chính mình tại bãi xe (kể cả khi đang bị ẩn chờ duyệt)
- */
 router.get(
   '/my-review/:facility_id',
   authenticateToken,
@@ -23,9 +17,6 @@ router.get(
   reviewController.getMyReview
 );
 
-/**
- * 2. Admin xem toàn bộ đánh giá cơ sở
- */
 router.get(
   '/admin',
   authenticateToken,
@@ -33,9 +24,6 @@ router.get(
   reviewController.getAllReviewsAdmin
 );
 
-/**
- * 2.1 Admin cập nhật trạng thái hiển thị (Ẩn/Hiện) hoặc gỡ cắm cờ
- */
 router.patch(
   '/:id/status',
   authenticateToken,
@@ -43,9 +31,6 @@ router.patch(
   reviewController.updateReviewStatus
 );
 
-/**
- * 2.2 Admin bỏ ẩn đánh giá (Unhide review)
- */
 router.patch(
   '/:id/unhide',
   authenticateToken,
@@ -53,9 +38,6 @@ router.patch(
   reviewController.unhideReview
 );
 
-/**
- * 3. Provider xem đánh giá các bãi xe của mình
- */
 router.get(
   '/provider',
   authenticateToken,
@@ -71,9 +53,6 @@ router.post(
   reviewController.replyToReview
 );
 
-/**
- * 4. Chỉ Customer mới được Viết / Sửa / Xóa review
- */
 router.post(
   '/',
   authenticateToken,

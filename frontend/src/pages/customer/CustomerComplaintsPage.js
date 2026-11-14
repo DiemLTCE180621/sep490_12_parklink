@@ -3,7 +3,6 @@ import complaintService from '../../services/complaintService';
 import { useSocket } from '../../context/SocketContext';
 import { Link } from 'react-router-dom';
 import Toast from '../../components/common/Toast';
-import EscalateComplaintModal from '../../components/modals/EscalateComplaintModal';
 import {
   AlertCircle,
   Calendar,
@@ -13,7 +12,6 @@ import {
   Loader2,
   ArrowLeft,
   Inbox,
-  ShieldAlert,
   MessageSquare
 } from 'lucide-react';
 
@@ -23,10 +21,6 @@ const CustomerComplaintsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success' });
-
-  // Modal chuyển cấp
-  const [selectedForEscalate, setSelectedForEscalate] = useState(null);
-  const [isEscalateModalOpen, setIsEscalateModalOpen] = useState(false);
 
   const fetchComplaints = useCallback(async (showLoading = true) => {
     try {
@@ -67,42 +61,50 @@ const CustomerComplaintsPage = () => {
     };
   }, [socket, fetchComplaints]);
 
-  const handleEscalateSuccess = useCallback((updatedComplaint) => {
-    setComplaints((prev) =>
-      prev.map((c) => (c.id === updatedComplaint.id ? { ...c, ...updatedComplaint } : c))
-    );
-    setToast({
-      message: `Đã gửi yêu cầu chuyển cấp khiếu nại #${updatedComplaint.id} lên Ban Quản Trị thành công!`,
-      type: 'success'
-    });
-  }, []);
-
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'PENDING_ADMIN':
       case 'PENDING':
       case 'OPEN':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300">
-            <Clock className="w-3.5 h-3.5" /> Chờ Bãi Xe Xử Lý
+            <Clock className="w-3.5 h-3.5" /> Chờ BQT tiếp nhận
+          </span>
+        );
+      case 'WAITING_PROVIDER':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-300">
+            <Clock className="w-3.5 h-3.5" /> Chờ Bãi Xe Giải Trình
+          </span>
+        );
+      case 'PROVIDER_REPLIED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-300">
+            <MessageSquare className="w-3.5 h-3.5" /> Bãi Xe Đã Giải Trình
           </span>
         );
       case 'PROCESSING':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-300">
-            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Bãi Xe Đang Xử Lý
-          </span>
-        );
-      case 'ESCALATED':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-purple-100 text-purple-800 border border-purple-300">
-            <ShieldAlert className="w-3.5 h-3.5" /> Chờ Admin Can Thiệp
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-sky-100 text-sky-800 border border-sky-300">
+            <Loader2 className="w-3.5 h-3.5 animate-spin" /> Đang Thẩm Tra Đối Soát
           </span>
         );
       case 'RESOLVED':
-      case 'CLOSED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
             <CheckCircle2 className="w-3.5 h-3.5" /> Đã Giải Quyết
+          </span>
+        );
+      case 'REJECTED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300">
+            <AlertCircle className="w-3.5 h-3.5" /> Bác Bỏ Khiếu Nại
+          </span>
+        );
+      case 'CLOSED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-200 text-slate-800 border border-slate-300">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Đã Đóng
           </span>
         );
       default:
@@ -121,14 +123,6 @@ const CustomerComplaintsPage = () => {
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ message: '', type: 'success' })}
-      />
-
-      {/* MODAL CHUYỂN CẤP */}
-      <EscalateComplaintModal
-        isOpen={isEscalateModalOpen}
-        onClose={() => setIsEscalateModalOpen(false)}
-        complaint={selectedForEscalate}
-        onSuccess={handleEscalateSuccess}
       />
 
       {/* HEADER BANNER */}
@@ -233,81 +227,75 @@ const CustomerComplaintsPage = () => {
                     </div>
                   )}
 
-                  {/* LỊCH SỬ TRAO ĐỔI & PHẢN HỒI */}
-                  {Array.isArray(item.response_history) && item.response_history.length > 0 ? (
-                    <div className="space-y-2.5 pt-2">
-                      <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                        <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
-                        Tiến trình trao đổi & giải quyết:
-                      </span>
-                      <div className="space-y-2">
-                        {item.response_history.map((hist, idx) => (
-                          <div
-                            key={idx}
-                            className={`p-3.5 rounded-2xl text-xs space-y-1 ${hist.action === 'ESCALATED'
-                                ? 'bg-purple-50 border border-purple-200 text-purple-900'
-                                : hist.sender_role === 'ADMIN'
-                                  ? 'bg-teal-50 border border-teal-200 text-teal-900'
-                                  : 'bg-slate-50 border border-slate-200 text-slate-800'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between font-bold">
-                              <span>{hist.sender_name || (hist.sender_role === 'ADMIN' ? 'Ban Quản Trị' : 'Chủ bãi xe')}</span>
-                              <span className="text-slate-400 font-normal">
-                                {hist.created_at ? new Date(hist.created_at).toLocaleString('vi-VN') : ''}
-                              </span>
-                            </div>
-                            <p className="whitespace-pre-wrap leading-relaxed text-slate-700">
-                              {hist.action === 'ESCALATED' ? `[Yêu cầu Admin can thiệp]: ${hist.reason}` : hist.message}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : item.admin_response ? (
-                    <div className="mt-2 p-4 bg-teal-50/80 border border-teal-200/80 rounded-2xl space-y-1">
-                      <span className="font-bold text-xs text-teal-900 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600" />
-                        Phản hồi giải quyết:
-                      </span>
-                      <p className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">{item.admin_response}</p>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60 text-xs text-slate-500 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Chủ bãi xe đang tiếp nhận khiếu nại này. Vui lòng chờ phản hồi trực tiếp từ bãi xe.</span>
-                    </div>
-                  )}
+                  {/* PHẢN HỒI TỪ CHỦ BÃI XE (CHỈ HIỂN THỊ PHẢN HỒI CỦA PROVIDER, ẨN LỆNH NỘI BỘ CỦA ADMIN) */}
+                  {(() => {
+                    const providerReplies = Array.isArray(item.response_history)
+                      ? item.response_history.filter((h) => h.sender_role === 'PROVIDER' || h.action === 'PROVIDER_REPLY')
+                      : [];
 
-                  {/* KHU VỰC HÀNH ĐỘNG CHUYỂN CẤP (ESCALATE) */}
+                    if (providerReplies.length === 0) return null;
+
+                    return (
+                      <div className="space-y-2 pt-1">
+                        <span className="text-xs font-bold text-teal-800 uppercase tracking-wider flex items-center gap-1.5">
+                          <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+                          Phản hồi từ Chủ bãi xe:
+                        </span>
+                        <div className="space-y-2">
+                          {providerReplies.map((reply, idx) => (
+                            <div
+                              key={idx}
+                              className="p-3.5 rounded-2xl text-xs space-y-1.5 bg-teal-50/70 border border-teal-200 text-teal-950"
+                            >
+                              <div className="flex items-center justify-between font-bold">
+                                <span className="text-teal-900">{reply.sender_name || 'Chủ bãi xe'}</span>
+                                <span className="text-slate-400 font-normal">
+                                  {reply.created_at ? new Date(reply.created_at).toLocaleString('vi-VN') : ''}
+                                </span>
+                              </div>
+                              <p className="whitespace-pre-wrap leading-relaxed text-slate-800 text-xs sm:text-sm">
+                                {reply.message}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* THÔNG BÁO TIẾN ĐỘ VÀ TRẠNG THÁI */}
                   <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    {item.status === 'ESCALATED' ? (
-                      <div className="inline-flex items-center gap-2 text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-2 rounded-xl border border-purple-200 w-full sm:w-auto">
-                        <ShieldAlert className="w-4 h-4 text-purple-600 shrink-0" />
-                        <span>Khiếu nại này đã được chuyển cấp. Ban Quản Trị đang can thiệp xử lý.</span>
+                    {item.status === 'PENDING_ADMIN' || item.status === 'PENDING' || item.status === 'OPEN' ? (
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-800 bg-amber-50 px-3.5 py-2.5 rounded-xl border border-amber-200 w-full">
+                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>Ban Quản Trị ParkLink đã tiếp nhận khiếu nại và đang tiến hành thẩm tra hồ sơ hợp đồng.</span>
+                      </div>
+                    ) : item.status === 'WAITING_PROVIDER' ? (
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-blue-800 bg-blue-50 px-3.5 py-2.5 rounded-xl border border-blue-200 w-full">
+                        <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>
+                          Ban Quản Trị đã yêu cầu Chủ bãi xe kiểm tra giải quyết {item.deadline ? `(Thời hạn phản hồi: trước ${new Date(item.deadline).toLocaleDateString('vi-VN')})` : '(trong vòng 3 ngày)'}. Vui lòng chờ phản hồi.
+                        </span>
+                      </div>
+                    ) : item.status === 'PROVIDER_REPLIED' ? (
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-teal-800 bg-teal-50 px-3.5 py-2.5 rounded-xl border border-teal-200 w-full">
+                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                        <span>Chủ bãi xe đã gửi phản hồi giải quyết cho bạn.</span>
                       </div>
                     ) : item.status === 'RESOLVED' ? (
-                      <div className="inline-flex items-center gap-2 text-xs text-emerald-700">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>Khiếu nại này đã hoàn tất giải quyết.</span>
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-emerald-800 bg-emerald-50 px-3.5 py-2.5 rounded-xl border border-emerald-200 w-full">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Khiếu nại này đã được hoàn tất giải quyết thỏa đáng.</span>
+                      </div>
+                    ) : item.status === 'REJECTED' ? (
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-rose-800 bg-rose-50 px-3.5 py-2.5 rounded-xl border border-rose-200 w-full">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                        <span>Khiếu nại không hợp lệ hoặc đã bị Ban Quản Trị bác bỏ.</span>
                       </div>
                     ) : (
-                      <span className="text-xs text-slate-400">
-                        Chủ bãi xe không phản hồi hoặc giải quyết không thỏa đáng?
-                      </span>
-                    )}
-
-                    {item.status !== 'ESCALATED' && (
-                      <button
-                        onClick={() => {
-                          setSelectedForEscalate(item);
-                          setIsEscalateModalOpen(true);
-                        }}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 hover:text-purple-800 border border-purple-200 font-bold text-xs rounded-xl transition shadow-sm"
-                      >
-                        <ShieldAlert className="w-3.5 h-3.5" />
-                        Yêu cầu Admin can thiệp
-                      </button>
+                      <div className="inline-flex items-center gap-2 text-xs text-slate-500">
+                        <span>Hồ sơ khiếu nại đã đóng.</span>
+                      </div>
                     )}
                   </div>
                 </div>

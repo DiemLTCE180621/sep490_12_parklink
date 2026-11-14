@@ -21,13 +21,19 @@ const complaintService = {
     return response.data;
   },
 
-  // Phản hồi khiếu nại (Admin & Parking Provider)
   replyToComplaint: async (id, data) => {
     const response = await api.post(`/complaints/${id}/reply`, data);
     return response.data;
   },
 
-  // Chuyển cấp khiếu nại lên Admin (Chỉ dành cho Customer)
+  // Admin chuyển tiếp khiếu nại cho Chủ bãi xe
+  forwardToProvider: async (id, data) => {
+    const payload = typeof data === 'object' && data !== null ? data : { note: data };
+    const response = await api.post(`/complaints/${id}/forward`, payload);
+    return response.data;
+  },
+
+  // Chuyển cấp khiếu nại lên Admin 
   escalateComplaint: async (id, reason) => {
     const response = await api.post(`/complaints/${id}/escalate`, { reason });
     return response.data;

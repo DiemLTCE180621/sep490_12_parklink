@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
-import SubmitComplaintModal from '../components/common/SubmitComplaintModal';
 import Toast from '../components/common/Toast';
 import {
   FileText,
@@ -21,12 +20,8 @@ const CustomerContractsPage = () => {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('ALL'); 
+  const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
-
-  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
-  const [selectedFacilityId, setSelectedFacilityId] = useState(null);
-
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const fetchContracts = useCallback(async () => {
@@ -51,10 +46,11 @@ const CustomerContractsPage = () => {
     navigate(`/my-contracts/${id}`);
   };
 
-  const handleOpenComplaint = (facilityId, e) => {
+  const handleOpenComplaint = (reservationId, e) => {
     e.stopPropagation();
-    setSelectedFacilityId(facilityId);
-    setIsComplaintModalOpen(true);
+    if (reservationId) {
+      navigate(`/submit-complaint/${reservationId}`);
+    }
   };
 
   const handleOpenExtension = (contractItem, e) => {
@@ -90,7 +86,7 @@ const CustomerContractsPage = () => {
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full space-y-6">
-        
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
@@ -111,46 +107,42 @@ const CustomerContractsPage = () => {
           </button>
         </div>
 
-        
+
         <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           <div className="flex items-center gap-1 overflow-x-auto">
             <button
               onClick={() => setActiveTab('ALL')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                activeTab === 'ALL'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeTab === 'ALL'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               Tất cả ({totalCount})
             </button>
             <button
               onClick={() => setActiveTab('PENDING_SIGNATURE')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                activeTab === 'PENDING_SIGNATURE'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeTab === 'PENDING_SIGNATURE'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               Chờ xác nhận ({pendingCount})
             </button>
             <button
               onClick={() => setActiveTab('ACTIVE')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                activeTab === 'ACTIVE'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeTab === 'ACTIVE'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               Đang hiệu lực ({activeCount})
             </button>
             <button
               onClick={() => setActiveTab('TERMINATED')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
-                activeTab === 'TERMINATED'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${activeTab === 'TERMINATED'
+                ? 'bg-slate-900 text-white'
+                : 'text-slate-600 hover:bg-slate-100'
+                }`}
             >
               Đã chấm dứt ({terminatedCount})
             </button>
@@ -168,7 +160,7 @@ const CustomerContractsPage = () => {
           </div>
         </div>
 
-        
+
         {loading ? (
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
@@ -282,7 +274,7 @@ const CustomerContractsPage = () => {
                   </div>
                 </div>
 
-                
+
                 <div className="flex sm:flex-row lg:flex-row items-center justify-between lg:justify-end gap-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
                   <div className="text-left lg:text-right lg:mr-2">
                     <span className="text-[11px] text-slate-400 block">Giá thuê</span>
@@ -374,13 +366,15 @@ const CustomerContractsPage = () => {
                       </>
                     ) : (
                       <>
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
-                          className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
-                        >
-                          Khiếu nại
-                        </button>
+                        {['ACTIVE', 'COMPLETED'].includes(item.status) && (
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenComplaint(item.reservation_id, e)}
+                            className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
+                          >
+                            Khiếu nại
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={(e) => {
@@ -401,17 +395,7 @@ const CustomerContractsPage = () => {
           </div>
         )}
       </div>
-
-      
-      <SubmitComplaintModal
-        isOpen={isComplaintModalOpen}
-        onClose={() => {
-          setIsComplaintModalOpen(false);
-          setSelectedFacilityId(null);
-        }}
-        facilityId={selectedFacilityId}
-      />
-    </div>
+    </div >
   );
 };
 

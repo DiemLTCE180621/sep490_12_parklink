@@ -47,6 +47,14 @@ router.get(
   complaintController.getAllComplaints
 );
 
+// Admin chuyển tiếp khiếu nại cho Chủ bãi xe kèm chỉ đạo xử lý
+router.post(
+  '/:id/forward',
+  authenticateToken,
+  authorizeRoles('ADMIN'),
+  complaintController.forwardToProvider
+);
+
 router.post(
   '/:id/reply',
   authenticateToken,

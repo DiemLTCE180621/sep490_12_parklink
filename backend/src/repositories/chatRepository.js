@@ -1,7 +1,6 @@
 const prisma = require('../config/prisma');
 
 class ChatRepository {
-    // Tìm hoặc tạo phòng chat giữa customer và provider cho 1 facility cụ thể
     async findOrCreateRoom(customerId, providerId, facilityId) {
         let room = await prisma.chat_Room.findFirst({
             where: {
@@ -23,7 +22,14 @@ class ChatRepository {
         return room;
     }
 
-    // Lấy danh sách phòng chat của 1 user (dù là customer hay provider)
+    async isUserInRoom(roomId, userId) {
+        if (!roomId || !userId) return false;
+        return Boolean(await prisma.chat_Room.findFirst({
+            where: { id: Number(roomId), OR: [{ customer_id: Number(userId) }, { provider_id: Number(userId) }] },
+            select: { id: true }
+        }));
+    }
+
     async getUserRooms(userId) {
         const rooms = await prisma.chat_Room.findMany({
             where: {
@@ -53,19 +59,18 @@ class ChatRepository {
             }
         });
 
-        // Sắp xếp theo tin nhắn mới nhất lên đầu tiên (chuẩn Zalo)
+        // sort tin nhắn mới lên đầu
         return rooms.sort((a, b) => {
-            const timeA = a.messages?.[0]?.created_at 
-                ? new Date(a.messages[0].created_at).getTime() 
+            const timeA = a.messages?.[0]?.created_at
+                ? new Date(a.messages[0].created_at).getTime()
                 : new Date(a.created_at).getTime();
-            const timeB = b.messages?.[0]?.created_at 
-                ? new Date(b.messages[0].created_at).getTime() 
+            const timeB = b.messages?.[0]?.created_at
+                ? new Date(b.messages[0].created_at).getTime()
                 : new Date(b.created_at).getTime();
             return timeB - timeA;
         });
     }
 
-    // Lấy lịch sử tin nhắn của 1 phòng
     async getRoomMessages(roomId) {
         return await prisma.message.findMany({
             where: { room_id: roomId },
@@ -76,7 +81,7 @@ class ChatRepository {
         });
     }
 
-    // Lưu tin nhắn mới vào database
+    // save tin nhắn mới vào db
     async createMessage(roomId, senderId, content, mediaUrl = null) {
         return await prisma.message.create({
             data: {
@@ -92,7 +97,6 @@ class ChatRepository {
         });
     }
 
-    // Đánh dấu tất cả tin nhắn trong phòng (của người kia gửi) là đã đọc
     async markMessagesAsRead(roomId, currentUserId) {
         return await prisma.message.updateMany({
             where: {
@@ -106,7 +110,7 @@ class ChatRepository {
         });
     }
 
-    // Lấy tổng số tin nhắn chưa đọc của một user
+    // lấy tổng chat chưa đọc của user
     async getUnreadCount(userId) {
         return await prisma.message.count({
             where: {

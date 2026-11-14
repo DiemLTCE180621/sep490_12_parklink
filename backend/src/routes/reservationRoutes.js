@@ -23,17 +23,11 @@ router.get('/provider/requests',authenticateToken,authorizeRoles('PROVIDER'),res
 
 router.get('/:id',authenticateToken,validateReservationId,reservationController.getReservationById);
 
-router.patch('/:id/cancel',authenticateToken,authorizeRoles('CUSTOMER'),validateReservationId,reservationController.cancelReservation);
+router.patch('/:id/cancel', authenticateToken, authorizeRoles('CUSTOMER'), validateReservationId, reservationController.cancelReservation);
 
-router.put('/:id/cancel',authenticateToken,authorizeRoles('CUSTOMER'),validateReservationId,reservationController.cancelReservation);
+router.patch('/:id/accept', authenticateToken, authorizeRoles('PROVIDER'), validateReservationId, reservationController.acceptReservation);
 
-router.patch('/:id/accept',authenticateToken,authorizeRoles('PROVIDER'),validateReservationId,reservationController.acceptReservation);
-
-router.put('/:id/accept',authenticateToken,authorizeRoles('PROVIDER'),validateReservationId,reservationController.acceptReservation);
-
-router.patch('/:id/reject',authenticateToken,authorizeRoles('PROVIDER'),validateReservationId,reservationController.rejectReservation);
-
-router.put('/:id/reject',authenticateToken,authorizeRoles('PROVIDER'),validateReservationId,reservationController.rejectReservation);
+router.patch('/:id/reject', authenticateToken, authorizeRoles('PROVIDER'), validateReservationId, reservationController.rejectReservation);
 
 router.patch('/:id/status',authenticateToken,authorizeRoles('PROVIDER'),validateReservationId,validateRespondReservation,reservationController.respondReservation);
 

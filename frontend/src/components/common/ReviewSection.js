@@ -1,66 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import reviewService from '../../services/reviewService';
 import { validateReviewForm } from '../../validations/reviewValidation';
 import StarRating from './StarRating';
 import Toast from './Toast';
+import ConfirmModal from '../modals/ConfirmModal';
 import { Edit, Trash2, Send, AlertTriangle, CornerDownRight } from 'lucide-react';
 
-const ReviewSection = ({ facilityId }) => {
+const EditReviewForm = ({
+  rating,
+  setRating,
+  comment,
+  setComment,
+  onCancel,
+  onSubmit,
+  submitting
+}) => (
+  <form onSubmit={onSubmit} className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
+    <div>
+      <label className="block text-sm font-bold text-slate-800 mb-2">
+        Chỉnh sửa lại nội dung đánh giá
+      </label>
+      <StarRating value={rating} onChange={setRating} showLabel={true} size={22} />
+    </div>
+    <textarea
+      rows="3"
+      className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none bg-slate-50 text-sm"
+      value={comment}
+      onChange={(e) => setComment(e.target.value)}
+      placeholder="Chia sẻ trải nghiệm của bạn..."
+    />
+    <div className="flex justify-end gap-3">
+      <button
+        type="button"
+        onClick={onCancel}
+        className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium text-sm"
+      >
+        Hủy
+      </button>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50"
+      >
+        {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
+      </button>
+    </div>
+  </form>
+);
+
+const ReviewSection = ({ facilityId, onReviewChanged }) => {
   const { user } = useAuth();
   const socket = useSocket();
   const [reviews, setReviews] = useState([]);
   const [myReview, setMyReview] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Kiểm tra xem khách hàng hiện tại đã có bài đánh giá ở bãi xe này chưa (kể cả đang bị ẩn chờ duyệt)
-  const effectiveUserReview = myReview || (user 
+  // check customer có đánh giá chưa
+  const effectiveUserReview = myReview || (user
     ? reviews.find(r => String(r.customer_id) === String(user.id))
     : null);
 
-  // Form states
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Toast state
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
-  // Edit states
   const [editingId, setEditingId] = useState(null);
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState('');
 
-  useEffect(() => {
-    fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facilityId]);
-
-  // Lắng nghe sự kiện socket để tự động cập nhật khi Admin ẩn hoặc có review mới
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleReviewChange = () => {
-      fetchReviews(false);
-    };
-
-    socket.on('review_updated', handleReviewChange);
-
-    return () => {
-      socket.off('review_updated', handleReviewChange);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, facilityId]);
-
-  const fetchReviews = async (showLoading = true) => {
+  const fetchReviews = useCallback(async (showLoading = true) => {
     try {
       if (showLoading) setLoading(true);
       const res = await reviewService.getReviewsByFacilityId(facilityId);
       if (res.success) {
         setReviews(res.data);
       }
-      // Nếu là khách hàng, tải thông tin đánh giá riêng (kể cả đang bị ẩn chờ duyệt)
       if (user && user?.role?.name === 'CUSTOMER') {
         try {
           const myRes = await reviewService.getMyReview(facilityId);
@@ -68,7 +86,6 @@ const ReviewSection = ({ facilityId }) => {
             setMyReview(myRes.data || null);
           }
         } catch {
-          // Bỏ qua nếu lỗi
         }
       } else {
         setMyReview(null);
@@ -78,7 +95,26 @@ const ReviewSection = ({ facilityId }) => {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [facilityId, user]);
+
+  useEffect(() => {
+    fetchReviews(true);
+  }, [fetchReviews]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReviewChange = () => {
+      fetchReviews(false);
+      onReviewChanged?.();
+    };
+
+    socket.on('review_updated', handleReviewChange);
+
+    return () => {
+      socket.off('review_updated', handleReviewChange);
+    };
+  }, [socket, fetchReviews, onReviewChanged]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,10 +130,8 @@ const ReviewSection = ({ facilityId }) => {
         rating,
         comment
       });
-      // Reset form & reload
       setRating(0);
       setComment('');
-      // Cập nhật ngay myReview để ẩn form tạo mới ngay lập tức
       setMyReview(res.data);
 
       if (res.data?.is_flagged || res.data?.status === 'HIDDEN') {
@@ -112,6 +146,7 @@ const ReviewSection = ({ facilityId }) => {
         });
       }
       await fetchReviews(false);
+      onReviewChanged?.();
     } catch (err) {
       const msg = err.message || err.errors?.[0] || 'Lỗi khi gửi đánh giá';
       setToastInfo({ message: msg, type: 'error' });
@@ -154,6 +189,7 @@ const ReviewSection = ({ facilityId }) => {
       }
 
       await fetchReviews(false);
+      onReviewChanged?.();
     } catch (err) {
       const msg = err.message || err.errors?.[0] || 'Lỗi khi cập nhật đánh giá';
       setToastInfo({ message: msg, type: 'error' });
@@ -177,7 +213,6 @@ const ReviewSection = ({ facilityId }) => {
     try {
       setSubmitting(true);
       await reviewService.deleteReview(deleteConfirmId);
-      // Xóa ngay lập tức khỏi local state để giao diện mất ngay
       setReviews(prev => prev.filter(r => r.id !== deleteConfirmId));
       if (myReview?.id === deleteConfirmId) {
         setMyReview(null);
@@ -185,6 +220,7 @@ const ReviewSection = ({ facilityId }) => {
       setDeleteConfirmId(null);
       setToastInfo({ message: 'Xóa đánh giá thành công!', type: 'success' });
       await fetchReviews(false);
+      onReviewChanged?.();
     } catch (err) {
       setDeleteConfirmId(null);
       const msg = err.message || err.errors?.[0] || 'Lỗi khi xóa đánh giá';
@@ -209,65 +245,42 @@ const ReviewSection = ({ facilityId }) => {
         </span>
       </h3>
 
-      {/* TRƯỜNG HỢP: ĐÁNH GIÁ ĐANG ĐƯỢC ADMIN DUYỆT (TẠM ẨN) -> KHÔNG CHO VIẾT BÀI KHÁC VÀ HIỂN THỊ THÔNG BÁO RÕ RÀNG */}
       {user && user?.role?.name === 'CUSTOMER' && effectiveUserReview?.status === 'HIDDEN' && (
         <div className="mb-8 p-5 bg-amber-50/80 border border-amber-200 rounded-2xl space-y-4 animate-fadeIn">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2 text-amber-900 font-bold text-sm sm:text-base">
               <AlertTriangle className={`w-5 h-5 shrink-0 ${effectiveUserReview.is_flagged ? 'text-amber-600' : 'text-rose-600'}`} />
               <span>
-                {effectiveUserReview.is_flagged 
-                  ? 'Đánh giá của bạn đang chờ Quản trị viên duyệt' 
+                {effectiveUserReview.is_flagged
+                  ? 'Đánh giá của bạn đang chờ Quản trị viên duyệt'
                   : 'Đánh giá của bạn đã bị Quản trị viên ẩn vĩnh viễn'}
               </span>
             </div>
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${
-              effectiveUserReview.is_flagged 
-                ? 'bg-amber-100 text-amber-800' 
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${effectiveUserReview.is_flagged
+                ? 'bg-amber-100 text-amber-800'
                 : 'bg-rose-100 text-rose-800'
-            }`}>
+              }`}>
               {effectiveUserReview.is_flagged ? 'Tạm ẩn chờ duyệt' : 'Đã ẩn vĩnh viễn'}
             </span>
           </div>
 
           <p className="text-xs sm:text-sm text-amber-700 leading-relaxed">
-            {effectiveUserReview.flagged_reason 
+            {effectiveUserReview.flagged_reason
               ? `Lý do vi phạm: "${effectiveUserReview.flagged_reason}". Đánh giá này không được hiển thị công khai trên hệ thống.`
               : 'Đánh giá này không tuân thủ tiêu chuẩn cộng đồng và đã bị ẩn khỏi hệ thống.'}
           </p>
 
           {/* Form chỉnh sửa nếu đang edit bài bị ẩn này */}
           {editingId === effectiveUserReview.id ? (
-            <form onSubmit={handleUpdate} className="bg-white p-4 rounded-xl border border-amber-200 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-800 mb-2">
-                  Chỉnh sửa lại nội dung đánh giá
-                </label>
-                <StarRating value={editRating} onChange={setEditRating} showLabel={true} size={22} />
-              </div>
-              <textarea
-                rows="3"
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none bg-slate-50 text-sm"
-                value={editComment}
-                onChange={(e) => setEditComment(e.target.value)}
-              />
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditingId(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium text-sm"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors font-medium text-sm disabled:opacity-50"
-                >
-                  {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-              </div>
-            </form>
+            <EditReviewForm
+              rating={editRating}
+              setRating={setEditRating}
+              comment={editComment}
+              setComment={setEditComment}
+              onCancel={() => setEditingId(null)}
+              onSubmit={handleUpdate}
+              submitting={submitting}
+            />
           ) : (
             <div className="bg-white/90 p-4 rounded-xl border border-amber-200/80 space-y-2">
               <div className="flex items-center justify-between">
@@ -295,7 +308,7 @@ const ReviewSection = ({ facilityId }) => {
         </div>
       )}
 
-      {/* CHỈ HIỂN THỊ FORM VIẾT MỚI KHI CUSTOMER CHƯA TỪNG ĐÁNH GIÁ (NẾU ĐÃ ĐÁNH GIÁ HOẶC ĐANG CHỜ DUYỆT THÌ ẨN HOÀN TOÀN) */}
+      {/* CHỈ HIỆN THỊ NẾU CHƯA REVIEW NẾU ĐÃ ĐÁNH GIÁ HOẶC ĐANG CHỜ DUYỆT THÌ ẨN HOÀN TOÀN) */}
       {user && user?.role?.name === 'CUSTOMER' && !effectiveUserReview && (
         <form onSubmit={handleSubmit} className="mb-8 bg-slate-50 p-5 rounded-xl border border-slate-200">
           <div className="mb-4">
@@ -342,38 +355,17 @@ const ReviewSection = ({ facilityId }) => {
           reviews.map((review) => (
             <div key={review.id} className="p-4 bg-slate-50/50 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
 
-              {/* CHẾ ĐỘ CHỈNH SỬA (NẾU ĐANG CHỌN REVIEW NÀY) */}
+              {/* CHẾ ĐỘ CHỈNH SỬA*/}
               {editingId === review.id ? (
-                <form onSubmit={handleUpdate}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-bold text-slate-800 mb-2">
-                      Đánh giá trải nghiệm
-                    </label>
-                    <StarRating value={editRating} onChange={setEditRating} showLabel={true} size={22} />
-                  </div>
-                  <textarea
-                    rows="3"
-                    className="w-full px-4 py-3 mb-4 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 transition-all outline-none bg-gray-50"
-                    value={editComment}
-                    onChange={(e) => setEditComment(e.target.value)}
-                  />
-                  <div className="flex justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(null)}
-                      className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium"
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium"
-                    >
-                      {submitting ? 'Đang lưu...' : 'Lưu thay đổi'}
-                    </button>
-                  </div>
-                </form>
+                <EditReviewForm
+                  rating={editRating}
+                  setRating={setEditRating}
+                  comment={editComment}
+                  setComment={setEditComment}
+                  onCancel={() => setEditingId(null)}
+                  onSubmit={handleUpdate}
+                  submitting={submitting}
+                />
               ) : (
                 /* CHẾ ĐỘ XEM THƯỜNG */
                 <>
@@ -388,7 +380,7 @@ const ReviewSection = ({ facilityId }) => {
                       </div>
                     </div>
 
-                    {/* Các nút hành động (Chỉ hiện nếu là bài của chính user) */}
+                    {/* nút hiện nếu là bài của chính user) */}
                     {user && String(user.id) === String(review.customer_id) && (
                       <div className="flex gap-2 transition-opacity">
                         <button
@@ -433,39 +425,20 @@ const ReviewSection = ({ facilityId }) => {
         )}
       </div>
 
-      {/* CUSTOM DELETE CONFIRMATION MODAL */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trash2 size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">Xóa đánh giá?</h3>
-              <p className="text-slate-500 mb-6">
-                Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelDelete}
-                  className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
-                >
-                  Hủy bỏ
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={submitting}
-                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl transition-colors shadow-sm shadow-red-200 disabled:opacity-50"
-                >
-                  {submitting ? 'Đang xóa...' : 'Đồng ý xóa'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* MODAL XÁC NHẬN XÓA DÙNG CHUNG */}
+      <ConfirmModal
+        isOpen={Boolean(deleteConfirmId)}
+        onClose={cancelDelete}
+        onConfirm={handleDelete}
+        title="Xóa đánh giá?"
+        message="Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác."
+        confirmText="Đồng ý xóa"
+        cancelText="Hủy bỏ"
+        type="danger"
+        loading={submitting}
+      />
 
-      {/* TOAST NOTIFICATION CHUYÊN NGHIỆP */}
+      {/* TOAST NOTIFICATION*/}
       <Toast
         message={toastInfo.message}
         type={toastInfo.type}

@@ -8,7 +8,7 @@ const {
 } = require('../validations/platformFeeValidation');
 
 /**
- * Tính toán phí nền tảng ước tính dựa trên số slot
+ * Tính phí dựa trên số slot
  */
 router.get(
   '/calculate',
@@ -17,9 +17,6 @@ router.get(
   platformFeeController.calculateFee
 );
 
-/**
- * Xem danh sách biểu phí nền tảng (View Platform Fee)
- */
 router.get(
   '/',
   authenticateToken,
@@ -27,17 +24,11 @@ router.get(
   platformFeeController.getAllFees
 );
 
-/**
- * Lấy danh sách biểu phí đang hoạt động
- */
 router.get(
   '/active',
   platformFeeController.getActiveFees
 );
 
-/**
- * Xem chi tiết một gói biểu phí nền tảng theo ID
- */
 router.get(
   '/:id',
   authenticateToken,
@@ -45,9 +36,6 @@ router.get(
   platformFeeController.getFeeById
 );
 
-/**
- *Tạo mới biểu phí nền tảng
- */
 router.post(
   '/',
   authenticateToken,
@@ -56,9 +44,6 @@ router.post(
   platformFeeController.createFee
 );
 
-/**
- *Cập nhật thông tin biểu phí
- */
 router.put(
   '/:id',
   authenticateToken,
@@ -67,9 +52,6 @@ router.put(
   platformFeeController.updateFee
 );
 
-/**
- * Bật / Tắt kích hoạt biểu phí
- */
 router.patch(
   '/:id/toggle-status',
   authenticateToken,

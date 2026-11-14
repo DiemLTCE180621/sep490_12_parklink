@@ -112,15 +112,6 @@ router.post(
   confirmationRecordController.requestLeaseExtension
 );
 
-router.post(
-  '/:id/extension-request',
-  authenticateToken,
-  authorizeRoles('CUSTOMER'),
-  validateConfirmationRecordId,
-  validateRequestLeaseExtension,
-  confirmationRecordController.requestLeaseExtension
-);
-
 router.get(
   '/:id/extension-request',
   authenticateToken,
@@ -136,24 +127,7 @@ router.patch(
   confirmationRecordController.cancelLeaseExtension
 );
 
-router.put(
-  '/:id/extension-request/cancel',
-  authenticateToken,
-  authorizeRoles('CUSTOMER'),
-  validateConfirmationRecordId,
-  confirmationRecordController.cancelLeaseExtension
-);
-
 router.patch(
-  '/:id/extension-request/respond',
-  authenticateToken,
-  authorizeRoles('PROVIDER'),
-  validateConfirmationRecordId,
-  validateRespondLeaseExtension,
-  confirmationRecordController.respondToLeaseExtension
-);
-
-router.put(
   '/:id/extension-request/respond',
   authenticateToken,
   authorizeRoles('PROVIDER'),
@@ -164,15 +138,6 @@ router.put(
 
 router.post(
   '/:id/terminate-request',
-  authenticateToken,
-  authorizeRoles('CUSTOMER', 'PROVIDER'),
-  validateConfirmationRecordId,
-  validateRequestEarlyTermination,
-  confirmationRecordController.requestEarlyTermination
-);
-
-router.post(
-  '/:id/termination-request',
   authenticateToken,
   authorizeRoles('CUSTOMER', 'PROVIDER'),
   validateConfirmationRecordId,
@@ -195,23 +160,6 @@ router.patch(
   confirmationRecordController.cancelEarlyTermination
 );
 
-router.put(
-  '/:id/termination-request/cancel',
-  authenticateToken,
-  authorizeRoles('CUSTOMER', 'PROVIDER'),
-  validateConfirmationRecordId,
-  confirmationRecordController.cancelEarlyTermination
-);
-
-router.patch(
-  '/:id/terminate-confirm',
-  authenticateToken,
-  authorizeRoles('PROVIDER', 'CUSTOMER'),
-  validateConfirmationRecordId,
-  validateConfirmContractTermination,
-  confirmationRecordController.confirmContractTermination
-);
-
 router.patch(
   '/:id/confirm-termination',
   authenticateToken,
@@ -221,24 +169,7 @@ router.patch(
   confirmationRecordController.confirmContractTermination
 );
 
-router.put(
-  '/:id/confirm-termination',
-  authenticateToken,
-  authorizeRoles('PROVIDER', 'CUSTOMER'),
-  validateConfirmationRecordId,
-  validateConfirmContractTermination,
-  confirmationRecordController.confirmContractTermination
-);
-
 router.patch(
-  '/:id/accept',
-  authenticateToken,
-  authorizeRoles('CUSTOMER'),
-  validateConfirmationRecordId,
-  confirmationRecordController.acceptConfirmationRecord
-);
-
-router.put(
   '/:id/accept',
   authenticateToken,
   authorizeRoles('CUSTOMER'),
