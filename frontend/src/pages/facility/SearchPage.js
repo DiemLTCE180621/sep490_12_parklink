@@ -160,7 +160,7 @@ const SearchPage = () => {
           setDbVehicleTypes(list);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const displayVehicleTypes = useMemo(() => {
@@ -721,14 +721,14 @@ const SearchPage = () => {
         {/* Tiện ích Filter */}
         {(amenitiesList.length > 0 || vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3) && (
           <div className="max-w-7xl mx-auto mt-3 flex flex-wrap gap-2 items-center">
-              <button
-                type="button"
-                onClick={clearFilters}
-                disabled={!(vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3)}
-                className="px-3 py-1.5 text-xs font-semibold rounded-full border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-amber-50"
-              >
-                  Xóa bộ lọc
-              </button>
+            <button
+              type="button"
+              onClick={clearFilters}
+              disabled={!(vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-full border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-amber-50"
+            >
+              Xóa bộ lọc
+            </button>
             <span className="text-xs font-bold text-slate-500 uppercase mr-2">Danh mục tiện ích:</span>
             {amenitiesList.map((amenity) => {
               const isSelected = selectedAmenities.includes(amenity.id);
@@ -777,6 +777,9 @@ const SearchPage = () => {
             ) : (
               facilities.map((fac) => {
                 const isSelected = compareIds.includes(fac.id);
+                const isOutOfSlots = fac.available_slots !== undefined && fac.available_slots !== null
+                  ? Number(fac.available_slots) <= 0
+                  : false;
                 return (
                   <div
                     key={fac.id}
@@ -793,13 +796,18 @@ const SearchPage = () => {
                   >
                     <div className="flex gap-4">
                       {/* Thumbnail */}
-                      <div className="w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
+                      <div className="relative w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
                         {fac.images && fac.images.length > 0 ? (
                           <img src={fac.images[0].image_url} alt={fac.name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-400">
                             <CarFront className="w-8 h-8" />
                           </div>
+                        )}
+                        {isOutOfSlots && (
+                          <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow-md tracking-wide">
+                            Hết chỗ
+                          </span>
                         )}
                       </div>
 
@@ -822,17 +830,29 @@ const SearchPage = () => {
                           So sánh
                         </button>
                         <div className="pr-20">
-                          <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
+                          </div>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex gap-1">
                             <MapPin className="w-3.5 h-3.5 shrink-0" /> {fac.address}
                           </p>
                         </div>
 
                         <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
-                            <Star className="w-3.5 h-3.5 fill-current" />
-                          <span>{getFacilityRating(fac).average ?? 'Chưa có'}</span>
-                          {getFacilityRating(fac).count > 0 && <span className="font-normal">({getFacilityRating(fac).count})</span>}
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
+                              <Star className="w-3.5 h-3.5 fill-current" />
+                              <span>{getFacilityRating(fac).average ?? 'Chưa có'}</span>
+                              {getFacilityRating(fac).count > 0 && <span className="font-normal">({getFacilityRating(fac).count})</span>}
+                            </div>
+                            <div className={`text-xs font-bold px-2 py-1 rounded-lg border ${isOutOfSlots
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-teal-50 text-teal-700 border-teal-200'
+                              }`}>
+                              {isOutOfSlots
+                                ? `Còn 0/${fac.capacity || 0} chỗ`
+                                : `Còn ${fac.available_slots ?? fac.capacity}/${fac.capacity || 0} chỗ`}
+                            </div>
                           </div>
                           {fac.distance !== null && fac.distance !== undefined && (
                             <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100">
@@ -980,6 +1000,9 @@ const SearchPage = () => {
               const latitude = Number(fac.latitude);
               const longitude = Number(fac.longitude);
               if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                const isOutOfSlots = fac.available_slots !== undefined && fac.available_slots !== null
+                  ? Number(fac.available_slots) <= 0
+                  : false;
                 const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
                 const facilityRating = getFacilityRating(fac).average;
                 const amenityNames = (fac.facility_amenities || [])
@@ -1004,9 +1027,16 @@ const SearchPage = () => {
                             </div>
                           )}
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent" />
-                          <span className="absolute left-2.5 bottom-2 px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
-                            Đã xác thực
-                          </span>
+                          <div className="absolute left-2.5 bottom-2 flex items-center gap-1.5">
+                            <span className="px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
+                              Đã xác thực
+                            </span>
+                            {isOutOfSlots && (
+                              <span className="px-2 py-1 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow-sm">
+                                Hết chỗ
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="p-3">
@@ -1039,10 +1069,10 @@ const SearchPage = () => {
                                 {Number(fac.price_per_month || 0).toLocaleString('vi-VN')} đ
                               </p>
                             </div>
-                            <div className="rounded-lg bg-slate-50 px-2 py-1.5">
-                              <p className="text-[10px] text-slate-500">Sức chứa</p>
-                              <p className="mt-0.5 text-xs font-bold text-slate-800">
-                                {fac.capacity || '—'} chỗ
+                            <div className={`rounded-lg px-2 py-1.5 ${isOutOfSlots ? 'bg-rose-50 border border-rose-100' : 'bg-slate-50'}`}>
+                              <p className={`text-[10px] ${isOutOfSlots ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>Tình trạng chỗ</p>
+                              <p className={`mt-0.5 text-xs font-bold ${isOutOfSlots ? 'text-rose-700' : 'text-slate-800'}`}>
+                                {isOutOfSlots ? `Còn 0/${fac.capacity || 0} chỗ` : `Còn ${fac.available_slots ?? fac.capacity}/${fac.capacity || 0} chỗ`}
                               </p>
                             </div>
                           </div>

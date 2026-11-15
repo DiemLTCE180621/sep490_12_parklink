@@ -13,14 +13,28 @@ class FacilityService {
       minPrice,
       maxPrice
     });
+
+    const activeContractsByFacility = await Promise.all(
+      facilities.map(async (facility) => [
+        facility.id,
+        await facilityRepository.getActiveContractsCount(facility.id)
+      ])
+    );
+    const activeContractsMap = new Map(activeContractsByFacility);
+
     const facilitiesWithRatings = facilities.map((facility) => {
       const ratings = facility.reviews || [];
       const avgRating = ratings.length > 0
         ? parseFloat((ratings.reduce((sum, review) => sum + review.rating, 0) / ratings.length).toFixed(1))
         : null;
 
+      const activeContracts = activeContractsMap.get(facility.id) || 0;
+      const actualAvailableSlots = Math.max(0, facility.capacity - activeContracts);
+
       return {
         ...facility,
+        active_contracts: activeContracts,
+        available_slots: actualAvailableSlots,
         avg_rating: avgRating,
         total_reviews: ratings.length,
       };

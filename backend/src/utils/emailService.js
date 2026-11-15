@@ -280,7 +280,7 @@ class EmailService {
    * @param {string} params.reason - Lý do từ chối
    */
   async sendFacilityRejectedEmail({ toEmail, fullName, facilityName, reason }) {
-    const subject = '[ParkLink] ❌ YÊU CẦU ĐĂNG KÝ BÃI ĐỖ XE BỊ TỪ CHỐI';
+    const subject = '[ParkLink] YÊU CẦU ĐĂNG KÝ BÃI ĐỖ XE BỊ TỪ CHỐI';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 24px;">
@@ -314,7 +314,7 @@ class EmailService {
    * UC10: Gửi email thông báo Đặt lại mật khẩu từ Quản trị viên (Admin)
    */
   async sendAdminForceResetPasswordEmail({ toEmail, fullName, tempPassword }) {
-    const subject = '[ParkLink] 🔐 THÔNG BÁO ĐẶT LẠI MẬT KHẨU TÀI KHOẢN';
+    const subject = '[ParkLink] THÔNG BÁO ĐẶT LẠI MẬT KHẨU TÀI KHOẢN';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
         <h2 style="color: #0d9488; text-align: center;">Thông Báo Đặt Lại Mật Khẩu</h2>
@@ -363,9 +363,9 @@ class EmailService {
 
     // Console Fallback khi chưa cấu hình EMAIL_USER / EMAIL_PASS
     console.log('\n==================================================');
-    console.log(`📧 [GIẢ LẬP GỬI EMAIL ${roleName}] (Chưa thiết lập SMTP)`);
-    console.log(`📩 Tới Email: ${toEmail}`);
-    console.log(`📋 Tiêu đề: ${subject}`);
+    console.log(`[GIẢ LẬP GỬI EMAIL ${roleName}] (Chưa thiết lập SMTP)`);
+    console.log(`Tới Email: ${toEmail}`);
+    console.log(`Tiêu đề: ${subject}`);
     if (tempPassword) {
       console.log(`🔑 MẬT KHẨU NGUYÊN BẢN ĐƯỢC TẠO: ${tempPassword}`);
     }

@@ -37,7 +37,8 @@ class NotificationController {
   async getMyNotifications(req, res, next) {
     try {
       const userId = req.user.id || req.user.userId;
-      const result = await notificationService.getUserNotifications(userId, req.query);
+      const userRole = req.user?.role || req.currentUser?.role?.name || null;
+      const result = await notificationService.getUserNotifications(userId, userRole, req.query);
       return res.status(200).json({
         status: 'success',
         data: result
@@ -51,8 +52,9 @@ class NotificationController {
   async markAsRead(req, res, next) {
     try {
       const userId = req.user.id || req.user.userId;
+      const userRole = req.user?.role || req.currentUser?.role?.name || null;
       const { id } = req.params;
-      const result = await notificationService.markAsRead(id, userId);
+      const result = await notificationService.markAsRead(id, userId, userRole);
       return res.status(200).json({
         status: 'success',
         message: 'Đã đánh dấu thông báo là đã đọc.',
@@ -67,7 +69,8 @@ class NotificationController {
   async markAllAsRead(req, res, next) {
     try {
       const userId = req.user.id || req.user.userId;
-      const result = await notificationService.markAllAsRead(userId);
+      const userRole = req.user?.role || req.currentUser?.role?.name || null;
+      const result = await notificationService.markAllAsRead(userId, userRole);
       return res.status(200).json({
         status: 'success',
         message: 'Đã đánh dấu tất cả thông báo là đã đọc.',
