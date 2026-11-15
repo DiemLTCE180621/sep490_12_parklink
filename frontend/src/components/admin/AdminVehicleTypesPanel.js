@@ -10,11 +10,10 @@ import Toast from '../common/Toast';
 
 /**
  * Panel Quản Lý Loại Phương Tiện Dành Cho Admin
- * Thực hiện đầy đủ 4 Use Cases:
- * - M2-UC98: Create Vehicle Type
- * - M2-UC99: View Vehicle Types
- * - M2-UC100: Update Vehicle Type
- * - M2-UC101: Deactivate Vehicle Type
+ * Create Vehicle Type
+ * View Vehicle Types
+ * Update Vehicle Type
+ * Deactivate Vehicle Type
  */
 const AdminVehicleTypesPanel = () => {
   const [vehicleTypes, setVehicleTypes] = useState([]);
@@ -23,7 +22,7 @@ const AdminVehicleTypesPanel = () => {
 
   // Bộ lọc và tìm kiếm
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'INACTIVE'
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   // Trạng thái modal tạo mới / chỉnh sửa
   const [modalState, setModalState] = useState({
@@ -38,7 +37,7 @@ const AdminVehicleTypesPanel = () => {
     loading: false
   });
 
-  // M2-UC99: Tải danh sách loại phương tiện từ backend
+  // Tải danh sách loại phương tiện từ backend
   const fetchVehicleTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -87,7 +86,7 @@ const AdminVehicleTypesPanel = () => {
     return { total, active, inactive };
   }, [vehicleTypes]);
 
-  // Mở modal tạo mới (M2-UC98)
+  // Mở modal tạo mới 
   const handleOpenCreateModal = () => {
     setModalState({
       isOpen: true,
@@ -95,7 +94,7 @@ const AdminVehicleTypesPanel = () => {
     });
   };
 
-  // Mở modal chỉnh sửa (M2-UC100)
+  // Mở modal chỉnh sửa 
   const handleOpenEditModal = (vt) => {
     setModalState({
       isOpen: true,
@@ -103,7 +102,7 @@ const AdminVehicleTypesPanel = () => {
     });
   };
 
-  // Mở modal xác nhận vô hiệu hóa / kích hoạt lại (M2-UC101)
+  // Mở modal xác nhận vô hiệu hóa / kích hoạt lại 
   const handleOpenConfirmToggle = (vt) => {
     setConfirmToggleState({
       isOpen: true,
@@ -154,7 +153,7 @@ const AdminVehicleTypesPanel = () => {
             Quản Lý Danh Mục Loại Phương Tiện
           </h2>
           <p className="text-slate-500 text-xs mt-1">
-            Quản trị các loại phương tiện (M2-UC98 đến M2-UC101) mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.
+            Quản trị các loại phương tiện mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.
           </p>
         </div>
 
@@ -169,7 +168,7 @@ const AdminVehicleTypesPanel = () => {
             Làm mới
           </button>
 
-          {/* M2-UC98: Nút Thêm mới */}
+          {/*Nút Thêm mới */}
           <button
             onClick={handleOpenCreateModal}
             className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
@@ -230,38 +229,35 @@ const AdminVehicleTypesPanel = () => {
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-full sm:w-auto self-stretch sm:self-auto">
           <button
             onClick={() => setStatusFilter('ALL')}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-              statusFilter === 'ALL'
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'ALL'
+              ? 'bg-white text-slate-900 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Tất Cả ({stats.total})
           </button>
           <button
             onClick={() => setStatusFilter('ACTIVE')}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-              statusFilter === 'ACTIVE'
-                ? 'bg-white text-emerald-700 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'ACTIVE'
+              ? 'bg-white text-emerald-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Hoạt Động ({stats.active})
           </button>
           <button
             onClick={() => setStatusFilter('INACTIVE')}
-            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
-              statusFilter === 'INACTIVE'
-                ? 'bg-white text-amber-700 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'INACTIVE'
+              ? 'bg-white text-amber-700 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
           >
             Đã Vô Hiệu Hóa ({stats.inactive})
           </button>
         </div>
       </div>
 
-      {/* M2-UC99: Bảng Danh Sách Loại Phương Tiện */}
+      {/* Bảng Danh Sách Loại Phương Tiện */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -344,10 +340,9 @@ const AdminVehicleTypesPanel = () => {
                     )}
                   </td>
 
-                  {/* Thao tác (M2-UC100 & M2-UC101) */}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
-                      {/* M2-UC100: Cập nhật */}
+                      {/* ập nhật */}
                       <button
                         onClick={() => handleOpenEditModal(vt)}
                         className="p-1.5 text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition"
@@ -356,14 +351,13 @@ const AdminVehicleTypesPanel = () => {
                         <Edit2 className="w-4 h-4" />
                       </button>
 
-                      {/* M2-UC101: Vô hiệu hóa / Kích hoạt lại */}
+                      {/* Vô hiệu hóa / Kích hoạt lại */}
                       <button
                         onClick={() => handleOpenConfirmToggle(vt)}
-                        className={`p-1.5 rounded-lg transition ${
-                          vt.is_active
-                            ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
-                            : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
-                        }`}
+                        className={`p-1.5 rounded-lg transition ${vt.is_active
+                          ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                          : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
+                          }`}
                         title={vt.is_active ? 'Vô hiệu hóa loại xe này' : 'Kích hoạt lại loại xe này'}
                       >
                         <Power className="w-4 h-4" />
@@ -377,7 +371,7 @@ const AdminVehicleTypesPanel = () => {
         </table>
       </div>
 
-      {/* Modal Tạo Mới (M2-UC98) & Chỉnh Sửa (M2-UC100) */}
+      {/* Modal Tạo Mới & Chỉnh Sửa */}
       <VehicleTypeModal
         isOpen={modalState.isOpen}
         onClose={() => setModalState({ isOpen: false, vehicleType: null })}
@@ -388,7 +382,7 @@ const AdminVehicleTypesPanel = () => {
         }}
       />
 
-      {/* Modal Xác Nhận Vô Hiệu Hóa / Kích Hoạt (M2-UC101) */}
+      {/* Modal Xác Nhận Vô Hiệu Hóa / Kích Hoạt*/}
       <ConfirmModal
         isOpen={confirmToggleState.isOpen}
         loading={confirmToggleState.loading}
