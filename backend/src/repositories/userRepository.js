@@ -4,6 +4,7 @@ class UserRepository {
   
   async findAmenities() {
     return await prisma.amenity.findMany({
+      where: { is_active: true },
       orderBy: { id: 'asc' }
     });
   }

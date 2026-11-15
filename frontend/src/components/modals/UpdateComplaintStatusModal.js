@@ -3,12 +3,10 @@ import {
   X,
   ShieldCheck,
   CheckCircle2,
-  Clock,
   Loader2,
   Building2,
   User,
-  AlertCircle,
-  FileText
+  AlertCircle
 } from 'lucide-react';
 import { ADMIN_ALLOWED_STATUS_OPTIONS } from '../../constants/complaintConstants';
 import { validateUpdateComplaintStatus } from '../../validations/complaintValidation';
@@ -25,12 +23,9 @@ const UpdateComplaintStatusModal = memo(({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
 
-  // Khởi tạo form khi mở modal
   useEffect(() => {
     if (complaint && isOpen) {
-      if (complaint.status === 'ESCALATED') {
-        setSelectedStatus('RESOLVED');
-      } else if (['RESOLVED', 'PROCESSING', 'CLOSED'].includes(complaint.status)) {
+      if (['RESOLVED', 'REJECTED', 'PROCESSING', 'CLOSED'].includes(complaint.status)) {
         setSelectedStatus(complaint.status);
       } else {
         setSelectedStatus('RESOLVED');
@@ -40,7 +35,6 @@ const UpdateComplaintStatusModal = memo(({
     }
   }, [complaint, isOpen]);
 
-  // Đóng modal khi nhấn ESC
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen && !loading) {
@@ -55,7 +49,6 @@ const UpdateComplaintStatusModal = memo(({
     e.preventDefault();
     setErrorMsg(null);
 
-    // Xác thực dữ liệu
     const validation = validateUpdateComplaintStatus({
       status: selectedStatus,
       note
@@ -174,11 +167,10 @@ const UpdateComplaintStatusModal = memo(({
                 return (
                   <label
                     key={opt.value}
-                    className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition select-none ${
-                      isSelected
+                    className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition select-none ${isSelected
                         ? 'border-purple-500 bg-purple-50/50 shadow-sm ring-1 ring-purple-500/20'
                         : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"

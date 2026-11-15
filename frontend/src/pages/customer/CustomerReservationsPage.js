@@ -329,15 +329,6 @@ const CustomerReservationsPage = () => {
                           </Link>
                         )}
 
-                        {item.status === 'APPROVED' && (
-                          <Link
-                            to={`/submit-complaint/${item.id}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 font-medium text-xs rounded-lg border border-slate-200 hover:border-red-200 transition"
-                          >
-                            Khiếu nại
-                          </Link>
-                        )}
 
                         {item.status === 'PENDING' && (
                           <button

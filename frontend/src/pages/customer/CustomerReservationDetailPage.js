@@ -330,14 +330,6 @@ const CustomerReservationDetailPage = () => {
                     </button>
                   )}
 
-                  {reservation.status === 'APPROVED' && (
-                    <Link
-                      to={`/submit-complaint/${reservation.id}`}
-                      className="w-full py-2.5 px-4 bg-white hover:bg-red-50 text-red-600 font-medium text-xs rounded-lg border border-red-200 transition block text-center"
-                    >
-                      Gửi khiếu nại bãi xe
-                    </Link>
-                  )}
 
                   <button
                     onClick={() => navigate('/my-reservations')}

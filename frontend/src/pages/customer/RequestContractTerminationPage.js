@@ -28,7 +28,6 @@ const RequestContractTerminationPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Get current user and role
   const { user } = useAuth();
 
   const [contract, setContract] = useState(null);
@@ -38,14 +37,11 @@ const RequestContractTerminationPage = () => {
   const [confirmingAction, setConfirmingAction] = useState(false);
   const [error, setError] = useState(null);
 
-  // Form states
   const [terminationDate, setTerminationDate] = useState('');
   const [reason, setReason] = useState('');
-  // Customer bank info states
   const [bankName, setBankName] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [bankAccountHolder, setBankAccountHolder] = useState('');
-  // Provider refund & note states
   const [refundAmount, setRefundAmount] = useState('');
   const [providerNote, setProviderNote] = useState('');
 
@@ -76,7 +72,6 @@ const RequestContractTerminationPage = () => {
       }
       setContract(data);
 
-      // Default termination date: 15 days from now (or end_date if sooner)
       const defaultDate = new Date();
       defaultDate.setDate(defaultDate.getDate() + 15);
       const contractEnd = new Date(data.end_date);
@@ -113,7 +108,6 @@ const RequestContractTerminationPage = () => {
       return;
     }
 
-    // Combine bank info if customer
     let combinedBankInfo = '';
     if (isCustomer && bankAccountNumber.trim()) {
       combinedBankInfo = `${bankName.trim() || 'Ngân hàng'} - STK: ${bankAccountNumber.trim()}${bankAccountHolder.trim() ? ` - Tên: ${bankAccountHolder.trim().toUpperCase()}` : ''}`;
@@ -270,10 +264,10 @@ const RequestContractTerminationPage = () => {
         onClose={() => setToastInfo({ message: '', type: 'success' })}
       />
 
-      {/* TOP HEADER BAR */}
+      
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="w-full px-4 sm:px-6 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          {/* Breadcrumbs */}
+          
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Link to="/" className="hover:text-slate-900 transition">Trang chủ</Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -301,9 +295,9 @@ const RequestContractTerminationPage = () => {
         </div>
       </div>
 
-      {/* MAIN CONTAINER */}
+      
       <div className="w-full px-4 sm:px-6 lg:px-10 py-8 space-y-6">
-        {/* TITLE & NOTICE STRIP */}
+        
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -344,7 +338,7 @@ const RequestContractTerminationPage = () => {
           </div>
         </div>
 
-        {/* IF PENDING TERMINATION EXISTS */}
+        
         {pendingTermination ? (
           <div className="bg-white rounded-xl border border-rose-300 overflow-hidden shadow-xs">
             <div className="p-6 bg-rose-50/70 border-b border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -471,12 +465,12 @@ const RequestContractTerminationPage = () => {
             </div>
           </div>
         ) : (
-          /* FORM SUBMIT TERMINATION */
+          
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* LEFT / MAIN COLUMN: FORM SECTIONS (lg:col-span-8) */}
+              
               <div className="lg:col-span-8 space-y-6">
-                {/* NOTICE ALERT */}
+                
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-xs text-amber-800">
                   <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div className="space-y-1 leading-relaxed">
@@ -497,9 +491,9 @@ const RequestContractTerminationPage = () => {
                   </div>
                 </div>
 
-                {/* UNIFIED FORM CONTAINER */}
+                
                 <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden shadow-xs">
-                  {/* PHẦN 1: CHỌN NGÀY TRẢ CHỖ */}
+                  
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
@@ -528,7 +522,7 @@ const RequestContractTerminationPage = () => {
                     </div>
                   </div>
 
-                  {/* PHẦN 2: LÝ DO CHẤM DỨT */}
+                  
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
@@ -557,7 +551,7 @@ const RequestContractTerminationPage = () => {
                     </div>
                   </div>
 
-                  {/* PHẦN 3: THÔNG TIN HOÀN TIỀN / GHI CHÚ */}
+                  
                   {isCustomer ? (
                     <div className="p-6 space-y-4">
                       <div>
@@ -650,21 +644,21 @@ const RequestContractTerminationPage = () => {
                 </div>
               </div>
 
-              {/* RIGHT / SIDEBAR COLUMN: SUMMARY & SUBMIT (lg:col-span-4, STICKY) */}
+              
               <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-16">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5 shadow-xs">
                   <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
                     Tóm tắt yêu cầu chấm dứt
                   </h3>
 
-                  {/* Facility */}
+                  
                   <div className="space-y-1 text-xs">
                     <span className="text-slate-400 block text-[11px]">Bãi đỗ xe</span>
                     <p className="font-semibold text-slate-800">{facility?.name || 'Bãi đỗ xe'}</p>
                     <p className="text-slate-500 text-[11px] line-clamp-1">{facility?.address}</p>
                   </div>
 
-                  {/* Customer or Vehicle Info */}
+                  
                   <div className="space-y-1 text-xs border-t border-slate-100 pt-3">
                     <span className="text-slate-400 block text-[11px]">
                       {isProvider ? 'Khách thuê (Bên B)' : 'Phương tiện đang gửi'}
@@ -686,7 +680,7 @@ const RequestContractTerminationPage = () => {
                     )}
                   </div>
 
-                  {/* Dates */}
+                  
                   <div className="space-y-2 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
                       <span>Thời hạn gốc:</span>
@@ -703,7 +697,7 @@ const RequestContractTerminationPage = () => {
                     </div>
                   </div>
 
-                  {/* Consequence note */}
+                  
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500 space-y-1 leading-relaxed">
                     <p className="font-semibold text-slate-700 flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
@@ -714,7 +708,7 @@ const RequestContractTerminationPage = () => {
                     </p>
                   </div>
 
-                  {/* ACTION BUTTONS */}
+                  
                   <div className="space-y-2 pt-2">
                     <button
                       type="submit"
@@ -749,7 +743,7 @@ const RequestContractTerminationPage = () => {
         )}
       </div>
 
-      {/* CONFIRM CANCEL MODAL */}
+      
       <ConfirmModal
         isOpen={confirmCancelOpen}
         onClose={() => setConfirmCancelOpen(false)}
@@ -762,7 +756,7 @@ const RequestContractTerminationPage = () => {
         loading={cancelling}
       />
 
-      {/* CONFIRM ACCEPT MODAL (Khi bên đối diện đồng ý chấm dứt) */}
+      
       <ConfirmModal
         isOpen={confirmAcceptModalOpen}
         onClose={() => setConfirmAcceptModalOpen(false)}
