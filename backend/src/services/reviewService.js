@@ -4,6 +4,17 @@ const { getIO } = require('../config/socket');
 
 class ReviewService {
 
+  _emitReviewUpdate(action, payload) {
+    try {
+      const io = getIO();
+      if (io) {
+        io.emit('review_updated', { action, ...payload });
+      }
+    } catch (err) {
+      console.warn('[Socket Review Emit Error]:', err.message);
+    }
+  }
+
   async getReviewsByFacilityId(facility_id) {
     return await reviewRepository.getReviewsByFacilityId(facility_id);
   }
@@ -17,29 +28,28 @@ class ReviewService {
 
     const hasContract = await reviewRepository.checkCustomerContract(customer_id, facility_id);
     if (!hasContract) {
-      throw new Error('Bạn cần có hợp đồng thuê thành công tại bãi đỗ xe này để được viết đánh giá');
+      const error = new Error('Bạn cần có hợp đồng thuê thành công tại bãi đỗ xe này để được viết đánh giá');
+      error.status = 403;
+      throw error;
     }
 
     const existingReview = await reviewRepository.getReviewByCustomerAndFacility(customer_id, facility_id);
     if (existingReview) {
-      throw new Error('Bạn đã đánh giá bãi đỗ xe này rồi. Vui lòng chỉnh sửa đánh giá hiện tại nếu muốn thay đổi.');
+      const error = new Error('Bạn đã đánh giá bãi đỗ xe này rồi. Vui lòng chỉnh sửa đánh giá hiện tại nếu muốn thay đổi.');
+      error.status = 409;
+      throw error;
     }
 
     const moderation = await aiModerationService.moderateComment(comment);
-    data.is_flagged = moderation.is_flagged;
-    data.flagged_reason = moderation.flagged_reason;
-    data.status = moderation.is_flagged ? 'HIDDEN' : 'VISIBLE';
+    const reviewPayload = {
+      ...data,
+      is_flagged: moderation.is_flagged,
+      flagged_reason: moderation.flagged_reason,
+      status: moderation.is_flagged ? 'HIDDEN' : 'VISIBLE'
+    };
 
-    const newReview = await reviewRepository.createReview(data);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'CREATED', review: newReview });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    const newReview = await reviewRepository.createReview(reviewPayload);
+    this._emitReviewUpdate('CREATED', { review: newReview });
 
     return newReview;
   }
@@ -47,33 +57,30 @@ class ReviewService {
   async updateReview(review_id, customer_id, data) {
     const existingReview = await reviewRepository.getReviewById(review_id);
     if (!existingReview) {
-      throw new Error('Đánh giá không tồn tại');
+      const error = new Error('Đánh giá không tồn tại');
+      error.status = 404;
+      throw error;
     }
 
     if (existingReview.customer_id !== parseInt(customer_id)) {
-      throw new Error('Bạn chỉ có quyền chỉnh sửa đánh giá của chính mình');
+      const error = new Error('Bạn chỉ có quyền chỉnh sửa đánh giá của chính mình');
+      error.status = 403;
+      throw error;
     }
 
+    const updatePayload = { ...data };
     const commentChanged = data.comment !== undefined
       && data.comment !== existingReview.comment;
 
     if (commentChanged) {
       const moderation = await aiModerationService.moderateComment(data.comment);
-      data.is_flagged = moderation.is_flagged;
-      data.flagged_reason = moderation.flagged_reason;
-      data.status = moderation.is_flagged ? 'HIDDEN' : 'VISIBLE';
+      updatePayload.is_flagged = moderation.is_flagged;
+      updatePayload.flagged_reason = moderation.flagged_reason;
+      updatePayload.status = moderation.is_flagged ? 'HIDDEN' : 'VISIBLE';
     }
 
-    const updatedReview = await reviewRepository.updateReview(review_id, data);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'UPDATED', review: updatedReview });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    const updatedReview = await reviewRepository.updateReview(review_id, updatePayload);
+    this._emitReviewUpdate('UPDATED', { review: updatedReview });
 
     return updatedReview;
   }
@@ -99,15 +106,7 @@ class ReviewService {
     }
 
     const updatedReview = await reviewRepository.replyReview(review_id, reply);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'REPLIED', review: updatedReview });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    this._emitReviewUpdate('REPLIED', { review: updatedReview });
 
     return updatedReview;
   }
@@ -115,23 +114,19 @@ class ReviewService {
   async deleteReview(review_id, customer_id) {
     const existingReview = await reviewRepository.getReviewById(review_id);
     if (!existingReview) {
-      throw new Error('Đánh giá không tồn tại');
+      const error = new Error('Đánh giá không tồn tại');
+      error.status = 404;
+      throw error;
     }
 
     if (existingReview.customer_id !== parseInt(customer_id)) {
-      throw new Error('Bạn chỉ có quyền xóa đánh giá của chính mình');
+      const error = new Error('Bạn chỉ có quyền xóa đánh giá của chính mình');
+      error.status = 403;
+      throw error;
     }
 
     const deleted = await reviewRepository.deleteReview(review_id);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'DELETED', review_id });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    this._emitReviewUpdate('DELETED', { review_id });
 
     return deleted;
   }
@@ -147,23 +142,19 @@ class ReviewService {
   async updateReviewStatus(review_id, updateData) {
     const existingReview = await reviewRepository.getReviewById(review_id);
     if (!existingReview) {
-      throw new Error('Đánh giá không tồn tại');
+      const error = new Error('Đánh giá không tồn tại');
+      error.status = 404;
+      throw error;
     }
 
     if (updateData.status && !['VISIBLE', 'HIDDEN'].includes(updateData.status)) {
-      throw new Error('Trạng thái không hợp lệ. Chỉ chấp nhận VISIBLE hoặc HIDDEN');
+      const error = new Error('Trạng thái không hợp lệ. Chỉ chấp nhận VISIBLE hoặc HIDDEN');
+      error.status = 400;
+      throw error;
     }
 
     const updated = await reviewRepository.updateReviewStatus(review_id, updateData);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'STATUS_CHANGED', review: updated });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    this._emitReviewUpdate('STATUS_CHANGED', { review: updated });
 
     return updated;
   }
@@ -186,15 +177,7 @@ class ReviewService {
     }
 
     const updated = await reviewRepository.unhideReview(review_id);
-
-    try {
-      const io = getIO();
-      if (io) {
-        io.emit('review_updated', { action: 'STATUS_CHANGED', review: updated });
-      }
-    } catch (err) {
-      console.warn('[Socket Review Emit Error]:', err.message);
-    }
+    this._emitReviewUpdate('STATUS_CHANGED', { review: updated });
 
     return updated;
   }

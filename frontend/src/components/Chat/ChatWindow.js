@@ -11,24 +11,21 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
     const socket = useSocket();
     const scrollContainerRef = useRef(null);
 
-    // Tự động cuộn xuống tin nhắn mới nhất mà không làm trang web bị cuộn theo
     useEffect(() => {
         const scrollToBottom = () => {
             if (scrollContainerRef.current) {
                 scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
             }
         };
-        
-        // Đợi DOM render xong mới cuộn xuống cuối
+
         const timeoutId = setTimeout(scrollToBottom, 50);
         return () => clearTimeout(timeoutId);
     }, [messages]);
 
-    // Đánh dấu đã xem khi có tin nhắn chưa đọc từ người khác (tối ưu: không gọi API thừa khi gửi tin của mình)
     useEffect(() => {
         if (!room || !token || !user) return;
 
-        const hasUnreadFromOther = (room._count?.messages > 0) || 
+        const hasUnreadFromOther = (room._count?.messages > 0) ||
             messages.some(m => !m.is_read && Number(m.sender_id) !== Number(user.id));
 
         if (hasUnreadFromOther) {
@@ -37,7 +34,7 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                 socket.emit('mark_read', { roomId: room.id, readerId: user.id });
             }
         }
-    }, [room?.id, token, messages, socket, user?.id, room?._count?.messages]); 
+    }, [room, token, messages, socket, user]);
 
     if (!room) {
         return (
@@ -57,7 +54,7 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                             <MessageSquareText className="text-white" size={56} strokeWidth={1.5} />
                         </div>
                     </div>
-                    
+
                     <h3 className="text-3xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-600 tracking-tight">
                         ParkLink Chat
                     </h3>
@@ -92,7 +89,7 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
             </div>
 
             {/* Vùng hiển thị tin nhắn (Cuộn) */}
-            <div 
+            <div
                 ref={scrollContainerRef}
                 className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-200"
             >
@@ -105,16 +102,15 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                     </div>
                 ) : (
                     messages.map((msg) => (
-                        <ChatMessage 
-                            key={msg.id} 
-                            message={msg} 
-                            isMine={Number(msg.sender_id) === Number(user?.id)} 
+                        <ChatMessage
+                            key={msg.id}
+                            message={msg}
+                            isMine={Number(msg.sender_id) === Number(user?.id)}
                         />
                     ))
                 )}
             </div>
 
-            {/* Khu vực nhập tin nhắn nằm ở dưới cùng */}
             <div className="shrink-0 bg-white z-10 border-t border-slate-200">
                 <ChatInput onSendMessage={onSendMessage} />
             </div>

@@ -30,8 +30,9 @@ const SubmitComplaintPage = () => {
         const list = res.data?.reservations || res.reservations || [];
         const found = list.find(r => r.id === parseInt(reservationId));
         if (found) {
-          if (found.status === 'PENDING' || found.status === 'REJECTED' || found.status === 'CANCELLED') {
-            setErrorMsg('Yêu cầu thuê này không đủ điều kiện để khiếu nại.');
+          const contractStatus = found.confirmation_record?.status;
+          if (!found.confirmation_record || !['ACTIVE', 'COMPLETED'].includes(contractStatus)) {
+            setErrorMsg('Chỉ những lượt thuê xe đã có Hợp đồng chính thức có hiệu lực (ACTIVE) hoặc vừa hoàn tất (COMPLETED) mới đủ điều kiện gửi khiếu nại.');
           } else {
             setReservation(found);
           }
@@ -98,7 +99,7 @@ const SubmitComplaintPage = () => {
         description: description.trim(),
         image_urls
       });
-      setSuccessMsg('Gửi khiếu nại thành công! Quản trị viên sẽ sớm xem xét.');
+      setSuccessMsg('Gửi khiếu nại thành công! Ban Quản Trị ParkLink sẽ sớm tiếp nhận và xem xét.');
       setTimeout(() => {
         navigate('/my-complaints');
       }, 2000);
@@ -213,11 +214,10 @@ const SubmitComplaintPage = () => {
                     if (titleError) setTitleError('');
                   }}
                   placeholder="Ví dụ: Thu phí sai quy định..."
-                  className={`w-full px-3.5 py-2 text-sm rounded-xl border ${
-                    titleError
+                  className={`w-full px-3.5 py-2 text-sm rounded-xl border ${titleError
                       ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50/20'
                       : 'border-slate-300 focus:ring-teal-500/20 focus:border-teal-500'
-                  } focus:outline-none focus:ring-2 transition-all font-medium`}
+                    } focus:outline-none focus:ring-2 transition-all font-medium`}
                   required
                 />
                 {titleError && (
@@ -235,13 +235,12 @@ const SubmitComplaintPage = () => {
                     Mô tả chi tiết <span className="text-red-500">*</span>
                   </label>
                   <span
-                    className={`text-[11px] font-medium ${
-                      descError
+                    className={`text-[11px] font-medium ${descError
                         ? 'text-red-500 font-bold'
                         : description.length < 20
-                        ? 'text-amber-600'
-                        : 'text-slate-400'
-                    }`}
+                          ? 'text-amber-600'
+                          : 'text-slate-400'
+                      }`}
                   >
                     {description.length}/20 ký tự tối thiểu
                   </span>
@@ -254,11 +253,10 @@ const SubmitComplaintPage = () => {
                   }}
                   placeholder="Mô tả rõ sự việc xảy ra..."
                   rows={5}
-                  className={`w-full px-3.5 py-2 text-sm rounded-xl border ${
-                    descError
+                  className={`w-full px-3.5 py-2 text-sm rounded-xl border ${descError
                       ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50/20'
                       : 'border-slate-300 focus:ring-teal-500/20 focus:border-teal-500'
-                  } focus:outline-none focus:ring-2 transition-all font-medium resize-none`}
+                    } focus:outline-none focus:ring-2 transition-all font-medium resize-none`}
                   required
                 />
                 {descError && (

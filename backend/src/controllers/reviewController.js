@@ -174,9 +174,6 @@ class ReviewController {
     }
   }
 
-  /**
-   * (Unhide review)
-   */
   async unhideReview(req, res) {
     try {
       const { id: review_id } = req.params;
