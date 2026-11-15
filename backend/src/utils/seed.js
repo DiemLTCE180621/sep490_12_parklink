@@ -110,19 +110,51 @@ async function seedAll() {
     const policies = [
       {
         policy_type: 'CUSTOMER',
-        title: 'Chính Sách & Điều Khoản Dành Cho Khách Hàng',
-        content: `1. GIỚI THIỆU: ParkLink là nền tảng trung gian kết nối người thuê và chủ bãi xe.
-2. ĐẶT CHỖ & THANH TOÁN: Khách hàng cần cung cấp thông tin phương tiện chính xác.
-3. MIỄN TRỪ TRÁCH NHIỆM: ParkLink cung cấp giải pháp công nghệ tìm kiếm và hỗ trợ hợp đồng, không chịu trách nhiệm đối với sự cố mất mát tài sản hay tranh chấp ngoài hệ thống.
-4. NGHĨA VỤ: Tuân thủ nội quy riêng của từng bãi đỗ xe.`,
+        title: 'Chính Sách & Điều Khoản Dịch Vụ Dành Cho Khách Hàng',
+        content: `1. PHẠM VI DỊCH VỤ VÀ NỀN TẢNG:
+- ParkLink là nền tảng số trung gian kết nối giữa khách hàng có nhu cầu gửi xe ô tô theo tháng với các chủ bãi đỗ xe tận dụng diện tích có sẵn tại khu vực thử nghiệm (quận Ninh Kiều, thành phố Cần Thơ).
+- Nền tảng chỉ hỗ trợ dịch vụ gửi xe theo tháng cho xe ô tô, không hỗ trợ hình thức gửi theo giờ, theo ngày hoặc các dịch vụ phụ trợ khác.
+
+2. MIỄN TRỪ TRÁCH NHIỆM TÀI SẢN:
+- ParkLink đóng vai trò là kênh cung cấp thông tin, hỗ trợ khảo sát sơ bộ và tạo biên bản thỏa thuận điện tử giữa hai bên.
+- ParkLink không sở hữu, không trực tiếp vận hành bãi đỗ và không chịu bất kỳ trách nhiệm pháp lý, dân sự hoặc bồi thường tài chính nào đối với các sự cố xảy ra tại bãi đỗ, bao gồm nhưng không giới hạn: mất cắp tài sản trên xe, mất xe, va quẹt, hư hỏng phương tiện, ngập lụt, cháy nổ hoặc thiên tai.
+- Trách nhiệm bảo vệ tài sản thuộc về thỏa thuận trực tiếp giữa Khách thuê và Chủ bãi đỗ xe.
+
+3. THANH TOÁN VÀ GIAO DỊCH NGOÀI HỆ THỐNG:
+- ParkLink không thu hộ, không giữ tiền đặt cọc và không xử lý thanh toán tiền thuê bãi hàng tháng giữa Khách thuê và Chủ bãi.
+- Mọi giao dịch tài chính về tiền gửi xe được hai bên trực tiếp thanh toán và thống nhất ngoài nền tảng (chuyển khoản trực tiếp hoặc tiền mặt). ParkLink không can thiệp và không giải quyết tranh chấp tài chính giữa hai bên.
+
+4. BẢN CHẤT BIÊN BẢN XÁC NHẬN THUÊ XE:
+- Biên bản xác nhận thuê xe trên hệ thống là chứng từ điện tử ghi nhận sự đồng thuận về thời hạn, vị trí và mức giá đã trao đổi giữa hai bên nhằm cập nhật tình trạng chỗ trống trên hệ thống.
+- Biên bản này không có giá trị pháp lý thay thế cho hợp đồng công chứng hoặc dịch vụ định danh điện tử eKYC được chứng thực bởi cơ quan nhà nước.
+
+5. NGHĨA VỤ CỦA KHÁCH THUÊ:
+- Khai báo chính xác thông tin cá nhân, biển số và dòng phương tiện khi gửi yêu cầu thuê chỗ.
+- Chấp hành nghiêm ngặt nội quy riêng, quy chuẩn an toàn phòng cháy chữa cháy và khung giờ ra vào do Chủ bãi đỗ xe quy định.`,
         is_active: true
       },
       {
         policy_type: 'PROVIDER',
-        title: 'Chính Sách & Quy Định Dành Cho Chủ Bãi Đỗ Xe (Đối Tác)',
-        content: `1. CAM KẾT DỊCH VỤ: Cung cấp đúng số lượng chỗ đỗ, tiện ích và mức giá đã niêm yết.
-2. PHÍ NỀN TẢNG: Chấp thuận các mức phí quản lý và giao dịch theo biểu phí niêm yết.
-3. TRÁCH NHIỆM AN NINH: Chịu trách nhiệm về an ninh, giấy phép và tài sản phương tiện trong khuôn viên bãi xe.`,
+        title: 'Quy Chế Vận Hành & Chính Sách Dành Cho Chủ Bãi Đỗ Xe (Đối Tác)',
+        content: `1. ĐĂNG KÝ VÀ KHẢO SÁT XÁC MINH THỰC ĐỊA:
+- Để đảm bảo tính trung thực và chất lượng cơ sở, bãi đỗ xe đăng ký mới sẽ được nhân viên khảo sát thực địa của ParkLink đến trực tiếp để kiểm tra hiện trạng, chụp ảnh xác thực, đo đạc tọa độ GPS và xác nhận công suất đỗ xe trước khi được phê duyệt kích hoạt trên bản đồ tìm kiếm.
+- Chủ bãi có nghĩa vụ phối hợp, hỗ trợ và cung cấp thông tin trung thực cho nhân viên khảo sát.
+
+2. PHÍ DỊCH VỤ NỀN TẢNG:
+- Nền tảng áp dụng mức phí dịch vụ thu một lần duy nhất cho việc khảo sát, số hóa bãi xe, setup hệ thống và hỗ trợ kết nối:
+  + Bãi từ 1 đến 3 chỗ đỗ: 2.000.000 VNĐ.
+  + Bãi từ 4 đến 7 chỗ đỗ: 4.000.000 VNĐ.
+  + Bãi từ 8 chỗ đỗ trở lên: 6.000.000 VNĐ.
+- Phí nền tảng được thanh toán qua cổng thanh toán SePay. Phí này không hoàn lại sau khi cơ sở đã hoàn tất khảo sát và kích hoạt thành công trên hệ thống ParkLink.
+
+3. KHÔNG TÍCH HỢP HẠ TẦNG PHẦN CỨNG TỰ ĐỘNG:
+- Hệ thống ParkLink là nền tảng quản lý thông tin phần mềm, không bao gồm và không kết nối với barrier tự động, camera AI nhận diện biển số hay cảm biến IoT.
+- Việc quản lý ra vào, giao nhận chìa khóa, thẻ xe và kiểm soát phương tiện vật lý tại chỗ do Chủ bãi hoàn toàn tự chủ quản lý bằng quy trình nội bộ.
+
+4. NGHĨA VỤ QUẢN LÝ VÀ AN NINH CƠ SỞ:
+- Chủ bãi có trách nhiệm cập nhật chính xác trạng thái chỗ đỗ trên hệ thống thông qua việc xác nhận các yêu cầu thuê tháng.
+- Chủ bãi chịu trách nhiệm pháp lý đầy đủ về giấy phép sử dụng mặt bằng, an ninh trật tự, trang thiết bị phòng cháy chữa cháy và đảm bảo an toàn cho phương tiện được gửi tại cơ sở theo quy định của pháp luật.
+- Chủ bãi cam kết không thu thêm bất kỳ chi phí phát sinh bất hợp lý nào ngoài mức giá đã niêm yết và thỏa thuận trong biên bản xác nhận với khách hàng.`,
         is_active: true
       }
     ];
@@ -130,7 +162,11 @@ async function seedAll() {
     for (const policy of policies) {
       await prisma.system_Policy.upsert({
         where: { policy_type: policy.policy_type },
-        update: {},
+        update: {
+          title: policy.title,
+          content: policy.content,
+          is_active: policy.is_active
+        },
         create: policy
       });
     }

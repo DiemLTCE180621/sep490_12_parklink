@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import authService from '../services/authService';
 
 const AuthContext = createContext();
@@ -80,22 +80,26 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     const response = await authService.updateProfile(profileData);
-    if (response?.data?.user) {
-      setUser(prev => ({ ...prev, ...response.data.user }));
+    const updatedUser = response?.data?.user || response?.data?.data?.user || response?.user;
+    if (updatedUser) {
+      setUser(prev => ({ ...prev, ...updatedUser }));
+    } else {
+      setUser(prev => ({ ...prev, ...profileData }));
     }
     return response;
   };
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       const res = await authService.getCurrentUser();
-      if (res?.data?.user) {
-        setUser(res.data.user);
+      const userData = res?.data?.user || res?.data?.data?.user || res?.user;
+      if (userData) {
+        setUser(userData);
       }
     } catch (e) {
       console.error("Lỗi làm mới thông tin user:", e);
     }
-  };
+  }, []);
 
   const logout = async () => {
     await authService.logout();

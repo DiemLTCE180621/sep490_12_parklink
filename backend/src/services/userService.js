@@ -41,7 +41,7 @@ class UserService {
     };
   }
 
-  async updateUserProfile(userId, { full_name, phone_number }) {
+  async updateUserProfile(userId, { full_name, phone_number, address, avatar_url }) {
     const existingUser = await userRepository.findById(userId);
     if (!existingUser) {
       throw Object.assign(new Error("Tài khoản người dùng không tồn tại!"), {
@@ -58,10 +58,20 @@ class UserService {
       }
     }
 
-    const updatedUser = await userRepository.updateUser(userId, {
+    const updatePayload = {
       full_name: full_name || existingUser.full_name,
       phone_number: phone_number || existingUser.phone_number,
-    });
+    };
+
+    if (address !== undefined) {
+      updatePayload.address = address;
+    }
+
+    if (avatar_url !== undefined) {
+      updatePayload.avatar_url = avatar_url;
+    }
+
+    const updatedUser = await userRepository.updateUser(userId, updatePayload);
 
     const { password_hash, ...sanitized } = updatedUser;
     return {

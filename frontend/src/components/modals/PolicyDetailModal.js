@@ -1,23 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck, Calendar, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, ShieldCheck, Calendar, CheckCircle2 } from 'lucide-react';
 import policyService from '../../services/policyService';
 
-/**
- * Modal hiển thị chi tiết Điều khoản & Chính sách dịch vụ (UC-90)
- * Cho phép người dùng xem nhanh khi đăng ký hoặc từ nút Disclaimer Google Login
- */
 const PolicyDetailModal = ({ isOpen, onClose, policyType = 'CUSTOMER' }) => {
   const [policy, setPolicy] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (isOpen && policyType) {
-      fetchPolicy();
-    }
-  }, [isOpen, policyType]);
-
-  const fetchPolicy = async () => {
+  const fetchPolicy = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -30,7 +20,13 @@ const PolicyDetailModal = ({ isOpen, onClose, policyType = 'CUSTOMER' }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [policyType]);
+
+  useEffect(() => {
+    if (isOpen && policyType) {
+      fetchPolicy();
+    }
+  }, [isOpen, policyType, fetchPolicy]);
 
   if (!isOpen) return null;
 
@@ -44,7 +40,7 @@ const PolicyDetailModal = ({ isOpen, onClose, policyType = 'CUSTOMER' }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-fadeIn flex flex-col max-h-[85vh]">
         
         {/* Header */}

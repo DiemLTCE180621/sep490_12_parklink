@@ -35,7 +35,6 @@ const CreateReservationPage = () => {
   const [facilityError, setFacilityError] = useState(null);
 
   const [customerIdCard, setCustomerIdCard] = useState(() => localStorage.getItem('customer_id_card') || '');
-  const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
   const [vehicleBrand, setVehicleBrand] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
@@ -48,6 +47,8 @@ const CreateReservationPage = () => {
   const [createdReservation, setCreatedReservation] = useState(null);
 
   const minDate = new Date().toISOString().split('T')[0];
+  const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+  const hasAddress = Boolean(user?.address && user.address.trim());
 
   const fetchFacilityData = useCallback(async () => {
     const idToFetch = facilityId || location.state?.facility?.id;
@@ -120,13 +121,28 @@ const CreateReservationPage = () => {
       return;
     }
 
+    const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+    const hasAddress = Boolean(user?.address && user.address.trim());
+
+    if (!hasPhone || !hasAddress) {
+      setFormError(
+        !hasPhone && !hasAddress
+          ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng cập nhật đầy đủ trong Hồ sơ trước khi gửi yêu cầu thuê!'
+          : !hasPhone
+            ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
+            : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
+      );
+      return;
+    }
+
     if (!customerIdCard?.trim()) {
       setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của bạn.');
       return;
     }
 
-    if (!customerAddress?.trim()) {
-      setFormError('Vui lòng nhập Địa chỉ thường trú / liên hệ của bạn.');
+    const cleanIdCard = customerIdCard.trim();
+    if (!/^\d{9}$|^\d{12}$/.test(cleanIdCard)) {
+      setFormError('Số CMND / CCCD không hợp lệ (phải gồm đúng 9 hoặc 12 chữ số).');
       return;
     }
 
@@ -147,11 +163,9 @@ const CreateReservationPage = () => {
 
     const cleanBrand = vehicleBrand.trim();
     const cleanPlate = licensePlate.trim().toUpperCase();
-    const cleanIdCard = customerIdCard.trim();
-    const cleanAddress = customerAddress.trim();
+    const cleanAddress = user.address.trim();
 
     localStorage.setItem('customer_id_card', cleanIdCard);
-    localStorage.setItem('customer_address', cleanAddress);
 
     const formattedVehicle = `${cleanBrand} - Biển số: ${cleanPlate}`;
     const fullVehicleInfo = `${formattedVehicle} [CCCD: ${cleanIdCard} | ĐC: ${cleanAddress}]`;
@@ -287,8 +301,8 @@ const CreateReservationPage = () => {
                   <span className="font-medium text-slate-900">{customerIdCard}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4 gap-4">
-                  <span className="text-slate-500 shrink-0">Địa chỉ liên hệ</span>
-                  <span className="font-medium text-slate-900 text-right">{customerAddress}</span>
+                  <span className="text-slate-500 shrink-0">Địa chỉ</span>
+                  <span className="font-medium text-slate-900 text-right">{user?.address}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
                   <span className="text-slate-500">Ngày bắt đầu dự kiến</span>
@@ -374,67 +388,95 @@ const CreateReservationPage = () => {
                     </h2>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
-                        {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden border border-teal-500/30">
+                          {user?.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt={user?.full_name || 'User'}
+                              referrerPolicy="no-referrer"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">
+                            {user?.full_name || 'Khách hàng'}
+                          </p>
+                          <p className="text-xs text-slate-500">Tài khoản Bên thuê ghi trên Hợp đồng</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">
-                          {user?.full_name || 'Khách hàng'}
-                        </p>
-                        <p className="text-xs text-slate-500">Tài khoản đăng ký thuê</p>
+
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs sm:text-sm text-slate-600">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-teal-600" />
+                          <span className={`font-medium ${hasPhone ? 'text-slate-800' : 'text-amber-600 font-semibold'}`}>
+                            {user?.phone_number || 'Chưa cập nhật SĐT'}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-teal-600" />
+                          <span className="text-slate-700">{user?.email}</span>
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs sm:text-sm text-slate-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-teal-600" />
-                        <span className="font-medium text-slate-800">
-                          {user?.phone_number || 'Chưa cập nhật SĐT'}
+                    <div className="pt-2.5 border-t border-slate-200/60 flex items-start gap-2 text-xs text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-slate-700">Địa chỉ: </span>
+                        <span className={hasAddress ? 'text-slate-900 font-medium' : 'text-amber-600 font-semibold italic'}>
+                          {user?.address || 'Chưa cập nhật địa chỉ trong hồ sơ'}
                         </span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-teal-600" />
-                        <span className="text-slate-700">{user?.email}</span>
-                      </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Số CCCD / CMND <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <CreditCard className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                        <input
-                          type="text"
-                          required
-                          value={customerIdCard}
-                          onChange={(e) => setCustomerIdCard(e.target.value)}
-                          placeholder="Nhập 9 hoặc 12 chữ số"
-                          className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
-                        />
+                  {(!hasPhone || !hasAddress) && (
+                    <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
+                      <div className="flex items-start sm:items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+                        <span>
+                          {!hasPhone && !hasAddress
+                            ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc và lập Hợp đồng thuê.'
+                            : !hasPhone
+                              ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc khi nhận chỗ.'
+                              : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng bổ sung để ghi trên Hợp đồng thuê bãi xe.'}
+                        </span>
                       </div>
+                      <Link
+                        to="/profile"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0 transition text-center shadow-sm"
+                      >
+                        Cập nhật hồ sơ
+                      </Link>
                     </div>
+                  )}
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Địa chỉ thường trú / liên hệ <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <MapPin className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                        <input
-                          type="text"
-                          required
-                          value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
-                          placeholder="Số nhà, đường, phường/xã, tỉnh/thành..."
-                          className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
-                        />
-                      </div>
+                  <div className="pt-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Số CCCD / CMND <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <CreditCard className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                      <input
+                        type="text"
+                        required
+                        value={customerIdCard}
+                        onChange={(e) => setCustomerIdCard(e.target.value.replace(/\D/g, ''))}
+                        placeholder="Nhập 9 hoặc 12 chữ số ghi trên thẻ CCCD / CMND"
+                        maxLength={12}
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
+                      />
                     </div>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Số CCCD/CMND được dùng để xác lập hợp đồng thuê bãi xe.
+                    </p>
                   </div>
                 </div>
 

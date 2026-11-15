@@ -9,14 +9,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Cấu hình storage cho Multer (tự động đẩy lên Cloudinary)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
     const isComplaintUpload = req.query.folder === 'complaints';
     const folder = isComplaintUpload ? 'ParkLink/Complaints' : 'ParkLink/Chat';
 
-    // Nhận diện file ảnh và video
     const isImage = file.mimetype?.startsWith('image/');
     const isVideo = file.mimetype?.startsWith('video/');
 
@@ -24,7 +22,7 @@ const storage = new CloudinaryStorage({
       return {
         folder: folder,
         resource_type: 'image',
-        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif']
       };
     }
 
@@ -36,14 +34,11 @@ const storage = new CloudinaryStorage({
       };
     }
 
-    // Đối với các loại file tài liệu / nén / văn phòng (PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP, RAR...)
-    // Cloudinary yêu cầu resource_type là 'raw' và TUYỆT ĐỐI KHÔNG được truyền allowed_formats.
-    // Đặt public_id giữ lại đuôi mở rộng để khi tải về mở đúng ứng dụng.
     const ext = path.extname(file.originalname) || '';
     const rawName = path.basename(file.originalname, ext)
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Khử dấu tiếng Việt
-      .replace(/[^a-zA-Z0-9_-]/g, '_'); // Ký tự đặc biệt đổi thành gạch dưới
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]/g, '_');
 
     const uniqueFileName = `${Date.now()}_${rawName}${ext}`;
 
@@ -58,7 +53,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 50 * 1024 * 1024 // 50MB (chuẩn Zalo)
+    fileSize: 50 * 1024 * 1024
   }
 });
 
