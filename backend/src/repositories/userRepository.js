@@ -98,7 +98,6 @@ class UserRepository {
         });
       }
 
-      // 5. Liên kết Danh mục loại phương tiện (Facility_Vehicle_Type)
       const vehicleCodes = Array.isArray(facilityData.vehicle_types)
         ? facilityData.vehicle_types
         : (typeof facilityData.vehicle_types === 'string' ? JSON.parse(facilityData.vehicle_types) : []);
@@ -194,6 +193,7 @@ class UserRepository {
           full_name: true,
           phone_number: true,
           address: true,
+          avatar_url: true,
           status: true,
           requires_password_change: true,
           created_at: true,
@@ -224,6 +224,7 @@ class UserRepository {
         full_name: true,
         phone_number: true,
         address: true,
+        avatar_url: true,
         status: true,
         requires_password_change: true,
         created_at: true,
@@ -268,6 +269,8 @@ class UserRepository {
         email: true,
         full_name: true,
         phone_number: true,
+        address: true,
+        avatar_url: true,
         status: true,
         requires_password_change: true,
         created_at: true,

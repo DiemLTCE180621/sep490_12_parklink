@@ -26,6 +26,7 @@ model User {
   full_name                String    @db.VarChar(50)
   phone_number             String
   address                  String?
+  avatar_url               String?
   password_hash            String?
   requires_password_change Boolean  @default(true)
   status                   String   @default("PENDING")

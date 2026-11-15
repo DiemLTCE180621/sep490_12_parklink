@@ -250,7 +250,7 @@ class AuthService {
       throw error;
     }
 
-    const { email, name, email_verified } = payload;
+    const { email, name, picture, email_verified } = payload;
     if (!email || !email_verified) {
       const error = new Error('Tài khoản Google này chưa được xác minh email!');
       error.status = 400;
@@ -265,6 +265,11 @@ class AuthService {
         error.status = 403;
         throw error;
       }
+
+      // Cập nhật bổ sung avatar_url nếu người dùng chưa có avatar
+      if (!user.avatar_url && picture) {
+        user = await userRepository.updateUser(user.id, { avatar_url: picture });
+      }
     } else {
       let customerRole = await roleRepository.findByName('CUSTOMER');
       if (!customerRole) {
@@ -278,6 +283,7 @@ class AuthService {
         email,
         full_name: (name || email.split('@')[0]).slice(0, 50),
         phone_number: '',
+        avatar_url: picture || null,
         password_hash: null,
         requires_password_change: false,
         status: 'ACTIVE',
@@ -453,9 +459,9 @@ class AuthService {
     return this.sanitizeUser(user);
   }
 
-  async updateProfile(userId, { full_name, phone_number }) {
+  async updateProfile(userId, { full_name, phone_number, address, avatar_url }) {
     const userService = require('./userService');
-    return await userService.updateUserProfile(userId, { full_name, phone_number });
+    return await userService.updateUserProfile(userId, { full_name, phone_number, address, avatar_url });
   }
 }
 

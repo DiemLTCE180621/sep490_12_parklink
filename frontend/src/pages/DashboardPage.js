@@ -41,6 +41,7 @@ const DashboardPage = () => {
   const [isMobileProviderMenuOpen, setIsMobileProviderMenuOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
+  const [dashAvatarFailed, setDashAvatarFailed] = useState(false);
 
   React.useEffect(() => {
     if (location.state?.adminTab) {
@@ -101,8 +102,18 @@ const DashboardPage = () => {
         <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md">
-                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
+              <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md overflow-hidden border border-teal-400/40">
+                {user?.avatar_url && !dashAvatarFailed ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user?.full_name || 'User'}
+                    referrerPolicy="no-referrer"
+                    onError={() => setDashAvatarFailed(true)}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"
+                )}
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">

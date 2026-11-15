@@ -13,6 +13,7 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [navAvatarFailed, setNavAvatarFailed] = useState(false);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const handleLogout = async () => {
@@ -113,43 +114,24 @@ const Navbar = () => {
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
-          {/* Logo & Brand */}
-          <Link to={isAuthenticated && user?.role?.name === "PROVIDER" ? "/dashboard" : "/"} className="flex items-center space-x-3 group">
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-teal-600 text-white flex items-center justify-center shadow-md group-hover:bg-teal-700 transition duration-200">
-              <img
-                src="/logo.png"
-                alt="ParkLink Logo"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <span className="text-2xl font-extrabold text-slate-900 tracking-tight">Park<span className="text-teal-600">Link</span></span>
-              <p className="text-[10px] text-slate-500 font-medium tracking-wide leading-none uppercase">Thuê Bãi Đỗ Xe Theo Tháng</p>
-            </div>
-          </Link>
+          <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md">
+                <Car className="w-6 h-6" />
+              </div>
+              <span className="text-2xl font-black text-slate-800 tracking-tight">
+                Park<span className="text-teal-600">Link</span>
+              </span>
+            </Link>
+          </div>
 
-          {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {user?.role?.name !== "PROVIDER" && (
-              <>
-                <Link to="/" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150">
-                  Trang Chủ
-                </Link>
-                <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                  <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
-                </Link>
-              </>
-            )}
-            {isAuthenticated && user?.role?.name === 'ADMIN' && (
-              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-teal-600" /> Trang Quản Trị
-              </Link>
-            )}
-            {isAuthenticated && user?.role?.name === 'FIELD_INSPECTOR' && (
-              <Link to="/dashboard" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-teal-600" /> Công Việc Khảo Sát
-              </Link>
-            )}
+            <Link to="/" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150">
+              Trang Chủ
+            </Link>
+            <Link to="/search" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
+              <Car className="w-4 h-4 text-teal-600" /> Tìm Bãi Đỗ
+            </Link>
             {isAuthenticated && user?.role?.name === 'CUSTOMER' && (
               <>
                 <Link to="/my-reservations" className="text-slate-700 hover:text-teal-600 font-medium transition duration-150 flex items-center gap-1.5">
@@ -167,11 +149,9 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* User Auth Controls (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                {/* Icon Tin Nhắn (nằm cạnh quả chuông thông báo) */}
                 {canAccessChat && (
                   <Link
                     to="/chat"
@@ -195,8 +175,18 @@ const Navbar = () => {
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                     className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-100 transition duration-150 border border-slate-200"
                   >
-                    <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
-                      {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                    <div className="w-9 h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm overflow-hidden border border-teal-500/30">
+                      {user?.avatar_url && !navAvatarFailed ? (
+                        <img
+                          src={user.avatar_url}
+                          alt={user?.full_name || 'User'}
+                          referrerPolicy="no-referrer"
+                          onError={() => setNavAvatarFailed(true)}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'
+                      )}
                     </div>
                     <div className="text-left">
                       <div className="text-sm font-semibold text-slate-900 leading-tight">
@@ -210,7 +200,6 @@ const Navbar = () => {
                     </div>
                   </button>
 
-                  {/* Dropdown Menu */}
                   {userDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50">
                       <div className="px-4 py-3 border-b border-slate-100">
@@ -274,11 +263,9 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu & Quick Actions Toggle (Khi thu nhỏ màn hình) */}
           <div className="md:hidden flex items-center space-x-1 sm:space-x-2">
             {isAuthenticated && (
               <>
-                {/* Icon Tin Nhắn trên Mobile - Nằm ngay cạnh quả chuông thông báo */}
                 {canAccessChat && (
                   <Link
                     to="/chat"
@@ -294,7 +281,6 @@ const Navbar = () => {
                   </Link>
                 )}
 
-                {/* Quả chuông thông báo trên Mobile */}
                 <NotificationDropdown />
               </>
             )}
@@ -309,7 +295,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3">
           <Link

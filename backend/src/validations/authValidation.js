@@ -192,18 +192,22 @@ const validateVerifyResetPassword = (req, res, next) => {
 };
 
 const validateUpdateProfile = (req, res, next) => {
-  const { full_name, phone_number } = req.body;
+  const { full_name, phone_number, address, avatar_url } = req.body;
   const errors = [];
 
   const cleanedName = cleanText(full_name);
   const cleanedPhone = (phone_number || '').trim();
 
-  if (!isValidName(cleanedName)) {
+  if (full_name !== undefined && !isValidName(cleanedName)) {
     errors.push('Họ và tên chỉ được chứa chữ cái, tối thiểu 2 ký tự và không chứa số hay ký tự đặc biệt.');
   }
 
-  if (!isValidPhone(cleanedPhone)) {
+  if (cleanedPhone && !isValidPhone(cleanedPhone)) {
     errors.push('Số điện thoại phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).');
+  }
+
+  if (address && typeof address === 'string' && address.trim().length > 255) {
+    errors.push('Địa chỉ không được vượt quá 255 ký tự.');
   }
 
   if (errors.length > 0) {
@@ -216,6 +220,8 @@ const validateUpdateProfile = (req, res, next) => {
 
   req.body.full_name = cleanedName;
   req.body.phone_number = cleanedPhone;
+  if (address !== undefined) req.body.address = typeof address === 'string' ? address.trim() : address;
+  if (avatar_url !== undefined) req.body.avatar_url = typeof avatar_url === 'string' ? avatar_url.trim() : avatar_url;
 
   next();
 };

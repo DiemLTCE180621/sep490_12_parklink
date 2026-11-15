@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Eye, EyeOff } from 'lucide-react';
@@ -30,6 +30,14 @@ const LoginPage = () => {
     }
     return '';
   });
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const t1 = setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 100);
+    const t2 = setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 300);
+    const t3 = setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }), 600);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -85,7 +93,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="bg-slate-50 flex flex-col justify-center py-4 sm:py-6 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-600 text-white shadow-lg mb-4">
           <LogIn className="w-7 h-7" />
@@ -98,8 +106,8 @@ const LoginPage = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
+      <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-xl">
+        <div className="bg-white py-6 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
           {sessionNotice && (
             <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />

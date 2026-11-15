@@ -3,63 +3,84 @@ import PolicyDetailModal from '../modals/PolicyDetailModal';
 
 const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signin_with', showDisclaimer = true }) => {
   const buttonContainerRef = useRef(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [googleReady, setGoogleReady] = useState(false);
+  const [googleFailed, setGoogleFailed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPolicyType, setSelectedPolicyType] = useState('CUSTOMER');
 
   const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '1029384756-parklink-google-oauth.apps.googleusercontent.com';
 
   useEffect(() => {
-    
-    const existingScript = document.getElementById('google-gsi-client');
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = 'google-gsi-client';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setScriptLoaded(true);
-      script.onerror = () => {
-        console.warn('Không thể kết nối đến máy chủ Google Identity Services.');
-        setScriptLoaded(false);
-      };
-      document.body.appendChild(script);
-    } else {
-      setScriptLoaded(true);
-    }
-  }, []);
+    let checkInterval = null;
+    let timeout = null;
 
-  useEffect(() => {
-    
-    if (scriptLoaded && window.google?.accounts?.id && buttonContainerRef.current) {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: (response) => {
-            if (response?.credential) {
-              onSuccess(response.credential);
-            } else if (onError) {
-              onError('Không nhận được mã xác thực từ Google!');
+    const tryInitGoogle = () => {
+      if (window.google?.accounts?.id && buttonContainerRef.current) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response) => {
+              if (response?.credential) {
+                onSuccess(response.credential);
+              } else if (onError) {
+                onError('Không nhận được mã xác thực từ Google!');
+              }
             }
-          }
-        });
+          });
 
-        buttonContainerRef.current.innerHTML = '';
+          buttonContainerRef.current.innerHTML = '';
+          const container = buttonContainerRef.current;
 
-        window.google.accounts.id.renderButton(buttonContainerRef.current, {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          shape: 'rectangular',
-          text: text,
-          width: '100%',
-          logo_alignment: 'left'
-        });
-      } catch (err) {
-        console.warn('Lỗi khởi tạo nút Google:', err);
+          const observer = new MutationObserver(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            const iframe = container.querySelector('iframe');
+            if (iframe) {
+              iframe.setAttribute('tabindex', '-1');
+              observer.disconnect();
+            }
+          });
+          observer.observe(container, { childList: true, subtree: true });
+
+          window.google.accounts.id.renderButton(container, {
+            theme: 'outline',
+            size: 'large',
+            type: 'standard',
+            shape: 'rectangular',
+            text: text,
+            width: 380,
+            logo_alignment: 'left'
+          });
+
+          setTimeout(() => observer.disconnect(), 3000);
+          setGoogleReady(true);
+          return true;
+        } catch (err) {
+          console.warn(err);
+          setGoogleFailed(true);
+          return false;
+        }
       }
+      return false;
+    };
+
+    if (!tryInitGoogle()) {
+      checkInterval = setInterval(() => {
+        if (tryInitGoogle()) {
+          clearInterval(checkInterval);
+        }
+      }, 50);
+
+      timeout = setTimeout(() => {
+        if (checkInterval) clearInterval(checkInterval);
+        setGoogleFailed(true);
+      }, 2500);
     }
-  }, [scriptLoaded, clientId, onSuccess, onError, text]);
+
+    return () => {
+      if (checkInterval) clearInterval(checkInterval);
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [clientId, onSuccess, onError, text]);
 
   const handleOpenPolicy = (e, type) => {
     e.preventDefault();
@@ -69,24 +90,24 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signi
 
   return (
     <div className="w-full space-y-2.5">
-      
       <div className="w-full flex justify-center">
-        <div ref={buttonContainerRef} className="w-full min-h-[44px] flex justify-center" />
+        <div
+          ref={buttonContainerRef}
+          className={`w-full flex justify-center ${!googleReady && !googleFailed ? 'min-h-[44px]' : ''}`}
+        />
       </div>
 
-      {(!scriptLoaded || !window.google?.accounts?.id) && (
+      {!googleReady && googleFailed && (
         <button
           type="button"
           disabled={disabled}
           onClick={() => {
-            
             const simulatedDemoToken = btoa(JSON.stringify({
               email: 'customer.demo@gmail.com',
               name: 'Khách Hàng Google Test',
               email_verified: true,
               sub: 'google_test_' + Date.now()
             }));
-            
             if (onSuccess) {
               onSuccess(simulatedDemoToken);
             }
