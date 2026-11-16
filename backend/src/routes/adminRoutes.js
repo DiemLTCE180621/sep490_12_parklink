@@ -8,6 +8,8 @@ const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddle
  */
 router.use(authenticateToken, authorizeRoles('ADMIN'));
 
+router.get('/dashboard/overview', adminController.getDashboardOverview);
+
 /**
  * M2-UC20: View pending owner registrations
  * Lấy danh sách các đăng ký bãi đỗ xe đang chờ phê duyệt
@@ -75,4 +77,3 @@ router.get(
 );
 
 module.exports = router;
-

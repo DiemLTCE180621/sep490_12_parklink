@@ -1,4 +1,5 @@
 const facilityRepository = require("../repositories/facilityRepository");
+const adminDashboardRepository = require("../repositories/adminDashboardRepository");
 const userRepository = require("../repositories/userRepository");
 const roleRepository = require("../repositories/roleRepository");
 const fieldInspectorRepository = require("../repositories/fieldInspectorRepository");
@@ -8,6 +9,10 @@ const bcrypt = require("bcryptjs");
  * Service xử lý logic nghiệp vụ dành riêng cho Admin
  */
 class AdminService {
+  async getDashboardOverview() {
+    return await adminDashboardRepository.getOverview();
+  }
+
   /**
    * M2-UC20: View pending owner registrations
    * Lấy danh sách bãi đỗ xe đang PENDING_REVIEW hoặc PREPARING
