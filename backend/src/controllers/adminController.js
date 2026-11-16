@@ -4,6 +4,15 @@ const adminService = require("../services/adminService");
  * Controller xử lý các HTTP Request dành cho Admin
  */
 class AdminController {
+  async getDashboardOverview(req, res, next) {
+    try {
+      const overview = await adminService.getDashboardOverview();
+      res.json({ status: "success", data: overview });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /**
    * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt / đang chuẩn bị
    */

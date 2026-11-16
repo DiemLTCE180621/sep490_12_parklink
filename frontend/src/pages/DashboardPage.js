@@ -21,6 +21,7 @@ import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
 import AdminTimelineSettingsPanel from '../components/admin/AdminTimelineSettingsPanel';
+import AdminDashboardPanel from '../components/admin/AdminDashboardPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -35,7 +36,7 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'registrations');
+  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'overview');
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility');
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections');
   const [isMobileAdminMenuOpen, setIsMobileAdminMenuOpen] = useState(false);
@@ -64,6 +65,7 @@ const DashboardPage = () => {
   };
 
   const adminTabs = [
+    { id: 'overview', label: 'Tổng Quan', icon: Users },
     { id: 'registrations', label: 'Duyệt Bãi Đỗ Xe', icon: Building2 },
     { id: 'users', label: 'Quản Lý Người Dùng', icon: User },
     { id: 'inspectors', label: 'Nhân Viên Khảo Sát', icon: UserCheck },
@@ -293,6 +295,7 @@ const DashboardPage = () => {
 
             {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
             <div className="flex-1 min-w-0 w-full">
+              {activeAdminTab === 'overview' && <AdminDashboardPanel />}
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
               {activeAdminTab === 'users' && <AdminUsersPanel />}
