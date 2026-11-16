@@ -26,6 +26,8 @@ import ProviderDashboardPanel from '../components/provider/ProviderDashboardPane
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
 import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveCustomersPanel';
+import ProviderMonthlyRevenuePanel from '../components/provider/ProviderMonthlyRevenuePanel';
+import TransactionHistoryPanel from '../components/common/TransactionHistoryPanel';
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
@@ -71,7 +73,7 @@ const DashboardPage = () => {
     { id: 'inspectors', label: 'Nhân Viên Khảo Sát', icon: UserCheck },
     { id: 'facilities', label: 'Tất Cả Cơ Sở', icon: Building2 },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
-    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
@@ -85,10 +87,11 @@ const DashboardPage = () => {
   const providerTabs = [
     { id: 'facility', label: 'Thông Tin Bãi Xe', icon: Building2 },
     { id: 'active-customers', label: 'Khách Đang Thuê', icon: Users },
+    { id: 'monthly-revenue', label: 'Doanh Thu Theo Tháng', icon: DollarSign },
     { id: 'reservations', label: 'Duyệt Yêu Cầu Thuê', icon: Car },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
     { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
-    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Đánh Giá Khách Hàng', icon: Star },
     { id: 'platform-fees', label: 'Biểu Phí Nền Tảng', icon: DollarSign },
@@ -309,14 +312,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
               {activeAdminTab === 'timeline-settings' && <AdminTimelineSettingsPanel />}
               {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
-              {activeAdminTab === 'transactions' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
-                  <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-400">
-                    Đang phát triển chức năng Quản lý Giao dịch...
-                  </h3>
-                </div>
-              )}
+              {activeAdminTab === 'transactions' && <TransactionHistoryPanel role="ADMIN" />}
             </div>
           </div>
         ) : roleName === 'PROVIDER' ? (
@@ -449,6 +445,7 @@ const DashboardPage = () => {
             <div className="flex-1 min-w-0 w-full">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
               {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
+              {activeProviderTab === 'monthly-revenue' && <ProviderMonthlyRevenuePanel />}
               {activeProviderTab === 'reservations' && (
                 <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
               )}
@@ -492,15 +489,7 @@ const DashboardPage = () => {
                   </div>
                 </div>
               )}
-              {activeProviderTab === 'transactions' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20 space-y-3">
-                  <Shield className="w-12 h-12 text-slate-300 mx-auto" />
-                  <h3 className="text-xl font-bold text-slate-700">Quản Lý Giao Dịch & Phí Nền Tảng</h3>
-                  <p className="text-sm text-slate-500 max-w-md mx-auto">
-                    Xem lịch sử thanh toán phí kích hoạt bãi đỗ xe và các giao dịch phát sinh trên hệ thống ParkLink.
-                  </p>
-                </div>
-              )}
+              {activeProviderTab === 'transactions' && <TransactionHistoryPanel role="PROVIDER" />}
             </div>
           </div>
         ) : roleName === 'FIELD_INSPECTOR' ? (
