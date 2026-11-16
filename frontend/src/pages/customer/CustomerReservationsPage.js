@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getMyReservations, cancelReservationRequest } from '../../services/reservationService';
+import timelineSettingService from '../../services/timelineSettingService';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import Toast from '../../components/common/Toast';
 import { Link, useNavigate } from 'react-router-dom';
@@ -13,7 +14,8 @@ import {
   Plus,
   Loader2,
   ChevronRight,
-  FileText
+  FileText,
+  Clock
 } from 'lucide-react';
 
 const CustomerReservationsPage = () => {
@@ -27,8 +29,19 @@ const CustomerReservationsPage = () => {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [targetCancelId, setTargetCancelId] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
+  const [timelineSettings, setTimelineSettings] = useState(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchMyReservations = useCallback(async () => {
     try {
@@ -282,7 +295,19 @@ const CustomerReservationsPage = () => {
                       <span>Ngày gửi: {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
                     </div>
 
-                    {getStatusBadge(item.status)}
+                    <div className="flex items-center gap-2">
+                      {item.status === 'PENDING' && (
+                        <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 font-medium">
+                          <Clock className="w-3 h-3 text-amber-600" /> Hạn phản hồi: {timelineSettings?.reservationResponseText || 'quy định'}
+                        </span>
+                      )}
+                      {item.status === 'APPROVED' && item.confirmation_record && item.confirmation_record.status === 'PENDING_SIGNATURE' && (
+                        <span className="text-[11px] text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 font-medium">
+                          <Clock className="w-3 h-3 text-teal-600" /> Hạn ký HĐ: {timelineSettings?.contractSigningText || '5 phút'}
+                        </span>
+                      )}
+                      {getStatusBadge(item.status)}
+                    </div>
                   </div>
 
                   <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -330,7 +355,7 @@ const CustomerReservationsPage = () => {
                         )}
 
 
-                        {item.status === 'PENDING' && (
+                        {(item.status === 'PENDING' || (item.status === 'APPROVED' && (!item.confirmation_record || item.confirmation_record.status !== 'ACTIVE'))) && (
                           <button
                             onClick={(e) => handleRequestCancelConfirm(item.id, e)}
                             disabled={cancellingId === item.id}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProviderReservations, acceptReservation, rejectReservation } from '../../services/reservationService';
+import timelineSettingService from '../../services/timelineSettingService';
 import ConfirmModal from '../modals/ConfirmModal';
 import Toast from '../common/Toast';
 import {
@@ -37,6 +38,17 @@ const ProviderReservationsPanel = () => {
   const [processingId, setProcessingId] = useState(null);
 
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchProviderReservations = useCallback(async () => {
     try {
@@ -77,9 +89,10 @@ const ProviderReservationsPanel = () => {
     try {
       setProcessingId(targetId);
       if (action === 'ACCEPT') {
-        await acceptReservation(targetId);
+        const res = await acceptReservation(targetId);
+        const successMsg = res.message || res.data?.message || `Đã chấp nhận yêu cầu thuê! Bạn có ${timelineSettings?.contractCreationText || 'thời hạn quy định'} để khởi tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.`;
         setToastInfo({
-          message: 'Đã chấp nhận yêu cầu thuê! Bạn có 24 giờ để khởi tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.',
+          message: successMsg,
           type: 'success'
         });
       } else if (action === 'REJECT') {
@@ -464,7 +477,7 @@ const ProviderReservationsPanel = () => {
         }
         message={
           confirmModalState.action === 'ACCEPT'
-            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có 24 giờ để tạo hợp đồng điện tử. Nếu quá 24 giờ chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
+            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có ${timelineSettings?.contractCreationText || 'thời hạn quy định'} để tạo hợp đồng điện tử. Nếu quá ${timelineSettings?.contractCreationText || 'thời hạn này'} chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
             : `Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng "${confirmModalState.targetName}" không?`
         }
         confirmText={confirmModalState.action === 'ACCEPT' ? 'Đồng ý chấp nhận' : 'Đồng ý từ chối'}

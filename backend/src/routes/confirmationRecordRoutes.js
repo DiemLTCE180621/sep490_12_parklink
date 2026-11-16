@@ -177,4 +177,12 @@ router.patch(
   confirmationRecordController.acceptConfirmationRecord
 );
 
+router.patch(
+  '/:id/reject',
+  authenticateToken,
+  authorizeRoles('CUSTOMER'),
+  validateConfirmationRecordId,
+  confirmationRecordController.rejectConfirmationRecord
+);
+
 module.exports = router;

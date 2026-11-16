@@ -546,6 +546,10 @@ class FacilityRepository {
     });
   }
 
+  async update(facilityId, updateData) {
+    return await this.updateFacility(facilityId, updateData);
+  }
+
   /**
    * Cập nhật thông tin cơ bản của bãi đỗ xe
    */

@@ -63,6 +63,9 @@ app.use("/api/notifications", notificationRoutes);
 const policyRoutes = require("./routes/policyRoutes");
 app.use("/api/policies", policyRoutes);
 
+const timelineSettingRoutes = require("./routes/timelineSettingRoutes");
+app.use("/api/timeline-settings", timelineSettingRoutes);
+
 // Simple route
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the ParkLink API!" });
@@ -87,6 +90,14 @@ const server = app.listen(port, () => {
 // Initialize Socket.io
 const { initSocket } = require("./config/socket");
 initSocket(server);
+
+// Background Expiration Scanner
+const reservationService = require("./services/reservationService");
+setInterval(() => {
+    reservationService.checkAndCancelAllExpired().catch((err) => {
+        console.error("[Background Scanner Error]:", err.message);
+    });
+}, 15000);
 
 // Handle unhandled Promise rejection
 process.on("unhandledRejection", (err) => {

@@ -20,6 +20,10 @@ export const acceptConfirmationRecord = async (id, data = {}) => {
   return await api.patch(`/confirmation-records/${id}/accept`, data);
 };
 
+export const rejectConfirmationRecord = async (id, data = {}) => {
+  return await api.patch(`/confirmation-records/${id}/reject`, data);
+};
+
 export const getAdminConfirmationRecords = async (params = {}) => {
   return await api.get('/confirmation-records/admin/all', { params });
 };

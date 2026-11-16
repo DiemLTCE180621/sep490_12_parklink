@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   getConfirmationRecordDetail,
   acceptConfirmationRecord,
+  rejectConfirmationRecord,
   respondToLeaseExtension,
   confirmContractTermination,
   cancelEarlyTermination
 } from '../services/confirmationRecordService';
+import timelineSettingService from '../services/timelineSettingService';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from '../components/modals/ConfirmModal';
 import Toast from '../components/common/Toast';
@@ -42,10 +44,23 @@ const ContractDetailPage = () => {
 
   const [isTermsAgreed, setIsTermsAgreed] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
   const [confirmTerminationModalOpen, setConfirmTerminationModalOpen] = useState(false);
   const [cancelTerminationModalOpen, setCancelTerminationModalOpen] = useState(false);
   const [rejectTerminationModalOpen, setRejectTerminationModalOpen] = useState(false);
   const [rejectExtensionModalOpen, setRejectExtensionModalOpen] = useState(false);
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const providerId = contract?.reservation?.facility?.provider_id || contract?.reservation?.facility?.provider?.id;
   const isProvider = user?.role?.name === 'PROVIDER' || user?.role === 'PROVIDER' || (contract && user?.id === providerId);
@@ -149,6 +164,27 @@ const ContractDetailPage = () => {
       });
     } finally {
       setAccepting(false);
+    }
+  };
+
+  const handleExecuteReject = async () => {
+    try {
+      setRejecting(true);
+      const res = await rejectConfirmationRecord(id);
+      const updated = res.data?.confirmation_record || res.confirmation_record;
+      setToastInfo({
+        message: 'Đã từ chối ký và hủy yêu cầu đặt chỗ thành công!',
+        type: 'success'
+      });
+      setContract(updated);
+      setRejectModalOpen(false);
+    } catch (err) {
+      setToastInfo({
+        message: err.message || 'Lỗi khi từ chối hợp đồng!',
+        type: 'error'
+      });
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -256,6 +292,11 @@ const ContractDetailPage = () => {
   };
 
   const contractIssueDate = contract?.created_at ? new Date(contract.created_at) : new Date();
+  const noticeText = timelineSettings?.terminationNoticeText || '15 ngày';
+  const formatNoticeInTerms = (content) => {
+    if (!content) return '';
+    return content.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${noticeText}`);
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 lg:px-8 print:bg-white print:p-0 print:m-0">
@@ -415,6 +456,24 @@ const ContractDetailPage = () => {
           </div>
         ) : contract ? (
           <div className="space-y-6">
+
+            {isPendingSignature && (
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-start gap-3 shadow-xs">
+                <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed text-xs sm:text-sm text-amber-900">
+                  <span className="font-bold text-amber-950">Thời hạn ký xác nhận hợp đồng: </span>
+                  {isCustomer ? (
+                    <>
+                      Bạn có <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{timelineSettings?.contractSigningText || '5 phút'}</strong> kể từ lúc chủ bãi lập hợp đồng để đọc kỹ và ký xác nhận trực tuyến. Quá thời hạn này mà bạn chưa hoàn tất ký, hệ thống sẽ tự động hủy hợp đồng.
+                    </>
+                  ) : (
+                    <>
+                      Khách hàng có <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{timelineSettings?.contractSigningText || '5 phút'}</strong> kể từ lúc bạn tạo hợp đồng để kiểm tra và ký xác nhận. Quá thời hạn này, hệ thống sẽ tự động hủy hợp đồng.
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {isCustomer && pendingExtension && (
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
@@ -601,11 +660,11 @@ const ContractDetailPage = () => {
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-amber-900">
-                    Yêu cầu chấm dứt hợp đồng trước hạn đã tự động hủy (Quá 15 ngày chưa được xác nhận)
+                    Yêu cầu chấm dứt hợp đồng trước hạn đã tự động hủy (Quá {noticeText} chưa được xác nhận)
                   </h4>
                   <p className="text-amber-700 mt-0.5">
                     {snapshot.last_expired_termination.expired_reason ||
-                      'Sau 15 ngày kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng hiện vẫn tiếp tục có hiệu lực.'}
+                      `Sau ${noticeText} kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng hiện vẫn tiếp tục có hiệu lực.`}
                   </p>
                 </div>
               </div>
@@ -979,8 +1038,8 @@ const ContractDetailPage = () => {
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 3. Quyền và nghĩa vụ của Bên A</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
-                  {terms.owner_obligations ||
-                    '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.'}
+                  {formatNoticeInTerms(terms.owner_obligations ||
+                    '- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất 15 ngày.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.')}
                 </div>
               </div>
 
@@ -988,8 +1047,8 @@ const ContractDetailPage = () => {
               <div className="space-y-1 mb-5">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 4. Quyền và nghĩa vụ của Bên B</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
-                  {terms.customer_obligations ||
-                    '- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất 15 ngày.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.'}
+                  {formatNoticeInTerms(terms.customer_obligations ||
+                    '- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất 15 ngày.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.')}
                 </div>
               </div>
 
@@ -1006,8 +1065,8 @@ const ContractDetailPage = () => {
               <div className="space-y-1 mb-8">
                 <p className="font-bold uppercase text-xs sm:text-sm text-black">Điều 6. Điều khoản chung và hiệu lực hợp đồng</p>
                 <div className="pl-4 text-xs sm:text-sm text-black text-justify whitespace-pre-line leading-relaxed">
-                  {terms.termination_conditions ||
-                    `- Hợp đồng này có hiệu lực kể từ ngày hai bên hoàn tất ký xác nhận điện tử đến ngày ${new Date(contract.end_date).toLocaleDateString('vi-VN')}. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`}
+                  {formatNoticeInTerms(terms.termination_conditions ||
+                    `- Hợp đồng này có hiệu lực kể từ ngày hai bên hoàn tất ký xác nhận điện tử đến ngày ${new Date(contract.end_date).toLocaleDateString('vi-VN')}. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất 15 ngày.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`)}
                 </div>
               </div>
 
@@ -1062,11 +1121,17 @@ const ContractDetailPage = () => {
             {isCustomer && isPendingSignature && (
               <div className="print:hidden bg-white rounded-xl p-6 border border-slate-200 sm:max-w-[900px] mx-auto space-y-4">
                 <div className="border-b border-slate-100 pb-3">
-                  <h4 className="text-base font-bold text-slate-900">
-                    Xác nhận hợp đồng điện tử
-                  </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Vui lòng kiểm tra kỹ nội dung và điều khoản hợp đồng phía trên trước khi xác nhận.
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-base font-bold text-slate-900">
+                      Xác nhận hợp đồng điện tử
+                    </h4>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
+                      <Clock className="w-3.5 h-3.5 text-amber-700" />
+                      Hạn ký: {timelineSettings?.contractSigningText || '5 phút'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Vui lòng kiểm tra kỹ nội dung và điều khoản hợp đồng phía trên trước khi xác nhận. Hợp đồng sẽ tự động hủy nếu quá thời hạn {timelineSettings?.contractSigningText || '5 phút'}.
                   </p>
                 </div>
 
@@ -1088,10 +1153,19 @@ const ContractDetailPage = () => {
                   </span>
                 </label>
 
-                <div className="flex justify-end pt-2">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
-                    disabled={!isTermsAgreed || accepting}
+                    disabled={accepting || rejecting}
+                    onClick={() => setRejectModalOpen(true)}
+                    className="px-5 py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 hover:border-rose-200 font-semibold text-sm rounded-lg transition"
+                  >
+                    Từ chối ký / Hủy yêu cầu
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={!isTermsAgreed || accepting || rejecting}
                     onClick={() => setConfirmModalOpen(true)}
                     className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg transition inline-flex items-center justify-center gap-2"
                   >
@@ -1122,6 +1196,18 @@ const ContractDetailPage = () => {
         cancelText="Bỏ Qua"
         type="primary"
         loading={accepting}
+      />
+
+      <ConfirmModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        onConfirm={handleExecuteReject}
+        title="Từ Chối Ký Hợp Đồng"
+        message="Bạn có chắc chắn muốn từ chối ký hợp đồng này không? Yêu cầu đặt chỗ sẽ được hủy bỏ và thao tác này không thể hoàn tác."
+        confirmText="Từ Chối Ký"
+        cancelText="Quay Lại"
+        type="danger"
+        loading={rejecting}
       />
 
 
