@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getReservationDetail, cancelReservationRequest } from '../../services/reservationService';
+import timelineSettingService from '../../services/timelineSettingService';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import Toast from '../../components/common/Toast';
 import {
@@ -14,7 +15,8 @@ import {
   FileText,
   AlertCircle,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 
 const CustomerReservationDetailPage = () => {
@@ -27,6 +29,17 @@ const CustomerReservationDetailPage = () => {
   const [error, setError] = useState(null);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -161,6 +174,41 @@ const CustomerReservationDetailPage = () => {
 
               <div className="shrink-0">{getStatusBadge(reservation.status)}</div>
             </div>
+
+            {reservation.status === 'PENDING' && (
+              <div className="px-6 py-3.5 bg-amber-50/80 border-b border-amber-200 flex items-center gap-3 text-xs sm:text-sm text-amber-900">
+                <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>Yêu cầu đang chờ chủ bãi phê duyệt:</strong> Chủ bãi có <strong className="text-amber-950 font-bold">{timelineSettings?.reservationResponseText || 'thời hạn quy định'}</strong> để phản hồi chấp nhận hoặc từ chối. Quá thời hạn này, hệ thống sẽ tự động hủy yêu cầu.
+                </span>
+              </div>
+            )}
+
+            {reservation.status === 'APPROVED' && reservation.confirmation_record && reservation.confirmation_record.status === 'PENDING_SIGNATURE' && (
+              <div className="px-6 py-3.5 bg-amber-50/80 border-b border-amber-200 flex items-center justify-between gap-3 text-xs sm:text-sm text-amber-950">
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    <strong>Hợp đồng điện tử đã được tạo:</strong> Bạn có <strong className="underline font-bold">{timelineSettings?.contractSigningText || '5 phút'}</strong> để đọc và ký xác nhận trực tuyến trước khi hợp đồng tự động hủy.
+                  </span>
+                </div>
+                <Link
+                  to={`/my-contracts/${reservation.confirmation_record.id}`}
+                  className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg whitespace-nowrap transition"
+                >
+                  Ký hợp đồng ngay
+                </Link>
+              </div>
+            )}
+
+            {reservation.status === 'APPROVED' && !reservation.confirmation_record && (
+              <div className="px-6 py-3.5 bg-teal-50/80 border-b border-teal-200 flex items-center gap-3 text-xs sm:text-sm text-teal-900">
+                <Clock className="w-4 h-4 text-teal-600 shrink-0" />
+                <span>
+                  <strong>Chủ bãi đã phê duyệt yêu cầu:</strong> Chủ bãi đang tiến hành soạn thảo hợp đồng điện tử ({timelineSettings?.contractCreationText || 'thời hạn quy định'}). Bạn vẫn có quyền hủy yêu cầu nếu thay đổi kế hoạch.
+                </span>
+              </div>
+            )}
 
             {reservation.status === 'CANCELLED' && Number(reservation.facility?.available_slots) <= 0 && (
               <div className="px-6 py-3.5 bg-amber-50 border-b border-amber-200 flex items-center gap-3 text-xs text-amber-800">
@@ -320,7 +368,7 @@ const CustomerReservationDetailPage = () => {
                 </div>
 
                 <div className="p-6 bg-slate-50/60 space-y-2.5">
-                  {reservation.status === 'PENDING' && (
+                  {(reservation.status === 'PENDING' || (reservation.status === 'APPROVED' && (!reservation.confirmation_record || reservation.confirmation_record.status !== 'ACTIVE'))) && (
                     <button
                       onClick={() => setConfirmModalOpen(true)}
                       disabled={cancelling}

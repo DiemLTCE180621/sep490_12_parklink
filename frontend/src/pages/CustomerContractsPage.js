@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
+import timelineSettingService from '../services/timelineSettingService';
 import Toast from '../components/common/Toast';
 import {
   FileText,
@@ -23,6 +24,17 @@ const CustomerContractsPage = () => {
   const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchContracts = useCallback(async () => {
     try {
@@ -221,6 +233,16 @@ const CustomerContractsPage = () => {
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                         Đã hủy (Hết chỗ)
                       </span>
+                    ) : item.status === 'PENDING_SIGNATURE' ? (
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          Chờ ký
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100/80 text-amber-900 border border-amber-300">
+                          <Clock className="w-3 h-3 text-amber-700" /> Hạn ký: {timelineSettings?.contractSigningText || '5 phút'}
+                        </span>
+                      </div>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />

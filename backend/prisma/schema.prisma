@@ -48,6 +48,7 @@ model User {
   messages               Message[]
   favorites              Favorite[]
   updated_policies       System_Policy[]       @relation("AdminUpdatedPolicies")
+  updated_timeline_settings System_Timeline_Setting[] @relation("AdminUpdatedTimelineSettings")
 
   @@map("users")
 }
@@ -378,3 +379,26 @@ model Facility_Vehicle_Type {
   @@id([facility_id, vehicle_type_id])
   @@map("facility_vehicle_types")
 }
+
+// ------------------------------------------------------
+// NHÓM CẤU HÌNH THỜI HẠN HỆ THỐNG (SYSTEM TIMELINE SETTINGS)
+// ------------------------------------------------------
+model System_Timeline_Setting {
+  id                         Int      @id @default(autoincrement())
+  reservation_response_value Float    @default(12)
+  reservation_response_unit  String   @default("HOURS")
+  contract_creation_value    Float    @default(24)
+  contract_creation_unit     String   @default("HOURS")
+  contract_signing_value     Float    @default(24)
+  contract_signing_unit      String   @default("HOURS")
+  termination_notice_value   Float    @default(15)
+  termination_notice_unit    String   @default("DAYS")
+  updated_by                 Int?
+  updated_at                 DateTime @updatedAt
+  created_at                 DateTime @default(now())
+
+  admin User? @relation("AdminUpdatedTimelineSettings", fields: [updated_by], references: [id])
+
+  @@map("system_timeline_settings")
+}
+

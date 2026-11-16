@@ -18,7 +18,7 @@ class ReservationController {
       const { facility_id, vehicle_info, desired_start_date } = req.body;
       const customerId = req.user.userId;
 
-      const reservation = await reservationService.createReservationRequest({
+      const result = await reservationService.createReservationRequest({
         customerId,
         facilityId: facility_id,
         vehicleInfo: vehicle_info,
@@ -27,8 +27,11 @@ class ReservationController {
 
       return res.status(201).json({
         status: 'success',
-        message: 'Gửi yêu cầu thuê bãi đỗ xe thành công! Vui lòng chờ chủ bãi phản hồi.',
-        data: { reservation }
+        message: result.message || 'Gửi yêu cầu thuê bãi đỗ xe thành công! Vui lòng chờ chủ bãi phản hồi.',
+        data: {
+          reservation: result.reservation || result,
+          timeline: result.timeline || null
+        }
       });
     } catch (error) {
       next(error);
@@ -102,12 +105,15 @@ class ReservationController {
       const { id } = req.params;
       const providerId = req.user.userId;
 
-      const reservation = await reservationService.respondToReservationRequest(id, providerId, 'APPROVED');
+      const result = await reservationService.respondToReservationRequest(id, providerId, 'APPROVED');
 
       return res.status(200).json({
         status: 'success',
-        message: 'Đã phê duyệt / chấp nhận yêu cầu thuê bãi đỗ xe thành công!',
-        data: { reservation }
+        message: result.message || 'Đã phê duyệt / chấp nhận yêu cầu thuê bãi đỗ xe thành công!',
+        data: {
+          reservation: result.reservation || result,
+          timeline: result.timeline || null
+        }
       });
     } catch (error) {
       next(error);
@@ -119,12 +125,15 @@ class ReservationController {
       const { id } = req.params;
       const providerId = req.user.userId;
 
-      const reservation = await reservationService.respondToReservationRequest(id, providerId, 'REJECTED');
+      const result = await reservationService.respondToReservationRequest(id, providerId, 'REJECTED');
 
       return res.status(200).json({
         status: 'success',
-        message: 'Đã từ chối yêu cầu thuê bãi đỗ xe.',
-        data: { reservation }
+        message: result.message || 'Đã từ chối yêu cầu thuê bãi đỗ xe.',
+        data: {
+          reservation: result.reservation || result,
+          timeline: result.timeline || null
+        }
       });
     } catch (error) {
       next(error);
@@ -137,12 +146,15 @@ class ReservationController {
       const { status } = req.body;
       const providerId = req.user.userId;
 
-      const reservation = await reservationService.respondToReservationRequest(id, providerId, status);
+      const result = await reservationService.respondToReservationRequest(id, providerId, status);
 
       return res.status(200).json({
         status: 'success',
-        message: status === 'APPROVED' ? 'Đã chấp nhận yêu cầu thuê!' : 'Đã từ chối yêu cầu thuê.',
-        data: { reservation }
+        message: result.message || (status === 'APPROVED' ? 'Đã chấp nhận yêu cầu thuê!' : 'Đã từ chối yêu cầu thuê.'),
+        data: {
+          reservation: result.reservation || result,
+          timeline: result.timeline || null
+        }
       });
     } catch (error) {
       next(error);

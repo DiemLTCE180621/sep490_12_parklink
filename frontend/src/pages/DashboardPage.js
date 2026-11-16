@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound,
   UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users,
-  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers, Clock
 } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
@@ -20,6 +20,7 @@ import AdminAmenitiesPanel from '../components/admin/AdminAmenitiesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
+import AdminTimelineSettingsPanel from '../components/admin/AdminTimelineSettingsPanel';
 import AdminDashboardPanel from '../components/admin/AdminDashboardPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
@@ -77,6 +78,7 @@ const DashboardPage = () => {
     { id: 'vehicle-types', label: 'Loại Phương Tiện', icon: Car },
     { id: 'amenities', label: 'Quản Lý Tiện Ích', icon: Layers },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
+    { id: 'timeline-settings', label: 'Cấu Hình Thời Hạn', icon: Clock },
     { id: 'policies', label: 'Chính Sách Hệ Thống', icon: ShieldCheck },
   ];
 
@@ -305,6 +307,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'vehicle-types' && <AdminVehicleTypesPanel />}
               {activeAdminTab === 'amenities' && <AdminAmenitiesPanel />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
+              {activeAdminTab === 'timeline-settings' && <AdminTimelineSettingsPanel />}
               {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
               {activeAdminTab === 'transactions' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">

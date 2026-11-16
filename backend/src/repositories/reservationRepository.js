@@ -46,12 +46,36 @@ class ReservationRepository {
     });
   }
 
+  async findActiveReservationByCustomer(customerId) {
+    return await prisma.reservation_Request.findFirst({
+      where: {
+        customer_id: parseInt(customerId, 10),
+        status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          { confirmation_record: null },
+          { confirmation_record: { status: 'PENDING_SIGNATURE' } }
+        ]
+      },
+      include: {
+        facility: true,
+        confirmation_record: true
+      }
+    });
+  }
+
   async findPendingReservation(customerId, facilityId) {
     return await prisma.reservation_Request.findFirst({
       where: {
         customer_id: parseInt(customerId, 10),
         facility_id: parseInt(facilityId, 10),
-        status: 'PENDING'
+        status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          { confirmation_record: null },
+          { confirmation_record: { status: 'PENDING_SIGNATURE' } }
+        ]
+      },
+      include: {
+        confirmation_record: true
       }
     });
   }
@@ -216,13 +240,48 @@ class ReservationRepository {
     return affectedReservations;
   }
 
-  async cancelExpiredApprovedReservations() {
-    const deadline24hAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  async cancelExpiredPendingReservations(deadlineMs = 12 * 60 * 60 * 1000) {
+    const deadlineDate = new Date(Date.now() - deadlineMs);
+
+    const expiredPendingList = await prisma.reservation_Request.findMany({
+      where: {
+        status: 'PENDING',
+        created_at: { lt: deadlineDate }
+      },
+      include: {
+        customer: {
+          select: USER_BASIC_SELECT
+        },
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            provider_id: true
+          }
+        }
+      }
+    });
+
+    if (expiredPendingList.length === 0) {
+      return [];
+    }
+
+    const expiredIds = expiredPendingList.map((r) => r.id);
+    await prisma.reservation_Request.updateMany({
+      where: { id: { in: expiredIds } },
+      data: { status: 'CANCELLED' }
+    });
+
+    return expiredPendingList;
+  }
+
+  async cancelExpiredApprovedReservations(deadlineMs = 24 * 60 * 60 * 1000) {
+    const deadlineDate = new Date(Date.now() - deadlineMs);
 
     const expiredApprovedList = await prisma.reservation_Request.findMany({
       where: {
         status: 'APPROVED',
-        updated_at: { lt: deadline24hAgo },
+        updated_at: { lt: deadlineDate },
         confirmation_record: null
       },
       include: {
@@ -250,6 +309,52 @@ class ReservationRepository {
     });
 
     return expiredApprovedList;
+  }
+
+  async cancelExpiredPendingContracts(deadlineMs = 24 * 60 * 60 * 1000) {
+    const deadlineDate = new Date(Date.now() - deadlineMs);
+
+    const expiredContracts = await prisma.confirmation_Record.findMany({
+      where: {
+        status: 'PENDING_SIGNATURE',
+        created_at: { lt: deadlineDate }
+      },
+      include: {
+        reservation: {
+          include: {
+            customer: {
+              select: USER_BASIC_SELECT
+            },
+            facility: {
+              select: {
+                id: true,
+                name: true,
+                provider_id: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (expiredContracts.length === 0) {
+      return [];
+    }
+
+    const contractIds = expiredContracts.map((c) => c.id);
+    const reservationIds = expiredContracts.map((c) => c.reservation_id);
+
+    await prisma.confirmation_Record.updateMany({
+      where: { id: { in: contractIds } },
+      data: { status: 'CANCELLED' }
+    });
+
+    await prisma.reservation_Request.updateMany({
+      where: { id: { in: reservationIds } },
+      data: { status: 'CANCELLED' }
+    });
+
+    return expiredContracts;
   }
 }
 

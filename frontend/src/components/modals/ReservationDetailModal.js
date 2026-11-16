@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getReservationDetail, cancelReservationRequest } from '../../services/reservationService';
+import timelineSettingService from '../../services/timelineSettingService';
 import ConfirmModal from './ConfirmModal';
 import { X, Calendar, Car, MapPin, Building2, User, Phone, Mail, FileText, Ban, AlertCircle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 
@@ -10,6 +11,18 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, [isOpen]);
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -145,6 +158,15 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                   Ngày gửi: {new Date(reservation.created_at).toLocaleDateString('vi-VN')}
                 </div>
               </div>
+
+              {reservation.status === 'PENDING' && (
+                <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center gap-3 text-xs sm:text-sm text-amber-900">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>
+                    <strong>Chờ chủ bãi duyệt:</strong> Chủ bãi có <strong className="text-amber-950 font-bold">{timelineSettings?.reservationResponseText || '12 giờ'}</strong> để phản hồi chấp nhận hoặc từ chối yêu cầu này.
+                  </span>
+                </div>
+              )}
 
               <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -289,7 +311,10 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
             Đóng
           </button>
 
-          {reservation && reservation.status === 'PENDING' && (
+          {reservation &&
+            (reservation.status === 'PENDING' ||
+              (reservation.status === 'APPROVED' &&
+                (!reservation.confirmation_record || reservation.confirmation_record.status !== 'ACTIVE'))) && (
             <button
               type="button"
               onClick={() => setConfirmModalOpen(true)}
