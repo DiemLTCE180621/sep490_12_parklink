@@ -1,24 +1,112 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft, MapPin } from 'lucide-react';
+import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft, MapPin, Camera, Loader2, Home } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import uploadService from '../services/uploadService';
+import AddressSelector from '../components/common/AddressSelector';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [administrativeAddress, setAdministrativeAddress] = useState('');
+  const [streetDetail, setStreetDetail] = useState('');
+
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  const initializedUserIdRef = useRef(null);
+
   useEffect(() => {
-    if (user) {
+    if (user && initializedUserIdRef.current !== user.id) {
+      initializedUserIdRef.current = user.id;
       setFullName(user.full_name || '');
       setPhoneNumber(user.phone_number || '');
+      setAvatarUrl(user.avatar_url || '');
+      setAvatarLoadFailed(false);
+
+      const rawAddress = user.address || '';
+      if (rawAddress) {
+        const parts = rawAddress.split(',').map((p) => p.trim());
+        if (parts.length >= 2) {
+          const adminPart = parts.slice(-2).join(', ');
+          const detailPart = parts.slice(0, -2).join(', ');
+          setAdministrativeAddress(adminPart);
+          setStreetDetail(detailPart);
+        } else {
+          setAdministrativeAddress(rawAddress);
+          setStreetDetail('');
+        }
+      } else {
+        setAdministrativeAddress('');
+        setStreetDetail('');
+      }
     }
   }, [user]);
+
+  const computeFullAddress = (detail, admin) => {
+    const cleanDetail = (detail || '').trim();
+    const cleanAdmin = (admin || '').trim();
+    if (cleanDetail && cleanAdmin) {
+      return `${cleanDetail}, ${cleanAdmin}`;
+    }
+    return cleanDetail || cleanAdmin || '';
+  };
+
+  const handleAvatarFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Vui lòng chọn tệp hình ảnh hợp lệ (JPG, PNG, WebP, AVIF)!');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Dung lượng hình ảnh đại diện không được vượt quá 5MB!');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      setError('');
+      const uploadRes = await uploadService.uploadFiles([file], 'chat');
+      const uploadedUrl =
+        uploadRes?.data?.data?.mediaUrls?.[0] ||
+        uploadRes?.data?.mediaUrls?.[0] ||
+        uploadRes?.data?.data?.[0]?.url ||
+        uploadRes?.data?.data?.[0] ||
+        uploadRes?.data?.[0];
+      if (!uploadedUrl) {
+        throw new Error('Không nhận được đường dẫn ảnh từ máy chủ!');
+      }
+
+      setAvatarUrl(uploadedUrl);
+      setAvatarLoadFailed(false);
+      const currentFullAddress = computeFullAddress(streetDetail, administrativeAddress);
+      await updateProfile({
+        full_name: fullName.trim() || user?.full_name,
+        phone_number: phoneNumber.trim() || user?.phone_number || undefined,
+        address: currentFullAddress || user?.address || undefined,
+        avatar_url: uploadedUrl
+      });
+      setSuccessMessage('Cập nhật ảnh đại diện thành công!');
+    } catch (uploadErr) {
+      setError(uploadErr.response?.data?.message || uploadErr.message || 'Lỗi khi tải ảnh lên!');
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +115,7 @@ const ProfilePage = () => {
 
     const cleanName = fullName.trim();
     const cleanPhone = phoneNumber.trim();
+    const cleanAddress = computeFullAddress(streetDetail, administrativeAddress);
 
     if (!cleanName || cleanName.length < 2) {
       setError('Họ và tên phải chứa ít nhất 2 ký tự.');
@@ -43,8 +132,13 @@ const ProfilePage = () => {
       setLoading(true);
       const res = await updateProfile({
         full_name: cleanName,
-        phone_number: cleanPhone
+        phone_number: cleanPhone,
+        address: cleanAddress,
+        avatar_url: avatarUrl
       });
+      if (refreshUser) {
+        await refreshUser();
+      }
       setSuccessMessage(res?.message || 'Cập nhật thông tin cá nhân thành công!');
     } catch (err) {
       const errList = (err.errors && err.errors.length > 0)
@@ -70,10 +164,12 @@ const ProfilePage = () => {
     }
   };
 
+  const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+  const hasAddress = Boolean(user?.address && user.address.trim());
+
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* Nút quay lại */}
         <button
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-teal-600 transition"
@@ -81,16 +177,50 @@ const ProfilePage = () => {
           <ArrowLeft className="w-4 h-4" /> Quay lại
         </button>
 
-        {/* Card Header Hồ sơ */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-teal-500 text-slate-900 font-black flex items-center justify-center text-3xl shadow-md border border-teal-400/30">
-                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-teal-500 text-slate-900 font-black flex items-center justify-center text-3xl shadow-md border-2 border-teal-400/50">
+                  {avatarUrl && !avatarLoadFailed ? (
+                    <img
+                      src={avatarUrl}
+                      alt={user?.full_name || 'Avatar'}
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarLoadFailed(true)}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}</span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  title="Thay đổi ảnh đại diện"
+                  className="absolute -bottom-2 -right-2 p-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-lg border-2 border-slate-900 transition flex items-center justify-center disabled:opacity-50"
+                >
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarFileChange}
+                  accept="image/jpeg,image/png,image/webp,image/jpg,image/avif"
+                  className="hidden"
+                />
               </div>
+
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">{user?.full_name || 'Hồ sơ người dùng'}</h1>
                 <p className="text-teal-300 text-xs font-medium mt-1">{user?.email}</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">Nhấn vào biểu tượng máy ảnh để cập nhật ảnh đại diện</p>
               </div>
             </div>
 
@@ -122,17 +252,20 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {!user?.phone_number && (
+          {(!hasPhone || !hasAddress) && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs sm:text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
               <span>
-                Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.
+                {!hasPhone && !hasAddress
+                  ? 'Bạn chưa cập nhật số điện thoại và địa chỉ liên hệ. Vui lòng bổ sung đầy đủ thông tin bên dưới để Chủ bãi xe có thể liên lạc và lập hợp đồng khi bạn gửi yêu cầu đặt chỗ.'
+                  : !hasPhone
+                    ? 'Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.'
+                    : 'Bạn chưa cập nhật địa chỉ thường trú / liên hệ. Vui lòng bổ sung thông tin địa chỉ bên dưới để phục vụ việc lập hợp đồng pháp lý khi thuê bãi xe.'}
               </span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
                 <Mail className="w-4 h-4 text-slate-400" /> Địa Chỉ Email (Không thể thay đổi)
@@ -147,7 +280,6 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Full Name */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                 <User className="w-4 h-4 text-teal-600" /> Họ Và Tên <span className="text-red-500">*</span>
@@ -162,7 +294,6 @@ const ProfilePage = () => {
               />
             </div>
 
-            {/* Phone Number */}
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                 <Phone className="w-4 h-4 text-teal-600" /> Số Điện Thoại <span className="text-red-500">*</span>
@@ -179,10 +310,10 @@ const ProfilePage = () => {
               <p className="text-[11px] text-slate-500">Gồm đúng 10 chữ số, bắt đầu bằng số 0.</p>
             </div>
 
-            {roleName === 'FIELD_INSPECTOR' && (
+            {roleName === 'FIELD_INSPECTOR' ? (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-teal-600" /> ĐỊA CHỈ
+                  <MapPin className="w-4 h-4 text-teal-600" /> ĐỊA CHỈ PHÂN CÔNG
                 </label>
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="font-semibold text-slate-900 text-sm">
@@ -191,6 +322,49 @@ const ProfilePage = () => {
                   <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200 w-max shrink-0">
                     Do Quản trị viên phân công
                   </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 p-5 bg-slate-50/70 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ Thường Trú / Liên Hệ
+                  </label>
+                  <span className="text-[11px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                    Chuẩn hành chính
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase">Khu vực hành chính</span>
+                  <AddressSelector
+                    value={administrativeAddress}
+                    onChange={(selectedAdmin) => setAdministrativeAddress(selectedAdmin)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
+                    <Home className="w-3.5 h-3.5 text-slate-400" /> Số nhà, tên đường, hẻm / ngõ chi tiết
+                  </label>
+                  <input
+                    type="text"
+                    value={streetDetail}
+                    onChange={(e) => setStreetDetail(e.target.value)}
+                    placeholder="Ví dụ: Số 123/45, Đường 30 Tháng 4"
+                    maxLength={150}
+                    className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  />
+                </div>
+
+                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-slate-700">Địa chỉ đầy đủ ghi trên hợp đồng: </span>
+                    <span className="text-teal-800 font-semibold">
+                      {computeFullAddress(streetDetail, administrativeAddress) || 'Chưa thiết lập'}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}

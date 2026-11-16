@@ -35,6 +35,7 @@ import AdminPlatformFeeCreatePage from './pages/admin/AdminPlatformFeeCreatePage
 import AdminPlatformFeeEditPage from './pages/admin/AdminPlatformFeeEditPage';
 import AdminRegistrationDetailPage from './pages/admin/AdminRegistrationDetailPage';
 import AdminContractsPage from './pages/admin/AdminContractsPage';
+import AdminPolicyEditPage from './pages/admin/AdminPolicyEditPage';
 import ProviderActiveCustomersPage from './pages/provider/ProviderActiveCustomersPage';
 import ScrollToTop from './components/common/ScrollToTop';
 import GlobalBroadcastAlerts from './components/common/GlobalBroadcastAlerts';
@@ -176,6 +177,11 @@ function AppContent() {
           <Route path="/admin/platform-fees/:id/edit" element={
             <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <AdminPlatformFeeEditPage />
+            </RoleProtectedRoute>
+          } />
+          <Route path="/admin/policies/:id/edit" element={
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminPolicyEditPage />
             </RoleProtectedRoute>
           } />
                     <Route path="/admin/vehicle-types" element={

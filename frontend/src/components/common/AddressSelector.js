@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import addressService from '../../services/addressService';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 
-// Component chọn địa chỉ 2 cấp (Tỉnh/Thành -> Phường/Xã)
 const AddressSelector = ({ value = '', onChange }) => {
   const [provinces, setProvinces] = useState([]);
   const [wards, setWards] = useState([]);
@@ -13,9 +12,6 @@ const AddressSelector = ({ value = '', onChange }) => {
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
 
-  const initialValueRef = useRef(value);
-
-  // Tải danh sách Tỉnh / Thành phố
   useEffect(() => {
     let isMounted = true;
     const fetchProvinces = async () => {
@@ -24,19 +20,6 @@ const AddressSelector = ({ value = '', onChange }) => {
         const list = await addressService.getProvinces();
         if (!isMounted) return;
         setProvinces(list);
-
-        const initialVal = initialValueRef.current;
-        let matched = null;
-        if (initialVal) {
-          matched = list.find((p) => initialVal.toLowerCase().includes(p.name.toLowerCase()));
-        }
-        if (!matched) {
-          matched = list.find((p) => p.code === 92 || p.codename?.includes('can_tho')) || list[0];
-        }
-
-        if (matched) {
-          setSelectedProvinceCode(matched.code);
-        }
       } catch (err) {
         console.error('Lỗi tải tỉnh/thành:', err);
       } finally {
@@ -50,7 +33,18 @@ const AddressSelector = ({ value = '', onChange }) => {
     };
   }, []);
 
-  // Tải danh sách Phường / Xã theo tỉnh
+  useEffect(() => {
+    if (!value || provinces.length === 0) return;
+
+    const matchedProvince = provinces.find((p) =>
+      value.toLowerCase().includes(p.name.toLowerCase())
+    );
+
+    if (matchedProvince && String(matchedProvince.code) !== String(selectedProvinceCode)) {
+      setSelectedProvinceCode(matchedProvince.code);
+    }
+  }, [value, provinces, selectedProvinceCode]);
+
   useEffect(() => {
     if (!selectedProvinceCode) {
       setWards([]);
@@ -65,25 +59,6 @@ const AddressSelector = ({ value = '', onChange }) => {
         const wList = await addressService.getWardsByProvince(selectedProvinceCode);
         if (!isMounted) return;
         setWards(wList);
-
-        const initialVal = initialValueRef.current;
-        let matchedWard = null;
-        if (initialVal) {
-          matchedWard = wList.find((w) => {
-            const rawName = w.name.replace(/^(Phường|Xã|Thị trấn)\s+/i, '').trim().toLowerCase();
-            return initialVal.toLowerCase().includes(w.name.toLowerCase()) || (rawName && initialVal.toLowerCase().includes(rawName));
-          });
-        }
-
-        if (matchedWard) {
-          setSelectedWardCode(matchedWard.code);
-        } else if (!initialVal && wList.length > 0) {
-          setSelectedWardCode(wList[0].code);
-          const p = provinces.find((item) => Number(item.code) === Number(selectedProvinceCode));
-          if (p && onChange) {
-            onChange(`${wList[0].name}, ${p.name}`);
-          }
-        }
       } catch (err) {
         console.error('Lỗi tải phường/xã:', err);
       } finally {
@@ -97,17 +72,45 @@ const AddressSelector = ({ value = '', onChange }) => {
     };
   }, [selectedProvinceCode]);
 
+  useEffect(() => {
+    if (!value || wards.length === 0) return;
+
+    const matchedWard = wards.find((w) => {
+      const rawName = w.name.replace(/^(Phường|Xã|Thị trấn)\s+/i, '').trim().toLowerCase();
+      return (
+        value.toLowerCase().includes(w.name.toLowerCase()) ||
+        (rawName && value.toLowerCase().includes(rawName))
+      );
+    });
+
+    if (matchedWard && String(matchedWard.code) !== String(selectedWardCode)) {
+      setSelectedWardCode(matchedWard.code);
+    }
+  }, [value, wards, selectedWardCode]);
+
   const handleProvinceChange = (e) => {
-    const code = Number(e.target.value);
+    const val = e.target.value;
+    if (!val) {
+      setSelectedProvinceCode('');
+      setSelectedWardCode('');
+      if (onChange) onChange('');
+      return;
+    }
+    const code = Number(val);
     setSelectedProvinceCode(code);
     setSelectedWardCode('');
-    initialValueRef.current = '';
+    if (onChange) onChange('');
   };
 
   const handleWardChange = (e) => {
-    const code = Number(e.target.value);
+    const val = e.target.value;
+    if (!val) {
+      setSelectedWardCode('');
+      if (onChange) onChange('');
+      return;
+    }
+    const code = Number(val);
     setSelectedWardCode(code);
-    initialValueRef.current = '';
 
     const p = provinces.find((item) => Number(item.code) === Number(selectedProvinceCode));
     const w = wards.find((item) => Number(item.code) === Number(code));
@@ -131,15 +134,12 @@ const AddressSelector = ({ value = '', onChange }) => {
               disabled={loadingProvinces || provinces.length === 0}
               className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium disabled:bg-slate-100"
             >
-              {provinces.length === 0 ? (
-                <option value="">Đang tải Tỉnh / Thành...</option>
-              ) : (
-                provinces.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name}
-                  </option>
-                ))
-              )}
+              <option value="">-- Chọn Tỉnh / Thành Phố --</option>
+              {provinces.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
             </select>
             {loadingProvinces && (
               <Loader2 className="w-3.5 h-3.5 text-teal-600 animate-spin absolute right-3 top-3 pointer-events-none" />
@@ -155,18 +155,15 @@ const AddressSelector = ({ value = '', onChange }) => {
             <select
               value={selectedWardCode}
               onChange={handleWardChange}
-              disabled={loadingWards || wards.length === 0}
+              disabled={loadingWards || wards.length === 0 || !selectedProvinceCode}
               className="w-full px-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium disabled:bg-slate-100"
             >
-              {wards.length === 0 ? (
-                <option value="">{loadingWards ? 'Đang tải Phường / Xã...' : '-- Chọn Phường / Xã --'}</option>
-              ) : (
-                wards.map((w) => (
-                  <option key={w.code} value={w.code}>
-                    {w.name}
-                  </option>
-                ))
-              )}
+              <option value="">-- Chọn Phường / Xã --</option>
+              {wards.map((w) => (
+                <option key={w.code} value={w.code}>
+                  {w.name}
+                </option>
+              ))}
             </select>
             {loadingWards && (
               <Loader2 className="w-3.5 h-3.5 text-teal-600 animate-spin absolute right-3 top-3 pointer-events-none" />
@@ -176,9 +173,10 @@ const AddressSelector = ({ value = '', onChange }) => {
       </div>
 
       {value && (
-        <div className="px-3.5 py-2 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-700 flex items-center justify-between">
-          <span>
-            Địa chỉ đã chọn: <strong className="text-teal-700 font-semibold">{value}</strong>
+        <div className="px-3.5 py-2 bg-teal-50/70 rounded-xl border border-teal-200/60 text-xs text-teal-900 flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium">
+            <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+            Khu vực đã chọn: <strong className="font-bold text-teal-950">{value}</strong>
           </span>
         </div>
       )}
