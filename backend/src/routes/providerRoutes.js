@@ -11,6 +11,7 @@ router.use(authenticateToken, authorizeRoles('PROVIDER'));
 
 // Các endpoint nghiệp vụ của Provider
 router.get('/my-facility', providerController.getMyFacility);
+router.get('/reports/monthly-revenue', providerController.getMonthlyRevenue);
 router.put('/my-facility', validateUpdateFacility, providerController.updateMyFacility);
 router.put('/facilities/:id/payment-confirm', adminController.confirmPayment);
 

@@ -1,27 +1,7 @@
 const facilityRepository = require('../repositories/facilityRepository');
 
 class WebhookController {
-  /**
-   * API Webhook nhận tín hiệu thanh toán từ SePay
-   * SePay sẽ gọi POST vào endpoint này mỗi khi có giao dịch vào tài khoản ngân hàng.
-   * Method: POST
-   * Doc: https://docs.sepay.vn/webhook.html
-   *
-   * Format body SePay gửi về:
-   * {
-   *   "id": 1,
-   *   "gateway": "MBBank",
-   *   "transactionDate": "2024-01-01 12:00:00",
-   *   "accountNumber": "XXXXXX",
-   *   "code": "PARKLINK F1",         // Nội dung chuyển khoản
-   *   "content": "PARKLINK F1",
-   *   "transferType": "in",           // "in" = tiền vào
-   *   "transferAmount": 4000000,
-   *   "accumulated": 4000000,
-   *   "referenceCode": "...",
-   *   "description": "PARKLINK F1"
-   * }
-   */
+
   async handlePaymentWebhook(req, res, next) {
     try {
       // Xác thực Secret Key từ SePay (Nếu đã cấu hình)

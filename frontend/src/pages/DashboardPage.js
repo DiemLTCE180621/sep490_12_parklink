@@ -24,6 +24,7 @@ import ProviderDashboardPanel from '../components/provider/ProviderDashboardPane
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
 import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveCustomersPanel';
+import ProviderMonthlyRevenuePanel from '../components/provider/ProviderMonthlyRevenuePanel';
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
@@ -80,6 +81,7 @@ const DashboardPage = () => {
   const providerTabs = [
     { id: 'facility', label: 'Thông Tin Bãi Xe', icon: Building2 },
     { id: 'active-customers', label: 'Khách Đang Thuê', icon: Users },
+    { id: 'monthly-revenue', label: 'Doanh Thu Theo Tháng', icon: DollarSign },
     { id: 'reservations', label: 'Duyệt Yêu Cầu Thuê', icon: Car },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
     { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
@@ -432,6 +434,7 @@ const DashboardPage = () => {
             <div className="flex-1 min-w-0 w-full">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
               {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
+              {activeProviderTab === 'monthly-revenue' && <ProviderMonthlyRevenuePanel />}
               {activeProviderTab === 'reservations' && (
                 <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
               )}
