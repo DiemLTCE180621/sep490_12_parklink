@@ -8,6 +8,7 @@ const { validateUpdateFacility } = require('../validations/providerValidation');
 
 // Phân quyền: CHỈ người dùng có Role là PROVIDER mới có quyền truy cập
 router.use(authenticateToken, authorizeRoles('PROVIDER'));
+router.get('/transactions', require('../controllers/transactionController').getHistory);
 
 // Các endpoint nghiệp vụ của Provider
 router.get('/my-facility', providerController.getMyFacility);

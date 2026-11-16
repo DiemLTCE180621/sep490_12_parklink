@@ -235,15 +235,29 @@ class FacilityRepository {
    * @param {number} facilityId
    * @param {number} providerId
    */
-  async confirmPayment(facilityId, providerId) {
+  async confirmPayment(facilityId, providerId, paymentAmount = null) {
     return await prisma.$transaction(async (tx) => {
-      const facility = await tx.facility.update({
-        where: { id: facilityId },
+      const claimed = await tx.facility.updateMany({
+        where: { id: facilityId, verification_status: "APPROVED", payment_status: { not: "PAID" } },
         data: {
           payment_status: "PAID",
           visibility_status: "VISIBLE",
         },
       });
+      if (claimed.count === 0) return null;
+      const facility = await tx.facility.findUnique({ where: { id: facilityId } });
+
+      if (paymentAmount !== null) {
+        await tx.system_Transaction.create({
+          data: {
+            provider_id: providerId,
+            facility_id: facilityId,
+            amount: paymentAmount,
+            transaction_type: "PLATFORM_FEE",
+            status: "COMPLETED",
+          },
+        });
+      }
 
       // Tạo Notification cho Provider
       await tx.notification.create({
