@@ -69,7 +69,6 @@ model Facility {
   payment_status        String   @default("UNPAID")
   verification_status   String   @default("PENDING_REVIEW")
   visibility_status     String   @default("VISIBLE")
-  custom_terms          String?  @db.Text
   created_at            DateTime @default(now())
   updated_at            DateTime @updatedAt
 
@@ -226,8 +225,8 @@ model Complaint {
 
   customer       User     @relation(fields: [customer_id], references: [id])
   facility       Facility @relation(fields: [facility_id], references: [id])
-
   @@map("complaints")
+
 }
 
 model Notification {
