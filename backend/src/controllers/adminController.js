@@ -261,6 +261,24 @@ class AdminController {
       next(error);
     }
   }
+
+  async getProviderRevenueStatistics(req, res, next) {
+    try {
+      const { year, month, facility_id, provider_id } = req.query;
+      const data = await adminService.getProviderRevenueStatistics({
+        year: year ? parseInt(year, 10) : undefined,
+        month: month ? parseInt(month, 10) : undefined,
+        facilityId: facility_id ? parseInt(facility_id, 10) : undefined,
+        providerId: provider_id ? parseInt(provider_id, 10) : undefined,
+      });
+      return res.status(200).json({
+        status: "success",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AdminController();

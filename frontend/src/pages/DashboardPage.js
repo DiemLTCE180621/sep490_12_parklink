@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound,
   UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users,
-  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers, Clock
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers, Clock, TrendingUp
 } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
@@ -22,6 +22,7 @@ import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
 import AdminTimelineSettingsPanel from '../components/admin/AdminTimelineSettingsPanel';
 import AdminDashboardPanel from '../components/admin/AdminDashboardPanel';
+import AdminProviderRevenuePanel from '../components/admin/AdminProviderRevenuePanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
@@ -73,6 +74,7 @@ const DashboardPage = () => {
     { id: 'inspectors', label: 'Nhân Viên Khảo Sát', icon: UserCheck },
     { id: 'facilities', label: 'Tất Cả Cơ Sở', icon: Building2 },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
+    { id: 'provider-revenue', label: 'Doanh Thu Bãi Xe', icon: TrendingUp },
     { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
@@ -304,6 +306,7 @@ const DashboardPage = () => {
               {activeAdminTab === 'users' && <AdminUsersPanel />}
               {activeAdminTab === 'inspectors' && <AdminFieldInspectorsPanel />}
               {activeAdminTab === 'contracts' && <AdminContractsPanel />}
+              {activeAdminTab === 'provider-revenue' && <AdminProviderRevenuePanel />}
               {activeAdminTab === 'complaints' && <AdminComplaintsPanel />}
               {activeAdminTab === 'reviews' && <AdminReviewsPanel />}
               {activeAdminTab === 'platform-fees' && <AdminPlatformFeesPanel isReadOnly={false} />}
