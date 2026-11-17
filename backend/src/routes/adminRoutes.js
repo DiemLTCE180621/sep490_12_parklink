@@ -7,6 +7,9 @@ const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddle
  * Middleware: Chỉ ADMIN mới có quyền truy cập các route này
  */
 router.use(authenticateToken, authorizeRoles('ADMIN'));
+router.get('/transactions', require('../controllers/transactionController').getHistory);
+
+router.get('/dashboard/overview', adminController.getDashboardOverview);
 
 /**
  * M2-UC20: View pending owner registrations
@@ -75,4 +78,3 @@ router.get(
 );
 
 module.exports = router;
-

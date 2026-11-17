@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { sendReservationRequest } from '../../services/reservationService';
+import { sendReservationRequest, getMyReservations } from '../../services/reservationService';
 import facilityService from '../../services/facilityService';
+import timelineSettingService from '../../services/timelineSettingService';
+import Toast from '../../components/common/Toast';
 import { getFacilitySupportedTypes } from '../../constants/vehicleTypes';
 import {
   ArrowLeft,
@@ -35,7 +37,6 @@ const CreateReservationPage = () => {
   const [facilityError, setFacilityError] = useState(null);
 
   const [customerIdCard, setCustomerIdCard] = useState(() => localStorage.getItem('customer_id_card') || '');
-  const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
   const [vehicleBrand, setVehicleBrand] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
@@ -46,8 +47,13 @@ const CreateReservationPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
   const [createdReservation, setCreatedReservation] = useState(null);
+  const [timelineSettings, setTimelineSettings] = useState(null);
+  const [activeReservation, setActiveReservation] = useState(null);
+  const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
 
   const minDate = new Date().toISOString().split('T')[0];
+  const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+  const hasAddress = Boolean(user?.address && user.address.trim());
 
   const fetchFacilityData = useCallback(async () => {
     const idToFetch = facilityId || location.state?.facility?.id;
@@ -73,6 +79,42 @@ const CreateReservationPage = () => {
       setFetchingFacility(false);
     }
   }, [facilityId, location.state]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTimelines = async () => {
+      try {
+        const res = await timelineSettingService.getSettings();
+        if (isMounted && res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      } catch (err) {
+        console.warn('Could not fetch timeline settings:', err?.message);
+      }
+    };
+    fetchTimelines();
+
+    getMyReservations()
+      .then((res) => {
+        if (!isMounted) return;
+        const list = res.data?.reservations || res.reservations || [];
+        const existing = list.find(
+          (r) =>
+            r.status === 'PENDING' ||
+            (r.status === 'APPROVED' && (!r.confirmation_record || r.confirmation_record.status === 'PENDING_SIGNATURE'))
+        );
+        if (existing) {
+          setActiveReservation(existing);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not check existing customer reservations:', err?.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!facility && facilityId) {
@@ -120,13 +162,33 @@ const CreateReservationPage = () => {
       return;
     }
 
+    if (activeReservation) {
+      setFormError(`Bạn đang có một yêu cầu thuê tại cơ sở "${activeReservation.facility?.name || 'khác'}" đang trong quá trình xử lý. Mỗi khách hàng chỉ được gửi tối đa 1 yêu cầu tại 1 thời điểm. Vui lòng hoàn tất hoặc hủy yêu cầu hiện tại để gửi yêu cầu mới!`);
+      return;
+    }
+
+    const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+    const hasAddress = Boolean(user?.address && user.address.trim());
+
+    if (!hasPhone || !hasAddress) {
+      setFormError(
+        !hasPhone && !hasAddress
+          ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng cập nhật đầy đủ trong Hồ sơ trước khi gửi yêu cầu thuê!'
+          : !hasPhone
+            ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
+            : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
+      );
+      return;
+    }
+
     if (!customerIdCard?.trim()) {
       setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của bạn.');
       return;
     }
 
-    if (!customerAddress?.trim()) {
-      setFormError('Vui lòng nhập Địa chỉ thường trú / liên hệ của bạn.');
+    const cleanIdCard = customerIdCard.trim();
+    if (!/^\d{9}$|^\d{12}$/.test(cleanIdCard)) {
+      setFormError('Số CMND / CCCD không hợp lệ (phải gồm đúng 9 hoặc 12 chữ số).');
       return;
     }
 
@@ -147,11 +209,9 @@ const CreateReservationPage = () => {
 
     const cleanBrand = vehicleBrand.trim();
     const cleanPlate = licensePlate.trim().toUpperCase();
-    const cleanIdCard = customerIdCard.trim();
-    const cleanAddress = customerAddress.trim();
+    const cleanAddress = user.address.trim();
 
     localStorage.setItem('customer_id_card', cleanIdCard);
-    localStorage.setItem('customer_address', cleanAddress);
 
     const formattedVehicle = `${cleanBrand} - Biển số: ${cleanPlate}`;
     const fullVehicleInfo = `${formattedVehicle} [CCCD: ${cleanIdCard} | ĐC: ${cleanAddress}]`;
@@ -165,7 +225,29 @@ const CreateReservationPage = () => {
       });
 
       const resData = response.data?.reservation || response.reservation || { id: 'NEW' };
+      const resTimeline = response.data?.timeline || timelineSettings;
+      const effectiveResponseTime =
+        resTimeline?.reservationResponseText ||
+        resTimeline?.response_time_text ||
+        timelineSettings?.reservationResponseText ||
+        'thời hạn quy định';
+      const resMsg =
+        response.message ||
+        response.data?.message ||
+        `Gửi yêu cầu thuê bãi đỗ xe thành công! Chủ bãi có ${effectiveResponseTime} để phản hồi duyệt hoặc từ chối.`;
+
       setCreatedReservation(resData);
+      if (resTimeline) {
+        setTimelineSettings((prev) => ({
+          ...prev,
+          ...resTimeline,
+          reservationResponseText:
+            resTimeline.reservationResponseText ||
+            resTimeline.response_time_text ||
+            prev?.reservationResponseText
+        }));
+      }
+      setToastInfo({ message: resMsg, type: 'success' });
     } catch (err) {
       console.error('Error creating reservation:', err);
       setFormError(err.message || 'Không thể gửi yêu cầu thuê bãi xe. Vui lòng thử lại!');
@@ -173,6 +255,11 @@ const CreateReservationPage = () => {
       setSubmitting(false);
     }
   };
+
+  const responseTimeText =
+    timelineSettings?.reservationResponseText ||
+    timelineSettings?.response_time_text ||
+    'thời hạn quy định';
 
   const primaryImage =
     facility?.images?.find((img) => img.is_primary)?.image_url ||
@@ -188,6 +275,11 @@ const CreateReservationPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 w-full">
+      <Toast
+        message={toastInfo.message}
+        type={toastInfo.type}
+        onClose={() => setToastInfo({ message: '', type: 'success' })}
+      />
       <div className="w-full space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <nav className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
@@ -253,16 +345,24 @@ const CreateReservationPage = () => {
               <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <div>
-                <span className="inline-block text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md mb-1">
+              <div className="space-y-2 flex-1">
+                <span className="inline-block text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md">
                   Gửi yêu cầu thành công
                 </span>
                 <h1 className="text-xl font-bold text-slate-900">
                   Đã gửi đăng ký thuê chỗ đỗ xe
                 </h1>
-                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                  Yêu cầu của bạn đã được chuyển đến chủ bãi <strong className="text-slate-900">{facility?.name}</strong>. Sau khi chủ bãi phê duyệt và tạo hợp đồng, bạn sẽ nhận được thông báo để xác nhận trực tuyến.
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Yêu cầu của bạn đã được chuyển đến chủ bãi <strong className="text-slate-900">{facility?.name}</strong>.
                 </p>
+
+                <div className="p-3.5 bg-white rounded-xl border border-emerald-200/90 shadow-2xs text-xs sm:text-sm text-slate-800 flex items-start gap-3 mt-2">
+                  <Clock className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    <span className="font-bold text-emerald-950">Thời hạn phản hồi của chủ bãi: </span>
+                    Chủ bãi có <strong className="text-emerald-700 font-bold px-1.5 py-0.5 bg-emerald-50 rounded border border-emerald-200">{responseTimeText}</strong> để xem xét duyệt hoặc từ chối yêu cầu của bạn. Quá thời hạn này mà chủ bãi không phản hồi, hệ thống sẽ tự động hủy yêu cầu để bảo đảm quyền lợi cho bạn.
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -287,8 +387,8 @@ const CreateReservationPage = () => {
                   <span className="font-medium text-slate-900">{customerIdCard}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4 gap-4">
-                  <span className="text-slate-500 shrink-0">Địa chỉ liên hệ</span>
-                  <span className="font-medium text-slate-900 text-right">{customerAddress}</span>
+                  <span className="text-slate-500 shrink-0">Địa chỉ</span>
+                  <span className="font-medium text-slate-900 text-right">{user?.address}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
                   <span className="text-slate-500">Ngày bắt đầu dự kiến</span>
@@ -357,6 +457,30 @@ const CreateReservationPage = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="divide-y divide-slate-100">
+                {activeReservation && (
+                  <div className="px-6 sm:px-8 pt-6">
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-amber-900">
+                            Bạn đang có yêu cầu thuê đang chờ xử lý #{activeReservation.id}
+                          </p>
+                          <p className="text-xs text-amber-800 mt-0.5">
+                            Bạn đã gửi yêu cầu tại cơ sở <strong>"{activeReservation.facility?.name}"</strong>. Hệ thống chỉ cho phép mỗi khách hàng gửi tối đa 1 yêu cầu tại 1 thời điểm trên hệ thống. Vui lòng hoàn tất hoặc hủy yêu cầu đó trước khi gửi yêu cầu tại bãi xe này.
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        to="/my-reservations"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg whitespace-nowrap transition"
+                      >
+                        Quản lý yêu cầu
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
                 {formError && (
                   <div className="px-6 sm:px-8 pt-6">
                     <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-start gap-2.5">
@@ -374,67 +498,95 @@ const CreateReservationPage = () => {
                     </h2>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
-                        {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-teal-600 text-white font-bold text-sm flex items-center justify-center shrink-0 overflow-hidden border border-teal-500/30">
+                          {user?.avatar_url ? (
+                            <img
+                              src={user.avatar_url}
+                              alt={user?.full_name || 'User'}
+                              referrerPolicy="no-referrer"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">
+                            {user?.full_name || 'Khách hàng'}
+                          </p>
+                          <p className="text-xs text-slate-500">Tài khoản Bên thuê ghi trên Hợp đồng</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">
-                          {user?.full_name || 'Khách hàng'}
-                        </p>
-                        <p className="text-xs text-slate-500">Tài khoản đăng ký thuê</p>
+
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs sm:text-sm text-slate-600">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-teal-600" />
+                          <span className={`font-medium ${hasPhone ? 'text-slate-800' : 'text-amber-600 font-semibold'}`}>
+                            {user?.phone_number || 'Chưa cập nhật SĐT'}
+                          </span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5 text-teal-600" />
+                          <span className="text-slate-700">{user?.email}</span>
+                        </span>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs sm:text-sm text-slate-600">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-teal-600" />
-                        <span className="font-medium text-slate-800">
-                          {user?.phone_number || 'Chưa cập nhật SĐT'}
+                    <div className="pt-2.5 border-t border-slate-200/60 flex items-start gap-2 text-xs text-slate-600">
+                      <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-slate-700">Địa chỉ: </span>
+                        <span className={hasAddress ? 'text-slate-900 font-medium' : 'text-amber-600 font-semibold italic'}>
+                          {user?.address || 'Chưa cập nhật địa chỉ trong hồ sơ'}
                         </span>
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-teal-600" />
-                        <span className="text-slate-700">{user?.email}</span>
-                      </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Số CCCD / CMND <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <CreditCard className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                        <input
-                          type="text"
-                          required
-                          value={customerIdCard}
-                          onChange={(e) => setCustomerIdCard(e.target.value)}
-                          placeholder="Nhập 9 hoặc 12 chữ số"
-                          className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
-                        />
+                  {(!hasPhone || !hasAddress) && (
+                    <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
+                      <div className="flex items-start sm:items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+                        <span>
+                          {!hasPhone && !hasAddress
+                            ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc và lập Hợp đồng thuê.'
+                            : !hasPhone
+                              ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc khi nhận chỗ.'
+                              : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng bổ sung để ghi trên Hợp đồng thuê bãi xe.'}
+                        </span>
                       </div>
+                      <Link
+                        to="/profile"
+                        className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0 transition text-center shadow-sm"
+                      >
+                        Cập nhật hồ sơ
+                      </Link>
                     </div>
+                  )}
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Địa chỉ thường trú / liên hệ <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <MapPin className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                        <input
-                          type="text"
-                          required
-                          value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
-                          placeholder="Số nhà, đường, phường/xã, tỉnh/thành..."
-                          className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
-                        />
-                      </div>
+                  <div className="pt-1">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Số CCCD / CMND <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <CreditCard className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                      <input
+                        type="text"
+                        required
+                        value={customerIdCard}
+                        onChange={(e) => setCustomerIdCard(e.target.value.replace(/\D/g, ''))}
+                        placeholder="Nhập 9 hoặc 12 chữ số ghi trên thẻ CCCD / CMND"
+                        maxLength={12}
+                        className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
+                      />
                     </div>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Số CCCD/CMND được dùng để xác lập hợp đồng thuê bãi xe.
+                    </p>
                   </div>
                 </div>
 
@@ -525,6 +677,16 @@ const CreateReservationPage = () => {
                       </div>
                     </div>
 
+                    <div className="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200/70 text-xs text-slate-700 space-y-1.5">
+                      <div className="flex items-center gap-1.5 font-bold text-teal-900">
+                        <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        Thời hạn phản hồi yêu cầu
+                      </div>
+                      <p className="leading-relaxed text-slate-600">
+                        Sau khi gửi, chủ bãi có tối đa <strong className="text-teal-800 font-semibold">{responseTimeText}</strong> để xem xét chấp nhận hoặc từ chối. Quá thời hạn này, hệ thống sẽ tự động hủy yêu cầu.
+                      </p>
+                    </div>
+
                     <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 space-y-1.5">
                       <div className="flex items-center gap-1.5 font-semibold text-slate-800">
                         <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
@@ -538,9 +700,15 @@ const CreateReservationPage = () => {
                 </div>
 
                 <div className="px-6 sm:px-8 py-4 bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-                    <span>Thông tin được bảo mật và chỉ sử dụng để lập hợp đồng gửi giữ xe.</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5 text-teal-800 font-medium bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60">
+                      <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                      <span>Thời hạn chủ bãi phản hồi: <strong>{responseTimeText}</strong></span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                      <span>Thông tin được bảo mật để lập hợp đồng.</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-end gap-3 shrink-0">
@@ -558,7 +726,7 @@ const CreateReservationPage = () => {
 
                     <button
                       type="submit"
-                      disabled={submitting}
+                      disabled={submitting || Boolean(activeReservation)}
                       className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold text-sm shadow-xs transition flex items-center gap-2"
                     >
                       {submitting ? (
@@ -566,6 +734,8 @@ const CreateReservationPage = () => {
                           <Loader2 className="w-4 h-4 animate-spin" />
                           Đang gửi...
                         </>
+                      ) : activeReservation ? (
+                        'Đã có yêu cầu chờ xử lý'
                       ) : (
                         'Gửi yêu cầu thuê'
                       )}
@@ -662,6 +832,23 @@ const CreateReservationPage = () => {
                         </span>
                       </div>
                     )}
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-teal-600" />
+                        Hạn phản hồi
+                      </span>
+                      <span className="font-semibold text-teal-800">
+                        {responseTimeText}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-teal-50/70 border border-teal-200/80 rounded-xl text-xs text-teal-900 flex items-start gap-2">
+                    <Clock className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
+                    <div className="leading-relaxed">
+                      <span className="font-bold">Thời hạn phản hồi:</span> Sau khi gửi yêu cầu, chủ bãi có <strong className="font-semibold underline">{responseTimeText}</strong> để phản hồi duyệt hoặc từ chối.
+                    </div>
                   </div>
 
                   {facility?.facility_amenities && facility.facility_amenities.length > 0 && (

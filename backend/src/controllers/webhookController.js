@@ -1,27 +1,7 @@
 const facilityRepository = require('../repositories/facilityRepository');
 
 class WebhookController {
-  /**
-   * API Webhook nhận tín hiệu thanh toán từ SePay
-   * SePay sẽ gọi POST vào endpoint này mỗi khi có giao dịch vào tài khoản ngân hàng.
-   * Method: POST
-   * Doc: https://docs.sepay.vn/webhook.html
-   *
-   * Format body SePay gửi về:
-   * {
-   *   "id": 1,
-   *   "gateway": "MBBank",
-   *   "transactionDate": "2024-01-01 12:00:00",
-   *   "accountNumber": "XXXXXX",
-   *   "code": "PARKLINK F1",         // Nội dung chuyển khoản
-   *   "content": "PARKLINK F1",
-   *   "transferType": "in",           // "in" = tiền vào
-   *   "transferAmount": 4000000,
-   *   "accumulated": 4000000,
-   *   "referenceCode": "...",
-   *   "description": "PARKLINK F1"
-   * }
-   */
+
   async handlePaymentWebhook(req, res, next) {
     try {
       // Xác thực Secret Key từ SePay (Nếu đã cấu hình)
@@ -53,14 +33,14 @@ class WebhookController {
       for (const transaction of transactionList) {
         // SePay dùng field `content` hoặc `description`
         const content = transaction.content || transaction.description || transaction.code || '';
-        const amount = parseFloat(transaction.transferAmount || transaction.amount || 0);
+        const amount = Number(transaction.transferAmount ?? transaction.amount);
         // Chỉ xử lý giao dịch tiền vào (transferType: "in")
         const transferType = transaction.transferType || 'in';
 
         console.log(`[WEBHOOK] Giao dịch: Nội dung="${content}", Số tiền=${amount}, Loại=${transferType}`);
 
-        if (transferType !== 'in') {
-          console.log(`[WEBHOOK] Bỏ qua: Không phải giao dịch tiền vào.`);
+        if (transferType !== 'in' || !Number.isFinite(amount) || amount <= 0) {
+          console.log(`[WEBHOOK] Bỏ qua: Loại giao dịch hoặc số tiền không hợp lệ.`);
           continue;
         }
 
@@ -74,11 +54,13 @@ class WebhookController {
           if (facility) {
             if (facility.verification_status === 'APPROVED' && facility.payment_status !== 'PAID') {
               // Yêu cầu user chỉ cần trả 1% phí (chia 100)
-              const requiredAmount = facility.system_fee / 100;
-              if (amount >= requiredAmount) {
-                await facilityRepository.confirmPayment(facilityId, facility.provider_id);
-                console.log(`[WEBHOOK] ==> THÀNH CÔNG: Đã cập nhật PAID + VISIBLE cho bãi ${facilityId}`);
-                processedCount++;
+              const requiredAmount = Number(facility.system_fee) / 100;
+              if (Number.isFinite(requiredAmount) && requiredAmount > 0 && amount >= requiredAmount) {
+                const confirmed = await facilityRepository.confirmPayment(facilityId, facility.provider_id, amount);
+                if (confirmed) {
+                  console.log(`[WEBHOOK] ==> THÀNH CÔNG: Đã cập nhật PAID + VISIBLE cho bãi ${facilityId}`);
+                  processedCount++;
+                }
               } else {
                 console.log(`[WEBHOOK] ==> THẤT BẠI: Số tiền chưa đủ (Cần: ${requiredAmount}, Nhận: ${amount})`);
               }

@@ -20,6 +20,7 @@ import {
   cancelEarlyTermination,
   confirmContractTermination
 } from '../../services/confirmationRecordService';
+import timelineSettingService from '../../services/timelineSettingService';
 import Toast from '../../components/common/Toast';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
@@ -48,6 +49,17 @@ const RequestContractTerminationPage = () => {
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmAcceptModalOpen, setConfirmAcceptModalOpen] = useState(false);
+  const [timelineSettings, setTimelineSettings] = useState(null);
+
+  useEffect(() => {
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const safeParseSnapshot = (raw) => {
     if (!raw) return {};
@@ -72,8 +84,12 @@ const RequestContractTerminationPage = () => {
       }
       setContract(data);
 
+      const noticeMs = timelineSettings?.terminationNoticeMs || 0;
+      const noticeDays = Math.ceil(noticeMs / 86400000);
       const defaultDate = new Date();
-      defaultDate.setDate(defaultDate.getDate() + 15);
+      if (noticeDays > 0) {
+        defaultDate.setDate(defaultDate.getDate() + noticeDays);
+      }
       const contractEnd = new Date(data.end_date);
       const chosen = defaultDate < contractEnd ? defaultDate : contractEnd;
       setTerminationDate(chosen.toISOString().slice(0, 10));
@@ -82,7 +98,7 @@ const RequestContractTerminationPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, timelineSettings]);
 
   useEffect(() => {
     if (id) {
@@ -480,11 +496,11 @@ const RequestContractTerminationPage = () => {
                     <p>
                       {isProvider ? (
                         <>
-                          Theo điều khoản trong Hợp đồng gửi giữ xe, chủ bãi xe có thể yêu cầu chấm dứt hợp đồng khi có kế hoạch sửa chữa/bảo trì bãi xe, thu hồi mặt bằng hoặc khách hàng vi phạm quy chế. Vui lòng thông báo trước ít nhất <strong>15 ngày</strong> và thỏa thuận hoàn trả phí/cọc (nếu có).
+                          Theo điều khoản trong Hợp đồng gửi giữ xe, chủ bãi xe có thể yêu cầu chấm dứt hợp đồng khi có kế hoạch sửa chữa/bảo trì bãi xe, thu hồi mặt bằng hoặc khách hàng vi phạm quy chế. Vui lòng thông báo trước ít nhất <strong>{timelineSettings?.terminationNoticeText || 'thời hạn quy định'}</strong> và thỏa thuận hoàn trả phí/cọc (nếu có).
                         </>
                       ) : (
                         <>
-                          Theo thỏa thuận trong Hợp đồng gửi giữ xe (Điều 6), khách hàng cần thông báo trước cho chủ bãi xe ít nhất <strong>15 ngày</strong> trước ngày dừng gửi xe. Vui lòng sắp xếp thời gian hợp lý và bàn giao lại vị trí đỗ đúng hạn.
+                          Theo thỏa thuận trong Hợp đồng gửi giữ xe (Điều 6), khách hàng cần thông báo trước cho chủ bãi xe ít nhất <strong>{timelineSettings?.terminationNoticeText || 'thời hạn quy định'}</strong> trước ngày dừng gửi xe. Vui lòng sắp xếp thời gian hợp lý và bàn giao lại vị trí đỗ đúng hạn.
                         </>
                       )}
                     </p>

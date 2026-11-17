@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Car, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { X, Car, Loader2, AlertCircle } from 'lucide-react';
 import vehicleTypeService from '../../services/vehicleTypeService';
 
 /**
@@ -122,108 +122,111 @@ const VehicleTypeModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 animate-fadeIn">
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden transform transition-all duration-300 scale-100"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vehicle-type-modal-title"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100 shadow-sm">
-              <Car className="w-5 h-5" />
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 sm:px-8">
+          <div>
+            <div className="mb-1 flex items-center gap-2 text-sm font-medium text-teal-700">
+              <Car className="h-4 w-4" />
+              Danh mục loại phương tiện
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">
-                {isEdit ? 'Cập Nhật Loại Phương Tiện' : 'Thêm Loại Phương Tiện Mới'}
-              </h3>
-              <p className="text-xs text-slate-500">
-                {isEdit ? 'Chỉnh sửa thông tin danh mục xe trên hệ thống' : 'Khai báo loại xe mới cho các bãi đỗ xe áp dụng'}
-              </p>
-            </div>
+            <h3 id="vehicle-type-modal-title" className="text-xl font-semibold text-slate-900 sm:text-2xl">
+              {isEdit ? 'Chỉnh sửa loại phương tiện' : 'Thêm loại phương tiện'}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              {isEdit ? 'Cập nhật thông tin hiển thị trong danh mục.' : 'Nhập thông tin cho loại phương tiện mới.'}
+            </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             disabled={submitting}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition"
+            aria-label="Đóng"
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 space-y-6 overflow-y-auto px-6 py-6 sm:px-8">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-xs text-red-600">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Type Code */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Mã Loại Phương Tiện (Type Code) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.type_code}
-              onChange={handleCodeChange}
-              placeholder="VD: CAR_16_SEATER, MOTORBIKE..."
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
-              required
-            />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Mã duy nhất, viết hoa, không dấu, ngăn cách bằng gạch dưới.
-            </p>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="vehicle-type-code" className="mb-2 block text-sm font-medium text-slate-700">
+                Mã loại phương tiện <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="vehicle-type-code"
+                type="text"
+                value={formData.type_code}
+                onChange={handleCodeChange}
+                placeholder="Ví dụ: CAR_16_SEATER"
+                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 font-mono text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                required
+              />
+              <p className="mt-2 text-xs text-slate-500">Viết hoa, không dấu, dùng dấu gạch dưới để ngăn cách.</p>
+            </div>
+
+            <div>
+              <label htmlFor="vehicle-type-name" className="mb-2 block text-sm font-medium text-slate-700">
+                Tên loại phương tiện <span className="text-red-600">*</span>
+              </label>
+              <input
+                id="vehicle-type-name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder="Ví dụ: Xe khách 16 chỗ"
+                className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
+                required
+              />
+            </div>
           </div>
 
-          {/* Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Tên Loại Phương Tiện <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="VD: Xe khách 16 chỗ (Ford Transit, Solati)"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Mô Tả Chi Tiết (Tùy chọn)
+            <label htmlFor="vehicle-type-description" className="mb-2 block text-sm font-medium text-slate-700">
+              Mô tả <span className="font-normal text-slate-500">(không bắt buộc)</span>
             </label>
             <textarea
-              rows="3"
+              id="vehicle-type-description"
+              rows="5"
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Mô tả thông số hoặc các mẫu xe tiêu biểu thuộc nhóm này..."
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition resize-none"
+              placeholder="Thông tin nhận biết hoặc các mẫu xe thuộc loại này"
+              className="w-full resize-y rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-100"
               maxLength="500"
             />
-            <div className="text-right text-[11px] text-slate-400 mt-0.5">
+            <div className="mt-1 text-right text-xs text-slate-500">
               {formData.description.length}/500 ký tự
             </div>
           </div>
 
-          {/* Is Active Toggle */}
-          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-5">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Kích hoạt hoạt động</span>
-              <span className="text-[11px] text-slate-500">
+              <span className="block text-sm font-medium text-slate-800">Đang hoạt động</span>
+              <span className="text-xs text-slate-500">
                 {formData.is_active
-                  ? 'Loại xe này sẽ sẵn sàng để chủ bãi xe lựa chọn khi đăng ký.'
-                  : 'Tạm ngưng, không hiển thị trong danh mục đăng ký mới.'}
+                  ? 'Chủ bãi xe có thể chọn loại phương tiện này.'
+                  : 'Ẩn khỏi danh mục đăng ký mới.'}
               </span>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
+            <label className="relative inline-flex shrink-0 cursor-pointer items-center">
               <input
                 type="checkbox"
+                aria-label="Đang hoạt động"
                 checked={formData.is_active}
                 onChange={(e) => handleChange('is_active', e.target.checked)}
                 className="sr-only peer"
@@ -231,21 +234,21 @@ const VehicleTypeModal = ({
               <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
             </label>
           </div>
+          </div>
 
-          {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-slate-200 bg-white px-6 py-4 sm:px-8">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              className="rounded-lg px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
             >
-              Hủy Bỏ
+              Hủy
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-teal-800 disabled:opacity-50"
             >
               {submitting ? (
                 <>
@@ -253,10 +256,7 @@ const VehicleTypeModal = ({
                   Đang lưu...
                 </>
               ) : (
-                <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  {isEdit ? 'Cập Nhật' : 'Thêm Mới'}
-                </>
+                isEdit ? 'Lưu thay đổi' : 'Thêm loại phương tiện'
               )}
             </button>
           </div>

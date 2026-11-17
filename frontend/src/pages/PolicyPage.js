@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Calendar, FileText, CheckCircle2, ChevronRight, User, Building2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, User, Building2, AlertCircle } from 'lucide-react';
 import policyService from '../services/policyService';
 
 const PolicyPage = () => {
@@ -12,17 +12,7 @@ const PolicyPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchPolicies();
-  }, []);
-
-  useEffect(() => {
-    if (identifier) {
-      setActiveTab(identifier.toUpperCase());
-    }
-  }, [identifier]);
-
-  const fetchPolicies = async () => {
+  const fetchPolicies = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,7 +28,11 @@ const PolicyPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [identifier]);
+
+  useEffect(() => {
+    fetchPolicies();
+  }, [fetchPolicies]);
 
   const currentPolicy = policies.find(p => p.policy_type === activeTab) || policies[0];
 

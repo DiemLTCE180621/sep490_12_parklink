@@ -5,7 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   User, Shield, Building2, LogOut, Car, Phone, Mail, KeyRound,
   UserCheck, Edit, FileText, AlertCircle, Star, DollarSign, Users,
-  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers
+  MapPin, Radio, ChevronRight, Menu, ShieldCheck, X, Layers, Clock
 } from 'lucide-react';
 import AdminRegistrationsPanel from '../components/admin/AdminRegistrationsPanel';
 import AdminFacilitiesPanel from '../components/admin/AdminFacilitiesPanel';
@@ -20,10 +20,14 @@ import AdminAmenitiesPanel from '../components/admin/AdminAmenitiesPanel';
 import AdminContractsPanel from '../components/admin/AdminContractsPanel';
 import AdminBroadcastPanel from '../components/admin/AdminBroadcastPanel';
 import AdminPoliciesPanel from '../components/admin/AdminPoliciesPanel';
+import AdminTimelineSettingsPanel from '../components/admin/AdminTimelineSettingsPanel';
+import AdminDashboardPanel from '../components/admin/AdminDashboardPanel';
 import ProviderDashboardPanel from '../components/provider/ProviderDashboardPanel';
 import ProviderReservationsPanel from '../components/provider/ProviderReservationsPanel';
 import ProviderContractsPanel from '../components/provider/ProviderContractsPanel';
 import ProviderActiveCustomersPanel from '../components/provider/ProviderActiveCustomersPanel';
+import ProviderMonthlyRevenuePanel from '../components/provider/ProviderMonthlyRevenuePanel';
+import TransactionHistoryPanel from '../components/common/TransactionHistoryPanel';
 import ProviderComplaintsPanel from '../components/provider/ProviderComplaintsPanel';
 import ProviderReviewsPanel from '../components/provider/ProviderReviewsPanel';
 import ChangePasswordModal from '../components/modals/ChangePasswordModal';
@@ -34,13 +38,14 @@ const DashboardPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'registrations');
+  const [activeAdminTab, setActiveAdminTab] = useState(searchParams.get('adminTab') || searchParams.get('tab') || location.state?.adminTab || 'overview');
   const [activeProviderTab, setActiveProviderTab] = useState(location.state?.providerTab || 'facility');
   const [activeInspectorTab, setActiveInspectorTab] = useState('inspections');
   const [isMobileAdminMenuOpen, setIsMobileAdminMenuOpen] = useState(false);
   const [isMobileProviderMenuOpen, setIsMobileProviderMenuOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [toastInfo, setToastInfo] = useState(location.state?.message ? { message: location.state.message, type: location.state.type || 'success' } : null);
+  const [dashAvatarFailed, setDashAvatarFailed] = useState(false);
 
   React.useEffect(() => {
     if (location.state?.adminTab) {
@@ -62,28 +67,31 @@ const DashboardPage = () => {
   };
 
   const adminTabs = [
+    { id: 'overview', label: 'Tổng Quan', icon: Users },
     { id: 'registrations', label: 'Duyệt Bãi Đỗ Xe', icon: Building2 },
     { id: 'users', label: 'Quản Lý Người Dùng', icon: User },
     { id: 'inspectors', label: 'Nhân Viên Khảo Sát', icon: UserCheck },
     { id: 'facilities', label: 'Tất Cả Cơ Sở', icon: Building2 },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
-    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Quản Lý Đánh Giá', icon: Star },
     { id: 'platform-fees', label: 'Phí Nền Tảng', icon: DollarSign },
     { id: 'vehicle-types', label: 'Loại Phương Tiện', icon: Car },
     { id: 'amenities', label: 'Quản Lý Tiện Ích', icon: Layers },
     { id: 'broadcast', label: 'Phát Thông Báo', icon: Radio },
+    { id: 'timeline-settings', label: 'Cấu Hình Thời Hạn', icon: Clock },
     { id: 'policies', label: 'Chính Sách Hệ Thống', icon: ShieldCheck },
   ];
 
   const providerTabs = [
     { id: 'facility', label: 'Thông Tin Bãi Xe', icon: Building2 },
     { id: 'active-customers', label: 'Khách Đang Thuê', icon: Users },
+    { id: 'monthly-revenue', label: 'Doanh Thu Theo Tháng', icon: DollarSign },
     { id: 'reservations', label: 'Duyệt Yêu Cầu Thuê', icon: Car },
     { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
     { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
-    { id: 'transactions', label: 'Quản Lý Giao Dịch', icon: Shield },
+    { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
     { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
     { id: 'reviews', label: 'Đánh Giá Khách Hàng', icon: Star },
     { id: 'platform-fees', label: 'Biểu Phí Nền Tảng', icon: DollarSign },
@@ -101,8 +109,18 @@ const DashboardPage = () => {
         <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md">
-                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"}
+              <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-900 font-extrabold flex items-center justify-center text-xl shadow-md overflow-hidden border border-teal-400/40">
+                {user?.avatar_url && !dashAvatarFailed ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user?.full_name || 'User'}
+                    referrerPolicy="no-referrer"
+                    onError={() => setDashAvatarFailed(true)}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  user?.full_name ? user.full_name.charAt(0).toUpperCase() : "U"
+                )}
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">
@@ -280,6 +298,7 @@ const DashboardPage = () => {
 
             {/* NỘI DUNG ADMIN TƯƠNG ỨNG */}
             <div className="flex-1 min-w-0 w-full">
+              {activeAdminTab === 'overview' && <AdminDashboardPanel />}
               {activeAdminTab === 'registrations' && <AdminRegistrationsPanel />}
               {activeAdminTab === 'facilities' && <AdminFacilitiesPanel />}
               {activeAdminTab === 'users' && <AdminUsersPanel />}
@@ -291,15 +310,9 @@ const DashboardPage = () => {
               {activeAdminTab === 'vehicle-types' && <AdminVehicleTypesPanel />}
               {activeAdminTab === 'amenities' && <AdminAmenitiesPanel />}
               {activeAdminTab === 'broadcast' && <AdminBroadcastPanel />}
+              {activeAdminTab === 'timeline-settings' && <AdminTimelineSettingsPanel />}
               {activeAdminTab === 'policies' && <AdminPoliciesPanel />}
-              {activeAdminTab === 'transactions' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20">
-                  <Shield className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-slate-400">
-                    Đang phát triển chức năng Quản lý Giao dịch...
-                  </h3>
-                </div>
-              )}
+              {activeAdminTab === 'transactions' && <TransactionHistoryPanel role="ADMIN" />}
             </div>
           </div>
         ) : roleName === 'PROVIDER' ? (
@@ -432,6 +445,7 @@ const DashboardPage = () => {
             <div className="flex-1 min-w-0 w-full">
               {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
               {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
+              {activeProviderTab === 'monthly-revenue' && <ProviderMonthlyRevenuePanel />}
               {activeProviderTab === 'reservations' && (
                 <ProviderReservationsPanel onNavigateToContracts={() => setActiveProviderTab('contracts')} />
               )}
@@ -475,15 +489,7 @@ const DashboardPage = () => {
                   </div>
                 </div>
               )}
-              {activeProviderTab === 'transactions' && (
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md text-center py-20 space-y-3">
-                  <Shield className="w-12 h-12 text-slate-300 mx-auto" />
-                  <h3 className="text-xl font-bold text-slate-700">Quản Lý Giao Dịch & Phí Nền Tảng</h3>
-                  <p className="text-sm text-slate-500 max-w-md mx-auto">
-                    Xem lịch sử thanh toán phí kích hoạt bãi đỗ xe và các giao dịch phát sinh trên hệ thống ParkLink.
-                  </p>
-                </div>
-              )}
+              {activeProviderTab === 'transactions' && <TransactionHistoryPanel role="PROVIDER" />}
             </div>
           </div>
         ) : roleName === 'FIELD_INSPECTOR' ? (

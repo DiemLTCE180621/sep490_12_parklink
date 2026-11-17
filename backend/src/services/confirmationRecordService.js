@@ -2,6 +2,7 @@ const confirmationRecordRepository = require('../repositories/confirmationRecord
 const reservationRepository = require('../repositories/reservationRepository');
 const facilityRepository = require('../repositories/facilityRepository');
 const notificationRepository = require('../repositories/notificationRepository');
+const timelineSettingService = require('./timelineSettingService');
 const { getIO } = require('../config/socket');
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
@@ -32,8 +33,12 @@ class ConfirmationRecordService {
     const term = snapshot.termination_request;
     if (!term || term.status !== 'PENDING') return record;
 
+    const { calculated: timelines } = await timelineSettingService.getTimelineSettings();
+    const noticeLimitMs = timelines.terminationNoticeMs || FIFTEEN_DAYS_MS;
+    const noticeLabel = timelines.terminationNoticeText || '15 ngày';
+
     const requestedTimestamp = term.requested_at ? new Date(term.requested_at).getTime() : Date.now();
-    if (isNaN(requestedTimestamp) || Date.now() - requestedTimestamp <= FIFTEEN_DAYS_MS) {
+    if (isNaN(requestedTimestamp) || Date.now() - requestedTimestamp <= noticeLimitMs) {
       return record;
     }
 
@@ -41,9 +46,9 @@ class ConfirmationRecordService {
     const expiredTerm = {
       ...term,
       status: 'CANCELLED',
-      expired_after_15_days: true,
+      expired_after_notice: true,
       expired_reason:
-        'Sau 15 ngày kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.',
+        `Sau ${noticeLabel} kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.`,
       responded_at: nowIso
     };
 
@@ -67,8 +72,8 @@ class ConfirmationRecordService {
       const facilityName = record.reservation?.facility?.name || 'bãi đỗ xe';
       const customerId = record.reservation?.customer_id || record.reservation?.customer?.id;
       const providerId = record.reservation?.facility?.provider_id || record.reservation?.facility?.provider?.id;
-      const notiTitle = `Hết hạn 15 ngày xác nhận chấm dứt hợp đồng (${record.contract_code})`;
-      const notiContent = `Yêu cầu chấm dứt trước hạn của hợp đồng ${record.contract_code} tại ${facilityName} đã quá 15 ngày chưa được xác nhận nên tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.`;
+      const notiTitle = `Hết hạn ${noticeLabel} xác nhận chấm dứt hợp đồng (${record.contract_code})`;
+      const notiContent = `Yêu cầu chấm dứt trước hạn của hợp đồng ${record.contract_code} tại ${facilityName} đã quá ${noticeLabel} chưa được xác nhận nên tự động hủy. Hợp đồng vẫn tiếp tục có hiệu lực.`;
       const io = getIO();
 
       if (customerId) {
@@ -174,10 +179,12 @@ class ConfirmationRecordService {
       throw this.createError('Bạn không có quyền tạo biên bản xác nhận cho bãi đỗ xe này!', 403);
     }
 
-    const approvedTimestamp = reservation.updated_at ? new Date(reservation.updated_at).getTime() : Date.now();
-    const isExpired24h = Date.now() - approvedTimestamp > TWENTY_FOUR_HOURS_MS;
+    const { calculated: timelines } = await timelineSettingService.getTimelineSettings();
 
-    if (reservation.status === 'CANCELLED' || (reservation.status === 'APPROVED' && isExpired24h)) {
+    const approvedTimestamp = reservation.updated_at ? new Date(reservation.updated_at).getTime() : Date.now();
+    const isExpiredCreation = Date.now() - approvedTimestamp > timelines.contractCreationMs;
+
+    if (reservation.status === 'CANCELLED' || (reservation.status === 'APPROVED' && isExpiredCreation)) {
       if (reservation.status !== 'CANCELLED') {
         await reservationRepository.updateStatus(reservationId, 'CANCELLED');
         try {
@@ -186,9 +193,9 @@ class ConfirmationRecordService {
           if (targetCustId) {
             await notificationRepository.createNotification({
               user_id: Number(targetCustId),
-              title: `Yêu cầu đặt chỗ #${reservation.id} đã tự động hủy (Quá 24h lập hợp đồng)`,
-              content: `Yêu cầu đặt chỗ của bạn tại ${facilityName} đã tự động hủy do quá thời hạn 24 giờ kể từ khi chủ bãi chấp nhận nhưng chưa hoàn tất tạo hợp đồng.`,
-              type: 'RESERVATION_EXPIRED_24H'
+              title: `Yêu cầu đặt chỗ #${reservation.id} đã tự động hủy (Quá hạn lập hợp đồng)`,
+              content: `Yêu cầu đặt chỗ của bạn tại ${facilityName} đã tự động hủy do quá thời hạn ${timelines.contractCreationText} kể từ khi chủ bãi chấp nhận nhưng chưa hoàn tất tạo hợp đồng.`,
+              type: 'RESERVATION_EXPIRED_CREATION'
             });
           }
         } catch (notiErr) {
@@ -197,7 +204,7 @@ class ConfirmationRecordService {
       }
 
       throw this.createError(
-        'Đã hết thời hạn 24 giờ làm hợp đồng kể từ khi chấp nhận yêu cầu! Hệ thống đã tự động hủy yêu cầu đặt chỗ này.',
+        `Đã hết thời hạn ${timelines.contractCreationText} làm hợp đồng kể từ khi chấp nhận yêu cầu! Hệ thống đã tự động hủy yêu cầu đặt chỗ này.`,
         400
       );
     }
@@ -267,9 +274,18 @@ class ConfirmationRecordService {
         payment_deadline_day: paymentDeadlineDay || 5
       },
       terms_and_conditions: {
-        customer_obligations: terms?.customer_obligations || DEFAULT_CONTRACT_TERMS.customer_obligations,
-        owner_obligations: terms?.owner_obligations || DEFAULT_CONTRACT_TERMS.owner_obligations,
-        termination_conditions: terms?.termination_conditions || DEFAULT_CONTRACT_TERMS.termination_conditions,
+        customer_obligations: (() => {
+          const base = terms?.customer_obligations || DEFAULT_CONTRACT_TERMS.customer_obligations;
+          return base.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${timelines.terminationNoticeText || '15 ngày'}`);
+        })(),
+        owner_obligations: (() => {
+          const base = terms?.owner_obligations || DEFAULT_CONTRACT_TERMS.owner_obligations;
+          return base.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${timelines.terminationNoticeText || '15 ngày'}`);
+        })(),
+        termination_conditions: (() => {
+          const base = terms?.termination_conditions || DEFAULT_CONTRACT_TERMS.termination_conditions;
+          return base.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${timelines.terminationNoticeText || '15 ngày'}`);
+        })(),
         dispute_resolution: terms?.dispute_resolution || DEFAULT_CONTRACT_TERMS.dispute_resolution
       },
       confirmation: {
@@ -279,7 +295,7 @@ class ConfirmationRecordService {
       }
     };
 
-    return await confirmationRecordRepository.create({
+    const createdRecord = await confirmationRecordRepository.create({
       contract_code: contractCode,
       reservation_id: reservationId,
       agreed_price: agreedPrice,
@@ -290,6 +306,42 @@ class ConfirmationRecordService {
       provider_agreed_at: new Date(),
       status: 'PENDING_SIGNATURE'
     });
+
+    const targetCustId = reservation.customer?.id || reservation.customer_id;
+    const facilityName = reservation.facility?.name || 'bãi đỗ xe';
+    const io = getIO();
+
+    if (targetCustId) {
+      const custTitle = `Hợp đồng mới cần ký (${contractCode})`;
+      const custContent = `Chủ bãi ${facilityName} đã khởi tạo hợp đồng điện tử ${contractCode} cho yêu cầu thuê #${reservationId}. Bạn có ${timelines.contractSigningText} để đọc kỹ nội dung và hoàn tất ký xác nhận.`;
+      try {
+        await notificationRepository.createNotification({
+          user_id: Number(targetCustId),
+          title: custTitle,
+          content: custContent,
+          type: 'CONTRACT_CREATED_PENDING_SIGNATURE'
+        });
+        if (io) {
+          io.to(`user_${targetCustId}`).emit('new_notification', {
+            id: `noti_${Date.now()}_${targetCustId}`,
+            title: custTitle,
+            content: custContent,
+            type: 'CONTRACT_CREATED_PENDING_SIGNATURE',
+            contract_id: createdRecord.id,
+            contract_code: contractCode,
+            reservation_id: reservationId,
+            created_at: new Date().toISOString()
+          });
+        }
+      } catch (notiErr) {
+        console.warn('Lỗi gửi thông báo cho Customer khi tạo hợp đồng:', notiErr.message);
+      }
+    }
+
+    return {
+      confirmationRecord: createdRecord,
+      timeline: timelines
+    };
   }
 
   async getCustomerConfirmationRecords(customerId) {
@@ -456,6 +508,75 @@ class ConfirmationRecordService {
       }
     } catch (slotErr) {
       console.error(slotErr.message);
+    }
+
+    return updatedRecord;
+  }
+
+  async rejectConfirmationRecord(recordId, customerId, rejectReason = '') {
+    const record = await confirmationRecordRepository.findById(recordId);
+    if (!record) {
+      throw this.createError('Không tìm thấy thông tin biên bản xác nhận điện tử!', 404);
+    }
+
+    if (Number(record.reservation.customer_id) !== Number(customerId)) {
+      throw this.createError('Bạn không phải người sở hữu yêu cầu thuê để từ chối biên bản này!', 403);
+    }
+
+    if (record.status !== 'PENDING_SIGNATURE') {
+      throw this.createError(`Không thể từ chối hợp đồng ở trạng thái hiện tại (${record.status})!`, 400);
+    }
+
+    const now = new Date();
+    const updatedSnapshot = {
+      ...(record.contract_snapshot || {}),
+      rejection_info: {
+        rejected_at: now.toISOString(),
+        rejected_by: 'CUSTOMER',
+        reject_reason: rejectReason || 'Khách hàng từ chối ký hợp đồng'
+      }
+    };
+
+    const updatedRecord = await confirmationRecordRepository.updateStatusAndSnapshot(
+      recordId,
+      'CANCELLED',
+      updatedSnapshot
+    );
+
+    await reservationRepository.updateStatus(record.reservation_id, 'CANCELLED');
+
+    const providerId = record.reservation?.facility?.provider_id || record.reservation?.facility?.provider?.id;
+    const facilityName = record.reservation?.facility?.name || 'bãi đỗ xe';
+    const customerName = record.reservation?.customer?.full_name || 'Khách hàng';
+
+    if (providerId) {
+      const notiTitle = `Khách hàng từ chối ký hợp đồng (${record.contract_code})`;
+      const notiContent = `Khách hàng ${customerName} đã từ chối ký hợp đồng ${record.contract_code} tại ${facilityName}. Yêu cầu đặt chỗ #${record.reservation_id} đã được hủy bỏ.`;
+
+      try {
+        await notificationRepository.createNotification({
+          user_id: Number(providerId),
+          title: notiTitle,
+          content: notiContent,
+          type: 'CONTRACT_REJECTED_BY_CUSTOMER'
+        });
+
+        const io = getIO();
+        if (io) {
+          io.to(`user_${providerId}`).emit('new_notification', {
+            id: `noti_${Date.now()}_${providerId}`,
+            title: notiTitle,
+            content: notiContent,
+            type: 'CONTRACT_REJECTED_BY_CUSTOMER',
+            contract_id: record.id,
+            contract_code: record.contract_code,
+            reservation_id: record.reservation_id,
+            created_at: now.toISOString()
+          });
+        }
+      } catch (notiErr) {
+        console.warn('Lỗi gửi thông báo từ chối ký hợp đồng:', notiErr.message);
+      }
     }
 
     return updatedRecord;
@@ -1354,11 +1475,15 @@ class ConfirmationRecordService {
       throw this.createError('Không có yêu cầu chấm dứt hợp đồng nào đang chờ xử lý để xác nhận!', 400);
     }
 
+    const { calculated: timelines } = await timelineSettingService.getTimelineSettings();
+    const noticeLimitMs = timelines.terminationNoticeMs || FIFTEEN_DAYS_MS;
+    const noticeLabel = timelines.terminationNoticeText || '15 ngày';
+
     const requestedTimestamp = term.requested_at ? new Date(term.requested_at).getTime() : Date.now();
-    if (!isNaN(requestedTimestamp) && Date.now() - requestedTimestamp > FIFTEEN_DAYS_MS) {
+    if (!isNaN(requestedTimestamp) && Date.now() - requestedTimestamp > noticeLimitMs) {
       await this.checkAndCancelExpiredTerminationForRecord(record);
       throw this.createError(
-        'Yêu cầu chấm dứt hợp đồng trước hạn đã quá 15 ngày chưa được xác nhận nên đã tự động hủy! Hợp đồng hiện vẫn tiếp tục có hiệu lực.',
+        `Yêu cầu chấm dứt hợp đồng trước hạn đã quá ${noticeLabel} chưa được xác nhận nên đã tự động hủy! Hợp đồng hiện vẫn tiếp tục có hiệu lực.`,
         400
       );
     }

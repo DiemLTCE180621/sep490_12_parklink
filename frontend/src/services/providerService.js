@@ -7,6 +7,9 @@ const providerService = {
   async getMyFacility() {
     return await api.get('/provider/my-facility');
   },
+  async getMonthlyRevenue(year, month) {
+    return await api.get('/provider/reports/monthly-revenue', { params: { year, month } });
+  },
 
   /**
    * Xác nhận thanh toán phí nền tảng

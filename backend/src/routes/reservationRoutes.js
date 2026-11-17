@@ -19,8 +19,6 @@ router.get('/my-requests',authenticateToken,authorizeRoles('CUSTOMER'),reservati
 
 router.get('/provider-requests',authenticateToken,authorizeRoles('PROVIDER'),reservationController.getProviderReservations);
 
-router.get('/provider/requests',authenticateToken,authorizeRoles('PROVIDER'),reservationController.getProviderReservations);
-
 router.get('/:id',authenticateToken,validateReservationId,reservationController.getReservationById);
 
 router.patch('/:id/cancel', authenticateToken, authorizeRoles('CUSTOMER'), validateReservationId, reservationController.cancelReservation);

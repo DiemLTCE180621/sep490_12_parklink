@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sendReservationRequest } from '../../services/reservationService';
+import timelineSettingService from '../../services/timelineSettingService';
 import { useAuth } from '../../context/AuthContext';
 import { getFacilitySupportedTypes } from '../../constants/vehicleTypes';
-import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2 } from 'lucide-react';
+import { X, Calendar, Car, AlertCircle, CheckCircle2, MapPin, Building2, ShieldCheck, Loader2, Clock } from 'lucide-react';
 
 const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -10,6 +11,7 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
   const [customerAddress, setCustomerAddress] = useState(() => localStorage.getItem('customer_address') || '');
   const [vehicleBrand, setVehicleBrand] = useState('');
   const [licensePlate, setLicensePlate] = useState('');
+  const [timelineSettings, setTimelineSettings] = useState(null);
   const [desiredStartDate, setDesiredStartDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -18,6 +20,21 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    timelineSettingService.getSettings()
+      .then((res) => {
+        if (isMounted && res?.data?.calculated) {
+          setTimelineSettings(res.data.calculated);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
 
   if (!isOpen || !facility) return null;
 
@@ -72,10 +89,11 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
         desired_start_date: desiredStartDate
       });
 
-      setSuccessMsg(response.message || 'Gửi yêu cầu thuê bãi đỗ xe thành công!');
+      const serverMsg = response.message || response.data?.message || 'Gửi yêu cầu thuê bãi đỗ xe thành công!';
+      setSuccessMsg(serverMsg);
       setTimeout(() => {
         if (onSuccess) onSuccess(response.data?.reservation);
-      }, 1500);
+      }, 2500);
     } catch (err) {
       setError(err.message || 'Không thể gửi yêu cầu thuê. Vui lòng thử lại!');
     } finally {
@@ -291,17 +309,23 @@ const SendReservationModal = ({ facility, isOpen, onClose, onSuccess }) => {
             </p>
           </div>
 
-          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
-            >
-              Hủy Bỏ
-            </button>
+          <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+              <span>Thời hạn chủ bãi phản hồi: <strong>{timelineSettings?.reservationResponseText || '12 giờ'}</strong></span>
+            </div>
 
-            <button
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition"
+              >
+                Hủy Bỏ
+              </button>
+
+              <button
               type="submit"
               disabled={loading || !!successMsg}
               className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-sm font-bold rounded-xl shadow-md flex items-center gap-2 transition"

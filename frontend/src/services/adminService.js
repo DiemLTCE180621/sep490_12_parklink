@@ -5,6 +5,10 @@ import api from './api';
  * Tuân theo kiến trúc: Component → Service → API → Backend
  */
 const adminService = {
+  getDashboardOverview: async () => {
+    return await api.get('/admin/dashboard/overview');
+  },
+
   /**
    * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt hoặc đang chuẩn bị
    */

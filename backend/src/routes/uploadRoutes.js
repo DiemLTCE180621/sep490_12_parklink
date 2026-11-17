@@ -8,8 +8,8 @@ const uploadValidation = require('../validations/uploadValidation');
 
 // Chỉ user đã đăng nhập (có token) mới được gọi API này
 router.use(authenticateToken);
-// Phân quyền cho upload file/ảnh chat và ảnh khảo sát của Field Inspector
-router.use(authorizeRoles('CUSTOMER', 'PROVIDER', 'FIELD_INSPECTOR'));
+// Phân quyền cho upload file/ảnh: Tất cả các vai trò đã đăng nhập (bao gồm cả ADMIN)
+router.use(authorizeRoles('CUSTOMER', 'PROVIDER', 'FIELD_INSPECTOR', 'ADMIN'));
 
 // Route xử lý upload NHIỀU file cùng lúc 
 router.post(

@@ -18,7 +18,7 @@ class ConfirmationRecordController {
         terms
       } = req.body;
 
-      const record = await confirmationRecordService.createConfirmationRecord({
+      const result = await confirmationRecordService.createConfirmationRecord({
         providerId,
         reservationId: reservation_id,
         agreedPrice: agreed_price,
@@ -33,10 +33,19 @@ class ConfirmationRecordController {
         terms
       });
 
+      const record = result.confirmationRecord || result;
+      const timelines = result.timeline || null;
+      const signingText = timelines?.contractSigningText || '';
+
       return res.status(201).json({
         status: 'success',
-        message: 'Tạo biên bản xác nhận / hợp đồng điện tử thành công!',
-        data: { confirmation_record: record }
+        message: signingText
+          ? `Tạo và gửi hợp đồng điện tử thành công! Khách hàng có ${signingText} để kiểm tra và ký xác nhận.`
+          : 'Tạo biên bản xác nhận / hợp đồng điện tử thành công!',
+        data: {
+          confirmation_record: record,
+          timeline: timelines
+        }
       });
     } catch (error) {
       next(error);
@@ -102,6 +111,24 @@ class ConfirmationRecordController {
       return res.status(200).json({
         status: 'success',
         message: 'Đã chấp nhận / xác nhận ký biên bản điện tử thành công! Hợp đồng chính thức có hiệu lực.',
+        data: { confirmation_record: record }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rejectConfirmationRecord(req, res, next) {
+    try {
+      const { id } = req.params;
+      const customerId = req.user.userId;
+      const { reject_reason } = req.body || {};
+
+      const record = await confirmationRecordService.rejectConfirmationRecord(id, customerId, reject_reason);
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Đã từ chối ký hợp đồng và hủy yêu cầu đặt chỗ thành công.',
         data: { confirmation_record: record }
       });
     } catch (error) {
