@@ -4,6 +4,19 @@ const prisma = require("../config/prisma");
  * Repository thao tác trực tiếp với bảng Facility trong Database
  */
 class FacilityRepository {
+  async findPaymentInfo(id) {
+    return prisma.facility.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        provider_id: true,
+        system_fee: true,
+        verification_status: true,
+        payment_status: true,
+      },
+    });
+  }
+
   /**
    * Lấy danh sách các bãi đỗ xe đang chờ duyệt HOẶC đang chuẩn bị
    * (kèm thông tin Provider và Hình ảnh)
