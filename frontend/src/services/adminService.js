@@ -134,6 +134,10 @@ const adminService = {
    */
   toggleVehicleTypeStatus: async (id) => {
     return await api.patch(`/vehicle-types/${id}/toggle-status`);
+  },
+
+  getProviderRevenueStatistics: async (params = {}) => {
+    return await api.get('/admin/reports/provider-revenue', { params });
   }
 };
 

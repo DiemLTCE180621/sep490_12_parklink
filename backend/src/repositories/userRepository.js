@@ -2,13 +2,6 @@ const prisma = require('../config/prisma');
 
 class UserRepository {
   
-  async findAmenities() {
-    return await prisma.amenity.findMany({
-      where: { is_active: true },
-      orderBy: { id: 'asc' }
-    });
-  }
-
   async findByEmail(email) {
     return await prisma.user.findUnique({
       where: { email },

@@ -252,15 +252,15 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {(!hasPhone || !hasAddress) && (
+          {roleName === 'CUSTOMER' && (!hasPhone || !hasAddress) && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs sm:text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
               <span>
                 {!hasPhone && !hasAddress
-                  ? 'Bạn chưa cập nhật số điện thoại và địa chỉ liên hệ. Vui lòng bổ sung đầy đủ thông tin bên dưới để Chủ bãi xe có thể liên lạc và lập hợp đồng khi bạn gửi yêu cầu đặt chỗ.'
+                  ? 'Vui lòng cập nhật số điện thoại và địa chỉ để chủ bãi xe dễ dàng liên hệ và hoàn tất thông tin khi bạn thuê bãi xe.'
                   : !hasPhone
-                    ? 'Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.'
-                    : 'Bạn chưa cập nhật địa chỉ thường trú / liên hệ. Vui lòng bổ sung thông tin địa chỉ bên dưới để phục vụ việc lập hợp đồng pháp lý khi thuê bãi xe.'}
+                    ? 'Vui lòng cập nhật số điện thoại để chủ bãi xe có thể liên lạc với bạn khi cần.'
+                    : 'Vui lòng bổ sung địa chỉ để hoàn tất thông tin khi gửi yêu cầu thuê bãi xe.'}
               </span>
             </div>
           )}
@@ -360,7 +360,9 @@ const ProfilePage = () => {
                 <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-700">Địa chỉ đầy đủ ghi trên hợp đồng: </span>
+                    <span className="font-bold text-slate-700">
+                      {roleName === 'CUSTOMER' ? 'Địa chỉ ghi trên thông tin thuê bãi: ' : 'Địa chỉ liên hệ: '}
+                    </span>
                     <span className="text-teal-800 font-semibold">
                       {computeFullAddress(streetDetail, administrativeAddress) || 'Chưa thiết lập'}
                     </span>

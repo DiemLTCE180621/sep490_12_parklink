@@ -218,8 +218,8 @@ const validateUpdateProfile = (req, res, next) => {
     });
   }
 
-  req.body.full_name = cleanedName;
-  req.body.phone_number = cleanedPhone;
+  if (full_name !== undefined) req.body.full_name = cleanedName;
+  if (phone_number !== undefined) req.body.phone_number = cleanedPhone;
   if (address !== undefined) req.body.address = typeof address === 'string' ? address.trim() : address;
   if (avatar_url !== undefined) req.body.avatar_url = typeof avatar_url === 'string' ? avatar_url.trim() : avatar_url;
 

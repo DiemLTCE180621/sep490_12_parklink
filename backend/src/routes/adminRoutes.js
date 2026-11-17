@@ -71,10 +71,18 @@ router.put('/facilities/:id', adminController.updateFacility);
  */
 const confirmationRecordController = require('../controllers/confirmationRecordController');
 const { validateAdminQueryConfirmationRecords } = require('../validations/confirmationRecordValidation');
+const { validateProviderRevenueQuery } = require('../validations/adminValidation');
+
 router.get(
   '/confirmation-records',
   validateAdminQueryConfirmationRecords,
   confirmationRecordController.getAllConfirmationRecords
+);
+
+router.get(
+  '/reports/provider-revenue',
+  validateProviderRevenueQuery,
+  adminController.getProviderRevenueStatistics
 );
 
 module.exports = router;

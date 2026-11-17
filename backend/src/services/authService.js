@@ -5,6 +5,7 @@ const roleRepository = require('../repositories/roleRepository');
 const emailService = require('../utils/emailService');
 const platformFeeService = require('./platformFeeService');
 const vehicleTypeRepository = require('../repositories/vehicleTypeRepository');
+const amenityRepository = require('../repositories/amenityRepository');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'parklink_secret_key_2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
@@ -35,7 +36,7 @@ class AuthService {
   }
 
   async getAmenities() {
-    return await userRepository.findAmenities();
+    return await amenityRepository.findAll({ is_active: true });
   }
 
   async getContactInfo() {
