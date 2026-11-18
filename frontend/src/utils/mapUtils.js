@@ -1,9 +1,15 @@
-/**
- * Tiện ích xử lý dữ liệu bản đồ, tuyến đường và định dạng hiển thị cho ParkLink.
- * Tuân thủ nguyên tắc DRY để tái sử dụng giữa SearchPage, FacilityDetailPage và các component bản đồ.
- */
 
+export const SEA_MAP_BOUNDS = [
+  [-11.5, 92.0], // Tây Nam Đông Nam Á 
+  [28.5, 141.5], // Đông Bắc Đông Nam Á 
+];
 
+export const VIETNAM_SEA_MAP_OPTIONS = {
+  minZoom: 6,
+  maxZoom: 18,
+  maxBounds: SEA_MAP_BOUNDS,
+  maxBoundsViscosity: 1.0,
+};
 
 /**
  * Mở chỉ đường trực tiếp trên Google Maps (Universal URL tương thích cả Desktop & Mobile App).

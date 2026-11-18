@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -16,7 +16,11 @@ import { facilityCarIcon } from '../../utils/mapIcons';
 import Toast from '../../components/common/Toast';
 import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
 import vietmapService from '../../services/vietmapService';
-import { openGoogleMapsDirections } from '../../utils/mapUtils';
+import {
+  openGoogleMapsDirections,
+  SEA_MAP_BOUNDS,
+  VIETNAM_SEA_MAP_OPTIONS,
+} from '../../utils/mapUtils';
 
 // Fix icon lỗi mặc định của leaflet khi dùng React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -142,6 +146,30 @@ const MapSizeInvalidator = () => {
   return null;
 };
 
+const MapSearchChangeHandler = ({ hasSearched }) => {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    if (container) {
+      if (!hasSearched) {
+        container.style.filter = 'blur(3px)';
+        container.style.pointerEvents = 'none';
+      } else {
+        container.style.filter = 'none';
+        container.style.pointerEvents = 'auto';
+      }
+    }
+    if (hasSearched) {
+      map.invalidateSize({ pan: false });
+      const timer = window.setTimeout(() => {
+        map.invalidateSize({ pan: false });
+      }, 300);
+      return () => window.clearTimeout(timer);
+    }
+  }, [hasSearched, map]);
+  return null;
+};
+
 const SearchPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -170,8 +198,10 @@ const SearchPage = () => {
     }));
   }, [dbVehicleTypes]);
   const [radius, setRadius] = useState(3);
+  const [appliedRadius, setAppliedRadius] = useState(3);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -290,9 +320,17 @@ const SearchPage = () => {
     }
 
     // Khởi tạo lấy params từ state (nếu từ HomePage chuyển qua)
+    let fromHomepage = false;
+    let initialKeyword = keyword;
     if (location.state) {
-      if (location.state.keyword) setKeyword(location.state.keyword);
-      if (location.state.vehicleType) setVehicleType(location.state.vehicleType);
+      if (location.state.keyword && location.state.keyword.trim()) {
+        initialKeyword = location.state.keyword.trim();
+        setKeyword(initialKeyword);
+        fromHomepage = true;
+      }
+      if (location.state.vehicleType) {
+        setVehicleType(location.state.vehicleType);
+      }
       if (location.state.facilityError) {
         setToastMsg(location.state.facilityError);
         setToastType('error');
@@ -301,7 +339,11 @@ const SearchPage = () => {
     fetchAmenities();
     if (!initialFacilitiesLoaded.current) {
       initialFacilitiesLoaded.current = true;
-      fetchFacilities();
+      if (fromHomepage) {
+        setHasSearched(true);
+        setAppliedRadius(Number(radius));
+        fetchFacilities(null, null, initialKeyword);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, user?.id, user?.role?.name]);
@@ -321,7 +363,8 @@ const SearchPage = () => {
     currentLat = null,
     currentLng = null,
     searchKeyword = keyword,
-    useUserLocation = true
+    useUserLocation = true,
+    overrideRadius = null
   ) => {
     const requestId = ++latestSearchRequest.current;
     const parsedMinPrice = minPrice === '' ? null : Number(minPrice);
@@ -376,7 +419,7 @@ const SearchPage = () => {
       ) {
         params.lat = lat;
         params.lng = lng;
-        params.radius = radius;
+        params.radius = overrideRadius !== null ? overrideRadius : radius;
       }
 
       const res = await facilityService.searchFacilities(params);
@@ -416,14 +459,71 @@ const SearchPage = () => {
     navigate(`/facility/${facilityId}`, { state: searchContext });
   };
 
+  // Chuẩn hóa chuỗi bỏ dấu tiếng Việt để nhận diện từ khóa khớp tên cơ sở
+  const normalizeSearchText = (text = '') =>
+    String(text)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/đ/g, 'd')
+      .trim();
+
   const handleSearch = async (e) => {
     e?.preventDefault();
-    setSearchedLocation(null);
-    const location = await resolveSearchLocation(keyword);
+    const trimmedKeyword = keyword?.trim() || '';
+
+    // Validation: Không cho phép tìm kiếm khi không nhập từ khóa
+    if (!trimmedKeyword) {
+      setToastMsg('Vui lòng nhập tên bãi đỗ xe hoặc địa chỉ để tìm kiếm!');
+      setToastType('error');
+      return;
+    }
+
+    setHasSearched(true);
+    setAppliedRadius(Number(radius));
+
+    if (searchedLocation && Array.isArray(searchedLocation) && searchedLocation.length === 2) {
+      await fetchFacilities(searchedLocation[0], searchedLocation[1], trimmedKeyword, false);
+      return;
+    }
+
+    if (userLocation && Array.isArray(userLocation) && userLocation.length === 2) {
+      await fetchFacilities(userLocation[0], userLocation[1], trimmedKeyword, true);
+      return;
+    }
+
+    // Ưu tiên kiểm tra tìm theo tên cơ sở trước khi geocode địa chỉ qua Vietmap
+    // để tránh tọa độ địa danh đoán nhầm làm lọc mất bãi theo bán kính
+    try {
+      const nameMatchRes = await facilityService.searchFacilities({ keyword: trimmedKeyword });
+      const normalizedQuery = normalizeSearchText(trimmedKeyword);
+      const matchedByName = (nameMatchRes?.data || []).filter((fac) =>
+        normalizeSearchText(fac.name).includes(normalizedQuery)
+      );
+
+      if (matchedByName.length > 0) {
+        setUserLocation(null);
+        setSearchedLocation(null);
+        setIsFallbackLocation(false);
+        const firstWithCoords = matchedByName.find(
+          (fac) => Number.isFinite(Number(fac.latitude)) && Number.isFinite(Number(fac.longitude))
+        );
+        if (firstWithCoords) {
+          setMapCenter([Number(firstWithCoords.latitude), Number(firstWithCoords.longitude)]);
+          setMapZoom(15);
+        }
+        await fetchFacilities(null, null, trimmedKeyword, false);
+        return;
+      }
+    } catch (err) {
+      console.error('Lỗi kiểm tra tìm kiếm theo tên cơ sở:', err);
+    }
+
+    const location = await resolveSearchLocation(trimmedKeyword);
     if (location) {
-      await fetchFacilities(location[0], location[1], keyword, false);
+      await fetchFacilities(location[0], location[1], trimmedKeyword, false);
     } else {
-      await fetchFacilities(null, null, keyword, false);
+      await fetchFacilities(null, null, trimmedKeyword, false);
     }
   };
 
@@ -446,23 +546,27 @@ const SearchPage = () => {
 
   const handleAddressSelect = async (suggestion, label) => {
     setKeyword(label);
-    const location = await resolveSearchLocation(label, suggestion);
-    if (location) {
-      await fetchFacilities(location[0], location[1], label, false);
-    } else {
-      await fetchFacilities(null, null, label, false);
-    }
+    await resolveSearchLocation(label, suggestion);
   };
 
-  /**
-   * Xử lý di dời marker tìm kiếm của người dùng:
-   * 1. Cập nhật vị trí ghim mới.
-   * 2. Gọi reverse geocoding để lấy tên địa chỉ thực tế.
-   * 3. Cập nhật thanh địa chỉ keyword nếu tìm thấy, hoặc giữ nguyên thanh địa chỉ cũ.
-   *    Tuyệt đối KHÔNG ghi kinh độ vĩ độ vào thanh địa chỉ.
-   * 4. Tìm lại các bãi xe xung quanh vị trí mới.
-   * 5. Cập nhật lại tuyến đường chỉ đường nếu đang mở chỉ đường đến một bãi xe.
-   */
+  const handleFacilitySelect = async (facility) => {
+    setKeyword(facility.name);
+    setUserLocation(null);
+    setSearchedLocation(null);
+    setIsFallbackLocation(false);
+    setHasSearched(true);
+    setAppliedRadius(Number(radius));
+
+    if (facility.latitude && facility.longitude) {
+      const loc = [Number(facility.latitude), Number(facility.longitude)];
+      setMapCenter(loc);
+      setMapZoom(16);
+    }
+
+    await fetchFacilities(null, null, facility.name, false);
+  };
+
+  //drag marker
   const handleSearchedLocationDragEnd = async (e) => {
     const marker = e.target;
     if (!marker) return;
@@ -471,18 +575,14 @@ const SearchPage = () => {
     setUserLocation(null);
     setSearchedLocation(newCoords);
 
-    let updatedKeyword = keyword;
     try {
       const resolvedAddress = await vietmapService.reverseGeocode(pos.lat, pos.lng);
       if (resolvedAddress && resolvedAddress.trim()) {
-        updatedKeyword = resolvedAddress;
         setKeyword(resolvedAddress);
       }
     } catch (err) {
       console.error('Lỗi reverse geocoding khi kéo marker tìm kiếm:', err);
     }
-
-    await fetchFacilities(pos.lat, pos.lng, updatedKeyword, false);
   };
 
   /**
@@ -496,18 +596,14 @@ const SearchPage = () => {
     setSearchedLocation(null);
     setUserLocation(newCoords);
 
-    let updatedKeyword = keyword;
     try {
       const resolvedAddress = await vietmapService.reverseGeocode(pos.lat, pos.lng);
       if (resolvedAddress && resolvedAddress.trim()) {
-        updatedKeyword = resolvedAddress;
         setKeyword(resolvedAddress);
       }
     } catch (err) {
       console.error('Lỗi reverse geocoding khi kéo marker GPS:', err);
     }
-
-    await fetchFacilities(pos.lat, pos.lng, updatedKeyword, true);
   };
 
   /**
@@ -546,22 +642,6 @@ const SearchPage = () => {
     );
   };
 
-  const isFirstRender = useRef(true);
-
-  // Cập nhật tìm kiếm khi các bộ lọc thay đổi
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    if (searchedLocation) {
-      fetchFacilities(searchedLocation[0], searchedLocation[1], keyword, false);
-    } else {
-      fetchFacilities();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAmenities, vehicleType, radius, minPrice, maxPrice]);
-
   const handleLocationUnavailable = () => {
     setSearchedLocation(null);
     setUserLocation(DEFAULT_MAP_CENTER);
@@ -569,7 +649,6 @@ const SearchPage = () => {
     setLocationAccuracy(null);
     setMapCenter(DEFAULT_MAP_CENTER);
     setMapZoom(16);
-    fetchFacilities(DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1], keyword, true);
     setToastMsg('Không thể xác định vị trí của bạn. Đã chuyển về khu vực Ninh Kiều, Cần Thơ.');
     setToastType('error');
   };
@@ -577,7 +656,7 @@ const SearchPage = () => {
   const handleLocateMe = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setSearchedLocation(null);
@@ -586,7 +665,22 @@ const SearchPage = () => {
           setLocationAccuracy(Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null);
           setMapCenter([lat, lng]);
           setMapZoom(14);
-          fetchFacilities(lat, lng, keyword, true);
+
+          let resolvedKeyword = 'Vị trí hiện tại của bạn';
+          try {
+            const addr = await vietmapService.reverseGeocode(lat, lng);
+            if (addr) {
+              resolvedKeyword = addr;
+            }
+          } catch (e) {
+            console.error('Reverse geocode error:', e);
+          }
+          setKeyword(resolvedKeyword);
+          setHasSearched(true);
+          setAppliedRadius(Number(radius));
+          await fetchFacilities(lat, lng, '', true);
+          setToastMsg('Đã xác định vị trí và tìm thấy các bãi đỗ xe xung quanh bạn.');
+          setToastType('success');
         },
         handleLocationUnavailable
       );
@@ -599,7 +693,6 @@ const SearchPage = () => {
     setKeyword('');
     setSearchedLocation(null);
     setIsFallbackLocation(false);
-    fetchFacilities();
   };
 
   const clearFilters = () => {
@@ -611,7 +704,7 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden bg-slate-50">
+    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50">
       {/* Toast thông báo giới hạn so sánh */}
       <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg('')} />
 
@@ -633,8 +726,11 @@ const SearchPage = () => {
               onChange={(value) => {
                 setKeyword(value);
                 setSearchedLocation(null);
+                setUserLocation(null);
               }}
               onSelect={handleAddressSelect}
+              onFacilitySelect={handleFacilitySelect}
+              includeFacilities={true}
               placeholder="Nhập tên bãi đỗ, địa chỉ..."
               inputClassName="py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             />
@@ -680,7 +776,15 @@ const SearchPage = () => {
 
             <select
               value={radius}
-              onChange={(e) => setRadius(e.target.value)}
+              onChange={(e) => {
+                const newRadius = Number(e.target.value);
+                setRadius(newRadius);
+                if (hasSearched && (searchedLocation || userLocation)) {
+                  setAppliedRadius(newRadius);
+                  const loc = searchedLocation || userLocation;
+                  fetchFacilities(loc[0], loc[1], keyword, !searchedLocation, newRadius);
+                }
+              }}
               className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             >
               <option value={1}>Bán kính 1 km</option>
@@ -718,8 +822,8 @@ const SearchPage = () => {
           )}
         </div>
 
-        {/* Tiện ích Filter */}
-        {(amenitiesList.length > 0 || vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3) && (
+        {/* Tiện ích Filter (Ban đầu ẩn, chỉ hiển thị sau khi người dùng đã tìm kiếm) */}
+        {hasSearched && amenitiesList.length > 0 && (
           <div className="max-w-7xl mx-auto mt-3 flex flex-wrap gap-2 items-center">
             <button
               type="button"
@@ -746,17 +850,28 @@ const SearchPage = () => {
                 </button>
               );
             })}
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="ml-auto px-4 py-1.5 text-xs font-bold rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5"
+            >
+              <Search className="w-3.5 h-3.5" /> Áp dụng tiện ích
+            </button>
           </div>
         )}
       </header>
 
       {/* MAIN SPLIT VIEW */}
-      <main className="flex-none h-[700px] md:h-[calc(100vh-180px)] md:max-h-[800px] min-h-0 flex flex-col-reverse md:flex-row overflow-hidden relative">
+      <main className="flex-1 min-h-0 flex flex-col-reverse md:flex-row overflow-hidden relative">
         {/* LEFT PANEL: LIST OF RESULTS */}
         <div className="w-full md:w-[450px] lg:w-[500px] h-1/2 md:h-full min-h-0 bg-slate-50 border-r border-slate-200 flex flex-col shadow-xl z-20">
           <div className="p-4 bg-white border-b border-slate-200 flex justify-between items-center shrink-0">
             <h2 className="text-lg font-bold text-slate-900">
-              Tìm thấy <span className="text-teal-600">{facilities.length}</span> bãi xe phù hợp
+              {hasSearched ? (
+                <>Tìm thấy <span className="text-teal-600">{facilities.length}</span> bãi xe phù hợp</>
+              ) : (
+                <>Kết quả tìm kiếm</>
+              )}
             </h2>
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <List className="w-4 h-4" /> Dạng danh sách
@@ -764,7 +879,15 @@ const SearchPage = () => {
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
-            {loading ? (
+            {!hasSearched ? (
+              <div className="text-center py-16 text-slate-500 flex flex-col items-center">
+                <Search className="w-10 h-10 mb-3 text-slate-300" />
+                <p className="font-semibold text-slate-700">Chưa có kết quả tìm kiếm</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+                  Vui lòng nhập địa chỉ hoặc chọn vị trí và nhấn &quot;Tìm Kiếm&quot; để xem các bãi đỗ xe.
+                </p>
+              </div>
+            ) : loading ? (
               <div className="text-center py-10 text-slate-500">Đang tìm kiếm...</div>
             ) : error ? (
               <div className="text-center py-10 text-red-500">{error}</div>
@@ -838,16 +961,16 @@ const SearchPage = () => {
                           </p>
                         </div>
 
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200">
+                        <div className="mt-3 flex items-center justify-between gap-1.5 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap shrink-0">
                               <Star className="w-3.5 h-3.5 fill-current" />
                               <span>{getFacilityRating(fac).average ?? 'Chưa có'}</span>
                               {getFacilityRating(fac).count > 0 && <span className="font-normal">({getFacilityRating(fac).count})</span>}
                             </div>
-                            <div className={`text-xs font-bold px-2 py-1 rounded-lg border ${isOutOfSlots
-                                ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                : 'bg-teal-50 text-teal-700 border-teal-200'
+                            <div className={`text-xs font-bold px-2 py-1 rounded-lg border whitespace-nowrap shrink-0 ${isOutOfSlots
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-teal-50 text-teal-700 border-teal-200'
                               }`}>
                               {isOutOfSlots
                                 ? `Còn 0/${fac.capacity || 0} chỗ`
@@ -855,7 +978,7 @@ const SearchPage = () => {
                             </div>
                           </div>
                           {fac.distance !== null && fac.distance !== undefined && (
-                            <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100">
+                            <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 whitespace-nowrap shrink-0">
                               Cách bạn: {(fac.distance).toFixed(1)} km
                             </div>
                           )}
@@ -911,39 +1034,60 @@ const SearchPage = () => {
 
         {/* RIGHT PANEL: INTERACTIVE MAP */}
         <div className="flex-1 h-1/2 md:h-full min-h-0 relative z-0">
-          <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }} zoomControl={false}>
-            <MapInitialCenter center={mapCenter} zoom={mapZoom} />
-            <MapUpdater center={mapCenter} zoom={mapZoom} />
-            <MapSizeInvalidator />
-            <TileLayer
-              attribution='&copy; Vietmap'
-              url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILE_KEY}`}
-              keepBuffer={1}
-              updateWhenIdle
-              updateWhenZooming={false}
-              eventHandlers={{
-                tileerror: () => {
-                  setMapTileError(true);
-                  setToastMsg('Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được giữ lại.');
-                  setToastType('error');
-                },
-                tileload: () => setMapTileError(false),
-              }}
-            />
-            {mapTileError && (
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] rounded-lg bg-white/95 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 shadow-lg">
-                Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được hiển thị.
-              </div>
-            )}
-
-            {/* Phạm vi tìm kiếm, ưu tiên tâm là địa điểm được search bằng chữ */}
-            {(searchedLocation || userLocation) && (
-              <Circle
-                center={searchedLocation || userLocation}
-                radius={radius * 1000}
-                pathOptions={{ color: '#0d9488', fillColor: '#0d9488', fillOpacity: 0.1, weight: 1 }}
+          <div className={`w-full h-full transition-[filter] duration-300 ${!hasSearched ? 'filter blur-[3px] pointer-events-none' : 'filter-none pointer-events-auto'}`}>
+            <MapContainer
+              center={mapCenter}
+              zoom={mapZoom}
+              minZoom={VIETNAM_SEA_MAP_OPTIONS.minZoom}
+              maxZoom={VIETNAM_SEA_MAP_OPTIONS.maxZoom}
+              maxBounds={VIETNAM_SEA_MAP_OPTIONS.maxBounds}
+              maxBoundsViscosity={VIETNAM_SEA_MAP_OPTIONS.maxBoundsViscosity}
+              className="w-full h-full"
+              style={{ height: '100%', width: '100%' }}
+              zoomControl={false}
+            >
+              <ZoomControl position="bottomright" />
+              <MapInitialCenter center={mapCenter} zoom={mapZoom} />
+              <MapUpdater center={mapCenter} zoom={mapZoom} />
+              <MapSizeInvalidator />
+              <MapSearchChangeHandler hasSearched={hasSearched} />
+              <TileLayer
+                attribution='&copy; Vietmap'
+                url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${VIETMAP_TILE_KEY}`}
+                bounds={SEA_MAP_BOUNDS}
+                noWrap
+                keepBuffer={1}
+                updateWhenIdle
+                updateWhenZooming={false}
+                eventHandlers={{
+                  tileerror: () => {
+                    setMapTileError(true);
+                    setToastMsg('Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được giữ lại.');
+                    setToastType('error');
+                  },
+                  tileload: () => setMapTileError(false),
+                }}
               />
-            )}
+              {mapTileError && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] rounded-lg bg-white/95 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 shadow-lg">
+                  Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được hiển thị.
+                </div>
+              )}
+
+              {/* Phạm vi tìm kiếm, ưu tiên tâm là địa điểm được search bằng chữ */}
+              {hasSearched && (searchedLocation || userLocation) && (
+                <Circle
+                  center={searchedLocation || userLocation}
+                  radius={appliedRadius * 1000}
+                  pathOptions={{
+                    color: '#0d9488',
+                    fillColor: '#0d9488',
+                    fillOpacity: 0.04,
+                    weight: 1.5,
+                    dashArray: '6, 6'
+                  }}
+                />
+              )}
 
             {/* Vị trí địa chỉ được tìm kiếm bằng chữ - Cho phép kéo thả di dời */}
             {searchedLocation && (
@@ -1118,9 +1262,30 @@ const SearchPage = () => {
               return null;
             })}
           </MapContainer>
+          </div>
+
+          {/* OVERLAY LÀM MỜ KHI CHƯA TÌM KIẾM */}
+          {!hasSearched && (
+            <div
+              onWheel={(e) => e.stopPropagation()}
+              className="absolute inset-0 bg-slate-900/35 backdrop-blur-[2px] z-[1000] flex items-center justify-center p-4 pointer-events-auto cursor-default select-none transition-all duration-300"
+            >
+              <div className="bg-white/95 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-slate-200/90 flex items-center gap-3.5 max-w-sm text-left">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 shadow-xs">
+                  <Search className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-slate-900">Tìm kiếm để bắt đầu</div>
+                  <div className="text-xs text-slate-500 mt-0.5">
+                    Nhập tên bãi đỗ, địa chỉ hoặc chọn vị trí và nhấn &quot;Tìm Kiếm&quot; để mở bản đồ tương tác
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* MAP BADGE */}
-          <div className="absolute top-4 left-4 z-[400] pointer-events-none">
+          <div className={`absolute top-4 left-4 z-[400] pointer-events-none ${!hasSearched ? 'hidden' : ''}`}>
             <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-md flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>

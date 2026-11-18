@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader2, MapPin } from 'lucide-react';
-
-const API_URL = 'https://maps.vietmap.vn/api/search/v3';
+import { Building2, Loader2, MapPin } from 'lucide-react';
+import vietmapService from '../../services/vietmapService';
+import facilityService from '../../services/facilityService';
 
 const getSuggestionLabel = (item) =>
   item?.display
@@ -54,7 +54,7 @@ const rankSuggestions = (items, query) => {
       seen.add(entry.normalizedLabel);
       return true;
     })
-    .slice(0, 6)
+    .slice(0, 5)
     .map((entry) => entry.item);
 };
 
@@ -62,71 +62,83 @@ const VietmapAddressAutocomplete = ({
   value,
   onChange,
   onSelect,
+  onFacilitySelect,
   placeholder,
   className = '',
   inputClassName = '',
   required = false,
   disabled = false,
   minChars = 2,
+  includeFacilities = false,
 }) => {
   const [suggestions, setSuggestions] = useState([]);
+  const [facilitySuggestions, setFacilitySuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const requestIdRef = useRef(0);
-  // Cờ đánh dấu người dùng có đang thực sự gõ phím vào ô nhập liệu hay không
+  //flag if user is typing
   const userTypedRef = useRef(false);
 
   useEffect(() => {
-    // Nếu giá trị value thay đổi do kéo marker trên bản đồ hoặc gán tự động (không do người dùng gõ tay),
-    // tuyệt đối không kích hoạt tìm kiếm gợi ý và không mở dropdown suggest
+    //if value changed because user drag marker, dont trigger search
     if (!userTypedRef.current) {
       setSuggestions([]);
+      setFacilitySuggestions([]);
       setIsOpen(false);
       return undefined;
     }
 
-    const query = value.trim();
+    const query = value?.trim() || '';
     if (query.length < minChars) {
       setSuggestions([]);
+      setFacilitySuggestions([]);
       setIsOpen(false);
       return undefined;
     }
 
     const timeoutId = window.setTimeout(async () => {
       const requestId = ++requestIdRef.current;
-      const apiKey = process.env.REACT_APP_VIETMAP_API_KEY;
-
-      if (!apiKey) {
-        setSuggestions([]);
-        return;
-      }
-
       setIsLoading(true);
+
       try {
-        const response = await fetch(
-          `${API_URL}?apikey=${encodeURIComponent(apiKey)}&text=${encodeURIComponent(query)}`
-        );
-        if (!response.ok) {
-          throw new Error(`Vietmap autocomplete failed with status ${response.status}`);
+        const promises = [vietmapService.searchPlaces(query)];
+        if (includeFacilities) {
+          promises.push(facilityService.searchFacilities({ keyword: query }));
         }
 
-        const data = await response.json();
-        const nextSuggestions = rankSuggestions(
-          (Array.isArray(data) ? data : data?.data || [])
-            .filter((item) => getSuggestionLabel(item)),
-          query
-        );
+        const results = await Promise.allSettled(promises);
+        const placeRes = results[0];
+        const facilityRes = includeFacilities ? results[1] : null;
+
+        let nextPlaceSuggestions = [];
+        if (placeRes.status === 'fulfilled') {
+          const rawPlaces = placeRes.value || [];
+          nextPlaceSuggestions = rankSuggestions(
+            (Array.isArray(rawPlaces) ? rawPlaces : rawPlaces?.data || [])
+              .filter((item) => getSuggestionLabel(item)),
+            query
+          );
+        }
+
+        let nextFacilitySuggestions = [];
+        if (facilityRes?.status === 'fulfilled' && facilityRes.value?.status === 'success') {
+          nextFacilitySuggestions = (facilityRes.value?.data || []).slice(0, 4);
+        }
 
         if (requestId === requestIdRef.current) {
-          setSuggestions(nextSuggestions);
-          // Chỉ mở dropdown nếu cờ gõ phím vẫn đang bật
-          setIsOpen(userTypedRef.current && nextSuggestions.length > 0);
+          setSuggestions(nextPlaceSuggestions);
+          setFacilitySuggestions(nextFacilitySuggestions);
+          //open dropdown if user is typing
+          setIsOpen(
+            userTypedRef.current && (nextPlaceSuggestions.length > 0 || nextFacilitySuggestions.length > 0)
+          );
         }
       } catch (error) {
         if (requestId === requestIdRef.current) {
-          console.error('Lỗi autocomplete địa chỉ Vietmap:', error);
+          console.error('Lỗi tìm kiếm gợi ý địa chỉ/bãi xe:', error);
           setSuggestions([]);
+          setFacilitySuggestions([]);
           setIsOpen(false);
         }
       } finally {
@@ -137,7 +149,7 @@ const VietmapAddressAutocomplete = ({
     }, 300);
 
     return () => window.clearTimeout(timeoutId);
-  }, [value, minChars]);
+  }, [value, minChars, includeFacilities]);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -151,12 +163,26 @@ const VietmapAddressAutocomplete = ({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const handleSelect = (suggestion) => {
+  const handleSelectPlace = (suggestion) => {
     userTypedRef.current = false;
     const label = getSuggestionLabel(suggestion);
     onChange(label);
     onSelect?.(suggestion, label);
     setSuggestions([]);
+    setFacilitySuggestions([]);
+    setIsOpen(false);
+  };
+
+  const handleSelectFacility = (facility) => {
+    userTypedRef.current = false;
+    onChange(facility.name);
+    if (onFacilitySelect) {
+      onFacilitySelect(facility);
+    } else {
+      onSelect?.(facility, facility.name);
+    }
+    setSuggestions([]);
+    setFacilitySuggestions([]);
     setIsOpen(false);
   };
 
@@ -172,7 +198,7 @@ const VietmapAddressAutocomplete = ({
           setIsOpen(true);
         }}
         onFocus={() => {
-          if (userTypedRef.current && suggestions.length > 0) {
+          if (userTypedRef.current && (suggestions.length > 0 || facilitySuggestions.length > 0)) {
             setIsOpen(true);
           }
         }}
@@ -183,20 +209,69 @@ const VietmapAddressAutocomplete = ({
         autoComplete="off"
       />
       {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-600 animate-spin" />}
-      {isOpen && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-1 z-[700] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
-          {suggestions.map((suggestion, index) => (
-            <button
-              type="button"
-              key={suggestion.ref_id || suggestion.id || `${getSuggestionLabel(suggestion)}-${index}`}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => handleSelect(suggestion)}
-              className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-teal-50 transition-colors flex items-start gap-2 border-b last:border-b-0 border-slate-100"
-            >
-              <MapPin className="w-4 h-4 text-teal-600 mt-0.5 shrink-0" />
-              <span>{getSuggestionLabel(suggestion)}</span>
-            </button>
-          ))}
+      {isOpen && (suggestions.length > 0 || facilitySuggestions.length > 0) && (
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-[700] max-h-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl divide-y divide-slate-100">
+          {/*registered parking lot*/}
+          {facilitySuggestions.length > 0 && (
+            <div>
+              <div className="px-3.5 py-2 bg-teal-50/80 flex items-center justify-between text-[11px] font-bold text-teal-800 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-teal-600" /> Bãi đỗ xe ParkLink
+                </span>
+                <span className="text-[10px] text-teal-600 font-semibold px-1.5 py-0.5 rounded bg-teal-100">
+                  {facilitySuggestions.length} kết quả
+                </span>
+              </div>
+              {facilitySuggestions.map((fac) => (
+                <button
+                  type="button"
+                  key={`fac-${fac.id}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSelectFacility(fac)}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-teal-50/60 transition-colors flex items-center gap-3 border-b border-slate-100 last:border-b-0 group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-bold text-slate-900 truncate group-hover:text-teal-700 transition">
+                        {fac.name}
+                      </p>
+                      {fac.price_per_month && (
+                        <span className="text-xs font-bold text-teal-600 shrink-0">
+                          {Number(fac.price_per_month).toLocaleString('vi-VN')} đ/tháng
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/*address*/}
+          {suggestions.length > 0 && (
+            <div>
+              <div className="px-3.5 py-2 bg-slate-50 flex items-center justify-between text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-slate-500" /> Địa điểm / Tuyến đường (Vietmap)
+                </span>
+              </div>
+              {suggestions.map((suggestion, index) => (
+                <button
+                  type="button"
+                  key={suggestion.ref_id || suggestion.id || `place-${index}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSelectPlace(suggestion)}
+                  className="w-full px-3.5 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-start gap-2.5 border-b last:border-b-0 border-slate-100"
+                >
+                  <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                  <span className="line-clamp-1">{getSuggestionLabel(suggestion)}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
