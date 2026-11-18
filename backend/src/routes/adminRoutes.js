@@ -11,6 +11,7 @@ router.get('/transactions', require('../controllers/transactionController').getH
 
 router.get('/dashboard/overview', adminController.getDashboardOverview);
 router.get('/dashboard/platform-fees/:month', adminController.getDashboardPlatformFeeTransactionsByMonth);
+router.get('/dashboard/export-revenue', adminController.exportRevenueReport);
 
 /**
  * M2-UC20: View pending owner registrations

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Clock3,
   DollarSign,
+  FileSpreadsheet,
   FileText,
   MessageCircle,
   RefreshCw,
@@ -63,6 +64,8 @@ const AdminDashboardPanel = () => {
   const [feeDetailError, setFeeDetailError] = useState('');
   const [selectedFeeYear, setSelectedFeeYear] = useState('');
   const feeRequestId = useRef(0);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   const loadOverview = useCallback(async () => {
     try {
@@ -79,6 +82,29 @@ const AdminDashboardPanel = () => {
       setLoading(false);
     }
   }, []);
+
+  const handleExport = async () => {
+    try {
+      setExportLoading(true);
+      setExportError('');
+
+      const blobData = await adminService.exportRevenueReport();
+      const blob = new Blob([blobData], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const dateStamp = new Date().toISOString().slice(0, 10);
+      link.download = `ParkLink_Bao_Cao_Doanh_Thu_Toan_Bo_${dateStamp}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      setExportError(err.message || 'Lỗi khi xuất file báo cáo doanh thu.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadOverview();
@@ -157,16 +183,39 @@ const AdminDashboardPanel = () => {
           <h2 className="text-xl font-bold text-slate-900">Tổng quan hệ thống</h2>
           <p className="mt-1 text-sm text-slate-500">Tình hình hoạt động hiện tại của ParkLink</p>
         </div>
-        <button
-          type="button"
-          onClick={loadOverview}
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          Làm mới
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportLoading}
+            className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <FileSpreadsheet className={`h-4 w-4 ${exportLoading ? 'animate-bounce' : ''}`} />
+            {exportLoading ? 'Đang xuất file...' : 'Xuất báo cáo tổng quan'}
+          </button>
+          <button
+            type="button"
+            onClick={loadOverview}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Làm mới
+          </button>
+        </div>
       </div>
+
+      {exportError && (
+        <div role="alert" className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <span className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {exportError}
+          </span>
+          <button type="button" onClick={() => setExportError('')} className="shrink-0 font-semibold underline">
+            Đóng
+          </button>
+        </div>
+      )}
 
       {error && (
         <div role="alert" className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">

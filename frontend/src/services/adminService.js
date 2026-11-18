@@ -141,6 +141,13 @@ const adminService = {
 
   getProviderRevenueStatistics: async (params = {}) => {
     return await api.get('/admin/reports/provider-revenue', { params });
+  },
+
+  exportRevenueReport: async (params = {}) => {
+    return await api.get('/admin/dashboard/export-revenue', {
+      params,
+      responseType: 'blob'
+    });
   }
 };
 

@@ -122,6 +122,95 @@ class AdminDashboardRepository {
       ORDER BY st.created_at DESC, st.id DESC
     `;
   }
+
+  async getRevenueData({ fromDate, toDate, facilityId }) {
+    const txWhere = {};
+    if (facilityId) txWhere.facility_id = Number(facilityId);
+    if (fromDate || toDate) {
+      txWhere.created_at = {};
+      if (fromDate) txWhere.created_at.gte = fromDate;
+      if (toDate) txWhere.created_at.lte = toDate;
+    }
+
+    const contractWhere = {
+      status: { in: ["ACTIVE", "TERMINATED", "CANCELLED"] }
+    };
+    if (facilityId) contractWhere.reservation = { facility_id: Number(facilityId) };
+    if (fromDate || toDate) {
+      contractWhere.created_at = {};
+      if (fromDate) contractWhere.created_at.gte = fromDate;
+      if (toDate) contractWhere.created_at.lte = toDate;
+    }
+
+    const facWhere = {};
+    if (facilityId) facWhere.id = Number(facilityId);
+
+    const [transactions, contracts, facilities] = await Promise.all([
+      prisma.system_Transaction.findMany({
+        where: txWhere,
+        select: {
+          id: true,
+          amount: true,
+          transaction_type: true,
+          status: true,
+          created_at: true,
+          facility: { select: { id: true, name: true, address: true } },
+          provider: { select: { id: true, full_name: true, email: true, phone_number: true } }
+        },
+        orderBy: [{ created_at: "desc" }, { id: "desc" }]
+      }),
+      prisma.confirmation_Record.findMany({
+        where: contractWhere,
+        select: {
+          id: true,
+          contract_code: true,
+          agreed_price: true,
+          start_date: true,
+          end_date: true,
+          status: true,
+          created_at: true,
+          reservation: {
+            select: {
+              vehicle_info: true,
+              customer: { select: { full_name: true, phone_number: true, email: true } },
+              facility: {
+                select: {
+                  name: true,
+                  provider: { select: { full_name: true } }
+                }
+              }
+            }
+          }
+        },
+        orderBy: [{ created_at: "desc" }, { id: "desc" }]
+      }),
+      prisma.facility.findMany({
+        where: facWhere,
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          capacity: true,
+          available_slots: true,
+          payment_status: true,
+          provider: { select: { full_name: true } },
+          transactions: {
+            where: { status: "COMPLETED" },
+            select: { amount: true }
+          },
+          reservations: {
+            where: { confirmation_record: { status: "ACTIVE" } },
+            select: {
+              confirmation_record: { select: { agreed_price: true } }
+            }
+          }
+        },
+        orderBy: { id: "asc" }
+      })
+    ]);
+
+    return { transactions, contracts, facilities };
+  }
 }
 
 module.exports = new AdminDashboardRepository();
