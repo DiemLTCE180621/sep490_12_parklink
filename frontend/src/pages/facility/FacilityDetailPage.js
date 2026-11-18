@@ -3,17 +3,20 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { facilityCarIcon } from '../../utils/mapIcons';
-import { openGoogleMapsDirections } from '../../utils/mapUtils';
+import {
+  openGoogleMapsDirections,
+  SEA_MAP_BOUNDS,
+  VIETNAM_SEA_MAP_OPTIONS,
+} from '../../utils/mapUtils';
 import ReviewSection from '../../components/common/ReviewSection';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
 import chatService from '../../services/chatService';
 import facilityService from '../../services/facilityService';
 import { addFavorite, removeFavorite, getFavorites } from '../../services/favoriteService';
-import { getVehicleTypeLabel } from '../../constants/vehicleTypes';
 import {
   Send, MapPin, ShieldCheck, Car, MessageCircle, Heart, CheckCircle2,
-  Loader2, ChevronLeft, ChevronRight, Clock3, Navigation, LockKeyhole,
+  Loader2, ChevronLeft, ChevronRight, Navigation, LockKeyhole,
   UserRound, FileText, Star, ExternalLink
 } from 'lucide-react';
 
@@ -23,8 +26,7 @@ const FacilityDetailPage = () => {
   const location = useLocation();
   const { isAuthenticated, user, token } = useAuth();
   const facilityId = parseInt(id, 10);
-
-  // Lấy địa chỉ đã nhập hoặc vị trí ghim marker đã chọn từ lần tìm kiếm trước đó
+  //get location from previous search
   const savedSearch = (() => {
     try {
       return JSON.parse(sessionStorage.getItem('parklink_last_search') || '{}');
@@ -122,6 +124,7 @@ const FacilityDetailPage = () => {
     };
   }, [facilityId, isAuthenticated, user?.role?.name]);
 
+
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
       setToastMsg('Vui lòng đăng nhập bằng tài khoản Khách hàng để lưu bãi xe!');
@@ -212,7 +215,7 @@ const FacilityDetailPage = () => {
 
     const destination = hasCoordinates ? [latitude, longitude] : facility.address;
 
-    // 1. ƯU TIÊN HÀNG ĐẦU: Địa chỉ đã nhập hoặc vị trí ghim marker người dùng đã chọn
+    //user inputted location as origin
     const origin = preferredOriginCoords || preferredOriginAddress;
     if (origin) {
       const fromLabel = preferredOriginAddress ? `từ "${preferredOriginAddress}"` : 'từ điểm ghim tìm kiếm';
@@ -228,7 +231,7 @@ const FacilityDetailPage = () => {
       return;
     }
 
-    // 2. NẾU KHÔNG CÓ ĐỊA CHỈ/MARKER TÌM KIẾM TRƯỚC ĐÓ: Thử lấy GPS nếu được cấp quyền
+    //try to get user location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
@@ -243,7 +246,6 @@ const FacilityDetailPage = () => {
           setToastType(opened ? 'success' : 'error');
         },
         () => {
-          // Bị từ chối GPS hoặc lỗi: Mở Google Maps với điểm đến (Google Maps tự định vị thiết bị)
           const opened = openGoogleMapsDirections({ destination, travelMode: 'driving' });
           setToastMsg(opened
             ? 'Đang mở chỉ đường trên Google Maps...'
@@ -288,10 +290,9 @@ const FacilityDetailPage = () => {
   const images = facility.images || [];
   const currentImage = images[activeImage] || images[0];
   const facilityCode = `FAC-${String(facility.id).padStart(4, '0')}`;
-  const vehicleTypes = Array.isArray(facility.vehicle_types) ? facility.vehicle_types : [];
-  const vehicleTypeLabels = (facility.facility_vehicle_types && facility.facility_vehicle_types.length > 0)
-    ? facility.facility_vehicle_types.map(fvt => fvt.vehicle_type?.name).filter(Boolean)
-    : vehicleTypes.map(getVehicleTypeLabel);
+  const activeVehicleTypes = (Array.isArray(facility.facility_vehicle_types) ? facility.facility_vehicle_types : [])
+    .map((fvt) => fvt.vehicle_type)
+    .filter((vt) => vt && vt.is_active !== false && vt.name);
   const providerName = facility.provider?.full_name || 'Chủ bãi xe';
   const latitude = Number(facility.latitude);
   const longitude = Number(facility.longitude);
@@ -299,7 +300,7 @@ const FacilityDetailPage = () => {
   const vietmapTileKey = process.env.REACT_APP_VIETMAP_TILE_KEY;
   const formatPrice = (value) => Number(value || 0).toLocaleString('vi-VN');
 
-  // Đảm bảo số chỗ trống luôn tuân thủ nguyên lý: Sức chứa = Đang gửi + Còn trống
+  //slot = total capacity - active contract
   const effectiveAvailableSlots = availability
     ? (availability.available_slots !== undefined && availability.available_slots !== null
       ? availability.available_slots
@@ -341,7 +342,6 @@ const FacilityDetailPage = () => {
                       aria-hidden="true"
                       className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-110 pointer-events-none"
                     />
-                    {/* Ảnh chính nguyên vẹn 100%, không bị cắt mất bất kỳ góc nào */}
                     <img
                       src={currentImage.image_url}
                       alt={facility.name}
@@ -386,12 +386,6 @@ const FacilityDetailPage = () => {
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full text-xs font-semibold"><ShieldCheck className="w-3.5 h-3.5" /> Đã xác thực</span>
-                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-xs font-medium"><Clock3 className="w-3.5 h-3.5" /> Mở cửa 24/7</span>
-                  {vehicleTypes.length > 0 && (
-                    <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-1 rounded-full text-xs font-medium">
-                      <Car className="w-3.5 h-3.5" /> {vehicleTypeLabels.join(', ')}
-                    </span>
-                  )}
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">{facility.name}</h1>
                 <p className="text-sm text-slate-600 flex items-start gap-2"><MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" /> {facility.address}</p>
@@ -401,9 +395,16 @@ const FacilityDetailPage = () => {
                   <span className="flex items-center gap-1"><UserRound className="w-3.5 h-3.5 text-emerald-600" /> Chủ bãi: <strong className="text-slate-800">{providerName}</strong></span>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-                <button onClick={toggleFavorite} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition ${isFavorite ? 'border-rose-200 bg-rose-50 text-rose-600' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}>
-                  <Heart className={`w-4 h-4 ${isFavorite ? 'fill-rose-500' : ''}`} /> {isFavorite ? 'Đã lưu' : 'Lưu bãi xe'}
+              <div className="flex items-center justify-center pt-3 border-t border-slate-100">
+                <button
+                  onClick={toggleFavorite}
+                  className={`w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 shadow-sm ${isFavorite
+                    ? 'border-rose-300 bg-rose-50 text-rose-600 hover:bg-rose-100 shadow-rose-100'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900'
+                    }`}
+                >
+                  <Heart className={`w-5 h-5 transition-transform duration-200 ${isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'text-slate-400'}`} />
+                  <span>{isFavorite ? 'Đã lưu bãi xe' : 'Lưu bãi xe yêu thích'}</span>
                 </button>
               </div>
             </div>
@@ -444,12 +445,12 @@ const FacilityDetailPage = () => {
               <div className="flex items-start justify-between gap-3">
                 <span className="text-slate-500 shrink-0">Loại xe phù hợp</span>
                 <span className="flex flex-wrap justify-end gap-1.5 text-right">
-                  {vehicleTypeLabels.length ? vehicleTypeLabels.map((label, index) => (
-                    <span key={`${vehicleTypes[index]}-${index}`} className="px-2 py-1 rounded-md bg-teal-50 border border-teal-100 text-teal-800 text-xs font-semibold">
-                      {label}
+                  {activeVehicleTypes.length > 0 ? activeVehicleTypes.map((vt, index) => (
+                    <span key={`${vt.id || vt.type_code || index}`} className="px-2 py-1 rounded-md bg-teal-50 border border-teal-100 text-teal-800 text-xs font-semibold">
+                      {vt.name}
                     </span>
                   )) : (
-                    <span className="font-semibold text-slate-800">Ô tô</span>
+                    <span className="text-slate-500 text-xs italic">Chưa có loại xe phù hợp</span>
                   )}
                 </span>
               </div>
@@ -494,11 +495,17 @@ const FacilityDetailPage = () => {
               <MapContainer
                 center={[latitude, longitude]}
                 zoom={16}
+                minZoom={VIETNAM_SEA_MAP_OPTIONS.minZoom}
+                maxZoom={VIETNAM_SEA_MAP_OPTIONS.maxZoom}
+                maxBounds={VIETNAM_SEA_MAP_OPTIONS.maxBounds}
+                maxBoundsViscosity={VIETNAM_SEA_MAP_OPTIONS.maxBoundsViscosity}
                 scrollWheelZoom={false}
                 style={{ height: '100%', width: '100%' }}
               >
                 <TileLayer
                   url={`https://maps.vietmap.vn/api/tm/{z}/{x}/{y}.png?apikey=${vietmapTileKey}`}
+                  bounds={SEA_MAP_BOUNDS}
+                  noWrap
                   keepBuffer={1}
                   updateWhenIdle
                   updateWhenZooming={false}

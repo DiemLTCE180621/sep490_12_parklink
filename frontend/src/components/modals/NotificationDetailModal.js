@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  X,
   Radio,
   CalendarCheck,
   FileText,
@@ -186,8 +185,8 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
               {formattedDate}
             </span>
             <span className={`flex items-center gap-1.5 font-bold px-3 py-1 rounded-none border text-xs uppercase tracking-wide ${notification.is_read
-                ? 'text-teal-800 bg-teal-50 border-teal-200'
-                : 'text-amber-800 bg-amber-50 border-amber-200'
+              ? 'text-teal-800 bg-teal-50 border-teal-200'
+              : 'text-amber-800 bg-amber-50 border-amber-200'
               }`}>
               <CheckCheck className={`w-4 h-4 ${notification.is_read ? 'text-teal-600' : 'text-amber-600'}`} />
               {notification.is_read ? 'Đã đánh dấu đã đọc' : 'Chưa đánh dấu đã đọc'}

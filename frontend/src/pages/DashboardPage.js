@@ -446,7 +446,9 @@ const DashboardPage = () => {
 
             {/* NỘI DUNG PROVIDER TƯƠNG ỨNG */}
             <div className="flex-1 min-w-0 w-full">
-              {activeProviderTab === 'facility' && <ProviderDashboardPanel />}
+              {activeProviderTab === 'facility' && (
+                <ProviderDashboardPanel onNavigateToTab={(tabId) => setActiveProviderTab(tabId)} />
+              )}
               {activeProviderTab === 'active-customers' && <ProviderActiveCustomersPanel />}
               {activeProviderTab === 'monthly-revenue' && <ProviderMonthlyRevenuePanel />}
               {activeProviderTab === 'reservations' && (

@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  Building2, MapPin, Edit3, X, Minus, Plus, Car, CheckCircle2, 
+import {
+  Building2, MapPin, Edit3, X, Minus, Plus, Car, CheckCircle2,
   AlertCircle, Lock, CircleDollarSign, Eye, EyeOff, Sparkles, Save,
   RefreshCw, Clock, Image as ImageIcon
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import providerService from '../../services/providerService';
+import { getProviderReservations } from '../../services/reservationService';
 import Toast from '../common/Toast';
 
-const ProviderDashboardPanel = () => {
+const ProviderDashboardPanel = ({ onNavigateToTab }) => {
   const { user, refreshUser } = useAuth();
   const [isPaying, setIsPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [facilityStats, setFacilityStats] = useState(null);
+  const [pendingReservationsCount, setPendingReservationsCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [selectedImagePreview, setSelectedImagePreview] = useState(null);
 
@@ -26,14 +28,28 @@ const ProviderDashboardPanel = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Lấy dữ liệu cơ sở mới nhất kèm số chỗ trống & số hợp đồng & danh sách ảnh
+  //capacity, contract, request fetch
   const fetchFacilityData = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await providerService.getMyFacility();
-      const facilityData = res?.facility || res?.data?.facility || res?.data || res;
-      if (facilityData && (facilityData.id || facilityData.capacity)) {
-        setFacilityStats(facilityData);
+      const [facilityRes, reservationsRes] = await Promise.allSettled([
+        providerService.getMyFacility(),
+        getProviderReservations()
+      ]);
+
+      if (facilityRes.status === 'fulfilled') {
+        const res = facilityRes.value;
+        const facilityData = res?.facility || res?.data?.facility || res?.data || res;
+        if (facilityData && (facilityData.id || facilityData.capacity)) {
+          setFacilityStats(facilityData);
+        }
+      }
+
+      if (reservationsRes.status === 'fulfilled') {
+        const resRes = reservationsRes.value;
+        const list = resRes?.data?.reservations || resRes?.reservations || (Array.isArray(resRes) ? resRes : []);
+        const pending = list.filter((r) => r.status === 'PENDING').length;
+        setPendingReservationsCount(pending);
       }
     } catch (err) {
       console.warn("Không thể tải thông tin bãi đỗ xe chi tiết:", err);
@@ -46,7 +62,6 @@ const ProviderDashboardPanel = () => {
     fetchFacilityData();
   }, [fetchFacilityData]);
 
-  // Thông tin bãi xe hiển thị (ưu tiên dữ liệu chi tiết có stats và images)
   const currentFacility = facilityStats || user?.facility;
   const totalCapacity = currentFacility?.capacity || 0;
   const activeContracts = currentFacility?.active_contracts !== undefined ? Number(currentFacility.active_contracts) : 0;
@@ -149,7 +164,7 @@ const ProviderDashboardPanel = () => {
         } catch (error) {
           console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
         }
-      }, 5000); // Polling mỗi 5 giây
+      }, 5000); //polling every 5 sec
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -161,7 +176,7 @@ const ProviderDashboardPanel = () => {
       setIsPaying(true);
       const res = await authService.getCurrentUser();
       const latestFacility = res.data?.user?.facility;
-      
+
       if (latestFacility && latestFacility.payment_status === 'PAID') {
         setPaymentSuccess(true);
         setToastInfo({ message: "Thanh toán thành công! Bãi đỗ xe đã được kích hoạt.", type: 'success' });
@@ -190,236 +205,274 @@ const ProviderDashboardPanel = () => {
     );
   }
 
-  // Tỉ lệ chỗ trống hiện tại
   const slotPercent = totalCapacity > 0 ? Math.round((currentAvailableSlots / totalCapacity) * 100) : 0;
+  const occupancyRate = totalCapacity > 0 ? Math.round((occupiedSlots / totalCapacity) * 100) : 0;
   const editSlotPercent = totalCapacity > 0 ? Math.round((Number(editData.available_slots || 0) / totalCapacity) * 100) : 0;
   const editOccupiedSlots = Math.max(0, totalCapacity - Number(editData.available_slots || 0));
+
+  const monthlyPrice = Number(currentFacility.price_per_month) || 0;
+  const estimatedMonthlyRevenue = activeContracts * monthlyPrice;
 
   const facilityImages = currentFacility.images || [];
 
   return (
-    <div className="space-y-6">
-      <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
+    <>
+      <div className="space-y-6">
+        <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      {/* ── PANEL HEADER (ĐỒNG BỘ VỚI CÁC TAB PROVIDER KHÁC) ── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Cơ Sở & Quản Lý Chỗ Trống
-          </h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Theo dõi tình trạng hoạt động, sức chứa bãi xe, số chỗ trống thực tế và giá thuê theo tháng.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Badge trạng thái duyệt */}
-          <span className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 border ${
-            currentFacility.verification_status === 'APPROVED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-            currentFacility.verification_status === 'REJECTED' ? 'bg-rose-50 text-rose-800 border-rose-200' :
-            'bg-amber-50 text-amber-800 border-amber-200'
-          }`}>
-            <Clock className="w-3.5 h-3.5" />
-            {currentFacility.verification_status === 'APPROVED' ? 'Đã Phê Duyệt' :
-             currentFacility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Phê Duyệt'}
-          </span>
-
-          {/* Nút cập nhật chỗ trống */}
-          <button
-            onClick={handleOpenEdit}
-            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
-          >
-            <Edit3 className="w-3.5 h-3.5" /> Cập nhật chỗ trống & giá
-          </button>
-
-          {/* Nút làm mới */}
-          <button
-            onClick={fetchFacilityData}
-            disabled={loading}
-            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200"
-            title="Tải lại dữ liệu bãi xe"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Làm mới
-          </button>
-        </div>
-      </div>
-
-      {/* ── KPI STATS OVERVIEW CARDS (4 CARDS ĐỒNG BỘ) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Chỗ trống hiện tại */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-            <span>Chỗ trống hiện tại</span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
+          <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Bãi Xe Và Vận Hành Cơ Sở
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Theo dõi tình trạng hoạt động, chỗ trống thực tế, tỷ lệ lấp đầy, yêu cầu thuê và dự kiến doanh thu tháng.
+              </p>
             </div>
-          </div>
-          <div className="flex items-baseline gap-1.5 mt-2">
-            <span className="text-2xl font-black text-emerald-950">{currentAvailableSlots}</span>
-            <span className="text-xs font-bold text-emerald-700">/ {totalCapacity} chỗ</span>
-          </div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
-            <div
-              className="bg-emerald-600 h-full rounded-full transition-all duration-300"
-              style={{ width: `${slotPercent}%` }}
-            />
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Sẵn sàng đón khách ({slotPercent}%)</p>
-        </div>
 
-        {/* Card 2: Đang gửi xe */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-            <span>Đang gửi xe</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Car className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-blue-950 mt-2">{occupiedSlots} <span className="text-xs font-semibold text-blue-700">xe</span></div>
-          <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Khách gửi thực tế</p>
-        </div>
-
-        {/* Card 3: Sức chứa đăng ký */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-            <span>Sức chứa đăng ký</span>
-            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
-              <Lock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-slate-900 mt-2">{totalCapacity} <span className="text-xs font-semibold text-slate-500">slots</span></div>
-          <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Gói đăng ký cố định</p>
-        </div>
-
-        {/* Card 4: Giá thuê tháng */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-            <span>Giá thuê niêm yết</span>
-            <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-              <CircleDollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl font-black text-teal-900 mt-2 truncate">
-            {Number(currentFacility.price_per_month).toLocaleString('vi-VN')} <span className="text-xs font-semibold text-teal-700">đ/tháng</span>
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Áp dụng cho khách thuê mới</p>
-        </div>
-      </div>
-
-      {/* ── THÔNG TIN CHI TIẾT CƠ SỞ & BỘ SƯU TẬP HÌNH ẢNH ── */}
-      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-100 shadow-md space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-teal-600" /> Chi Tiết Cơ Sở Bãi Xe
-          </h3>
-          <div className="flex items-center gap-2">
-            {currentFacility.visibility_status === 'VISIBLE' ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                <Eye className="w-3.5 h-3.5" /> Đang hoạt động công khai
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 border ${currentFacility.verification_status === 'APPROVED' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                currentFacility.verification_status === 'REJECTED' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                  'bg-amber-50 text-amber-800 border-amber-200'
+                }`}>
+                <Clock className="w-3.5 h-3.5" />
+                {currentFacility.verification_status === 'APPROVED' ? 'Đã Phê Duyệt' :
+                  currentFacility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Phê Duyệt'}
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                <EyeOff className="w-3.5 h-3.5" /> Tạm đóng cửa (Ẩn)
-              </span>
-            )}
-          </div>
-        </div>
 
-        {/* Thông tin tên bãi và địa chỉ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-          <div className="space-y-1">
-            <span className="text-slate-400 font-semibold uppercase tracking-wider">Tên bãi đỗ xe</span>
-            <p className="text-base font-bold text-slate-900">{currentFacility.name}</p>
-          </div>
-          <div className="space-y-1">
-            <span className="text-slate-400 font-semibold uppercase tracking-wider">Địa chỉ cơ sở</span>
-            <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" /> {currentFacility.address}
-            </p>
-          </div>
-        </div>
-
-        {/* ── PHẦN HÌNH ẢNH BÃI ĐỖ XE DÀNH CHO PROVIDER XEM ── */}
-        <div className="border-t border-slate-100 pt-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4 text-teal-600" />
-              Hình Ảnh Bãi Đỗ Xe {facilityImages.length > 0 ? `(${facilityImages.length})` : ''}
-            </span>
-            {facilityImages.length > 0 && (
-              <span className="text-[11px] text-slate-400">
-                Nhấp vào ảnh để phóng to
-              </span>
-            )}
-          </div>
-
-          {facilityImages.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
-              {facilityImages.map((img, idx) => (
-                <div
-                  key={img.id || idx}
-                  onClick={() => setSelectedImagePreview(img.image_url)}
-                  className="group relative aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shadow-xs hover:shadow-md transition duration-200"
-                >
-                  <img
-                    src={img.image_url}
-                    alt={`Bãi xe ${idx + 1}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <span className="p-1.5 bg-white/90 rounded-lg text-slate-800 shadow-sm">
-                      <Eye className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                  {img.is_primary && (
-                    <span className="absolute top-2 left-2 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
-                      Ảnh chính
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-              <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
-              <p className="text-xs text-slate-500 font-medium">Chưa có hình ảnh nào được tải lên cho cơ sở này</p>
-            </div>
-          )}
-        </div>
-
-        {/* Thanh toán phí kích hoạt nếu chưa thanh toán */}
-        {currentFacility.verification_status === 'APPROVED' && currentFacility.payment_status === 'UNPAID' && (
-          <div className="mt-4 p-6 border-2 border-dashed border-teal-200 rounded-2xl bg-teal-50 text-center space-y-4">
-            <h4 className="font-bold text-teal-900 text-base">Hoàn Tất Thanh Toán Phí Nền Tảng</h4>
-            <p className="text-xs text-teal-800 max-w-lg mx-auto">
-              Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.
-            </p>
-
-            <div className="flex justify-center my-3">
-              <img
-                src={`https://img.vietqr.io/image/MB-881666787988-compact2.png?amount=${currentFacility.system_fee / 100}&addInfo=${encodeURIComponent('PARKLINK F' + currentFacility.id)}&accountName=PARKLINK`}
-                alt="QR Code Thanh Toán"
-                className="w-44 h-44 rounded-2xl shadow-md border-2 border-white"
-              />
-            </div>
-
-            <div className="flex justify-center">
               <button
-                disabled={isPaying}
-                onClick={handleCheckPayment}
-                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50"
+                onClick={handleOpenEdit}
+                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
               >
-                {isPaying ? 'Đang xử lý...' : 'Kiểm tra thanh toán'}
+                <Edit3 className="w-3.5 h-3.5" /> Cập nhật chỗ trống & giá
+              </button>
+
+              <button
+                onClick={fetchFacilityData}
+                disabled={loading}
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200"
+                title="Tải lại dữ liệu bãi xe"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Làm mới
               </button>
             </div>
           </div>
-        )}
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+            <div className="p-5">
+              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                <span>Chỗ trống hiện tại</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 mt-2">
+                <span className="text-2xl font-black text-emerald-950">{currentAvailableSlots}</span>
+                <span className="text-xs font-bold text-emerald-700">/ {totalCapacity} chỗ</span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                <div
+                  className="bg-emerald-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${slotPercent}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Sẵn sàng đón khách ({slotPercent}%)</p>
+            </div>
+
+            <div className="p-5">
+              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                <span>Đang gửi & Tỷ lệ lấp đầy</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Car className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className="text-2xl font-black text-blue-950">{occupiedSlots}</span>
+                <span className="text-xs font-semibold text-blue-700">xe</span>
+                <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 ml-auto">
+                  {occupancyRate}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                <div
+                  className="bg-blue-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, occupancyRate)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Công suất sử dụng bãi xe</p>
+            </div>
+
+            <div
+              onClick={() => onNavigateToTab && onNavigateToTab('reservations')}
+              className={`p-5 transition ${onNavigateToTab ? 'cursor-pointer hover:bg-slate-50' : ''} ${pendingReservationsCount > 0 ? 'bg-amber-50/30' : ''}`}
+              title={onNavigateToTab ? 'Nhấn để chuyển sang duyệt yêu cầu thuê' : undefined}
+            >
+              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                <span>Yêu cầu chờ duyệt</span>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingReservationsCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                  <Clock className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
+                <span className={`text-2xl font-black ${pendingReservationsCount > 0 ? 'text-amber-950' : 'text-slate-900'
+                  }`}>
+                  {pendingReservationsCount}
+                </span>
+                <span className="text-xs font-semibold text-slate-500">yêu cầu</span>
+                {pendingReservationsCount > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white ml-auto animate-pulse">
+                    Cần xử lý
+                  </span>
+                )}
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                <div
+                  className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${pendingReservationsCount > 0 ? 100 : 0}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium flex items-center justify-between">
+                <span>Khách đang chờ duyệt</span>
+                {onNavigateToTab && <span className="text-teal-700 font-bold hover:underline">Chi tiết &rarr;</span>}
+              </p>
+            </div>
+
+            <div className="p-5">
+              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+                <span>Dự kiến DT tháng</span>
+                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                  <CircleDollarSign className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="text-xl font-black text-teal-950 mt-2 truncate">
+                {estimatedMonthlyRevenue.toLocaleString('vi-VN')} <span className="text-xs font-semibold text-teal-700">đ</span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+                <div
+                  className="bg-teal-600 h-full rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, occupancyRate)}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium truncate">
+                {activeContracts} hợp đồng &times; {monthlyPrice.toLocaleString('vi-VN')}đ
+              </p>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-teal-600" /> Chi Tiết Cơ Sở Bãi Xe
+              </h3>
+              <div className="flex items-center gap-2">
+                {currentFacility.visibility_status === 'VISIBLE' ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <Eye className="w-3.5 h-3.5" /> Đang hoạt động công khai
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                    <EyeOff className="w-3.5 h-3.5" /> Tạm đóng cửa (Ẩn)
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider">Tên bãi đỗ xe</span>
+                <p className="text-base font-bold text-slate-900">{currentFacility.name}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider">Địa chỉ cơ sở</span>
+                <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" /> {currentFacility.address}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 pt-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-teal-600" />
+                  Hình Ảnh Bãi Đỗ Xe {facilityImages.length > 0 ? `(${facilityImages.length})` : ''}
+                </span>
+                {facilityImages.length > 0 && (
+                  <span className="text-[11px] text-slate-400">
+                    Nhấp vào ảnh để phóng to
+                  </span>
+                )}
+              </div>
+
+              {facilityImages.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
+                  {facilityImages.map((img, idx) => (
+                    <div
+                      key={img.id || idx}
+                      onClick={() => setSelectedImagePreview(img.image_url)}
+                      className="group relative aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shadow-xs hover:shadow-md transition duration-200"
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={`Bãi xe ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      />
+                      <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <span className="p-1.5 bg-white/90 rounded-lg text-slate-800 shadow-sm">
+                          <Eye className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                      {img.is_primary && (
+                        <span className="absolute top-2 left-2 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+                          Ảnh chính
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+                  <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
+                  <p className="text-xs text-slate-500 font-medium">Chưa có hình ảnh nào được tải lên cho cơ sở này</p>
+                </div>
+              )}
+            </div>
+
+            {currentFacility.verification_status === 'APPROVED' && currentFacility.payment_status === 'UNPAID' && (
+              <div className="mt-4 p-6 border-2 border-dashed border-teal-200 rounded-2xl bg-teal-50 text-center space-y-4">
+                <h4 className="font-bold text-teal-900 text-base">Hoàn Tất Thanh Toán Phí Nền Tảng</h4>
+                <p className="text-xs text-teal-800 max-w-lg mx-auto">
+                  Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.
+                </p>
+
+                <div className="flex justify-center my-3">
+                  <img
+                    src={`https://img.vietqr.io/image/MB-881666787988-compact2.png?amount=${currentFacility.system_fee / 100}&addInfo=${encodeURIComponent('PARKLINK F' + currentFacility.id)}&accountName=PARKLINK`}
+                    alt="QR Code Thanh Toán"
+                    className="w-44 h-44 rounded-2xl shadow-md border-2 border-white"
+                  />
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    disabled={isPaying}
+                    onClick={handleCheckPayment}
+                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50"
+                  >
+                    {isPaying ? 'Đang xử lý...' : 'Kiểm tra thanh toán'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* ── MODAL PHÓNG TO HÌNH ẢNH (LIGHTBOX) ── */}
       {selectedImagePreview && (
         <div
-          className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 !m-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setSelectedImagePreview(null)}
         >
           <div
@@ -444,7 +497,7 @@ const ProviderDashboardPanel = () => {
 
       {/* POPUP THANH TOÁN THÀNH CÔNG */}
       {paymentSuccess && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4 transition-opacity">
+        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4 transition-opacity">
           <div className="bg-white p-8 max-w-md w-full text-center shadow-2xl rounded-3xl border border-slate-100">
             <div className="w-20 h-20 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-teal-200">
               <CheckCircle2 className="w-10 h-10 text-teal-600 animate-bounce" />
@@ -460,11 +513,9 @@ const ProviderDashboardPanel = () => {
         </div>
       )}
 
-      {/* ── MODAL CẬP NHẬT CHỖ TRỐNG & GIÁ THUÊ (KÉO RỘNG NGANG MAX-W-3XL & CHIA 2 CỘT CÂN ĐỐI) ── */}
       {isEditing && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
+        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
           <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 p-6 sm:p-8 space-y-6 animate-scaleUp">
-            {/* Header Modal */}
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center shrink-0">
@@ -517,7 +568,6 @@ const ProviderDashboardPanel = () => {
                     </div>
                   </div>
 
-                  {/* Hộp Stepper Số Chỗ Trống */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
@@ -529,7 +579,6 @@ const ProviderDashboardPanel = () => {
                       </span>
                     </div>
 
-                    {/* Stepper điều khiển */}
                     <div className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200">
                       <button
                         type="button"
@@ -571,7 +620,6 @@ const ProviderDashboardPanel = () => {
                       </button>
                     </div>
 
-                    {/* Thanh tiến trình */}
                     <div className="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-teal-600 h-full rounded-full transition-all duration-300"
@@ -579,17 +627,15 @@ const ProviderDashboardPanel = () => {
                       />
                     </div>
 
-                    {/* Nút chọn nhanh */}
                     <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
                       <span className="text-[11px] text-slate-400 font-medium">Chọn nhanh:</span>
                       <button
                         type="button"
                         onClick={() => handleQuickPreset(0)}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${
-                          Number(editData.available_slots) === 0
-                            ? 'bg-rose-50 text-rose-700 border-rose-300 font-bold'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
-                        }`}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === 0
+                          ? 'bg-rose-50 text-rose-700 border-rose-300 font-bold'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
                       >
                         Hết chỗ (0)
                       </button>
@@ -597,11 +643,10 @@ const ProviderDashboardPanel = () => {
                         <button
                           type="button"
                           onClick={() => handleQuickPreset(Math.floor(totalCapacity / 2))}
-                          className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${
-                            Number(editData.available_slots) === Math.floor(totalCapacity / 2)
-                              ? 'bg-teal-50 text-teal-800 border-teal-300 font-bold'
-                              : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
-                          }`}
+                          className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === Math.floor(totalCapacity / 2)
+                            ? 'bg-teal-50 text-teal-800 border-teal-300 font-bold'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                            }`}
                         >
                           Nửa bãi ({Math.floor(totalCapacity / 2)})
                         </button>
@@ -609,11 +654,10 @@ const ProviderDashboardPanel = () => {
                       <button
                         type="button"
                         onClick={() => handleQuickPreset(totalCapacity)}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${
-                          Number(editData.available_slots) === totalCapacity
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
-                        }`}
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === totalCapacity
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
+                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
                       >
                         Trống hoàn toàn ({totalCapacity})
                       </button>
@@ -626,9 +670,7 @@ const ProviderDashboardPanel = () => {
                   </div>
                 </div>
 
-                {/* ── CỘT PHẢI: GIÁ THUÊ & TRẠNG THÁI HOẠT ĐỘNG ── */}
                 <div className="space-y-4">
-                  {/* GIÁ THUÊ THEO THÁNG */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
                     <div className="flex justify-between items-center text-xs">
                       <label className="font-bold text-slate-800 flex items-center gap-1">
@@ -684,7 +726,6 @@ const ProviderDashboardPanel = () => {
                     </div>
                   </div>
 
-                  {/* TRẠNG THÁI HOẠT ĐỘNG CỦA BÃI XE */}
                   {currentFacility.payment_status === 'PAID' && (
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
                       <label className="text-xs font-bold text-slate-800 block">
@@ -693,15 +734,13 @@ const ProviderDashboardPanel = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div
                           onClick={() => setEditData({ ...editData, visibility_status: 'VISIBLE' })}
-                          className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${
-                            editData.visibility_status === 'VISIBLE'
-                              ? 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs'
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                          }`}
+                          className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${editData.visibility_status === 'VISIBLE'
+                            ? 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                            }`}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                            editData.visibility_status === 'VISIBLE' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'VISIBLE' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
+                            }`}>
                             <Eye className="w-4 h-4" />
                           </div>
                           <div>
@@ -712,15 +751,13 @@ const ProviderDashboardPanel = () => {
 
                         <div
                           onClick={() => setEditData({ ...editData, visibility_status: 'HIDDEN' })}
-                          className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${
-                            editData.visibility_status === 'HIDDEN'
-                              ? 'bg-amber-50 border-amber-500 text-amber-950 shadow-xs'
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-                          }`}
+                          className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${editData.visibility_status === 'HIDDEN'
+                            ? 'bg-amber-50 border-amber-500 text-amber-950 shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                            }`}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                            editData.visibility_status === 'HIDDEN' ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-500'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'HIDDEN' ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-500'
+                            }`}>
                             <EyeOff className="w-4 h-4" />
                           </div>
                           <div>
@@ -765,7 +802,7 @@ const ProviderDashboardPanel = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
