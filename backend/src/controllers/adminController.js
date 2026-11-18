@@ -13,6 +13,20 @@ class AdminController {
     }
   }
 
+  async getDashboardPlatformFeeTransactionsByMonth(req, res, next) {
+    try {
+      const { month } = req.params;
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+        return res.status(400).json({ status: "fail", message: "Tháng giao dịch không hợp lệ." });
+      }
+
+      const transactions = await adminService.getDashboardPlatformFeeTransactionsByMonth(month);
+      return res.json({ status: "success", data: transactions });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /**
    * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt / đang chuẩn bị
    */
