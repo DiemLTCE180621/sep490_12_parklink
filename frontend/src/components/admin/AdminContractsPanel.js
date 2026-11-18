@@ -86,6 +86,7 @@ const AdminContractsPanel = () => {
 
   useEffect(() => {
     fetchContracts(1, pagination.limit, statusFilter, searchTerm, startDate, endDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, pagination.limit]);
 
   const handleSearchSubmit = (e) => {

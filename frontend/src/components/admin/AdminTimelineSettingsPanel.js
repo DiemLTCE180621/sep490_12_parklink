@@ -4,13 +4,10 @@ import {
   Save,
   RotateCcw,
   CheckCircle,
-  AlertCircle,
   Loader2,
   Calendar,
   FileText,
   UserCheck,
-  Ban,
-  Info
 } from 'lucide-react';
 import timelineSettingService from '../../services/timelineSettingService';
 import Toast from '../common/Toast';

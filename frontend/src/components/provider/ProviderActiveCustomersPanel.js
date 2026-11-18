@@ -81,6 +81,7 @@ const ProviderActiveCustomersPanel = () => {
 
   useEffect(() => {
     fetchActiveCustomers(1, pagination.limit, searchTerm);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagination.limit]);
 
   const handleSearchSubmit = (e) => {
