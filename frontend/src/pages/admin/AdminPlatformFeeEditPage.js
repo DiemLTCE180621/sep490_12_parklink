@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, DollarSign, Save, CheckCircle2,
-  Loader2, Calculator, Sparkles, Power
+  Loader2, Power
 } from 'lucide-react';
 import platformFeeService from '../../services/platformFeeService';
 import Toast from '../../components/common/Toast';
@@ -159,9 +159,7 @@ const AdminPlatformFeeEditPage = () => {
     }
   };
 
-  const parsedAmount = parseFloat(formData.fee_amount) || 0;
   const parsedMin = parseInt(formData.min_slots, 10) || 1;
-  const parsedMax = parseInt(formData.max_slots, 10) || parsedMin;
 
   if (loading) {
     return (
@@ -212,10 +210,6 @@ const AdminPlatformFeeEditPage = () => {
                   Cấu hình mức phí nền tảng thu 1 lần theo quy mô chỗ đỗ hộ gia đình (Tối đa 15 chỗ)
                 </p>
               </div>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 rounded-xl text-xs font-bold text-amber-700 border border-amber-200 self-start sm:self-auto shrink-0">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>Quy mô hộ gia đình: 1 – 15 chỗ</span>
             </div>
           </div>
 
@@ -305,7 +299,7 @@ const AdminPlatformFeeEditPage = () => {
             {/* Hàng 3: Trạng Thái Hoạt Động */}
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">
-                Trạng Thái Hoạt Động <span className="text-slate-400 font-normal">(Thiết lập hiệu lực áp dụng của gói biểu phí)</span>
+                Trạng Thái Hoạt Động
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Card Kích hoạt */}
@@ -367,25 +361,6 @@ const AdminPlatformFeeEditPage = () => {
                 </button>
               </div>
             </div>
-
-            {/* Thanh Tóm Tắt Quy Tắc Áp Dụng */}
-            {parsedAmount > 0 && (
-              <div className="p-4 bg-teal-50/80 border border-teal-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
-                <div className="flex items-center gap-2.5 text-teal-950 font-medium">
-                  <Calculator className="w-5 h-5 text-teal-600 shrink-0" />
-                  <span>
-                    Quy tắc áp dụng: Áp dụng mức phí cố định{' '}
-                    <strong className="text-teal-900 font-extrabold">{parsedAmount.toLocaleString('vi-VN')} VNĐ</strong> cho bãi xe{' '}
-                    <strong className="text-teal-900 font-extrabold">
-                      {parsedMin === parsedMax ? `đúng ${parsedMin} chỗ` : `từ ${parsedMin} – ${parsedMax} chỗ`}
-                    </strong>.
-                  </span>
-                </div>
-                <span className="font-extrabold text-teal-800 bg-white px-3.5 py-1.5 rounded-xl border border-teal-200 shadow-2xs shrink-0 self-start sm:self-auto text-xs">
-                  {parsedAmount.toLocaleString('vi-VN')} VNĐ / bãi
-                </span>
-              </div>
-            )}
 
             {/* Mô Tả Gói Phí */}
             <div>

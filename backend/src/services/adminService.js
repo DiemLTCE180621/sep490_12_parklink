@@ -14,6 +14,10 @@ class AdminService {
     return await adminDashboardRepository.getOverview();
   }
 
+  async getDashboardPlatformFeeTransactionsByMonth(month) {
+    return await adminDashboardRepository.getPlatformFeeTransactionsByMonth(month);
+  }
+
   /**
    * M2-UC20: View pending owner registrations
    * Lấy danh sách bãi đỗ xe đang PENDING_REVIEW hoặc PREPARING

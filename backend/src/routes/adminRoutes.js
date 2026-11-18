@@ -10,6 +10,7 @@ router.use(authenticateToken, authorizeRoles('ADMIN'));
 router.get('/transactions', require('../controllers/transactionController').getHistory);
 
 router.get('/dashboard/overview', adminController.getDashboardOverview);
+router.get('/dashboard/platform-fees/:month', adminController.getDashboardPlatformFeeTransactionsByMonth);
 
 /**
  * M2-UC20: View pending owner registrations
