@@ -1,4 +1,5 @@
 const facilityRepository = require('../repositories/facilityRepository');
+const vehicleTypeRepository = require('../repositories/vehicleTypeRepository');
 
 class FacilityService {
   /**
@@ -71,10 +72,12 @@ class FacilityService {
       return { ...facility, distance };
     });
 
-    // Chỉ lọc theo bán kính khi có vị trí; không có vị trí thì đã trả toàn bộ ở trên.
-    return facilitiesWithDistance
+    // Lọc theo bán kính khi có vị trí
+    const withinRadius = facilitiesWithDistance
       .filter(f => f.distance !== null && f.distance <= effectiveRadius)
       .sort((a, b) => a.distance - b.distance);
+
+    return withinRadius;
   }
 
   // Hàm tính khoảng cách bằng công thức Haversine (trả về km)
@@ -182,14 +185,47 @@ class FacilityService {
     if (isNaN(facilityId)) {
       throw new Error('ID bãi đỗ xe không hợp lệ');
     }
-    
-    const facility = await facilityRepository.getFacilityDetails(facilityId);
+
+    const [facility, activeVehicleTypes] = await Promise.all([
+      facilityRepository.getFacilityDetails(facilityId),
+      vehicleTypeRepository.findActive()
+    ]);
     if (!facility) {
       throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
     }
 
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
     const availableSlots = Math.max(0, facility.capacity - activeContractsCount);
+
+    // Lọc các loại xe còn đang hoạt động (is_active = true) từ Backend;
+    // ưu tiên bảng liên kết facility_vehicle_types, fallback qua mảng JSON cũ nếu cơ sở chưa đồng bộ bảng liên kết.
+    let parsedRawTypes = [];
+    if (Array.isArray(facility.vehicle_types)) {
+      parsedRawTypes = facility.vehicle_types;
+    } else if (typeof facility.vehicle_types === 'string') {
+      try {
+        const parsed = JSON.parse(facility.vehicle_types);
+        if (Array.isArray(parsed)) parsedRawTypes = parsed;
+      } catch (e) {
+        parsedRawTypes = [];
+      }
+    }
+
+    const activeByCode = new Map(activeVehicleTypes.map((vt) => [vt.type_code, vt]));
+    let activeFacilityVehicleTypes = [];
+    if (Array.isArray(facility.facility_vehicle_types) && facility.facility_vehicle_types.length > 0) {
+      activeFacilityVehicleTypes = facility.facility_vehicle_types.filter(
+        (fvt) => fvt.vehicle_type && fvt.vehicle_type.is_active === true
+      );
+    } else {
+      activeFacilityVehicleTypes = parsedRawTypes
+        .map((item) => {
+          const code = typeof item === 'string' ? item : item?.type_code || item?.id;
+          const vt = activeByCode.get(code);
+          return vt ? { facility_id: facilityId, vehicle_type_id: vt.id, vehicle_type: vt } : null;
+        })
+        .filter(Boolean);
+    }
 
     // Format data
     const ratings = facility.reviews.map(r => r.rating);
@@ -201,7 +237,8 @@ class FacilityService {
       ...facility,
       avg_rating: avgRating,
       total_reviews: ratings.length,
-      vehicle_types: typeof facility.vehicle_types === 'string' ? JSON.parse(facility.vehicle_types) : facility.vehicle_types,
+      facility_vehicle_types: activeFacilityVehicleTypes,
+      vehicle_types: activeFacilityVehicleTypes.map((fvt) => fvt.vehicle_type.type_code),
       active_contracts: activeContractsCount,
       available_slots: availableSlots
     };

@@ -45,7 +45,7 @@ class NotificationRepository {
    * Lấy danh sách thông báo của người dùng (kết hợp thông báo cá nhân và broadcast)
    * Loại trừ type = 'EMAIL_LOG' để không hiển thị email lên quả chuông web
    */
-  async getNotificationsByUserId(userId, userRole = null, { isRead, limit = 20, offset = 0 } = {}) {
+  async getNotificationsByUserId(userId, userRole = null, { isRead, limit = 30, offset = 0 } = {}) {
     const roleFilter = userRole && userRole !== 'ALL'
       ? { in: ['ALL', userRole] }
       : 'ALL';
@@ -79,7 +79,7 @@ class NotificationRepository {
       orderBy: {
         created_at: 'desc'
       },
-      take: Number(limit) || 20,
+      take: Number(limit) || 30,
       skip: Number(offset) || 0
     });
 

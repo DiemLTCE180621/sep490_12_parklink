@@ -457,19 +457,24 @@ class FacilityRepository {
       },
     });
 
-    // Lọc thủ công theo vehicle_type nếu database lưu vehicle_types dưới dạng mảng JSON hoặc String
+    // Lọc theo vehicle_type: hỗ trợ cả bảng liên kết facility_vehicle_types và trường vehicle_types
     if (vehicle_type) {
       facilities = facilities.filter((f) => {
+        const matchesRelation = (f.facility_vehicle_types || []).some(
+          (link) =>
+            link.vehicle_type?.type_code === vehicle_type ||
+            String(link.vehicle_type_id) === String(vehicle_type),
+        );
+        if (matchesRelation) return true;
+
         if (!f.vehicle_types) return false;
-        // Kiểm tra xem chuỗi JSON hoặc array có chứa vehicle_type không
         try {
           const types =
             typeof f.vehicle_types === "string"
               ? JSON.parse(f.vehicle_types)
               : f.vehicle_types;
-          return Array.isArray(types) && types.includes(vehicle_type);
+          return Array.isArray(types) && (types.includes(vehicle_type) || types.includes(String(vehicle_type)));
         } catch (e) {
-          // Fallback if it's just a comma separated string or simple string
           return f.vehicle_types.includes(vehicle_type);
         }
       });
@@ -668,6 +673,9 @@ class FacilityRepository {
         images: true,
         facility_amenities: {
           include: { amenity: true }
+        },
+        facility_vehicle_types: {
+          include: { vehicle_type: true }
         },
         reviews: {
           where: { status: "VISIBLE" },
