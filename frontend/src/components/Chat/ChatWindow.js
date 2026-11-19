@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +8,7 @@ import chatService from '../../services/chatService';
 import { MessageSquareText, MapPin } from 'lucide-react';
 
 const ChatWindow = ({ room, messages, onSendMessage }) => {
+    const { t } = useTranslation('chat');
     const { user, token } = useAuth();
     const socket = useSocket();
     const scrollContainerRef = useRef(null);
@@ -56,10 +58,10 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                     </div>
 
                     <h3 className="text-3xl font-extrabold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-teal-700 to-emerald-600 tracking-tight">
-                        ParkLink Chat
+                        {t('window.brand')}
                     </h3>
                     <p className="text-slate-500 font-medium">
-                        Chọn một cuộc trò chuyện để bắt đầu nhắn tin.
+                        {t('window.selectPrompt')}
                     </p>
                 </div>
             </div>
@@ -97,7 +99,7 @@ const ChatWindow = ({ room, messages, onSendMessage }) => {
                     <div className="h-full flex flex-col items-center justify-center text-slate-400 gap-3">
                         <MessageSquareText size={32} className="text-slate-300 opacity-70" />
                         <p className="bg-white px-5 py-2.5 rounded-full shadow-sm text-sm border border-slate-100 font-medium">
-                            Chưa có tin nhắn nào. Hãy gửi lời chào! 👋
+                            {t('window.noMessagesYet')}
                         </p>
                     </div>
                 ) : (

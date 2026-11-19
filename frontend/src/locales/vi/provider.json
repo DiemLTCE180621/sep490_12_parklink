@@ -1,0 +1,596 @@
+{
+  "portal": {
+    "greeting": "Xin chào, {{name}}!",
+    "roleTitle": "Chủ Bãi Đỗ Xe",
+    "actions": {
+      "editProfile": "Sửa Hồ Sơ",
+      "googleAccount": "Tài khoản Google",
+      "changePassword": "Đổi Mật Khẩu",
+      "logout": "Đăng Xuất"
+    },
+    "menu": {
+      "title": "Menu Chủ Bãi Xe",
+      "subtitle": "Bảng điều khiển cơ sở",
+      "itemsCount": "{{count}} mục",
+      "viewing": "Đang xem mục",
+      "allMenu": "Tất cả menu",
+      "close": "Đóng"
+    },
+    "tabs": {
+      "facility": "Thông Tin Bãi Xe",
+      "activeCustomers": "Khách Đang Thuê",
+      "monthlyRevenue": "Doanh Thu Theo Tháng",
+      "reservations": "Duyệt Yêu Cầu Thuê",
+      "contracts": "Quản Lý Hợp Đồng",
+      "profile": "Thông Tin Cá Nhân",
+      "transactions": "Lịch Sử Giao Dịch",
+      "complaints": "Quản Lý Khiếu Nại",
+      "reviews": "Đánh Giá Khách Hàng",
+      "platformFees": "Biểu Phí Nền Tảng"
+    },
+    "profileTab": {
+      "title": "Thông Tin Cá Nhân",
+      "fullName": "Họ và Tên",
+      "email": "Email Trực Tuyến",
+      "phone": "Số Điện Thoại",
+      "notUpdated": "Chưa cập nhật",
+      "roleLabel": "Vai Trò Tài Khoản",
+      "roleBadge": "Chủ Bãi Đỗ Xe (Parking Provider)"
+    }
+  },
+  "dashboard": {
+    "title": "Thông Tin Bãi Xe Và Vận Hành Cơ Sở",
+    "subtitle": "Theo dõi tình trạng hoạt động, chỗ trống thực tế, tỷ lệ lấp đầy, yêu cầu thuê và dự kiến doanh thu tháng.",
+    "empty": {
+      "title": "Chưa tìm thấy thông tin bãi đỗ xe",
+      "subtitle": "Vui lòng đăng ký cơ sở bãi đỗ xe để bắt đầu quản lý."
+    },
+    "verificationStatus": {
+      "APPROVED": "Đã Phê Duyệt",
+      "REJECTED": "Bị Từ Chối",
+      "PENDING": "Chờ Phê Duyệt"
+    },
+    "actions": {
+      "updateSlotsAndPrice": "Cập nhật chỗ trống & giá",
+      "refresh": "Làm mới",
+      "refreshTitle": "Tải lại dữ liệu bãi xe"
+    },
+    "kpis": {
+      "availableSlots": {
+        "label": "Chỗ trống hiện tại",
+        "unit": "chỗ",
+        "hint": "Sẵn sàng đón khách ({{percent}}%)"
+      },
+      "occupied": {
+        "label": "Đang gửi & Tỷ lệ lấp đầy",
+        "unit": "xe",
+        "hint": "Công suất sử dụng bãi xe"
+      },
+      "pendingRequests": {
+        "label": "Yêu cầu chờ duyệt",
+        "unit": "yêu cầu",
+        "actionRequired": "Cần xử lý",
+        "hint": "Khách đang chờ duyệt",
+        "viewDetails": "Chi tiết",
+        "tooltip": "Nhấn để chuyển sang duyệt yêu cầu thuê"
+      },
+      "projectedRevenue": {
+        "label": "Dự kiến DT tháng",
+        "currency": "đ",
+        "formula": "{{count}} hợp đồng × {{price}}đ"
+      }
+    },
+    "facilityDetails": {
+      "title": "Chi Tiết Cơ Sở Bãi Xe",
+      "visibility": {
+        "visible": "Đang hoạt động công khai",
+        "hidden": "Tạm đóng cửa (Ẩn)"
+      },
+      "nameLabel": "Tên bãi đỗ xe",
+      "addressLabel": "Địa chỉ cơ sở",
+      "photosTitle": "Hình Ảnh Bãi Đỗ Xe",
+      "zoomHint": "Nhấp vào ảnh để phóng to",
+      "photoAlt": "Bãi xe {{index}}",
+      "primaryBadge": "Ảnh chính",
+      "noPhotos": "Chưa có hình ảnh nào được tải lên cho cơ sở này",
+      "closePhoto": "Đóng ảnh",
+      "lightboxAlt": "Xem ảnh bãi xe"
+    },
+    "payment": {
+      "title": "Hoàn Tất Thanh Toán Phí Nền Tảng",
+      "description": "Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.",
+      "qrAlt": "QR Code Thanh Toán",
+      "checking": "Đang xử lý...",
+      "checkButton": "Kiểm tra thanh toán",
+      "successTitle": "Thanh Toán Thành Công!",
+      "successBody": "Bãi đỗ xe của bạn đã được kích hoạt và hiển thị công khai trên hệ thống ParkLink.",
+      "toasts": {
+        "success": "Thanh toán thành công! Bãi đỗ xe đã được kích hoạt.",
+        "notReceived": "Hệ thống chưa nhận được thanh toán. Vui lòng đợi thêm hoặc kiểm tra lại.",
+        "checkError": "Không thể kiểm tra trạng thái thanh toán."
+      }
+    },
+    "editModal": {
+      "title": "Cập Nhật Chỗ Trống & Giá Thuê Cơ Sở",
+      "subtitle": "Điều chỉnh số chỗ trống thực tế đón khách và giá thuê hàng tháng",
+      "closeTitle": "Đóng",
+      "capacityLabel": "Sức chứa",
+      "fixedBadge": "Cố định",
+      "slotsUnit": "slots",
+      "occupiedLabel": "Có xe đỗ",
+      "liveBadge": "Thực tế",
+      "vehiclesUnit": "xe",
+      "availableSlotsLabel": "Số Chỗ Trống Khả Dụng",
+      "percentVacant": "{{percent}}% trống",
+      "decreaseTitle": "Giảm 1 chỗ trống (có xe vào gửi)",
+      "increaseTitle": "Tăng 1 chỗ trống (có xe rời bãi)",
+      "maxSlotsHint": "/ {{total}} chỗ tối đa",
+      "quickSelect": "Chọn nhanh:",
+      "presetEmpty": "Hết chỗ (0)",
+      "presetHalf": "Nửa bãi ({{count}})",
+      "presetFull": "Trống hoàn toàn ({{count}})",
+      "stepperNotePrefix": "Bấm",
+      "stepperNoteMinusAction": "khi có xe vãng lai vào gửi, bấm",
+      "stepperNotePlusAction": "khi xe rời bãi để khách thấy đúng số chỗ.",
+      "monthlyPriceLabel": "Giá Thuê Theo Tháng (VNĐ)",
+      "priceBadgeUnit": "đ/tháng",
+      "pricePlaceholder": "Ví dụ: 1500000",
+      "priceInputSuffix": "VNĐ / THÁNG",
+      "quickAdjust": "Điều chỉnh nhanh:",
+      "visibilityLabel": "Trạng Thái Hoạt Động Của Bãi Xe",
+      "visibilityVisibleTitle": "Đang Hoạt Động",
+      "visibilityVisibleSub": "Hiển thị tìm kiếm",
+      "visibilityHiddenTitle": "Tạm Đóng Cửa",
+      "visibilityHiddenSub": "Ẩn khỏi tìm kiếm",
+      "cancel": "Hủy bỏ",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu Thay Đổi",
+      "validation": {
+        "slotsNonNegative": "Số chỗ trống hiện tại phải lớn hơn hoặc bằng 0!",
+        "slotsExceedCapacity": "Số chỗ trống ({{slots}}) không thể vượt quá tổng sức chứa đăng ký ({{capacity}} chỗ)!"
+      },
+      "toasts": {
+        "updateSuccess": "Cập nhật thành công! Chỗ trống hiện tại: {{slots}}/{{capacity}} chỗ.",
+        "updateError": "Cập nhật bãi đỗ xe thất bại"
+      }
+    }
+  },
+  "activeCustomers": {
+    "title": "Khách hàng đang thuê tại bãi",
+    "subtitle": "Theo dõi danh sách khách hàng đang có hợp đồng hiệu lực, phương tiện và thời hạn thuê còn lại.",
+    "refresh": "Làm mới",
+    "kpis": {
+      "activeRenters": {
+        "label": "Khách đang gửi xe",
+        "hint": "Hợp đồng đang hiệu lực"
+      },
+      "availableSlots": {
+        "label": "Chỗ đỗ còn trống",
+        "unit": "chỗ",
+        "hint": "Đã nhận {{occupied}} xe"
+      },
+      "occupancyRate": {
+        "label": "Tỷ lệ lấp đầy"
+      },
+      "monthlyRevenue": {
+        "label": "Doanh thu thuê / tháng",
+        "hint": "Từ các khách hàng đang thuê"
+      }
+    },
+    "listTitle": "Danh sách khách hàng đang thuê ({{count}}):",
+    "searchPlaceholder": "Tìm tên khách, SĐT, biển số...",
+    "searchButton": "Tìm",
+    "loading": "Đang tải danh sách khách hàng...",
+    "loadError": "Không thể tải danh sách khách hàng đang thuê tại bãi xe!",
+    "retry": "Thử lại",
+    "empty": {
+      "title": "Không tìm thấy khách hàng nào",
+      "searchEmpty": "Không có khách hàng nào khớp với từ khóa tìm kiếm.",
+      "defaultEmpty": "Hiện chưa có khách hàng nào có hợp đồng thuê xe đang có hiệu lực.",
+      "showAll": "Xem tất cả"
+    },
+    "status": {
+      "expired": "Đã hết hạn",
+      "daysRemaining": "Còn {{days}} ngày"
+    },
+    "card": {
+      "effectiveRange": "Hiệu lực: {{start}} – {{end}}",
+      "chat": "Nhắn tin",
+      "viewContract": "Xem hợp đồng",
+      "contactInfo": "Thông tin liên hệ",
+      "noPhone": "Chưa cập nhật SĐT",
+      "idCardPrefix": "CCCD:",
+      "vehicleAndSpot": "Phương tiện & vị trí đỗ",
+      "noPlate": "Chưa rõ biển số",
+      "defaultVehicle": "Phương tiện đăng ký đỗ",
+      "spotLabel": "Vị trí:",
+      "freeSpot": "Tự do",
+      "rateAndPayment": "Giá thuê & thanh toán",
+      "perMonth": "/ tháng",
+      "paymentDeadline": "Hạn thu: Ngày {{day}} hàng tháng"
+    },
+    "pagination": {
+      "summary": "Hiển thị {{current}} / {{total}} khách hàng",
+      "previous": "Trước",
+      "next": "Sau"
+    }
+  },
+  "monthlyRevenue": {
+    "title": "Doanh thu theo tháng tại bãi",
+    "subtitle": "Theo dõi doanh thu dự kiến từ các hợp đồng cho thuê và xu hướng theo tháng.",
+    "updating": "Đang cập nhật số liệu...",
+    "refresh": "Làm mới",
+    "loadError": "Không tải được báo cáo doanh thu.",
+    "kpis": {
+      "monthRevenue": {
+        "label": "Doanh thu tháng {{month}}",
+        "hint": "Theo hợp đồng dự kiến"
+      },
+      "contractCount": {
+        "label": "Hợp đồng trong tháng",
+        "hint": "Có hiệu lực trong tháng"
+      },
+      "avgPerContract": {
+        "label": "Trung bình / hợp đồng",
+        "hint": "Giá thuê theo tháng"
+      },
+      "annualProjected": {
+        "label": "Tổng dự kiến năm {{year}}",
+        "hint": "Cộng 12 tháng trong năm"
+      }
+    },
+    "chart": {
+      "title": "Xu hướng doanh thu năm {{year}}",
+      "subtitle": "Chọn một cột để xem hợp đồng của tháng đó.",
+      "barAria": "Tháng {{month}}: {{amount}}",
+      "monthShort": "T{{month}}"
+    },
+    "table": {
+      "title": "Danh sách hợp đồng tháng {{month}}/{{year}} ({{count}}):",
+      "ariaLabel": "Danh sách hợp đồng",
+      "columns": {
+        "contract": "Hợp đồng",
+        "customer": "Khách hàng",
+        "duration": "Thời hạn",
+        "monthlyAmount": "Giá tháng"
+      },
+      "empty": "Không có hợp đồng trong tháng này.",
+      "disclaimer": "Doanh thu dự kiến được cộng từ giá thuê mỗi tháng của hợp đồng có hiệu lực. Hệ thống chưa ghi nhận tiền thuê khách đã thanh toán; hợp đồng bắt đầu giữa tháng vẫn tính đủ giá tháng."
+    },
+    "currency": "đ"
+  },
+  "reservations": {
+    "title": "Quản lý yêu cầu thuê bãi xe",
+    "subtitle": "Xem và phê duyệt danh sách khách hàng đăng ký thuê bãi đỗ xe theo tháng.",
+    "backToFacility": "Quay lại trang quản lý bãi xe",
+    "refresh": "Làm mới",
+    "searchPlaceholder": "Tìm khách hàng, biển số xe...",
+    "loading": "Đang tải danh sách yêu cầu thuê...",
+    "loadError": "Không thể tải danh sách yêu cầu thuê xe của khách hàng!",
+    "errorTitle": "Không thể tải dữ liệu",
+    "retry": "Thử lại",
+    "tabs": {
+      "all": "Tất cả ({{count}})",
+      "pending": "Chờ duyệt ({{count}})",
+      "approved": "Đã chấp nhận ({{count}})",
+      "rejected": "Đã từ chối ({{count}})",
+      "cancelled": "Đã hủy ({{count}})"
+    },
+    "statuses": {
+      "PENDING": "Chờ duyệt",
+      "APPROVED": "Đã chấp nhận",
+      "REJECTED": "Đã từ chối",
+      "CANCELLED": "Đã hủy"
+    },
+    "empty": {
+      "title": "Không có yêu cầu thuê nào",
+      "searchEmpty": "Không tìm thấy yêu cầu phù hợp với từ khóa tìm kiếm.",
+      "defaultEmpty": "Chưa có yêu cầu đăng ký thuê bãi đỗ xe nào trong mục này."
+    },
+    "card": {
+      "requestCode": "Mã yêu cầu #{{id}}",
+      "submittedAt": "Gửi ngày {{date}}",
+      "customerSection": "Khách hàng đăng ký",
+      "defaultCustomer": "Khách hàng",
+      "notUpdated": "Chưa cập nhật",
+      "vehicleSection": "Phương tiện & ngày bắt đầu",
+      "startDate": "Bắt đầu:",
+      "facilitySection": "Bãi đỗ xe"
+    },
+    "actions": {
+      "details": "Chi tiết",
+      "viewContract": "Xem hợp đồng",
+      "createContract": "Tạo hợp đồng",
+      "accept": "Chấp nhận",
+      "reject": "Từ chối"
+    },
+    "confirmModal": {
+      "acceptTitle": "Xác nhận chấp nhận yêu cầu thuê",
+      "rejectTitle": "Xác nhận từ chối yêu cầu thuê",
+      "acceptMessage": "Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng \"{{name}}\" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có {{deadline}} để tạo hợp đồng điện tử. Nếu quá {{deadline}} chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.",
+      "rejectMessage": "Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng \"{{name}}\" không?",
+      "confirmAccept": "Đồng ý chấp nhận",
+      "confirmReject": "Đồng ý từ chối",
+      "cancel": "Hủy bỏ"
+    },
+    "toasts": {
+      "acceptSuccess": "Đã chấp nhận yêu cầu thuê! Bạn có {{deadline}} để khởi tạo hợp đồng điện tử.",
+      "rejectSuccess": "Đã từ chối yêu cầu thuê xe!",
+      "actionFailed": "Thực hiện thao tác thất bại!",
+      "acceptFailed": "Thực hiện duyệt thất bại!",
+      "rejectFailed": "Thực hiện từ chối thất bại!"
+    },
+    "detail": {
+      "backToList": "Quay lại danh sách yêu cầu",
+      "loading": "Đang tải thông tin yêu cầu thuê #{{id}}...",
+      "loadError": "Không thể tải chi tiết yêu cầu thuê của khách hàng!",
+      "errorTitle": "Không thể tải thông tin",
+      "title": "Chi tiết yêu cầu thuê bãi xe của khách hàng",
+      "submittedAt": "Ngày gửi: {{date}}",
+      "customerTitle": "Thông tin khách hàng đăng ký",
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "rentalInfoTitle": "Thông tin đăng ký gửi giữ",
+      "vehicleLabel": "Phương tiện đăng ký",
+      "desiredStartDate": "Ngày bắt đầu dự kiến",
+      "idCardLabel": "Số CCCD / CMND",
+      "addressLabel": "Địa chỉ thường trú / liên hệ",
+      "facilityTitle": "Bãi đỗ xe đăng ký",
+      "facilityName": "Tên bãi xe",
+      "facilityAddress": "Địa chỉ",
+      "listedPrice": "Giá thuê niêm yết",
+      "contractBoxTitle": "Hợp đồng điện tử",
+      "contractCode": "Mã:",
+      "contractActive": "Đang hiệu lực",
+      "contractPending": "Chờ khách xác nhận",
+      "createContractBoxTitle": "Khởi tạo hợp đồng",
+      "createContractHint": "Yêu cầu đã được phê duyệt. Bạn có {{deadline}} kể từ lúc chấp nhận để tạo hợp đồng điện tử gửi khách hàng.",
+      "createContractBtn": "Tạo hợp đồng điện tử",
+      "viewContractBtn": "Xem chi tiết hợp đồng",
+      "notFoundError": "Không tìm thấy thông tin yêu cầu thuê xe.",
+      "backToListButton": "Quay lại danh sách",
+      "emailLabel": "Email",
+      "priceUnit": "đ/tháng",
+      "statusPendingApproval": "Chờ phê duyệt",
+      "statusCancelledByCustomer": "Khách đã hủy",
+      "createContractHintFull": "Yêu cầu đã được phê duyệt. Bạn có {{deadline}} kể từ lúc chấp nhận để tạo hợp đồng điện tử gửi cho khách hàng (quá thời hạn này hệ thống sẽ tự động hủy)."
+    },
+    "defaultTargetName": "Yêu cầu #{{id}}",
+    "defaultDeadline": "thời hạn quy định"
+  },
+  "contracts": {
+    "title": "Quản lý hợp đồng cho thuê bãi xe",
+    "subtitle": "Danh sách các hợp đồng điện tử đã khởi tạo với khách thuê.",
+    "activeCustomersBtn": "Khách đang thuê",
+    "refresh": "Làm mới",
+    "searchPlaceholder": "Tìm mã HĐ, tên khách hàng...",
+    "loading": "Đang tải danh sách hợp đồng...",
+    "loadError": "Không thể tải danh sách hợp đồng điện tử!",
+    "errorTitle": "Không thể tải dữ liệu",
+    "retry": "Thử lại",
+    "tabs": {
+      "all": "Tất cả ({{count}})",
+      "pending": "Chờ khách xác nhận ({{count}})",
+      "active": "Đang hiệu lực ({{count}})",
+      "extensionPending": "Chờ duyệt gia hạn ({{count}})",
+      "terminationPending": "Yêu cầu trả chỗ ({{count}})",
+      "terminated": "Đã chấm dứt ({{count}})"
+    },
+    "statuses": {
+      "PENDING_CUSTOMER": "Chờ khách xác nhận",
+      "ACTIVE": "Đang hiệu lực",
+      "TERMINATED": "Đã chấm dứt",
+      "CANCELLED": "Đã hủy (Hết chỗ)",
+      "PENDING_SIGNATURE": "Chờ khách xác nhận"
+    },
+    "empty": {
+      "title": "Không tìm thấy hợp đồng nào",
+      "searchEmpty": "Không có hợp đồng nào khớp với từ khóa tìm kiếm.",
+      "defaultEmpty": "Bạn chưa tạo hợp đồng điện tử nào cho các yêu cầu thuê được duyệt."
+    },
+    "card": {
+      "createdAt": "Lập ngày {{date}}",
+      "extensionBadge": "Chờ duyệt gia hạn (+{{months}} thg)",
+      "terminationBadge": "Yêu cầu trả chỗ ({{date}})",
+      "customerSection": "Khách thuê (Bên B)",
+      "costSection": "Chi phí & thời hạn",
+      "priceUnit": "đ/tháng",
+      "paymentDeadline": "Hạn thanh toán: Ngày {{day}} hàng tháng",
+      "facilitySection": "Bãi đỗ & phương tiện",
+      "defaultCustomer": "Khách hàng",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "actions": {
+      "confirmTermination": "Xác nhận trả chỗ",
+      "approveExtension": "Duyệt gia hạn (+{{months}} thg)",
+      "terminate": "Chấm dứt",
+      "viewContract": "Xem hợp đồng"
+    },
+    "createPage": {
+      "breadcrumbDashboard": "Bảng Điều Khiển",
+      "breadcrumbReservations": "Duyệt Yêu Cầu Thuê",
+      "breadcrumbCurrent": "Thiết Lập Hợp Đồng",
+      "back": "Quay Lại",
+      "loading": "Đang tải dữ liệu yêu cầu thuê xe #{{id}}...",
+      "notFoundTitle": "Không tìm thấy yêu cầu thuê",
+      "expiredTitle": "Đã hết thời hạn làm hợp đồng – Yêu cầu đặt chỗ đã tự động hủy!",
+      "expiredBody": "Quá thời hạn {{deadline}} kể từ khi chấp nhận yêu cầu đặt chỗ mà chưa hoàn tất tạo hợp đồng điện tử, hệ thống đã tự động hủy yêu cầu này.",
+      "backToReservations": "Quay Lại Danh Sách Yêu Cầu",
+      "alreadyCreatedTitle": "Yêu cầu thuê này đã có hợp đồng điện tử!",
+      "alreadyCreatedBody": "Hợp đồng cho yêu cầu thuê này đã được khởi tạo trước đó. Bạn có thể xem chi tiết văn bản hợp đồng hoặc theo dõi trạng thái ký kết.",
+      "viewExistingContract": "Xem Hợp Đồng #{{id}}",
+      "unapprovedTitle": "Yêu cầu thuê chưa được phê duyệt chấp nhận",
+      "defaultSpot": "Chỗ đỗ tự do trong bãi",
+      "defaultVehicle": "Phương tiện đăng ký đỗ",
+      "validation": {
+        "invalidPrice": "Vui lòng nhập giá thuê thỏa thuận hợp lệ (lớn hơn 0 VNĐ)!",
+        "missingDates": "Vui lòng chọn ngày bắt đầu và ngày kết thúc hợp đồng!",
+        "endBeforeStart": "Ngày kết thúc hợp đồng phải diễn ra sau ngày bắt đầu!",
+        "missingIdCard": "Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của Bên B để lập hợp đồng!",
+        "missingAddress": "Vui lòng nhập Địa chỉ liên hệ / thường trú của Bên B để lập hợp đồng!"
+      },
+      "toasts": {
+        "success": "Tạo và gửi hợp đồng điện tử thành công! Đang chuyển đến văn bản hợp đồng...",
+        "error": "Không thể tạo hợp đồng điện tử. Vui lòng thử lại!"
+      }
+    }
+  },
+  "complaints": {
+    "title": "Quản Lý Khiếu Nại Bãi Đỗ Xe",
+    "subtitle": "Lắng nghe và phản hồi trực tiếp các thắc mắc, phản ánh từ khách thuê bãi xe",
+    "refreshTitle": "Tải lại danh sách",
+    "totalLabel": "Tổng cộng:",
+    "searchPlaceholder": "Tìm theo tiêu đề, ID, khách hàng...",
+    "loading": "Đang tải danh sách khiếu nại...",
+    "loadError": "Không thể tải danh sách khiếu nại!",
+    "errorTitle": "Không thể tải dữ liệu",
+    "retry": "Thử Lại",
+    "overdueFilter": "Quá Hạn Giải Trình",
+    "tabs": {
+      "ALL": "Tất cả",
+      "WAITING_PROVIDER": "Cần giải trình",
+      "PROVIDER_REPLIED": "Đã giải trình",
+      "RESOLVED": "Đã giải quyết"
+    },
+    "statuses": {
+      "WAITING_PROVIDER": "Cần Giải Trình",
+      "PENDING": "Cần Giải Trình",
+      "OPEN": "Cần Giải Trình",
+      "PROVIDER_REPLIED": "Đã Giải Quyết Cho Khách",
+      "PROCESSING": "Đang Thẩm Tra",
+      "RESOLVED": "Đã Giải Quyết",
+      "REJECTED": "Đã Bác Bỏ",
+      "CLOSED": "Đã Đóng"
+    },
+    "empty": {
+      "noComplaints": "Không có khiếu nại nào",
+      "noResults": "Không tìm thấy khiếu nại phù hợp",
+      "noComplaintsSub": "Chưa có khách hàng nào khiếu nại bãi đỗ xe của bạn.",
+      "noResultsSub": "Thử điều chỉnh lại từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc trạng thái."
+    },
+    "card": {
+      "submittedAt": "Gửi ngày: {{date}}",
+      "adminInstruction": "Yêu cầu & Chỉ đạo từ Ban Quản Trị ParkLink:",
+      "overdue3Days": "ĐÃ QUÁ HẠN 3 NGÀY",
+      "deadline": "Hạn chót: {{date}}",
+      "forwardedAt": "Chuyển tiếp lúc: {{datetime}}",
+      "contentLabel": "Nội dung khiếu nại:",
+      "imageAlt": "Ảnh khiếu nại {{index}}",
+      "customerLabel": "Khách hàng:",
+      "sentResponses": "Phản hồi giải quyết đã gửi:",
+      "defaultSender": "Chủ bãi xe",
+      "overdueActionWarning": "ĐÃ QUÁ HẠN 3 NGÀY. Vui lòng gửi phản hồi giải quyết cho khách ngay!"
+    },
+    "toasts": {
+      "replySuccess": "Đã phản hồi khiếu nại #{{id}} thành công! Khách hàng đã được thông báo."
+    },
+    "actions": {
+      "updateReply": "Cập nhật phản hồi",
+      "submitReply": "Gửi bản giải trình"
+    }
+  },
+  "reviews": {
+    "title": "Đánh Giá Từ Khách Hàng",
+    "subtitle": "Theo dõi và phản hồi đánh giá của khách hàng đối với các bãi đỗ xe của bạn.",
+    "refresh": "Làm mới",
+    "retry": "Thử lại",
+    "loadError": "Không thể tải danh sách đánh giá từ khách hàng!",
+    "kpis": {
+      "totalReviews": "Tổng lượt đánh giá",
+      "repliedCount": "Lượt phản hồi",
+      "avgRating": "Điểm trung bình",
+      "reputationSub": "Điểm uy tín bãi xe",
+      "fiveStar": "Đánh giá 5 Sao",
+      "fiveStarSub": "Đạt chuẩn tuyệt đối",
+      "satisfactionRate": "Tỷ lệ hài lòng",
+      "satisfactionSub": "Khách hàng tích cực"
+    },
+    "searchPlaceholder": "Tìm theo tên khách hàng hoặc nội dung phản hồi...",
+    "allStarsOption": "Tất cả số sao",
+    "empty": {
+      "title": "Chưa có đánh giá nào",
+      "filterEmpty": "Không tìm thấy đánh giá phù hợp với bộ lọc.",
+      "defaultEmpty": "Bãi xe của bạn hiện tại chưa có đánh giá nào từ khách hàng."
+    },
+    "item": {
+      "defaultCustomer": "Khách hàng",
+      "providerReplyLabel": "Phản hồi từ chủ bãi xe",
+      "editReply": "Chỉnh sửa",
+      "replyPlaceholder": "Nhập nội dung phản hồi gửi đến khách hàng...",
+      "cancel": "Hủy",
+      "sending": "Đang gửi...",
+      "sendReply": "Gửi phản hồi",
+      "replyAction": "Phản hồi đánh giá này"
+    },
+    "toasts": {
+      "replySuccess": "Gửi phản hồi thành công!",
+      "replyError": "Lỗi khi gửi phản hồi"
+    },
+    "starOption": "{{count}} Sao"
+  },
+  "transactions": {
+    "title": "Lịch sử giao dịch thanh toán",
+    "subtitle": "Theo dõi và đối soát các giao dịch thanh toán phí nền tảng cho cơ sở bãi đỗ xe.",
+    "refresh": "Làm mới",
+    "kpis": {
+      "totalCount": "Số giao dịch",
+      "totalPaid": "Tổng thanh toán thành công"
+    },
+    "filters": {
+      "statusLabel": "Trạng thái",
+      "allStatuses": "Tất cả",
+      "fromDate": "Từ ngày",
+      "toDate": "Đến ngày",
+      "filterButton": "Lọc"
+    },
+    "statuses": {
+      "COMPLETED": "Thành công",
+      "PENDING": "Đang xử lý",
+      "FAILED": "Thất bại"
+    },
+    "table": {
+      "transactionId": "Mã GD",
+      "paymentTime": "Thời gian",
+      "facilityName": "Bãi xe",
+      "transactionType": "Loại",
+      "amount": "Số tiền",
+      "status": "Trạng thái"
+    },
+    "providerSubtitle": "Theo dõi các giao dịch phí nền tảng của bãi xe bạn quản lý.",
+    "currency": "đ",
+    "errors": {
+      "loadFailed": "Không tải được lịch sử giao dịch.",
+      "invalidDateRange": "Ngày bắt đầu không được sau ngày kết thúc."
+    },
+    "empty": "Chưa có giao dịch được ghi nhận trong khoảng thời gian này.",
+    "loading": "Đang tải giao dịch...",
+    "updating": "Đang cập nhật...",
+    "pageLabel": "Trang {{page}} / {{total}}",
+    "prevAria": "Trang trước",
+    "nextAria": "Trang sau",
+    "typeLabels": {
+      "PLATFORM_FEE": "Phí nền tảng"
+    }
+  },
+  "platformFees": {
+    "title": "Biểu Phí Nền Tảng Áp Dụng",
+    "subtitle": "Phí nền tảng thu 1 lần dựa trên quy mô bãi đỗ (Khung Min – Max) sau khi khảo sát thực địa",
+    "refresh": "Làm mới",
+    "refreshTitle": "Làm mới danh sách",
+    "bannerNote": "Thu 1 lần khi duyệt đưa cơ sở lên sàn",
+    "loadError": "Không thể tải danh sách biểu phí nền tảng",
+    "columns": {
+      "nameAndDesc": "Tên Gói & Mô Tả",
+      "slotTier": "Khung Quy Mô Slot",
+      "oneTimeFee": "Mức Phí Thu 1 Lần",
+      "status": "Trạng Thái"
+    },
+    "loading": "Đang tải danh sách biểu phí nền tảng...",
+    "empty": "Chưa có gói biểu phí nào được tạo trên hệ thống.",
+    "slotRange": "{{min}} - {{max}} chỗ",
+    "slotFrom": "Từ {{min}} chỗ trở lên",
+    "currency": "VNĐ",
+    "active": "Đang áp dụng",
+    "inactive": "Tạm ngưng"
+  }
+}

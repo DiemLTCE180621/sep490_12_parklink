@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { MessageCircle, MapPin } from 'lucide-react';
 
 const ChatList = ({ rooms, activeRoomId, onSelectRoom }) => {
+    const { t } = useTranslation('chat');
     const { user } = useAuth();
 
     return (
@@ -11,13 +13,13 @@ const ChatList = ({ rooms, activeRoomId, onSelectRoom }) => {
                 <div className="bg-teal-100 p-2 rounded-xl text-teal-600">
                     <MessageCircle size={24} strokeWidth={2.5} />
                 </div>
-                <h2 className="text-xl font-extrabold text-slate-800">Tin nhắn</h2>
+                <h2 className="text-xl font-extrabold text-slate-800">{t('list.title')}</h2>
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
                 {rooms.length === 0 ? (
                     <div className="p-8 text-slate-400 flex flex-col items-center gap-3 text-center mt-10">
                         <MessageCircle size={40} className="text-slate-300" strokeWidth={1.5} />
-                        <p className="text-sm font-medium">Chưa có cuộc trò chuyện nào.</p>
+                        <p className="text-sm font-medium">{t('list.empty')}</p>
                     </div>
                 ) : (
                     rooms.map((room) => {
@@ -48,7 +50,7 @@ const ChatList = ({ rooms, activeRoomId, onSelectRoom }) => {
                                             <p className={`text-[13px] truncate ${room._count?.messages > 0 ? 'font-bold text-slate-800' : 'text-slate-500'}`}>
                                                 {room.messages?.[0]?.content 
                                                     ? room.messages[0].content 
-                                                    : (room.messages?.[0]?.media_url ? '[File đính kèm]' : 'Chưa có tin nhắn')}
+                                                    : (room.messages?.[0]?.media_url ? t('list.attachmentPreview') : t('list.noMessages'))}
                                             </p>
                                             
                                             {/* Hiển thị số lượng tin chưa đọc giống Zalo */}

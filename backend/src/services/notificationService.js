@@ -185,7 +185,7 @@ class NotificationService {
     };
   }
 
-  // get current user's notifications (hỗ trợ cả personal notifications và broadcast, mặc định lấy 30 thông báo mới nhất theo SRS)
+  //get current user's notifications
   async getUserNotifications(userId, userRole = null, query = {}) {
     const { isRead, limit = 30, offset = 0 } = query;
 

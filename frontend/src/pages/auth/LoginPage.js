@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Building2, User, Eye, EyeOff } from 'lucide-react';
 import GoogleLoginButton from '../../components/common/GoogleLoginButton';
 import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
 
 const LoginPage = () => {
+  const { t } = useTranslation('login');
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,7 +51,7 @@ const LoginPage = () => {
     setError('');
 
     if (!formData.email || !formData.password) {
-      setError('Vui lòng điền đầy đủ email và mật khẩu!');
+      setError(t('errors.missingCredentials'));
       return;
     }
 
@@ -71,7 +73,7 @@ const LoginPage = () => {
         navigate(redirectTo, { replace: true });
       }
     } catch (err) {
-      setError(err.message || 'Email hoặc mật khẩu không chính xác!');
+      setError(err.message || t('errors.invalidCredentials'));
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,7 @@ const LoginPage = () => {
       const redirectTo = fromPath || (role === 'CUSTOMER' ? '/' : '/dashboard');
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || 'Đăng nhập Google thất bại!');
+      setError(err?.response?.data?.message || err?.message || t('errors.googleFailed'));
     } finally {
       setLoading(false);
     }
@@ -99,10 +101,10 @@ const LoginPage = () => {
           <LogIn className="w-7 h-7" />
         </div>
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          Đăng Nhập Tài Khoản
+          {t('title')}
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          Chào mừng bạn quay lại hệ thống dịch vụ bãi đỗ xe ParkLink.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -125,7 +127,7 @@ const LoginPage = () => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                Địa chỉ Email
+                {t('fields.email.label')}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -136,7 +138,7 @@ const LoginPage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Nhập địa chỉ email"
+                  placeholder={t('fields.email.placeholder')}
                   className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
@@ -146,13 +148,13 @@ const LoginPage = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-sm font-semibold text-slate-700">
-                  Mật khẩu
+                  {t('fields.password.label')}
                 </label>
                 <Link
                   to="/forgot-password"
                   className="text-xs font-bold text-teal-600 hover:text-teal-800 hover:underline transition"
                 >
-                  Quên mật khẩu?
+                  {t('forgotPassword')}
                 </Link>
               </div>
               <div className="relative rounded-xl shadow-sm">
@@ -164,7 +166,7 @@ const LoginPage = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Nhập mật khẩu"
+                  placeholder={t('fields.password.placeholder')}
                   className="block w-full pl-10 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
@@ -183,9 +185,9 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-200 disabled:opacity-50"
             >
-              {loading ? 'Đang xác thực...' : (
+              {loading ? t('submitting') : (
                 <span className="flex items-center gap-2">
-                  Đăng Nhập <ArrowRight className="w-5 h-5" />
+                  {t('submit')} <ArrowRight className="w-5 h-5" />
                 </span>
               )}
             </button>
@@ -198,7 +200,7 @@ const LoginPage = () => {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
-                  Hoặc tiếp tục với
+                  {t('orContinueWith')}
                 </span>
               </div>
             </div>
@@ -212,19 +214,19 @@ const LoginPage = () => {
           </div>
 
           <p className="mt-5 text-[11px] text-slate-500 text-center leading-normal">
-            Bằng việc đăng nhập vào hệ thống ParkLink, bạn đồng ý tuân thủ{' '}
+            {t('policyNotice.prefix')}
             <button
               type="button"
               onClick={() => setPolicyModalOpen(true)}
               className="text-teal-600 hover:text-teal-700 font-semibold underline"
             >
-              Chính Sách & Điều Khoản Dịch Vụ
-            </button>.
+              {t('policyNotice.linkText')}
+            </button>{t('policyNotice.suffix')}
           </p>
 
           <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
             <div className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Chưa có tài khoản?
+              {t('noAccount')}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -232,14 +234,14 @@ const LoginPage = () => {
                 to="/register"
                 className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
               >
-                <User className="w-4 h-4 text-teal-600" /> Đăng ký Khách thuê
+                <User className="w-4 h-4 text-teal-600" /> {t('registerCustomer')}
               </Link>
 
               <Link
                 to="/register-provider"
                 className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-teal-200 bg-teal-50/50 rounded-xl text-xs font-bold text-teal-800 hover:bg-teal-100/50 transition"
               >
-                <Building2 className="w-4 h-4 text-teal-600" /> Đăng ký Chủ bãi
+                <Building2 className="w-4 h-4 text-teal-600" /> {t('registerProvider')}
               </Link>
             </div>
           </div>

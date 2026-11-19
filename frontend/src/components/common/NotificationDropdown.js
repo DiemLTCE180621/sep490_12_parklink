@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Bell,
   CheckCheck,
@@ -19,33 +20,32 @@ import { useAuth } from '../../context/AuthContext';
 import NotificationDetailModal from '../modals/NotificationDetailModal';
 import Toast from './Toast';
 
-//relative time format
-
-const formatRelativeTime = (dateString) => {
+// Định dạng thời gian tương đối theo ngôn ngữ đang chọn
+const formatRelativeTime = (dateString, t, language) => {
   if (!dateString) return '';
   const now = new Date();
   const past = new Date(dateString);
   const diffInSeconds = Math.floor((now - past) / 1000);
 
-  if (diffInSeconds < 60) return 'Vừa xong';
+  if (diffInSeconds < 60) return t('notifications.time.justNow');
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+  if (diffInMinutes < 60) return t('notifications.time.minutesAgo', { count: diffInMinutes });
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} giờ trước`;
+  if (diffInHours < 24) return t('notifications.time.hoursAgo', { count: diffInHours });
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `${diffInDays} ngày trước`;
-  return past.toLocaleDateString('vi-VN');
+  if (diffInDays < 30) return t('notifications.time.daysAgo', { count: diffInDays });
+  return past.toLocaleDateString(language === 'en' ? 'en-GB' : 'vi-VN');
 };
 
-//icon and collor for notification type and priority
-const getNotificationTypeDetails = (type = '') => {
+// Icon, màu sắc và nhãn theo loại thông báo
+const getNotificationTypeDetails = (type = '', t) => {
   const normalized = (type || '').toUpperCase();
   if (normalized.includes('BẢO TRÌ') || normalized.includes('MAINTENANCE') || normalized.includes('HỆ THỐNG')) {
     return {
       icon: Radio,
       bgColor: 'bg-indigo-50 text-indigo-600',
       badgeColor: 'text-indigo-600 bg-indigo-50 border-indigo-200',
-      label: '[HỆ THỐNG]'
+      label: t('notifications.badges.system')
     };
   }
   if (normalized.includes('ĐẶT CHỖ') || normalized.includes('RESERVATION') || normalized.includes('BOOKING')) {
@@ -53,7 +53,7 @@ const getNotificationTypeDetails = (type = '') => {
       icon: CalendarCheck,
       bgColor: 'bg-teal-50 text-teal-600',
       badgeColor: 'text-teal-700 bg-teal-50 border-teal-200',
-      label: '[ĐẶT CHỖ]'
+      label: t('notifications.badges.reservation')
     };
   }
   if (normalized.includes('HỢP ĐỒNG') || normalized.includes('CONTRACT')) {
@@ -61,7 +61,7 @@ const getNotificationTypeDetails = (type = '') => {
       icon: FileText,
       bgColor: 'bg-amber-50 text-amber-600',
       badgeColor: 'text-amber-700 bg-amber-50 border-amber-200',
-      label: '[HỢP ĐỒNG]'
+      label: t('notifications.badges.contract')
     };
   }
   if (normalized.includes('KHIẾU NẠI') || normalized.includes('COMPLAINT')) {
@@ -69,14 +69,14 @@ const getNotificationTypeDetails = (type = '') => {
       icon: AlertCircle,
       bgColor: 'bg-rose-50 text-rose-600',
       badgeColor: 'text-rose-700 bg-rose-50 border-rose-200',
-      label: '[KHIẾU NẠI]'
+      label: t('notifications.badges.complaint')
     };
   }
   return {
     icon: Info,
     bgColor: 'bg-slate-100 text-slate-600',
     badgeColor: 'text-slate-600 bg-slate-50 border-slate-200',
-    label: '[THÔNG BÁO]'
+    label: t('notifications.badges.general')
   };
 };
 
@@ -85,6 +85,10 @@ const getNotificationTypeDetails = (type = '') => {
  * Component Dropdown hiển thị danh sách thông báo và đánh dấu đã đọc (UC-67, UC-68)
  */
 const NotificationDropdown = () => {
+  const { t, i18n } = useTranslation('common');
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const { isAuthenticated } = useAuth();
   const socket = useSocket();
   const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +110,7 @@ const NotificationDropdown = () => {
       setUnreadCount(data.unreadCount || 0);
     } catch (error) {
       console.error('Lỗi lấy danh sách thông báo:', error);
-      setToast({ message: error.message || 'Không thể tải thông báo.', type: 'error' });
+      setToast({ message: error.message || tRef.current('notifications.errors.loadFailed'), type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -183,7 +187,7 @@ const NotificationDropdown = () => {
           prev.map((n) => (n.id === item.id ? { ...n, is_read: false } : n))
         );
         setUnreadCount((prev) => prev + 1);
-        setToast({ message: error.message || 'Không thể đánh dấu thông báo đã đọc.', type: 'error' });
+        setToast({ message: error.message || t('notifications.errors.markReadFailed'), type: 'error' });
         return false;
       }
     }
@@ -215,7 +219,7 @@ const NotificationDropdown = () => {
       setUnreadCount(0);
     } catch (error) {
       console.error('Lỗi đánh dấu tất cả đã đọc:', error);
-      setToast({ message: error.message || 'Không thể đánh dấu tất cả thông báo đã đọc.', type: 'error' });
+      setToast({ message: error.message || t('notifications.errors.markAllReadFailed'), type: 'error' });
     }
   };
 
@@ -237,8 +241,8 @@ const NotificationDropdown = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2.5 rounded-xl text-slate-600 hover:text-teal-600 hover:bg-slate-100 transition duration-150 focus:outline-none"
-        title="Thông báo hệ thống"
-        aria-label="Thông báo hệ thống"
+        title={t('notifications.title')}
+        aria-label={t('notifications.title')}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
@@ -255,9 +259,9 @@ const NotificationDropdown = () => {
           <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-800 text-base">Thông báo hệ thống</h3>
+                <h3 className="font-bold text-slate-800 text-base">{t('notifications.title')}</h3>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
-                  {unreadCount} chưa đọc
+                  {t('notifications.unreadBadge', { count: unreadCount })}
                 </span>
               </div>
               {unreadCount > 0 && (
@@ -266,7 +270,7 @@ const NotificationDropdown = () => {
                   className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
-                  Đã đọc tất cả
+                  {t('notifications.markAllRead')}
                 </button>
               )}
             </div>
@@ -280,7 +284,7 @@ const NotificationDropdown = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
               >
-                Tất cả ({notifications.length})
+                {t('notifications.tabAll', { count: notifications.length })}
               </button>
               <button
                 onClick={() => setActiveTab('UNREAD')}
@@ -289,7 +293,7 @@ const NotificationDropdown = () => {
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
               >
-                Chưa đọc ({unreadCount})
+                {t('notifications.tabUnread', { count: unreadCount })}
               </button>
             </div>
           </div>
@@ -299,28 +303,28 @@ const NotificationDropdown = () => {
             {loading && notifications.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
                 <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
-                <span className="text-xs">Đang tải thông báo...</span>
+                <span className="text-xs">{t('notifications.loading')}</span>
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="py-12 text-center text-slate-400">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-slate-300 opacity-60" />
-                <p className="text-sm font-medium">Không có thông báo mới</p>
+                <p className="text-sm font-medium">{t('notifications.emptyTitle')}</p>
                 <p className="text-xs text-slate-400 mt-0.5">
                   {activeTab === 'UNREAD'
-                    ? 'Bạn đã đọc hết các thông báo'
-                    : 'Hiện chưa có thông báo nào từ hệ thống'}
+                    ? t('notifications.emptyUnread')
+                    : t('notifications.emptyAll')}
                 </p>
               </div>
             ) : (
               filteredNotifications.map((item) => {
-                const typeDetails = getNotificationTypeDetails(item.type);
+                const typeDetails = getNotificationTypeDetails(item.type, t);
                 const IconComponent = typeDetails.icon;
 
                 return (
                   <div
                     key={item.id}
                     onClick={() => handleMarkAsRead(item)}
-                    title={!item.is_read ? 'Nhấn để đánh dấu đã đọc' : ''}
+                    title={!item.is_read ? t('notifications.clickToMarkRead') : ''}
                     className={`p-4 transition cursor-pointer flex items-start gap-3.5 hover:bg-slate-50/80 ${!item.is_read ? 'bg-teal-50/20' : ''
                       }`}
                   >
@@ -334,7 +338,7 @@ const NotificationDropdown = () => {
                           {typeDetails.label}
                         </span>
                         <span className="text-[11px] text-slate-400 font-medium">
-                          {formatRelativeTime(item.created_at)}
+                          {formatRelativeTime(item.created_at, t, i18n.language)}
                         </span>
                       </div>
                       <h4 className={`text-sm leading-snug line-clamp-1 ${!item.is_read ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}>
@@ -349,14 +353,14 @@ const NotificationDropdown = () => {
                           onClick={(e) => handleOpenDetail(e, item)}
                           className="text-[11px] font-bold text-teal-600 hover:text-teal-800 hover:underline inline-flex items-center gap-1"
                         >
-                          Chi tiết &rarr;
+                          {t('notifications.viewDetail')} &rarr;
                         </button>
                       </div>
                     </div>
 
                     {/* Unread dot */}
                     {!item.is_read && (
-                      <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shrink-0 mt-2 shadow-sm" title="Chưa đọc" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-teal-500 shrink-0 mt-2 shadow-sm" title={t('notifications.unreadDotTitle')} />
                     )}
                   </div>
                 );

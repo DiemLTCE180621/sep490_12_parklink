@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { MapPin, Loader2 } from 'lucide-react';
@@ -54,7 +55,7 @@ const MapViewportController = ({ center }) => {
  * Marker vị trí bãi xe sử dụng custom facilityCarIcon từ mapIcons.js,
  * cho phép kéo thả (drag) hoặc click bản đồ để chọn lại vị trí
  */
-const DraggableFacilityMarker = ({ position, address, onLocationChange }) => {
+const DraggableFacilityMarker = ({ position, address, onLocationChange, t }) => {
   const markerRef = useRef(null);
 
   // Cho phép người dùng click bất kỳ đâu trên bản đồ để di dời vị trí
@@ -95,10 +96,10 @@ const DraggableFacilityMarker = ({ position, address, onLocationChange }) => {
     >
       <Popup>
         <div className="p-1">
-          <p className="font-bold text-xs text-teal-800">Vị trí bãi đỗ xe</p>
-          <p className="text-xs text-slate-700 mt-1">{address || 'Đã đánh dấu trên bản đồ'}</p>
+          <p className="font-bold text-xs text-teal-800">{t('mapPicker.popupTitle')}</p>
+          <p className="text-xs text-slate-700 mt-1">{address || t('mapPicker.popupMarked')}</p>
           <p className="text-[10px] text-teal-600 mt-1 italic">
-            Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế
+            {t('mapPicker.popupDragHint')}
           </p>
         </div>
       </Popup>
@@ -107,6 +108,7 @@ const DraggableFacilityMarker = ({ position, address, onLocationChange }) => {
 };
 
 const FacilityLocationPicker = ({ address, latitude, longitude, onChange, required = false }) => {
+  const { t } = useTranslation('common');
   const hasValidCoords = latitude !== '' && longitude !== '' && latitude != null && longitude != null &&
     Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
   const currentCoords = hasValidCoords ? [Number(latitude), Number(longitude)] : null;
@@ -232,7 +234,7 @@ const FacilityLocationPicker = ({ address, latitude, longitude, onChange, requir
               onChange({ address: value, latitude: '', longitude: '' });
             }}
             onSelect={handleAddressSelect}
-            placeholder="Nhập địa chỉ rồi chọn một gợi ý..."
+            placeholder={t('mapPicker.addressPlaceholder')}
             inputClassName="py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
             required={required}
           />
@@ -245,10 +247,10 @@ const FacilityLocationPicker = ({ address, latitude, longitude, onChange, requir
         >
           {geocodeLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" /> Đang định vị...
+              <Loader2 className="w-4 h-4 animate-spin" /> {t('mapPicker.locating')}
             </>
           ) : (
-            'Đưa bản đồ đến địa chỉ'
+            t('mapPicker.centerMap')
           )}
         </button>
       </div>
@@ -269,19 +271,20 @@ const FacilityLocationPicker = ({ address, latitude, longitude, onChange, requir
               position={currentCoords}
               address={address}
               onLocationChange={handleLocationMove}
+              t={t}
             />
           )}
         </MapContainer>
 
         {isReverseGeocoding && (
           <div className="absolute top-2 right-2 z-[400] bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-slate-200 shadow-md text-xs font-semibold text-teal-800 flex items-center gap-2">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" /> Đang cập nhật địa chỉ...
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" /> {t('mapPicker.updatingAddress')}
           </div>
         )}
       </div>
 
       <p className="text-xs text-slate-500 text-center font-medium">
-        Ghim sẽ tự động đánh dấu theo địa chỉ. Bạn có thể kéo thả ghim hoặc click trên bản đồ để tinh chỉnh vị trí chuẩn thực tế hơn.
+        {t('mapPicker.helperHint')}
       </p>
 
       {/* Thông báo xác nhận vị trí đã chọn bằng tên địa chỉ, tuyệt đối không hiển thị kinh độ vĩ độ */}
@@ -289,10 +292,10 @@ const FacilityLocationPicker = ({ address, latitude, longitude, onChange, requir
         <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-900 flex items-start gap-2.5">
           <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <span className="font-bold text-teal-800">Vị trí bãi đỗ xe đã chọn: </span>
-            <span className="font-medium text-slate-800">{address || 'Đã xác định vị trí trên bản đồ'}</span>
+            <span className="font-bold text-teal-800">{t('mapPicker.selectedLabel')}</span>
+            <span className="font-medium text-slate-800">{address || t('mapPicker.selectedFallback')}</span>
             <p className="text-[11px] text-teal-700 mt-0.5">
-              (Hệ thống đã tự động ghim vị trí. Bạn có thể kéo ghim trên bản đồ để vị trí chính xác nhất).
+              {t('mapPicker.selectedDragHint')}
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Clock,
@@ -18,15 +19,14 @@ import {
 } from '../../services/confirmationRecordService';
 import Toast from '../../components/common/Toast';
 import ConfirmModal from '../../components/modals/ConfirmModal';
+import { translateVehicleTypeName, translateVehicleInfoText } from '../../utils/translations';
 
-const PRESET_OPTIONS = [
-  { months: 1, label: '1 tháng', note: 'Gia hạn ngắn hạn' },
-  { months: 3, label: '3 tháng', note: 'Phổ biến nhất' },
-  { months: 6, label: '6 tháng', note: 'Kỳ hạn nửa năm' },
-  { months: 12, label: '12 tháng', note: 'Gia hạn 1 năm' }
-];
+const PRESET_MONTHS = [1, 3, 6, 12];
 
 const RequestContractExtensionPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -70,7 +70,7 @@ const RequestContractExtensionPage = () => {
       const res = await getConfirmationRecordDetail(id);
       const data = res.data?.confirmation_record || res.confirmation_record;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin hợp đồng điện tử!');
+        throw new Error(tRef.current('contractExtend.errors.notFound'));
       }
       setContract(data);
 
@@ -83,7 +83,7 @@ const RequestContractExtensionPage = () => {
       setCustomerPhone(currentCust.customer_phone || data.reservation?.customer?.phone_number || '');
       setCustomerAddress(currentCust.customer_address || data.reservation?.customer?.address || '');
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Không thể tải thông tin hợp đồng!');
+      setError(err.response?.data?.message || err.message || tRef.current('contractExtend.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -128,12 +128,12 @@ const RequestContractExtensionPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!activeMonths || activeMonths < 1 || activeMonths > 24) {
-      setToastInfo({ message: 'Vui lòng chọn thời gian gia hạn từ 1 đến 24 tháng!', type: 'error' });
+      setToastInfo({ message: t('contractExtend.errors.invalidMonths'), type: 'error' });
       return;
     }
 
     if (changeVehicle && (!vehicleType.trim() || !licensePlate.trim())) {
-      setToastInfo({ message: 'Vui lòng nhập đầy đủ Loại xe và Biển số xe mới!', type: 'error' });
+      setToastInfo({ message: t('contractExtend.errors.vehicleRequired'), type: 'error' });
       return;
     }
 
@@ -156,13 +156,13 @@ const RequestContractExtensionPage = () => {
 
       await requestLeaseExtension(id, payload);
       setToastInfo({
-        message: 'Gửi yêu cầu gia hạn hợp đồng thành công! Vui lòng chờ chủ bãi phê duyệt.',
+        message: t('contractExtend.toasts.submitSuccess'),
         type: 'success'
       });
       fetchContractDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Gửi yêu cầu gia hạn thất bại!',
+        message: err.response?.data?.message || err.message || t('contractExtend.errors.submitFailed'),
         type: 'error'
       });
     } finally {
@@ -175,14 +175,14 @@ const RequestContractExtensionPage = () => {
       setCancelling(true);
       await cancelLeaseExtension(id);
       setToastInfo({
-        message: 'Đã hủy yêu cầu gia hạn hợp đồng thành công!',
+        message: t('contractExtend.toasts.cancelSuccess'),
         type: 'success'
       });
       setConfirmCancelOpen(false);
       fetchContractDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Hủy yêu cầu gia hạn thất bại!',
+        message: err.response?.data?.message || err.message || t('contractExtend.errors.cancelFailed'),
         type: 'error'
       });
     } finally {
@@ -195,7 +195,7 @@ const RequestContractExtensionPage = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center space-y-3">
           <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
-          <p className="text-sm text-slate-500">Đang tải thông tin hợp đồng...</p>
+          <p className="text-sm text-slate-500">{t('contractExtend.loading')}</p>
         </div>
       </div>
     );
@@ -206,20 +206,20 @@ const RequestContractExtensionPage = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-xl border border-slate-200 p-8 text-center space-y-4">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-          <h2 className="text-base font-bold text-slate-900">Không thể thực hiện yêu cầu</h2>
-          <p className="text-xs text-slate-600">{error || 'Không tìm thấy dữ liệu hợp đồng!'}</p>
+          <h2 className="text-base font-bold text-slate-900">{t('contractExtend.errorScreen.title')}</h2>
+          <p className="text-xs text-slate-600">{error || t('contractExtend.errorScreen.fallback')}</p>
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
               onClick={() => navigate('/my-contracts')}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition"
             >
-              Về danh sách hợp đồng
+              {t('contractExtend.errorScreen.backToList')}
             </button>
             <button
               onClick={fetchContractDetail}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition"
             >
-              Thử lại
+              {t('contractExtend.errorScreen.retry')}
             </button>
           </div>
         </div>
@@ -234,16 +234,16 @@ const RequestContractExtensionPage = () => {
           <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">Không thể yêu cầu gia hạn</h2>
+          <h2 className="text-lg font-bold text-slate-900">{t('contractExtend.inactiveScreen.title')}</h2>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Hợp đồng này hiện ở trạng thái <strong>{contract.status === 'TERMINATED' ? 'Đã chấm dứt' : contract.status === 'PENDING_SIGNATURE' ? 'Chờ xác nhận' : contract.status}</strong>. Chỉ những hợp đồng đang có hiệu lực mới có thể gia hạn thời gian thuê.
+            {t('contractExtend.inactiveScreen.descBefore')} <strong>{contract.status === 'TERMINATED' ? t('contractExtend.inactiveScreen.statusTerminated') : contract.status === 'PENDING_SIGNATURE' ? t('contractExtend.inactiveScreen.statusPending') : contract.status}</strong>{t('contractExtend.inactiveScreen.descAfter')}
           </p>
           <div className="pt-2">
             <button
               onClick={() => navigate('/my-contracts')}
               className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition"
             >
-              Quay lại danh sách hợp đồng
+              {t('contractExtend.inactiveScreen.backToList')}
             </button>
           </div>
         </div>
@@ -253,6 +253,8 @@ const RequestContractExtensionPage = () => {
 
   const facility = contract.reservation?.facility;
   const currentVeh = snapshot.vehicle_info || {};
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -267,15 +269,15 @@ const RequestContractExtensionPage = () => {
         <div className="w-full px-4 sm:px-6 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-3">
           
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Link to="/" className="hover:text-slate-900 transition">Trang chủ</Link>
+            <Link to="/" className="hover:text-slate-900 transition">{t('contractExtend.breadcrumb.home')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link to="/my-contracts" className="hover:text-slate-900 transition">Hợp đồng của tôi</Link>
+            <Link to="/my-contracts" className="hover:text-slate-900 transition">{t('contractExtend.breadcrumb.myContracts')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <Link to={`/contracts/${id}`} className="font-mono hover:text-slate-900 transition font-medium">
               {contract.contract_code}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-900 font-semibold">Gia hạn hợp đồng</span>
+            <span className="text-slate-900 font-semibold">{t('contractExtend.breadcrumb.current')}</span>
           </div>
 
           <button
@@ -283,7 +285,7 @@ const RequestContractExtensionPage = () => {
             className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Quay lại chi tiết hợp đồng
+            {t('contractExtend.backToDetail')}
           </button>
         </div>
       </div>
@@ -295,33 +297,33 @@ const RequestContractExtensionPage = () => {
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Gia hạn hợp đồng thuê bãi xe
+                {t('contractExtend.header.title')}
               </h1>
               <span className="font-mono text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                 {contract.contract_code}
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Đang hiệu lực
+                {t('contractExtend.header.statusActive')}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Điền thời gian gia hạn và cập nhật các thông tin xe nếu cần thay đổi cho kỳ thuê tiếp theo.
+              {t('contractExtend.header.subtitle')}
             </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs shrink-0 bg-white px-4 py-2.5 rounded-xl border border-slate-200">
             <div>
-              <span className="text-slate-400 block text-[11px]">Đơn giá hiện tại của bãi</span>
+              <span className="text-slate-400 block text-[11px]">{t('contractExtend.header.currentRateLabel')}</span>
               <strong className="text-teal-700 text-sm font-bold">
-                {monthlyPrice.toLocaleString('vi-VN')} đ/tháng
+                {monthlyPrice.toLocaleString(numberLocale)} {t('contractExtend.header.priceUnit')}
               </strong>
             </div>
             <div className="w-px h-8 bg-slate-200" />
             <div>
-              <span className="text-slate-400 block text-[11px]">Hạn kết thúc hiện tại</span>
+              <span className="text-slate-400 block text-[11px]">{t('contractExtend.header.currentEndLabel')}</span>
               <strong className="text-slate-800 text-sm font-semibold">
-                {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                {new Date(contract.end_date).toLocaleDateString(dateLocale)}
               </strong>
             </div>
           </div>
@@ -338,14 +340,14 @@ const RequestContractExtensionPage = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-base font-bold text-slate-900">
-                      Yêu cầu gia hạn đang chờ chủ bãi phê duyệt
+                      {t('contractExtend.pendingView.title')}
                     </h2>
                     <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-200/80 text-amber-900">
-                      Chờ duyệt
+                      {t('contractExtend.pendingView.badge')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Gửi lúc {new Date(pendingExtension.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày {new Date(pendingExtension.requested_at).toLocaleDateString('vi-VN')}. Bạn có thể hủy yêu cầu nếu muốn thay đổi mốc thời gian khác.
+                    {t('contractExtend.pendingView.submittedAt', { time: new Date(pendingExtension.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }), date: new Date(pendingExtension.requested_at).toLocaleDateString(dateLocale) })}
                   </p>
                 </div>
               </div>
@@ -356,37 +358,37 @@ const RequestContractExtensionPage = () => {
                 className="px-3.5 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-medium transition inline-flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                Hủy yêu cầu này
+                {t('contractExtend.pendingView.cancelButton')}
               </button>
             </div>
 
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Thời gian xin gia hạn thêm</span>
+                  <span className="text-slate-500 block">{t('contractExtend.pendingView.monthsLabel')}</span>
                   <strong className="text-base font-bold text-slate-900 mt-1 block">
-                    +{pendingExtension.extension_months} tháng
+                    {t('contractExtend.pendingView.monthsValue', { months: pendingExtension.extension_months })}
                   </strong>
                 </div>
 
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Thời hạn mới đề xuất</span>
+                  <span className="text-slate-500 block">{t('contractExtend.pendingView.proposedEndLabel')}</span>
                   <strong className="text-base font-bold text-teal-700 mt-1 block">
-                    {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString('vi-VN') : '---'}
+                    {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString(dateLocale) : '---'}
                   </strong>
                 </div>
 
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Tổng chi phí dự kiến (+{pendingExtension.extension_months} thg)</span>
+                  <span className="text-slate-500 block">{t('contractExtend.pendingView.estCostLabel', { months: pendingExtension.extension_months })}</span>
                   <strong className="text-base font-bold text-emerald-700 mt-1 block">
-                    {Number(pendingExtension.total_estimated_amount || 0).toLocaleString('vi-VN')} đ
+                    {Number(pendingExtension.total_estimated_amount || 0).toLocaleString(numberLocale)} {t('contractExtend.pendingView.currencySuffix')}
                   </strong>
                 </div>
               </div>
 
               {pendingExtension.reason && (
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
-                  <span className="font-semibold text-slate-700 block">Lý do từ khách hàng:</span>
+                  <span className="font-semibold text-slate-700 block">{t('contractExtend.pendingView.reasonLabel')}</span>
                   <p className="text-slate-700 italic">"{pendingExtension.reason}"</p>
                 </div>
               )}
@@ -395,15 +397,15 @@ const RequestContractExtensionPage = () => {
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2 text-xs">
                   <span className="font-semibold text-slate-800 block flex items-center gap-1.5">
                     <Car className="w-3.5 h-3.5 text-slate-500" />
-                    Đăng ký thay đổi phương tiện gửi bãi:
+                    {t('contractExtend.pendingView.vehicleChangeTitle')}
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div className="bg-white p-3 rounded border border-slate-200">
-                      <span className="text-slate-400 block text-[11px]">Loại xe mới</span>
-                      <strong className="text-slate-900 font-semibold">{pendingExtension.vehicle_info.vehicle_type}</strong>
+                      <span className="text-slate-400 block text-[11px]">{t('contractExtend.pendingView.newVehicleType')}</span>
+                      <strong className="text-slate-900 font-semibold">{translateVehicleTypeName({ name: pendingExtension.vehicle_info.vehicle_type }, i18n.language)}</strong>
                     </div>
                     <div className="bg-white p-3 rounded border border-slate-200">
-                      <span className="text-slate-400 block text-[11px]">Biển số mới</span>
+                      <span className="text-slate-400 block text-[11px]">{t('contractExtend.pendingView.newPlate')}</span>
                       <strong className="text-teal-700 font-semibold font-mono">{pendingExtension.vehicle_info.license_plate}</strong>
                     </div>
                   </div>
@@ -422,22 +424,22 @@ const RequestContractExtensionPage = () => {
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
-                        Thời gian gia hạn thêm
+                        {t('contractExtend.form.durationTitle')}
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Chọn gói tháng định kỳ hoặc nhập số tháng linh hoạt từ 1 đến 24 tháng.
+                        {t('contractExtend.form.durationSubtitle')}
                       </p>
                     </div>
 
                     
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {PRESET_OPTIONS.map((opt) => {
-                        const isSelected = !customMonths && extensionMonths === opt.months;
+                      {PRESET_MONTHS.map((months) => {
+                        const isSelected = !customMonths && extensionMonths === months;
                         return (
                           <button
-                            key={opt.months}
+                            key={months}
                             type="button"
-                            onClick={() => handleSelectPreset(opt.months)}
+                            onClick={() => handleSelectPreset(months)}
                             className={`p-3.5 rounded-lg border text-left transition ${
                               isSelected
                                 ? 'border-teal-600 bg-teal-50/60 ring-1 ring-teal-600 text-slate-900'
@@ -445,10 +447,10 @@ const RequestContractExtensionPage = () => {
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-base font-bold text-slate-900">+{opt.label}</span>
+                              <span className="text-base font-bold text-slate-900">+{t(`contractExtend.presets.m${months}.label`)}</span>
                               {isSelected && <Check className="w-4 h-4 text-teal-600 shrink-0" />}
                             </div>
-                            <span className="text-[11px] text-slate-500 block truncate">{opt.note}</span>
+                            <span className="text-[11px] text-slate-500 block truncate">{t(`contractExtend.presets.m${months}.note`)}</span>
                           </button>
                         );
                       })}
@@ -457,7 +459,7 @@ const RequestContractExtensionPage = () => {
                     
                     <div className="pt-1">
                       <label className="text-xs font-medium text-slate-700 block mb-1">
-                        Hoặc nhập số tháng tùy chọn (từ 1 đến 24 tháng)
+                        {t('contractExtend.form.customMonthsLabel')}
                       </label>
                       <div className="relative max-w-xs">
                         <input
@@ -466,11 +468,11 @@ const RequestContractExtensionPage = () => {
                           max={24}
                           value={customMonths}
                           onChange={handleCustomChange}
-                          placeholder="Nhập số tháng..."
+                          placeholder={t('contractExtend.form.customMonthsPlaceholder')}
                           className="w-full pl-3 pr-16 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 transition"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                          tháng
+                          {t('contractExtend.form.monthsUnit')}
                         </span>
                       </div>
                     </div>
@@ -481,10 +483,10 @@ const RequestContractExtensionPage = () => {
                     <div className="p-6 flex items-start justify-between gap-4">
                       <div className="space-y-0.5">
                         <label htmlFor="change-vehicle-toggle" className="text-xs sm:text-sm font-bold text-slate-900 cursor-pointer block">
-                          Thay đổi phương tiện gửi bãi
+                          {t('contractExtend.form.changeVehicleTitle')}
                         </label>
                         <p className="text-xs text-slate-500">
-                          Bật nếu bạn đổi loại xe hoặc biển số xe khác cho kỳ thuê tiếp theo.
+                          {t('contractExtend.form.changeVehicleDesc')}
                         </p>
                       </div>
 
@@ -505,32 +507,32 @@ const RequestContractExtensionPage = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-xs font-semibold text-slate-700">
-                              Loại phương tiện mới <span className="text-red-500">*</span>
+                              {t('contractExtend.form.newVehicleTypeLabel')} <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="text"
                               value={vehicleType}
                               onChange={(e) => setVehicleType(e.target.value)}
-                              placeholder="Ví dụ: Xe 5 chỗ Sedan, SUV 7 chỗ..."
+                              placeholder={t('contractExtend.form.newVehicleTypePlaceholder')}
                               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                             />
                           </div>
 
                           <div className="space-y-1">
                             <label className="text-xs font-semibold text-slate-700">
-                              Biển số xe mới <span className="text-red-500">*</span>
+                              {t('contractExtend.form.newPlateLabel')} <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="text"
                               value={licensePlate}
                               onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
-                              placeholder="Ví dụ: 65A-123.45"
+                              placeholder={t('contractExtend.form.newPlatePlaceholder')}
                               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 uppercase font-mono font-medium"
                             />
                           </div>
                         </div>
                         <p className="text-[11px] text-slate-500 italic">
-                          * Chủ bãi xe sẽ kiểm tra xem kích thước và loại xe mới có phù hợp với chỗ đỗ của hợp đồng trước khi phê duyệt.
+                          {t('contractExtend.form.changeVehicleNote')}
                         </p>
                       </div>
                     )}
@@ -541,10 +543,10 @@ const RequestContractExtensionPage = () => {
                     <div className="p-6 flex items-start justify-between gap-4">
                       <div className="space-y-0.5">
                         <label htmlFor="change-contact-toggle" className="text-xs sm:text-sm font-bold text-slate-900 cursor-pointer block">
-                          Cập nhật số điện thoại hoặc địa chỉ liên hệ
+                          {t('contractExtend.form.changeContactTitle')}
                         </label>
                         <p className="text-xs text-slate-500">
-                          Cập nhật thông tin nhận thông báo và thông tin đại diện Bên B trên phụ lục hợp đồng.
+                          {t('contractExtend.form.changeContactDesc')}
                         </p>
                       </div>
 
@@ -565,26 +567,26 @@ const RequestContractExtensionPage = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-xs font-semibold text-slate-700">
-                              Số điện thoại mới
+                              {t('contractExtend.form.newPhoneLabel')}
                             </label>
                             <input
                               type="text"
                               value={customerPhone}
                               onChange={(e) => setCustomerPhone(e.target.value)}
-                              placeholder="Nhập số điện thoại..."
+                              placeholder={t('contractExtend.form.newPhonePlaceholder')}
                               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                             />
                           </div>
 
                           <div className="space-y-1">
                             <label className="text-xs font-semibold text-slate-700">
-                              Địa chỉ thường trú mới
+                              {t('contractExtend.form.newAddressLabel')}
                             </label>
                             <input
                               type="text"
                               value={customerAddress}
                               onChange={(e) => setCustomerAddress(e.target.value)}
-                              placeholder="Nhập số nhà, tên đường, phường/xã..."
+                              placeholder={t('contractExtend.form.newAddressPlaceholder')}
                               className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                             />
                           </div>
@@ -596,17 +598,17 @@ const RequestContractExtensionPage = () => {
                   
                   <div className="p-6 space-y-3">
                     <label className="text-xs sm:text-sm font-bold text-slate-900 block">
-                      Lời nhắn gửi chủ bãi xe (Tùy chọn)
+                      {t('contractExtend.form.noteLabel')}
                     </label>
                     <textarea
                       rows={3}
                       value={reason}
                       onChange={(e) => setReason(e.target.value)}
-                      placeholder="Ví dụ: Tôi tiếp tục công tác tại Cần Thơ thêm 3 tháng nên muốn gia hạn tiếp hợp đồng..."
+                      placeholder={t('contractExtend.form.notePlaceholder')}
                       className="w-full p-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 transition"
                     />
                     <p className="text-[11px] text-slate-400">
-                      Lời nhắn sẽ được gửi kèm trong thông báo phê duyệt tới chủ bãi xe.
+                      {t('contractExtend.form.noteHint')}
                     </p>
                   </div>
                 </div>
@@ -616,23 +618,23 @@ const RequestContractExtensionPage = () => {
               <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-16">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5 shadow-xs">
                   <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
-                    Tóm tắt gia hạn hợp đồng
+                    {t('contractExtend.summary.title')}
                   </h3>
 
                   
                   <div className="space-y-1 text-xs">
-                    <span className="text-slate-400 block text-[11px]">Bãi đỗ xe</span>
-                    <p className="font-semibold text-slate-800">{facility?.name || 'Bãi đỗ xe'}</p>
+                    <span className="text-slate-400 block text-[11px]">{t('contractExtend.summary.facilityLabel')}</span>
+                    <p className="font-semibold text-slate-800">{facility?.name || t('contractExtend.summary.facilityFallback')}</p>
                     <p className="text-slate-500 text-[11px] line-clamp-1">{facility?.address}</p>
                   </div>
 
                   
                   <div className="space-y-1 text-xs border-t border-slate-100 pt-3">
-                    <span className="text-slate-400 block text-[11px]">Phương tiện đang gửi</span>
+                    <span className="text-slate-400 block text-[11px]">{t('contractExtend.summary.currentVehicleLabel')}</span>
                     <p className="font-medium text-slate-800">
-                      {currentVeh.vehicle_type || 'Ô tô'}{' '}
+                      {currentVeh.vehicle_type ? translateVehicleTypeName({ name: currentVeh.vehicle_type }, i18n.language) : t('contractExtend.summary.vehicleFallback')}{' '}
                       <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                        {currentVeh.license_plate || contract.reservation?.vehicle_info || 'Chưa cập nhật'}
+                        {currentVeh.license_plate || translateVehicleInfoText(contract.reservation?.vehicle_info, i18n.language) || t('contractExtend.summary.notUpdated')}
                       </span>
                     </p>
                   </div>
@@ -640,19 +642,19 @@ const RequestContractExtensionPage = () => {
                   
                   <div className="space-y-2.5 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Thời gian gia hạn thêm:</span>
-                      <strong className="text-slate-900 font-semibold">+{activeMonths} tháng</strong>
+                      <span>{t('contractExtend.summary.extendDuration')}</span>
+                      <strong className="text-slate-900 font-semibold">{t('contractExtend.summary.extendDurationValue', { months: activeMonths })}</strong>
                     </div>
 
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Hạn kết thúc cũ:</span>
-                      <span className="font-mono text-slate-700">{new Date(contract.end_date).toLocaleDateString('vi-VN')}</span>
+                      <span>{t('contractExtend.summary.oldEndDate')}</span>
+                      <span className="font-mono text-slate-700">{new Date(contract.end_date).toLocaleDateString(dateLocale)}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-teal-800 bg-teal-50/70 p-2.5 rounded-lg border border-teal-200">
-                      <span className="font-medium">Hạn kết thúc mới:</span>
+                      <span className="font-medium">{t('contractExtend.summary.newEndDate')}</span>
                       <strong className="font-mono text-sm font-bold text-teal-700">
-                        {calculatedEndDate.toLocaleDateString('vi-VN')}
+                        {calculatedEndDate.toLocaleDateString(dateLocale)}
                       </strong>
                     </div>
                   </div>
@@ -660,23 +662,23 @@ const RequestContractExtensionPage = () => {
                   
                   <div className="space-y-2 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-500 text-[11px]">
-                      <span>Đơn giá hợp đồng:</span>
-                      <span>{monthlyPrice.toLocaleString('vi-VN')} đ/tháng</span>
+                      <span>{t('contractExtend.summary.unitRate')}</span>
+                      <span>{monthlyPrice.toLocaleString(numberLocale)} {t('contractExtend.summary.unitRateUnit')}</span>
                     </div>
 
                     <div className="flex items-baseline justify-between pt-1">
                       <div>
-                        <span className="text-slate-900 font-bold block text-sm">Tổng chi phí dự kiến</span>
-                        <span className="text-[11px] text-slate-400">({activeMonths} tháng x {monthlyPrice.toLocaleString('vi-VN')} đ)</span>
+                        <span className="text-slate-900 font-bold block text-sm">{t('contractExtend.summary.totalCostLabel')}</span>
+                        <span className="text-[11px] text-slate-400">{t('contractExtend.summary.totalCostCalc', { months: activeMonths, price: monthlyPrice.toLocaleString(numberLocale) })}</span>
                       </div>
                       <span className="text-xl font-bold text-teal-700">
-                        {estimatedTotalAmount.toLocaleString('vi-VN')} <span className="text-xs font-normal text-slate-500">đ</span>
+                        {estimatedTotalAmount.toLocaleString(numberLocale)} <span className="text-xs font-normal text-slate-500">{t('contractExtend.summary.currencySuffix')}</span>
                       </span>
                     </div>
                   </div>
 
                   <p className="text-[11px] text-slate-400 leading-relaxed border-t border-slate-100 pt-3">
-                    * Khi chủ bãi chấp thuận gia hạn, hệ thống sẽ khởi tạo hợp đồng mới theo đơn giá hiện tại của bãi xe để bạn kiểm tra và ký xác nhận (hợp đồng cũ được giữ nguyên).
+                    {t('contractExtend.summary.footnote')}
                   </p>
 
                   
@@ -689,12 +691,12 @@ const RequestContractExtensionPage = () => {
                       {submitting ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Đang gửi yêu cầu...</span>
+                          <span>{t('contractExtend.summary.submitting')}</span>
                         </>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />
-                          <span>Gửi yêu cầu gia hạn</span>
+                          <span>{t('contractExtend.summary.submit')}</span>
                         </>
                       )}
                     </button>
@@ -704,7 +706,7 @@ const RequestContractExtensionPage = () => {
                       onClick={() => navigate(`/contracts/${id}`)}
                       className="w-full py-2 px-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium transition cursor-pointer"
                     >
-                      Hủy bỏ & quay lại
+                      {t('contractExtend.summary.cancelBack')}
                     </button>
                   </div>
                 </div>
@@ -719,10 +721,10 @@ const RequestContractExtensionPage = () => {
         isOpen={confirmCancelOpen}
         onClose={() => setConfirmCancelOpen(false)}
         onConfirm={handleExecuteCancel}
-        title="Xác nhận hủy yêu cầu gia hạn"
-        message="Bạn có chắc chắn muốn hủy yêu cầu gia hạn đang chờ này không? Sau khi hủy, hợp đồng sẽ giữ nguyên thời hạn kết thúc cũ."
-        confirmText="Hủy yêu cầu"
-        cancelText="Đóng"
+        title={t('contractExtend.cancelConfirm.title')}
+        message={t('contractExtend.cancelConfirm.message')}
+        confirmText={t('contractExtend.cancelConfirm.confirmText')}
+        cancelText={t('contractExtend.cancelConfirm.cancelText')}
         type="danger"
         loading={cancelling}
       />

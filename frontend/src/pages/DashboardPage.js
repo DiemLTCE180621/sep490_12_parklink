@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
@@ -34,6 +35,7 @@ import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {
+  const { t } = useTranslation(['provider', 'customer']);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,6 +62,8 @@ const DashboardPage = () => {
   }, [location.state]);
 
   const roleName = user?.role?.name || "CUSTOMER";
+  const tr = (viText, key, opts) =>
+    roleName === 'PROVIDER' || roleName === 'CUSTOMER' ? t(key, opts) : viText;
 
   const handleLogout = async () => {
     await logout();
@@ -85,16 +89,16 @@ const DashboardPage = () => {
   ];
 
   const providerTabs = [
-    { id: 'facility', label: 'Thông Tin Bãi Xe', icon: Building2 },
-    { id: 'active-customers', label: 'Khách Đang Thuê', icon: Users },
-    { id: 'monthly-revenue', label: 'Doanh Thu Theo Tháng', icon: DollarSign },
-    { id: 'reservations', label: 'Duyệt Yêu Cầu Thuê', icon: Car },
-    { id: 'contracts', label: 'Quản Lý Hợp Đồng', icon: FileText },
-    { id: 'profile', label: 'Thông Tin Cá Nhân', icon: User },
-    { id: 'transactions', label: 'Lịch Sử Giao Dịch', icon: Shield },
-    { id: 'complaints', label: 'Quản Lý Khiếu Nại', icon: AlertCircle },
-    { id: 'reviews', label: 'Đánh Giá Khách Hàng', icon: Star },
-    { id: 'platform-fees', label: 'Biểu Phí Nền Tảng', icon: DollarSign },
+    { id: 'facility', label: t('portal.tabs.facility'), icon: Building2 },
+    { id: 'active-customers', label: t('portal.tabs.activeCustomers'), icon: Users },
+    { id: 'monthly-revenue', label: t('portal.tabs.monthlyRevenue'), icon: DollarSign },
+    { id: 'reservations', label: t('portal.tabs.reservations'), icon: Car },
+    { id: 'contracts', label: t('portal.tabs.contracts'), icon: FileText },
+    { id: 'profile', label: t('portal.tabs.profile'), icon: User },
+    { id: 'transactions', label: t('portal.tabs.transactions'), icon: Shield },
+    { id: 'complaints', label: t('portal.tabs.complaints'), icon: AlertCircle },
+    { id: 'reviews', label: t('portal.tabs.reviews'), icon: Star },
+    { id: 'platform-fees', label: t('portal.tabs.platformFees'), icon: DollarSign },
   ];
 
   const inspectorTabs = [
@@ -124,16 +128,16 @@ const DashboardPage = () => {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold">
-                  Xin chào, {user?.full_name}!
+                  {tr(`Xin chào, ${user?.full_name || ''}!`, 'portal.greeting', { name: user?.full_name || '' })}
                 </h1>
                 <p className="text-teal-300 text-sm font-medium">
                   {roleName === 'PROVIDER'
-                    ? 'Chủ Bãi Đỗ Xe'
+                    ? t('portal.roleTitle')
                     : roleName === 'ADMIN'
                       ? 'Ban Quản Trị Hệ Thống'
                       : roleName === 'FIELD_INSPECTOR'
                         ? 'Nhân Viên Khảo Sát'
-                        : 'Khách Thuê Bãi Xe'}
+                        : t('customer:dashboard.roleTitle')}
                 </p>
               </div>
             </div>
@@ -144,25 +148,25 @@ const DashboardPage = () => {
               onClick={() => navigate('/profile')}
               className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
             >
-              <Edit className="w-4 h-4" /> Sửa Hồ Sơ
+              <Edit className="w-4 h-4" /> {tr('Sửa Hồ Sơ', 'portal.actions.editProfile')}
             </button>
             {user?.has_password === false ? (
               <div className="px-3.5 py-2.5 bg-slate-800 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-teal-400" /> Tài khoản Google
+                <ShieldCheck className="w-4 h-4 text-teal-400" /> {tr('Tài khoản Google', 'portal.actions.googleAccount')}
               </div>
             ) : (
               <button
                 onClick={() => setIsChangePasswordModalOpen(true)}
                 className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-teal-300 text-xs font-bold rounded-xl border border-slate-700 shadow transition flex items-center gap-2"
               >
-                <KeyRound className="w-4 h-4" /> Đổi Mật Khẩu
+                <KeyRound className="w-4 h-4" /> {tr('Đổi Mật Khẩu', 'portal.actions.changePassword')}
               </button>
             )}
             <button
               onClick={handleLogout}
               className="px-5 py-2.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
             >
-              <LogOut className="w-4 h-4" /> Đăng Xuất
+              <LogOut className="w-4 h-4" /> {tr('Đăng Xuất', 'portal.actions.logout')}
             </button>
           </div>
         </div>
@@ -325,7 +329,7 @@ const DashboardPage = () => {
                     {React.createElement(providerTabs.find(t => t.id === activeProviderTab)?.icon || Building2, { className: 'w-4 h-4' })}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Đang xem mục</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">{t('portal.menu.viewing')}</span>
                     <h4 className="text-sm font-bold text-slate-900 truncate">
                       {providerTabs.find(t => t.id === activeProviderTab)?.label}
                     </h4>
@@ -339,7 +343,7 @@ const DashboardPage = () => {
                     }`}
                 >
                   {isMobileProviderMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
-                  <span>{isMobileProviderMenuOpen ? 'Đóng' : 'Tất cả menu'}</span>
+                  <span>{isMobileProviderMenuOpen ? t('portal.menu.close') : t('portal.menu.allMenu')}</span>
                 </button>
               </div>
 
@@ -398,12 +402,12 @@ const DashboardPage = () => {
                       <Building2 className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 leading-tight">Menu Chủ Bãi Xe</h3>
-                      <p className="text-[11px] text-slate-400 font-medium">Bảng điều khiển cơ sở</p>
+                      <h3 className="text-base font-bold text-slate-900 leading-tight">{t('portal.menu.title')}</h3>
+                      <p className="text-[11px] text-slate-400 font-medium">{t('portal.menu.subtitle')}</p>
                     </div>
                   </div>
                   <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
-                    {providerTabs.length} mục
+                    {t('portal.menu.itemsCount', { count: providerTabs.length })}
                   </span>
                 </div>
 
@@ -460,31 +464,31 @@ const DashboardPage = () => {
               {activeProviderTab === 'profile' && (
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
+                    <User className="w-5 h-5 text-teal-600" /> {t('portal.profileTab.title')}
                   </h3>
 
                   <div className="space-y-4 text-sm">
                     <div>
-                      <label className="text-xs text-slate-400 font-semibold uppercase">Họ và Tên</label>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">{t('portal.profileTab.fullName')}</label>
                       <p className="text-base font-bold text-slate-900">{user?.full_name}</p>
                     </div>
                     <div>
-                      <label className="text-xs text-slate-400 font-semibold uppercase">Email Trực Tuyến</label>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">{t('portal.profileTab.email')}</label>
                       <p className="text-base font-bold text-slate-900 flex items-center gap-2">
                         <Mail className="w-4 h-4 text-slate-400" /> {user?.email}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-slate-400 font-semibold uppercase">Số Điện Thoại</label>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">{t('portal.profileTab.phone')}</label>
                       <p className="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-slate-400" /> {user?.phone_number || 'Chưa cập nhật'}
+                        <Phone className="w-4 h-4 text-slate-400" /> {user?.phone_number || t('portal.profileTab.notUpdated')}
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs text-slate-400 font-semibold uppercase">Vai Trò Tài Khoản</label>
+                      <label className="text-xs text-slate-400 font-semibold uppercase">{t('portal.profileTab.roleLabel')}</label>
                       <p className="mt-1">
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                          Chủ Bãi Đỗ Xe (Parking Provider)
+                          {t('portal.profileTab.roleBadge')}
                         </span>
                       </p>
                     </div>
@@ -621,7 +625,7 @@ const DashboardPage = () => {
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
               <div className="border-b border-slate-100 pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <User className="w-5 h-5 text-teal-600" /> Thông Tin Cá Nhân
+                  <User className="w-5 h-5 text-teal-600" /> {t('customer:dashboard.profileCard.title')}
                 </h3>
               </div>
 
@@ -635,13 +639,13 @@ const DashboardPage = () => {
                 <div className="flex items-center gap-3 text-slate-600">
                   <Phone className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="font-medium text-slate-900">
-                    {user?.phone_number || "Chưa cập nhật"}
+                    {user?.phone_number || t('customer:dashboard.profileCard.phoneNotUpdated')}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-600">
                   <Shield className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                    Khách Thuê
+                    {t('customer:dashboard.profileCard.roleBadge')}
                   </span>
                 </div>
               </div>
@@ -653,14 +657,13 @@ const DashboardPage = () => {
                 <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-md space-y-5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Car className="w-5 h-5 text-teal-600" /> Quản Lý Yêu Cầu
-                      Thuê Bãi Xe
+                      <Car className="w-5 h-5 text-teal-600" /> {t('customer:dashboard.reservationsCard.title')}
                     </h3>
                     <Link
                       to="/my-reservations"
                       className="text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline flex items-center gap-1"
                     >
-                      Xem tất cả &rarr;
+                      {t('customer:dashboard.reservationsCard.viewAll')} &rarr;
                     </Link>
                   </div>
 
@@ -668,11 +671,10 @@ const DashboardPage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="text-base font-bold">
-                          Thuê Bãi Đỗ Xe Dài Hạn
+                          {t('customer:dashboard.reservationsCard.subTitle')}
                         </h4>
                         <p className="text-xs text-slate-300 mt-0.5">
-                          Quản lý và kiểm tra tiến độ duyệt các đăng ký thuê bãi
-                          đỗ xe theo tháng
+                          {t('customer:dashboard.reservationsCard.subDesc')}
                         </p>
                       </div>
                     </div>
@@ -682,13 +684,13 @@ const DashboardPage = () => {
                         to="/my-reservations"
                         className="px-5 py-2.5 bg-teal-500 hover:bg-teal-600 text-slate-950 font-extrabold text-sm rounded-xl shadow transition"
                       >
-                        Danh Sách Yêu Cầu Thuê Của Tôi
+                        {t('customer:dashboard.reservationsCard.myListButton')}
                       </Link>
                       <Link
                         to="/search"
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-sm rounded-xl transition"
                       >
-                        Tìm Bãi Đỗ Xe Mới
+                        {t('customer:dashboard.reservationsCard.findNewButton')}
                       </Link>
                     </div>
                   </div>

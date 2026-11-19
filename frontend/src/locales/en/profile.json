@@ -1,0 +1,106 @@
+{
+  "header": {
+    "back": "Back",
+    "title": "My Profile",
+    "fallbackName": "User Profile",
+    "avatarTitle": "Change avatar",
+    "avatarHint": "Click the camera icon to update your avatar"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "PROVIDER": "Parking Provider",
+    "FIELD_INSPECTOR": "Field Inspector",
+    "CUSTOMER": "Customer"
+  },
+  "section": {
+    "title": "Personal Information",
+    "subtitle": "Manage and update your contact information"
+  },
+  "warnings": {
+    "missingBoth": "You have not updated your phone number and contact address yet. Please complete both fields below so Parking Providers can contact you and prepare your contract when you submit a rental request.",
+    "missingPhone": "You have not updated your phone number yet. Please add your contact phone number below so Parking Providers can reach you when reviewing your rental request or contract.",
+    "missingAddress": "You have not updated your residential/contact address yet. Please add your address below for official parking rental contracts."
+  },
+  "fields": {
+    "email": {
+      "label": "Email Address (Cannot be changed)"
+    },
+    "fullName": {
+      "label": "Full Name",
+      "placeholder": "Enter your full name"
+    },
+    "phone": {
+      "label": "Phone Number",
+      "placeholder": "Enter your phone number",
+      "hint": "Must be exactly 10 digits starting with 0."
+    },
+    "assignedAddress": {
+      "label": "ASSIGNED ADDRESS",
+      "empty": "Address not set",
+      "note": "Assigned by Administrator"
+    },
+    "address": {
+      "label": "Residential / Contact Address",
+      "formatHint": "Administrative format",
+      "areaLabel": "Administrative Area",
+      "streetDetailLabel": "House number, street name, alley details",
+      "streetDetailPlaceholder": "e.g., No. 123/45, 30 Thang 4 Street",
+      "contractPreview": "Full address on contract: ",
+      "notSet": "Not set"
+    },
+    "accountRole": {
+      "label": "System Account Role:"
+    },
+    "authMethod": {
+      "label": "Sign-In Method:",
+      "google": "Google",
+      "googleAndPassword": "Google & Password",
+      "emailAndPassword": "Email & Password"
+    }
+  },
+  "actions": {
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "saving": "Updating..."
+  },
+  "messages": {
+    "avatarInvalidType": "Please select a valid image file (JPG, PNG, WebP, AVIF)!",
+    "avatarTooLarge": "Avatar image size must not exceed 5MB!",
+    "avatarNoUrl": "Did not receive an image URL from the server!",
+    "avatarSuccess": "Avatar updated successfully!",
+    "avatarUploadError": "Error uploading image!",
+    "fullNameMinLength": "Full Name must be at least 2 characters long.",
+    "phoneInvalid": "Phone number must be exactly 10 digits starting with 0 (e.g., 0912345678).",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Update failed! Please try again."
+  },
+  "changePasswordModal": {
+    "title": "Change Password",
+    "subtitle": "Update your password to keep your ParkLink account secure",
+    "googleTitle": "Google Sign-In Account",
+    "googleDescription": "This account is authenticated and secured directly via Google Sign-In and does not use a ParkLink password.",
+    "close": "Close",
+    "fields": {
+      "oldPasswordLabel": "Current Password",
+      "oldPasswordPlaceholder": "Enter your current password",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "At least 8 characters, 1 uppercase, 1 lowercase, 1 number",
+      "confirmPasswordLabel": "Confirm New Password",
+      "confirmPasswordPlaceholder": "Re-enter your new password"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "submitting": "Updating...",
+      "submit": "Update Password"
+    },
+    "messages": {
+      "oldPasswordRequired": "Please enter your current password!",
+      "passwordInvalid": "New password must be at least 8 characters and include at least 1 uppercase letter, 1 lowercase letter, and 1 number!",
+      "confirmMismatch": "New password confirmation does not match!",
+      "successFallback": "Password changed successfully!",
+      "errorFallback": "Failed to change password! Please try again."
+    }
+  }
+}

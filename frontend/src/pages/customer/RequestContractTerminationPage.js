@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Clock,
@@ -24,8 +25,14 @@ import timelineSettingService from '../../services/timelineSettingService';
 import Toast from '../../components/common/Toast';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import { useAuth } from '../../context/AuthContext';
+import { translateDurationText, translateVehicleTypeName, translateVehicleInfoText } from '../../utils/translations';
 
 const RequestContractTerminationPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -80,7 +87,7 @@ const RequestContractTerminationPage = () => {
       const res = await getConfirmationRecordDetail(id);
       const data = res.data?.confirmation_record || res.confirmation_record;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin hợp đồng điện tử!');
+        throw new Error(tRef.current('contractTerminate.errors.notFound'));
       }
       setContract(data);
 
@@ -94,7 +101,7 @@ const RequestContractTerminationPage = () => {
       const chosen = defaultDate < contractEnd ? defaultDate : contractEnd;
       setTerminationDate(chosen.toISOString().slice(0, 10));
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Không thể tải thông tin hợp đồng!');
+      setError(err.response?.data?.message || err.message || tRef.current('contractTerminate.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -115,18 +122,18 @@ const RequestContractTerminationPage = () => {
     e.preventDefault();
 
     if (!terminationDate) {
-      setToastInfo({ message: 'Vui lòng chọn ngày dự kiến chấm dứt hợp đồng!', type: 'error' });
+      setToastInfo({ message: t('contractTerminate.errors.dateRequired'), type: 'error' });
       return;
     }
 
     if (!reason.trim()) {
-      setToastInfo({ message: 'Vui lòng nhập lý do chấm dứt hợp đồng trước hạn!', type: 'error' });
+      setToastInfo({ message: t('contractTerminate.errors.reasonRequired'), type: 'error' });
       return;
     }
 
     let combinedBankInfo = '';
     if (isCustomer && bankAccountNumber.trim()) {
-      combinedBankInfo = `${bankName.trim() || 'Ngân hàng'} - STK: ${bankAccountNumber.trim()}${bankAccountHolder.trim() ? ` - Tên: ${bankAccountHolder.trim().toUpperCase()}` : ''}`;
+      combinedBankInfo = `${bankName.trim() || t('contractTerminate.bankFallback')} - ${t('contractTerminate.bankAccountShort')}: ${bankAccountNumber.trim()}${bankAccountHolder.trim() ? ` - ${t('contractTerminate.bankHolderShort')}: ${bankAccountHolder.trim().toUpperCase()}` : ''}`;
     }
 
     try {
@@ -142,14 +149,14 @@ const RequestContractTerminationPage = () => {
       await requestEarlyTermination(id, payload);
       setToastInfo({
         message: isProvider
-          ? 'Gửi yêu cầu chấm dứt hợp đồng thành công! Đã gửi thông báo tới khách hàng.'
-          : 'Gửi yêu cầu chấm dứt hợp đồng thành công! Vui lòng chờ chủ bãi xe xác nhận.',
+          ? t('contractTerminate.toasts.submitProviderSuccess')
+          : t('contractTerminate.toasts.submitCustomerSuccess'),
         type: 'success'
       });
       fetchContractDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Gửi yêu cầu chấm dứt thất bại!',
+        message: err.response?.data?.message || err.message || t('contractTerminate.errors.submitFailed'),
         type: 'error'
       });
     } finally {
@@ -162,14 +169,14 @@ const RequestContractTerminationPage = () => {
       setCancelling(true);
       await cancelEarlyTermination(id);
       setToastInfo({
-        message: 'Đã hủy yêu cầu chấm dứt hợp đồng thành công! Hợp đồng tiếp tục có hiệu lực.',
+        message: t('contractTerminate.toasts.cancelSuccess'),
         type: 'success'
       });
       setConfirmCancelOpen(false);
       fetchContractDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Hủy yêu cầu chấm dứt thất bại!',
+        message: err.response?.data?.message || err.message || t('contractTerminate.errors.cancelFailed'),
         type: 'error'
       });
     } finally {
@@ -186,14 +193,14 @@ const RequestContractTerminationPage = () => {
         refund_amount: isProvider && refundAmount ? Number(refundAmount) : undefined
       });
       setToastInfo({
-        message: 'Đã xác nhận chấm dứt hợp đồng thành công! Vị trí đỗ xe đã được hoàn trả.',
+        message: t('contractTerminate.toasts.confirmSuccess'),
         type: 'success'
       });
       setConfirmAcceptModalOpen(false);
       fetchContractDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Xác nhận chấm dứt thất bại!',
+        message: err.response?.data?.message || err.message || t('contractTerminate.errors.confirmFailed'),
         type: 'error'
       });
     } finally {
@@ -206,7 +213,7 @@ const RequestContractTerminationPage = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="text-center space-y-3">
           <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
-          <p className="text-sm text-slate-500">Đang tải thông tin hợp đồng...</p>
+          <p className="text-sm text-slate-500">{t('contractTerminate.loading')}</p>
         </div>
       </div>
     );
@@ -217,20 +224,20 @@ const RequestContractTerminationPage = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white rounded-xl border border-slate-200 p-8 text-center space-y-4">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-          <h2 className="text-base font-bold text-slate-900">Không thể thực hiện yêu cầu</h2>
-          <p className="text-xs text-slate-600">{error || 'Không tìm thấy dữ liệu hợp đồng!'}</p>
+          <h2 className="text-base font-bold text-slate-900">{t('contractTerminate.errorScreen.title')}</h2>
+          <p className="text-xs text-slate-600">{error || t('contractTerminate.errorScreen.fallback')}</p>
           <div className="flex items-center justify-center gap-3 pt-2">
             <button
               onClick={() => navigate(isProvider ? '/provider/dashboard?tab=contracts' : '/my-contracts')}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition"
             >
-              Về danh sách hợp đồng
+              {t('contractTerminate.errorScreen.backToList')}
             </button>
             <button
               onClick={fetchContractDetail}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition"
             >
-              Thử lại
+              {t('contractTerminate.errorScreen.retry')}
             </button>
           </div>
         </div>
@@ -245,16 +252,16 @@ const RequestContractTerminationPage = () => {
           <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">Hợp đồng không còn hiệu lực</h2>
+          <h2 className="text-lg font-bold text-slate-900">{t('contractTerminate.inactiveScreen.title')}</h2>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Hợp đồng này hiện ở trạng thái <strong>{contract.status === 'TERMINATED' ? 'Đã chấm dứt' : contract.status === 'PENDING_SIGNATURE' ? 'Chờ xác nhận' : contract.status}</strong>.
+            {t('contractTerminate.inactiveScreen.descBefore')} <strong>{contract.status === 'TERMINATED' ? t('contractTerminate.inactiveScreen.statusTerminated') : contract.status === 'PENDING_SIGNATURE' ? t('contractTerminate.inactiveScreen.statusPending') : contract.status}</strong>.
           </p>
           <div className="pt-2">
             <button
               onClick={() => navigate(isProvider ? '/provider/dashboard?tab=contracts' : '/my-contracts')}
               className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition"
             >
-              Quay lại danh sách hợp đồng
+              {t('contractTerminate.inactiveScreen.backToList')}
             </button>
           </div>
         </div>
@@ -285,20 +292,20 @@ const RequestContractTerminationPage = () => {
         <div className="w-full px-4 sm:px-6 lg:px-10 py-3.5 flex flex-wrap items-center justify-between gap-3">
           
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Link to="/" className="hover:text-slate-900 transition">Trang chủ</Link>
+            <Link to="/" className="hover:text-slate-900 transition">{t('contractTerminate.breadcrumb.home')}</Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <Link
               to={isProvider ? '/provider/dashboard?tab=contracts' : '/my-contracts'}
               className="hover:text-slate-900 transition"
             >
-              {isProvider ? 'Quản lý hợp đồng' : 'Hợp đồng của tôi'}
+              {isProvider ? t('contractTerminate.breadcrumb.providerContracts') : t('contractTerminate.breadcrumb.myContracts')}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <Link to={`/contracts/${id}`} className="font-mono hover:text-slate-900 transition font-medium">
               {contract.contract_code}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-900 font-semibold">Chấm dứt hợp đồng</span>
+            <span className="text-slate-900 font-semibold">{t('contractTerminate.breadcrumb.current')}</span>
           </div>
 
           <button
@@ -306,7 +313,7 @@ const RequestContractTerminationPage = () => {
             className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Quay lại chi tiết hợp đồng
+            {t('contractTerminate.backToDetail')}
           </button>
         </div>
       </div>
@@ -319,36 +326,36 @@ const RequestContractTerminationPage = () => {
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                 {isProvider
-                  ? 'Yêu cầu chấm dứt hợp đồng từ Chủ bãi xe'
-                  : 'Chấm dứt hợp đồng & Trả chỗ trước thời hạn'}
+                  ? t('contractTerminate.header.titleProvider')
+                  : t('contractTerminate.header.titleCustomer')}
               </h1>
               <span className="font-mono text-xs font-semibold px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                 {contract.contract_code}
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Đang hiệu lực
+                {t('contractTerminate.header.statusActive')}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {isProvider
-                ? 'Chủ bãi xe gửi yêu cầu dừng cung cấp chỗ đỗ và thanh lý hợp đồng trước ngày kết thúc thỏa thuận ban đầu.'
-                : 'Khách hàng gửi yêu cầu trả lại vị trí đỗ xe và thanh lý hợp đồng trước ngày kết thúc thỏa thuận ban đầu.'}
+                ? t('contractTerminate.header.subtitleProvider')
+                : t('contractTerminate.header.subtitleCustomer')}
             </p>
           </div>
 
           <div className="flex items-center gap-4 text-xs shrink-0 bg-white px-4 py-2.5 rounded-xl border border-slate-200">
             <div>
-              <span className="text-slate-400 block text-[11px]">Đơn giá thuê</span>
+              <span className="text-slate-400 block text-[11px]">{t('contractTerminate.header.rateLabel')}</span>
               <strong className="text-slate-900 text-sm font-bold">
-                {Number(contract.agreed_price || 0).toLocaleString('vi-VN')} đ/tháng
+                {Number(contract.agreed_price || 0).toLocaleString(numberLocale)} {t('contractTerminate.header.rateUnit')}
               </strong>
             </div>
             <div className="w-px h-8 bg-slate-200" />
             <div>
-              <span className="text-slate-400 block text-[11px]">Hạn kết thúc gốc</span>
+              <span className="text-slate-400 block text-[11px]">{t('contractTerminate.header.originalEndLabel')}</span>
               <strong className="text-slate-800 text-sm font-semibold">
-                {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                {new Date(contract.end_date).toLocaleDateString(dateLocale)}
               </strong>
             </div>
           </div>
@@ -366,18 +373,18 @@ const RequestContractTerminationPage = () => {
                   <div className="flex items-center gap-2">
                     <h2 className="text-base font-bold text-slate-900">
                       {isMyRequest
-                        ? 'Yêu cầu chấm dứt do bạn gửi đang chờ xử lý'
+                        ? t('contractTerminate.pendingView.titleSelf')
                         : requesterRole === 'PROVIDER'
-                        ? 'Chủ bãi xe đã gửi yêu cầu chấm dứt hợp đồng trước hạn'
-                        : 'Khách hàng đã gửi yêu cầu chấm dứt hợp đồng & trả chỗ'}
+                        ? t('contractTerminate.pendingView.titleProvider')
+                        : t('contractTerminate.pendingView.titleCustomer')}
                     </h2>
                     <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-200/80 text-rose-900">
-                      {requesterRole === 'PROVIDER' ? 'Bên A (Chủ bãi) gửi' : 'Bên B (Khách) gửi'}
+                      {requesterRole === 'PROVIDER' ? t('contractTerminate.pendingView.badgeProvider') : t('contractTerminate.pendingView.badgeCustomer')}
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 mt-0.5">
-                    Gửi lúc {new Date(pendingTermination.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })} ngày {new Date(pendingTermination.requested_at).toLocaleDateString('vi-VN')}.
-                    {isMyRequest && ' Nếu bạn thay đổi ý định, bạn có thể hủy yêu cầu này.'}
+                    {t('contractTerminate.pendingView.submittedAt', { time: new Date(pendingTermination.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' }), date: new Date(pendingTermination.requested_at).toLocaleDateString(dateLocale) })}
+                    {isMyRequest && t('contractTerminate.pendingView.cancelHint')}
                   </p>
                 </div>
               </div>
@@ -390,7 +397,7 @@ const RequestContractTerminationPage = () => {
                     className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-lg text-xs font-medium transition inline-flex items-center gap-1.5"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
-                    Hủy yêu cầu này
+                    {t('contractTerminate.pendingView.cancelButton')}
                   </button>
                 ) : (
                   <button
@@ -399,7 +406,7 @@ const RequestContractTerminationPage = () => {
                     className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-xs"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
-                    {isProvider ? 'Xác nhận chấm dứt & Thu hồi chỗ' : 'Xác nhận chấm dứt & Trả chỗ'}
+                    {isProvider ? t('contractTerminate.pendingView.confirmProviderBtn') : t('contractTerminate.pendingView.confirmCustomerBtn')}
                   </button>
                 )}
               </div>
@@ -408,23 +415,23 @@ const RequestContractTerminationPage = () => {
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Ngày dự kiến trả chỗ / kết thúc</span>
+                  <span className="text-slate-500 block">{t('contractTerminate.pendingView.proposedDateLabel')}</span>
                   <strong className="text-base font-bold text-rose-700 mt-1 block">
                     {pendingTermination.requested_termination_date
-                      ? new Date(pendingTermination.requested_termination_date).toLocaleDateString('vi-VN')
+                      ? new Date(pendingTermination.requested_termination_date).toLocaleDateString(dateLocale)
                       : '---'}
                   </strong>
                 </div>
 
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Hạn hợp đồng ban đầu</span>
+                  <span className="text-slate-500 block">{t('contractTerminate.pendingView.originalEndLabel')}</span>
                   <strong className="text-base font-bold text-slate-800 mt-1 block">
-                    {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                    {new Date(contract.end_date).toLocaleDateString(dateLocale)}
                   </strong>
                 </div>
 
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <span className="text-slate-500 block">Mã yêu cầu</span>
+                  <span className="text-slate-500 block">{t('contractTerminate.pendingView.requestCodeLabel')}</span>
                   <span className="font-mono text-xs font-semibold text-slate-700 mt-1 block">
                     {pendingTermination.request_id || 'TERM-REQUEST'}
                   </span>
@@ -434,7 +441,7 @@ const RequestContractTerminationPage = () => {
               {pendingTermination.reason && (
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
                   <span className="font-semibold text-slate-700 block">
-                    {requesterRole === 'PROVIDER' ? 'Lý do từ Chủ bãi xe:' : 'Lý do từ Khách hàng:'}
+                    {requesterRole === 'PROVIDER' ? t('contractTerminate.pendingView.reasonProvider') : t('contractTerminate.pendingView.reasonCustomer')}
                   </span>
                   <p className="text-slate-700 italic">"{pendingTermination.reason}"</p>
                 </div>
@@ -444,7 +451,7 @@ const RequestContractTerminationPage = () => {
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
                   <span className="font-semibold text-slate-700 block flex items-center gap-1.5">
                     <CreditCard className="w-3.5 h-3.5 text-slate-500" />
-                    Thông tin tài khoản nhận tiền hoàn lại:
+                    {t('contractTerminate.pendingView.refundBankLabel')}
                   </span>
                   <p className="text-slate-800 font-mono font-medium">{pendingTermination.bank_account_info}</p>
                 </div>
@@ -454,17 +461,17 @@ const RequestContractTerminationPage = () => {
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
                   <span className="font-semibold text-slate-700 block flex items-center gap-1.5">
                     <DollarSign className="w-3.5 h-3.5 text-slate-500" />
-                    Số tiền hoàn lại cho khách (thỏa thuận):
+                    {t('contractTerminate.pendingView.refundAmountLabel')}
                   </span>
                   <p className="text-teal-700 font-bold font-mono text-sm">
-                    {Number(pendingTermination.refund_amount).toLocaleString('vi-VN')} đ
+                    {Number(pendingTermination.refund_amount).toLocaleString(numberLocale)} {t('contractTerminate.pendingView.currencySuffix')}
                   </p>
                 </div>
               )}
 
               {pendingTermination.provider_note && (
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 text-xs space-y-1">
-                  <span className="font-semibold text-slate-700 block">Ghi chú từ chủ bãi xe:</span>
+                  <span className="font-semibold text-slate-700 block">{t('contractTerminate.pendingView.providerNoteLabel')}</span>
                   <p className="text-slate-700 italic">"{pendingTermination.provider_note}"</p>
                 </div>
               )}
@@ -475,7 +482,7 @@ const RequestContractTerminationPage = () => {
                   onClick={() => navigate(`/contracts/${id}`)}
                   className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition"
                 >
-                  Xem hợp đồng điện tử
+                  {t('contractTerminate.pendingView.viewContractBtn')}
                 </button>
               </div>
             </div>
@@ -491,16 +498,16 @@ const RequestContractTerminationPage = () => {
                   <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div className="space-y-1 leading-relaxed">
                     <strong className="font-semibold block">
-                      {isProvider ? 'Quy định chấm dứt hợp đồng từ phía Chủ bãi:' : 'Quy định chấm dứt hợp đồng trước hạn:'}
+                      {isProvider ? t('contractTerminate.form.policyTitleProvider') : t('contractTerminate.form.policyTitleCustomer')}
                     </strong>
                     <p>
                       {isProvider ? (
                         <>
-                          Theo điều khoản trong Hợp đồng gửi giữ xe, chủ bãi xe có thể yêu cầu chấm dứt hợp đồng khi có kế hoạch sửa chữa/bảo trì bãi xe, thu hồi mặt bằng hoặc khách hàng vi phạm quy chế. Vui lòng thông báo trước ít nhất <strong>{timelineSettings?.terminationNoticeText || 'thời hạn quy định'}</strong> và thỏa thuận hoàn trả phí/cọc (nếu có).
+                          {t('contractTerminate.form.policyProviderBefore')} <strong>{timelineSettings?.terminationNoticeText ? translateDurationText(timelineSettings.terminationNoticeText, i18n.language) : t('contractTerminate.form.defaultNoticeDuration')}</strong> {t('contractTerminate.form.policyProviderAfter')}
                         </>
                       ) : (
                         <>
-                          Theo thỏa thuận trong Hợp đồng gửi giữ xe (Điều 6), khách hàng cần thông báo trước cho chủ bãi xe ít nhất <strong>{timelineSettings?.terminationNoticeText || 'thời hạn quy định'}</strong> trước ngày dừng gửi xe. Vui lòng sắp xếp thời gian hợp lý và bàn giao lại vị trí đỗ đúng hạn.
+                          {t('contractTerminate.form.policyCustomerBefore')} <strong>{timelineSettings?.terminationNoticeText ? translateDurationText(timelineSettings.terminationNoticeText, i18n.language) : t('contractTerminate.form.defaultNoticeDuration')}</strong> {t('contractTerminate.form.policyCustomerAfter')}
                         </>
                       )}
                     </p>
@@ -513,18 +520,18 @@ const RequestContractTerminationPage = () => {
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
-                        {isProvider ? '1. Ngày dự kiến dừng gửi & thu hồi chỗ đỗ' : '1. Ngày dự kiến trả chỗ & dừng gửi xe'}
+                        {isProvider ? t('contractTerminate.form.step1TitleProvider') : t('contractTerminate.form.step1TitleCustomer')}
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {isProvider
-                          ? 'Chọn ngày khách hàng cần hoàn tất di chuyển xe ra khỏi bãi đỗ.'
-                          : 'Chọn ngày bạn sẽ di chuyển xe ra khỏi bãi và hoàn tất bàn giao lại vị trí đỗ.'}
+                          ? t('contractTerminate.form.step1DescProvider')
+                          : t('contractTerminate.form.step1DescCustomer')}
                       </p>
                     </div>
 
                     <div className="max-w-xs space-y-1">
                       <label className="text-xs font-medium text-slate-700 block">
-                        {isProvider ? 'Ngày dừng gửi dự kiến' : 'Ngày trả chỗ mong muốn'} <span className="text-red-500">*</span>
+                        {isProvider ? t('contractTerminate.form.step1LabelProvider') : t('contractTerminate.form.step1LabelCustomer')} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="date"
@@ -542,12 +549,12 @@ const RequestContractTerminationPage = () => {
                   <div className="p-6 space-y-4">
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">
-                        2. Lý do chấm dứt hợp đồng trước hạn <span className="text-red-500">*</span>
+                        {t('contractTerminate.form.step2Title')} <span className="text-red-500">*</span>
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {isProvider
-                          ? 'Vui lòng mô tả cụ thể lý do chủ bãi xe muốn chấm dứt hợp đồng trước hạn để gửi thông báo tới khách hàng.'
-                          : 'Vui lòng mô tả cụ thể lý do bạn muốn chấm dứt hợp đồng và trả lại vị trí đỗ xe.'}
+                          ? t('contractTerminate.form.step2DescProvider')
+                          : t('contractTerminate.form.step2DescCustomer')}
                       </p>
                     </div>
 
@@ -558,8 +565,8 @@ const RequestContractTerminationPage = () => {
                         onChange={(e) => setReason(e.target.value)}
                         placeholder={
                           isProvider
-                            ? 'Mô tả cụ thể lý do chủ bãi xe muốn chấm dứt hợp đồng trước hạn (ví dụ: bãi xe cần bảo trì/sửa chữa mặt bằng, dừng hoạt động hoặc khách hàng vi phạm quy chế)...'
-                            : 'Mô tả cụ thể lý do bạn muốn chấm dứt hợp đồng và trả chỗ sớm...'
+                            ? t('contractTerminate.form.step2PlaceholderProvider')
+                            : t('contractTerminate.form.step2PlaceholderCustomer')
                         }
                         className="w-full p-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 transition leading-relaxed"
                         required
@@ -572,38 +579,38 @@ const RequestContractTerminationPage = () => {
                     <div className="p-6 space-y-4">
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">
-                          3. Thông tin nhận hoàn phí / tiền cọc (Nếu có thỏa thuận)
+                          {t('contractTerminate.form.step3CustomerTitle')}
                         </h2>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          Nền tảng ParkLink không trực tiếp giam giữ hay tự trừ tiền cọc. Khoản hoàn trả (nếu có) do bạn và chủ bãi xe tự thỏa thuận đối soát.
+                          {t('contractTerminate.form.step3CustomerDesc')}
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Ngân hàng</label>
+                          <label className="text-xs font-medium text-slate-700">{t('contractTerminate.form.bankNameLabel')}</label>
                           <input
                             type="text"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
-                            placeholder="Ví dụ: Vietcombank, MB, Techcombank..."
+                            placeholder={t('contractTerminate.form.bankNamePlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Số tài khoản</label>
+                          <label className="text-xs font-medium text-slate-700">{t('contractTerminate.form.accountNumberLabel')}</label>
                           <input
                             type="text"
                             value={bankAccountNumber}
                             onChange={(e) => setBankAccountNumber(e.target.value)}
-                            placeholder="Nhập số tài khoản..."
+                            placeholder={t('contractTerminate.form.accountNumberPlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 font-mono"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Tên chủ tài khoản</label>
+                          <label className="text-xs font-medium text-slate-700">{t('contractTerminate.form.accountHolderLabel')}</label>
                           <input
                             type="text"
                             value={bankAccountHolder}
@@ -618,17 +625,17 @@ const RequestContractTerminationPage = () => {
                     <div className="p-6 space-y-4">
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">
-                          3. Thỏa thuận hoàn tiền & Hướng dẫn cho khách hàng (Tùy chọn)
+                          {t('contractTerminate.form.step3ProviderTitle')}
                         </h2>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          Nhập thông tin hoàn tiền hoặc hướng dẫn bàn giao vị trí đỗ gửi kèm cho khách hàng.
+                          {t('contractTerminate.form.step3ProviderDesc')}
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-slate-700">
-                            Số tiền hoàn trả dự kiến (nếu có, VNĐ)
+                            {t('contractTerminate.form.refundAmountLabel')}
                           </label>
                           <input
                             type="number"
@@ -636,21 +643,21 @@ const RequestContractTerminationPage = () => {
                             step={1000}
                             value={refundAmount}
                             onChange={(e) => setRefundAmount(e.target.value)}
-                            placeholder="Ví dụ: 500000..."
+                            placeholder={t('contractTerminate.form.refundAmountPlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 font-mono"
                           />
-                          <span className="text-[11px] text-slate-400 block">Hai bên tự chuyển khoản / thanh toán trực tiếp ngoài web.</span>
+                          <span className="text-[11px] text-slate-400 block">{t('contractTerminate.form.offPlatformNote')}</span>
                         </div>
 
                         <div className="space-y-1">
                           <label className="text-xs font-medium text-slate-700">
-                            Ghi chú hướng dẫn khách bàn giao
+                            {t('contractTerminate.form.providerNoteLabel')}
                           </label>
                           <input
                             type="text"
                             value={providerNote}
                             onChange={(e) => setProviderNote(e.target.value)}
-                            placeholder="Ví dụ: Vui lòng bàn giao lại thẻ từ trước 18h..."
+                            placeholder={t('contractTerminate.form.providerNotePlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                           />
                         </div>
@@ -664,33 +671,33 @@ const RequestContractTerminationPage = () => {
               <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-16">
                 <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5 shadow-xs">
                   <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3">
-                    Tóm tắt yêu cầu chấm dứt
+                    {t('contractTerminate.summary.title')}
                   </h3>
 
                   
                   <div className="space-y-1 text-xs">
-                    <span className="text-slate-400 block text-[11px]">Bãi đỗ xe</span>
-                    <p className="font-semibold text-slate-800">{facility?.name || 'Bãi đỗ xe'}</p>
+                    <span className="text-slate-400 block text-[11px]">{t('contractTerminate.summary.facilityLabel')}</span>
+                    <p className="font-semibold text-slate-800">{facility?.name || t('contractTerminate.summary.facilityFallback')}</p>
                     <p className="text-slate-500 text-[11px] line-clamp-1">{facility?.address}</p>
                   </div>
 
                   
                   <div className="space-y-1 text-xs border-t border-slate-100 pt-3">
                     <span className="text-slate-400 block text-[11px]">
-                      {isProvider ? 'Khách thuê (Bên B)' : 'Phương tiện đang gửi'}
+                      {isProvider ? t('contractTerminate.summary.customerLabel') : t('contractTerminate.summary.vehicleLabel')}
                     </span>
                     {isProvider ? (
                       <p className="font-medium text-slate-800">
-                        {contract.reservation?.customer?.full_name || 'Khách hàng'}
+                        {contract.reservation?.customer?.full_name || t('contractTerminate.summary.customerFallback')}
                         <span className="font-mono text-slate-500 text-[11px] block mt-0.5">
                           {contract.reservation?.customer?.phone_number}
                         </span>
                       </p>
                     ) : (
                       <p className="font-medium text-slate-800">
-                        {currentVeh.vehicle_type || 'Ô tô'}{' '}
+                        {currentVeh.vehicle_type ? translateVehicleTypeName({ name: currentVeh.vehicle_type }, i18n.language) : t('contractTerminate.summary.vehicleFallback')}{' '}
                         <span className="font-mono font-semibold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                          {currentVeh.license_plate || contract.reservation?.vehicle_info || 'Chưa cập nhật'}
+                          {currentVeh.license_plate || translateVehicleInfoText(contract.reservation?.vehicle_info, i18n.language) || t('contractTerminate.summary.notUpdated')}
                         </span>
                       </p>
                     )}
@@ -699,16 +706,16 @@ const RequestContractTerminationPage = () => {
                   
                   <div className="space-y-2 border-t border-slate-100 pt-3 text-xs">
                     <div className="flex items-center justify-between text-slate-600">
-                      <span>Thời hạn gốc:</span>
-                      <span className="font-mono">{new Date(contract.end_date).toLocaleDateString('vi-VN')}</span>
+                      <span>{t('contractTerminate.summary.originalTerm')}</span>
+                      <span className="font-mono">{new Date(contract.end_date).toLocaleDateString(dateLocale)}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-rose-800 bg-rose-50/70 p-2.5 rounded-lg border border-rose-200">
                       <span className="font-medium">
-                        {isProvider ? 'Ngày dừng gửi dự kiến:' : 'Ngày trả chỗ đề xuất:'}
+                        {isProvider ? t('contractTerminate.summary.proposedStopDate') : t('contractTerminate.summary.proposedReturnDate')}
                       </span>
                       <strong className="font-mono text-sm font-bold text-rose-700">
-                        {terminationDate ? new Date(terminationDate).toLocaleDateString('vi-VN') : '---'}
+                        {terminationDate ? new Date(terminationDate).toLocaleDateString(dateLocale) : '---'}
                       </strong>
                     </div>
                   </div>
@@ -717,10 +724,10 @@ const RequestContractTerminationPage = () => {
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-[11px] text-slate-500 space-y-1 leading-relaxed">
                     <p className="font-semibold text-slate-700 flex items-center gap-1">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                      Lưu ý quan trọng:
+                      {t('contractTerminate.summary.noticeTitle')}
                     </p>
                     <p>
-                      Khi yêu cầu được xác nhận, hợp đồng sẽ chính thức chuyển sang trạng thái <strong>Đã chấm dứt</strong> và vị trí đỗ xe sẽ được thu hồi trên hệ thống.
+                      {t('contractTerminate.summary.noticeBodyBefore')} <strong>{t('contractTerminate.summary.noticeBodyStrong')}</strong> {t('contractTerminate.summary.noticeBodyAfter')}
                     </p>
                   </div>
 
@@ -734,12 +741,12 @@ const RequestContractTerminationPage = () => {
                       {submitting ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          <span>Đang gửi yêu cầu...</span>
+                          <span>{t('contractTerminate.summary.submitting')}</span>
                         </>
                       ) : (
                         <>
                           <Send className="w-3.5 h-3.5" />
-                          <span>Gửi yêu cầu chấm dứt</span>
+                          <span>{t('contractTerminate.summary.submit')}</span>
                         </>
                       )}
                     </button>
@@ -749,7 +756,7 @@ const RequestContractTerminationPage = () => {
                       onClick={() => navigate(`/contracts/${id}`)}
                       className="w-full py-2 px-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-medium transition cursor-pointer"
                     >
-                      Hủy bỏ & quay lại
+                      {t('contractTerminate.summary.cancelBack')}
                     </button>
                   </div>
                 </div>
@@ -764,10 +771,10 @@ const RequestContractTerminationPage = () => {
         isOpen={confirmCancelOpen}
         onClose={() => setConfirmCancelOpen(false)}
         onConfirm={handleExecuteCancel}
-        title="Xác nhận hủy yêu cầu chấm dứt"
-        message="Bạn có chắc chắn muốn hủy yêu cầu chấm dứt hợp đồng trước hạn này không? Sau khi hủy, hợp đồng sẽ tiếp tục có hiệu lực bình thường."
-        confirmText="Hủy yêu cầu chấm dứt"
-        cancelText="Đóng"
+        title={t('contractTerminate.modals.cancelTitle')}
+        message={t('contractTerminate.modals.cancelMessage')}
+        confirmText={t('contractTerminate.modals.cancelConfirmBtn')}
+        cancelText={t('contractTerminate.modals.cancelCloseBtn')}
         type="warning"
         loading={cancelling}
       />
@@ -777,10 +784,10 @@ const RequestContractTerminationPage = () => {
         isOpen={confirmAcceptModalOpen}
         onClose={() => setConfirmAcceptModalOpen(false)}
         onConfirm={handleExecuteConfirm}
-        title="Xác Nhận Chấm Dứt Hợp Đồng & Thu Hồi Chỗ Đỗ"
-        message="Bạn có chắc chắn muốn xác nhận chấm dứt hợp đồng này? Sau khi xác nhận, hợp đồng sẽ chính thức được chuyển sang trạng thái Đã chấm dứt và hệ thống sẽ tự động thu hồi lại chỗ đỗ xe."
-        confirmText="Xác Nhận Chấm Dứt"
-        cancelText="Bỏ Qua"
+        title={t('contractTerminate.modals.acceptTitle')}
+        message={t('contractTerminate.modals.acceptMessage')}
+        confirmText={t('contractTerminate.modals.acceptConfirmBtn')}
+        cancelText={t('contractTerminate.modals.acceptCancelBtn')}
         type="danger"
         loading={confirmingAction}
       />

@@ -383,9 +383,7 @@ class FacilityRepository {
     });
   }
 
-  /**
-   * Tìm kiếm bãi đỗ xe ACTIVE dựa theo từ khóa, loại xe và tiện ích
-   */
+  //Search facility
   async searchActiveFacilities({ keyword, vehicle_type, amenities, bounds, minPrice, maxPrice }) {
     let whereClause = {
       verification_status: "APPROVED",
@@ -457,7 +455,6 @@ class FacilityRepository {
       },
     });
 
-    // Lọc theo vehicle_type: hỗ trợ cả bảng liên kết facility_vehicle_types và trường vehicle_types
     if (vehicle_type) {
       facilities = facilities.filter((f) => {
         const matchesRelation = (f.facility_vehicle_types || []).some(
@@ -480,7 +477,7 @@ class FacilityRepository {
       });
     }
 
-    // Lọc theo tiện ích (Logical AND: phải có tất cả các tiện ích được chọn)
+    //filtered must included all tag
     if (amenities && Array.isArray(amenities) && amenities.length > 0) {
       facilities = facilities.filter((f) => {
         const facilityAmenityIds = f.facility_amenities.map(
@@ -495,9 +492,7 @@ class FacilityRepository {
     return facilities;
   }
 
-  /**
-   * Lấy danh sách tất cả các tiện ích
-   */
+
   async getAllAmenities() {
     return await prisma.amenity.findMany({
       where: { is_active: true },
@@ -656,12 +651,10 @@ class FacilityRepository {
     });
   }
 
-  /**
-   * UC-41: Lấy thông tin chi tiết của bãi đỗ xe
-   */
+
   async getFacilityDetails(id) {
     return await prisma.facility.findUnique({
-      where: { 
+      where: {
         id,
         verification_status: "APPROVED",
         visibility_status: "VISIBLE"
@@ -688,9 +681,7 @@ class FacilityRepository {
     });
   }
 
-  /**
-   * UC-42: Đếm số lượng hợp đồng (xe) đang gửi tại bãi
-   */
+
   async getActiveContractsCount(facilityId) {
     return await prisma.confirmation_Record.count({
       where: {

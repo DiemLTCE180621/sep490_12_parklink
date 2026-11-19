@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import vehicleTypeService from '../../services/vehicleTypeService';
 import CompareModal from '../../components/modals/CompareModal';
 import { facilityCarIcon } from '../../utils/mapIcons';
+import { translateAmenityName, translateVehicleTypeName } from '../../utils/translations';
 import Toast from '../../components/common/Toast';
 import VietmapAddressAutocomplete from '../../components/common/VietmapAddressAutocomplete';
 import vietmapService from '../../services/vietmapService';
@@ -171,6 +173,9 @@ const MapSearchChangeHandler = ({ hasSearched }) => {
 };
 
 const SearchPage = () => {
+  const { t, i18n } = useTranslation('facility');
+  const tRef = useRef(t);
+  tRef.current = t;
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, loading: authLoading } = useAuth();
@@ -194,9 +199,9 @@ const SearchPage = () => {
   const displayVehicleTypes = useMemo(() => {
     return dbVehicleTypes.map(vt => ({
       id: vt.type_code,
-      label: vt.name
+      label: translateVehicleTypeName(vt, i18n.language)
     }));
-  }, [dbVehicleTypes]);
+  }, [dbVehicleTypes, i18n.language]);
   const [radius, setRadius] = useState(3);
   const [appliedRadius, setAppliedRadius] = useState(3);
   const [minPrice, setMinPrice] = useState('');
@@ -253,7 +258,7 @@ const SearchPage = () => {
     e.stopPropagation();
     const normalizedFacilityId = Number(facilityId);
     if (!isAuthenticated || user?.role?.name !== 'CUSTOMER') {
-      setToastMsg('Vui lòng đăng nhập bằng tài khoản Khách hàng để lưu bãi xe!');
+      setToastMsg(t('search.toasts.loginCustomerToSave'));
       setToastType('error');
       return;
     }
@@ -261,15 +266,15 @@ const SearchPage = () => {
       if (favoriteIds.includes(normalizedFacilityId)) {
         await removeFavorite(normalizedFacilityId);
         setFavoriteIds(prev => prev.filter(id => id !== normalizedFacilityId));
-        setToastMsg('Đã xóa khỏi danh sách yêu thích');
+        setToastMsg(t('search.toasts.favoriteRemoved'));
       } else {
         await addFavorite(normalizedFacilityId);
         setFavoriteIds(prev => [...prev, normalizedFacilityId]);
-        setToastMsg('Đã thêm vào danh sách yêu thích');
+        setToastMsg(t('search.toasts.favoriteAdded'));
       }
       setToastType('success');
     } catch (err) {
-      setToastMsg(err.message || 'Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.');
+      setToastMsg(err.message || t('search.toasts.favoriteError'));
       setToastType('error');
     }
   };
@@ -282,7 +287,7 @@ const SearchPage = () => {
     e.stopPropagation(); // Không trigger sự kiện click card bên dưới
     const normalizedFacilityId = Number(facId);
     if (!Number.isInteger(normalizedFacilityId) || normalizedFacilityId <= 0) {
-      setToastMsg('Không thể chọn cơ sở không hợp lệ để so sánh.');
+      setToastMsg(tRef.current('search.toasts.invalidCompareFacility'));
       setToastType('error');
       return;
     }
@@ -294,7 +299,7 @@ const SearchPage = () => {
       }
       if (prev.length >= 4) {
         // EX-01: Đã đủ 4 bãi, hiển thị toast cảnh báo
-        setToastMsg('Tối đa 4 bãi đỗ xe để so sánh!');
+        setToastMsg(tRef.current('search.toasts.maxCompareLimit'));
         setToastType('error');
         return prev;
       }
@@ -373,14 +378,14 @@ const SearchPage = () => {
       (parsedMinPrice !== null && (!Number.isFinite(parsedMinPrice) || parsedMinPrice < 0)) ||
       (parsedMaxPrice !== null && (!Number.isFinite(parsedMaxPrice) || parsedMaxPrice < 0))
     ) {
-      setError('Giá thuê phải là số không âm.');
-      setToastMsg('Giá thuê phải là số không âm.');
+      setError(t('search.toasts.negativePrice'));
+      setToastMsg(t('search.toasts.negativePrice'));
       setToastType('error');
       return;
     }
     if (parsedMinPrice !== null && parsedMaxPrice !== null && parsedMinPrice > parsedMaxPrice) {
-      setError('Giá tối thiểu không được lớn hơn giá tối đa.');
-      setToastMsg('Giá tối thiểu không được lớn hơn giá tối đa.');
+      setError(t('search.toasts.invalidPriceRange'));
+      setToastMsg(t('search.toasts.invalidPriceRange'));
       setToastType('error');
       return;
     }
@@ -424,7 +429,7 @@ const SearchPage = () => {
 
       const res = await facilityService.searchFacilities(params);
       if (res.status !== 'success') {
-        throw new Error(res.message || 'Không thể tải danh sách bãi đỗ xe.');
+        throw new Error(res.message || t('search.toasts.fetchFailed'));
       }
       if (requestId === latestSearchRequest.current) {
         setFacilities(res.data.map((facility) => ({
@@ -437,7 +442,7 @@ const SearchPage = () => {
       }
     } catch (err) {
       if (requestId === latestSearchRequest.current) {
-        setError(err.message || 'Không thể tải dữ liệu bãi đỗ xe. Vui lòng thử lại.');
+        setError(err.message || t('search.toasts.fetchRetry'));
       }
     } finally {
       if (requestId === latestSearchRequest.current) {
@@ -459,7 +464,6 @@ const SearchPage = () => {
     navigate(`/facility/${facilityId}`, { state: searchContext });
   };
 
-  // Chuẩn hóa chuỗi bỏ dấu tiếng Việt để nhận diện từ khóa khớp tên cơ sở
   const normalizeSearchText = (text = '') =>
     String(text)
       .normalize('NFD')
@@ -472,9 +476,8 @@ const SearchPage = () => {
     e?.preventDefault();
     const trimmedKeyword = keyword?.trim() || '';
 
-    // Validation: Không cho phép tìm kiếm khi không nhập từ khóa
     if (!trimmedKeyword) {
-      setToastMsg('Vui lòng nhập tên bãi đỗ xe hoặc địa chỉ để tìm kiếm!');
+      setToastMsg(t('search.toasts.emptyKeyword'));
       setToastType('error');
       return;
     }
@@ -492,8 +495,6 @@ const SearchPage = () => {
       return;
     }
 
-    // Ưu tiên kiểm tra tìm theo tên cơ sở trước khi geocode địa chỉ qua Vietmap
-    // để tránh tọa độ địa danh đoán nhầm làm lọc mất bãi theo bán kính
     try {
       const nameMatchRes = await facilityService.searchFacilities({ keyword: trimmedKeyword });
       const normalizedQuery = normalizeSearchText(trimmedKeyword);
@@ -619,7 +620,7 @@ const SearchPage = () => {
       : fac.address;
 
     if (!destination) {
-      setToastMsg('Bãi đỗ xe này chưa có thông tin vị trí để chỉ đường.');
+      setToastMsg(t('search.toasts.noDirectionsCoords'));
       setToastType('error');
       return;
     }
@@ -631,8 +632,8 @@ const SearchPage = () => {
       travelMode: 'driving',
     });
     setToastMsg(opened
-      ? `Đang mở chỉ đường đến "${fac.name}" trên Google Maps...`
-      : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+      ? t('search.toasts.openingDirections', { name: fac.name })
+      : t('search.toasts.popupBlocked'));
     setToastType(opened ? 'success' : 'error');
   };
 
@@ -649,7 +650,7 @@ const SearchPage = () => {
     setLocationAccuracy(null);
     setMapCenter(DEFAULT_MAP_CENTER);
     setMapZoom(16);
-    setToastMsg('Không thể xác định vị trí của bạn. Đã chuyển về khu vực Ninh Kiều, Cần Thơ.');
+    setToastMsg(t('search.toasts.geolocationFallback'));
     setToastType('error');
   };
 
@@ -666,7 +667,7 @@ const SearchPage = () => {
           setMapCenter([lat, lng]);
           setMapZoom(14);
 
-          let resolvedKeyword = 'Vị trí hiện tại của bạn';
+          let resolvedKeyword = t('search.toasts.currentLocationLabel');
           try {
             const addr = await vietmapService.reverseGeocode(lat, lng);
             if (addr) {
@@ -679,7 +680,7 @@ const SearchPage = () => {
           setHasSearched(true);
           setAppliedRadius(Number(radius));
           await fetchFacilities(lat, lng, '', true);
-          setToastMsg('Đã xác định vị trí và tìm thấy các bãi đỗ xe xung quanh bạn.');
+          setToastMsg(t('search.toasts.locationFound'));
           setToastType('success');
         },
         handleLocationUnavailable
@@ -731,7 +732,7 @@ const SearchPage = () => {
               onSelect={handleAddressSelect}
               onFacilitySelect={handleFacilitySelect}
               includeFacilities={true}
-              placeholder="Nhập tên bãi đỗ, địa chỉ..."
+              placeholder={t('search.filters.keywordPlaceholder')}
               inputClassName="py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             />
             {keyword && (
@@ -748,8 +749,8 @@ const SearchPage = () => {
                 min="0"
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                placeholder="Giá từ"
-                aria-label="Giá thuê tối thiểu"
+                placeholder={t('search.filters.minPricePlaceholder')}
+                aria-label={t('search.filters.minPriceAria')}
                 className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
               />
               <input
@@ -757,8 +758,8 @@ const SearchPage = () => {
                 min="0"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                placeholder="Giá đến"
-                aria-label="Giá thuê tối đa"
+                placeholder={t('search.filters.maxPricePlaceholder')}
+                aria-label={t('search.filters.maxPriceAria')}
                 className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
               />
             </div>
@@ -768,7 +769,7 @@ const SearchPage = () => {
               onChange={(e) => setVehicleType(e.target.value)}
               className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             >
-              <option value="">Tất cả loại xe</option>
+              <option value="">{t('search.filters.allVehicleTypes')}</option>
               {displayVehicleTypes.map(vt => (
                 <option key={vt.id} value={vt.id}>{vt.label}</option>
               ))}
@@ -787,11 +788,11 @@ const SearchPage = () => {
               }}
               className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
             >
-              <option value={1}>Bán kính 1 km</option>
-              <option value={3}>Bán kính 3 km</option>
-              <option value={5}>Bán kính 5 km</option>
-              <option value={10}>Bán kính 10 km</option>
-              <option value={20}>Bán kính 20 km</option>
+              <option value={1}>{t('search.filters.radiusOption', { km: 1 })}</option>
+              <option value={3}>{t('search.filters.radiusOption', { km: 3 })}</option>
+              <option value={5}>{t('search.filters.radiusOption', { km: 5 })}</option>
+              <option value={10}>{t('search.filters.radiusOption', { km: 10 })}</option>
+              <option value={20}>{t('search.filters.radiusOption', { km: 20 })}</option>
             </select>
           </div>
 
@@ -799,7 +800,7 @@ const SearchPage = () => {
             <button
               type="button"
               onClick={handleLocateMe}
-              title="Vị trí của tôi"
+              title={t('search.filters.locateMeTitle')}
               className="px-4 py-2.5 bg-teal-50 text-teal-700 hover:bg-teal-100 font-semibold rounded-xl border border-teal-200 flex items-center justify-center transition whitespace-nowrap"
             >
               <Navigation className="w-5 h-5" />
@@ -809,7 +810,7 @@ const SearchPage = () => {
               type="submit"
               className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 whitespace-nowrap flex-1 md:flex-none"
             >
-              <Search className="w-5 h-5" /> Tìm Kiếm
+              <Search className="w-5 h-5" /> {t('search.filters.searchButton')}
             </button>
           </div>
         </form>
@@ -817,12 +818,11 @@ const SearchPage = () => {
         <div className="max-w-7xl mx-auto mt-2 flex flex-wrap items-center gap-3 text-xs">
           {locationAccuracy !== null && (
             <span className="text-slate-500">
-              Độ chính xác GPS: khoảng {Math.round(locationAccuracy)} m
+              {t('search.filters.gpsAccuracy', { meters: Math.round(locationAccuracy) })}
             </span>
           )}
         </div>
 
-        {/* Tiện ích Filter (Ban đầu ẩn, chỉ hiển thị sau khi người dùng đã tìm kiếm) */}
         {hasSearched && amenitiesList.length > 0 && (
           <div className="max-w-7xl mx-auto mt-3 flex flex-wrap gap-2 items-center">
             <button
@@ -831,9 +831,9 @@ const SearchPage = () => {
               disabled={!(vehicleType || selectedAmenities.length > 0 || minPrice !== '' || maxPrice !== '' || radius !== 3)}
               className="px-3 py-1.5 text-xs font-semibold rounded-full border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 transition-all disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-amber-50"
             >
-              Xóa bộ lọc
+              {t('search.filters.clearFilters')}
             </button>
-            <span className="text-xs font-bold text-slate-500 uppercase mr-2">Danh mục tiện ích:</span>
+            <span className="text-xs font-bold text-slate-500 uppercase mr-2">{t('search.filters.amenitiesLabel')}</span>
             {amenitiesList.map((amenity) => {
               const isSelected = selectedAmenities.includes(amenity.id);
               return (
@@ -846,7 +846,7 @@ const SearchPage = () => {
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                 >
-                  {amenity.name}
+                  {translateAmenityName(amenity.name, i18n.language)}
                 </button>
               );
             })}
@@ -855,7 +855,7 @@ const SearchPage = () => {
               onClick={handleSearch}
               className="ml-auto px-4 py-1.5 text-xs font-bold rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5"
             >
-              <Search className="w-3.5 h-3.5" /> Áp dụng tiện ích
+              <Search className="w-3.5 h-3.5" /> {t('search.filters.applyAmenities')}
             </button>
           </div>
         )}
@@ -868,13 +868,13 @@ const SearchPage = () => {
           <div className="p-4 bg-white border-b border-slate-200 flex justify-between items-center shrink-0">
             <h2 className="text-lg font-bold text-slate-900">
               {hasSearched ? (
-                <>Tìm thấy <span className="text-teal-600">{facilities.length}</span> bãi xe phù hợp</>
+                <>{t('search.results.foundCountPrefix')} <span className="text-teal-600">{facilities.length}</span> {t('search.results.foundCountSuffix')}</>
               ) : (
-                <>Kết quả tìm kiếm</>
+                <>{t('search.results.titleDefault')}</>
               )}
             </h2>
             <div className="flex items-center gap-2 text-sm text-slate-500">
-              <List className="w-4 h-4" /> Dạng danh sách
+              <List className="w-4 h-4" /> {t('search.results.listView')}
             </div>
           </div>
 
@@ -882,20 +882,20 @@ const SearchPage = () => {
             {!hasSearched ? (
               <div className="text-center py-16 text-slate-500 flex flex-col items-center">
                 <Search className="w-10 h-10 mb-3 text-slate-300" />
-                <p className="font-semibold text-slate-700">Chưa có kết quả tìm kiếm</p>
+                <p className="font-semibold text-slate-700">{t('search.results.emptyInitialTitle')}</p>
                 <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Vui lòng nhập địa chỉ hoặc chọn vị trí và nhấn &quot;Tìm Kiếm&quot; để xem các bãi đỗ xe.
+                  {t('search.results.emptyInitialDesc')}
                 </p>
               </div>
             ) : loading ? (
-              <div className="text-center py-10 text-slate-500">Đang tìm kiếm...</div>
+              <div className="text-center py-10 text-slate-500">{t('search.results.searching')}</div>
             ) : error ? (
               <div className="text-center py-10 text-red-500">{error}</div>
             ) : facilities.length === 0 ? (
               <div className="text-center py-10 text-slate-500 flex flex-col items-center">
                 <Info className="w-10 h-10 mb-3 text-slate-300" />
-                <p>Không tìm thấy bãi đỗ xe phù hợp.</p>
-                <p className="text-sm mt-1">Hãy thử mở rộng bán kính hoặc đổi từ khóa.</p>
+                <p>{t('search.results.noResultsTitle')}</p>
+                <p className="text-sm mt-1">{t('search.results.noResultsHint')}</p>
               </div>
             ) : (
               facilities.map((fac) => {
@@ -929,7 +929,7 @@ const SearchPage = () => {
                         )}
                         {isOutOfSlots && (
                           <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow-md tracking-wide">
-                            Hết chỗ
+                            {t('search.results.outOfSlots')}
                           </span>
                         )}
                       </div>
@@ -940,7 +940,7 @@ const SearchPage = () => {
                           type="button"
                           id={`compare-checkbox-${fac.id}`}
                           onClick={(e) => handleToggleCompare(e, fac.id)}
-                          title={isSelected ? 'Bỏ chọn so sánh' : 'Thêm vào so sánh'}
+                          title={isSelected ? t('search.results.compareRemoveTitle') : t('search.results.compareAddTitle')}
                           className={`absolute -top-1 -right-1 z-10 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition ${isSelected
                             ? 'bg-teal-100 border-teal-300 text-teal-700'
                             : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-600'
@@ -950,7 +950,7 @@ const SearchPage = () => {
                             ? <CheckSquare className="w-3.5 h-3.5" />
                             : <Square className="w-3.5 h-3.5" />
                           }
-                          So sánh
+                          {t('search.results.compareLabel')}
                         </button>
                         <div className="pr-20">
                           <div className="flex items-center gap-1.5 flex-wrap">
@@ -965,7 +965,7 @@ const SearchPage = () => {
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2 py-1 rounded-lg text-xs font-bold border border-amber-200 whitespace-nowrap shrink-0">
                               <Star className="w-3.5 h-3.5 fill-current" />
-                              <span>{getFacilityRating(fac).average ?? 'Chưa có'}</span>
+                              <span>{getFacilityRating(fac).average ?? t('search.results.noRating')}</span>
                               {getFacilityRating(fac).count > 0 && <span className="font-normal">({getFacilityRating(fac).count})</span>}
                             </div>
                             <div className={`text-xs font-bold px-2 py-1 rounded-lg border whitespace-nowrap shrink-0 ${isOutOfSlots
@@ -973,13 +973,13 @@ const SearchPage = () => {
                               : 'bg-teal-50 text-teal-700 border-teal-200'
                               }`}>
                               {isOutOfSlots
-                                ? `Còn 0/${fac.capacity || 0} chỗ`
-                                : `Còn ${fac.available_slots ?? fac.capacity}/${fac.capacity || 0} chỗ`}
+                                ? t('search.results.slotsRemaining', { available: 0, total: fac.capacity || 0 })
+                                : t('search.results.slotsRemaining', { available: fac.available_slots ?? fac.capacity, total: fac.capacity || 0 })}
                             </div>
                           </div>
                           {fac.distance !== null && fac.distance !== undefined && (
                             <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 whitespace-nowrap shrink-0">
-                              Cách bạn: {(fac.distance).toFixed(1)} km
+                              {t('search.results.distanceAway', { km: (fac.distance).toFixed(1) })}
                             </div>
                           )}
                         </div>
@@ -988,9 +988,9 @@ const SearchPage = () => {
 
                     <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
                       <div>
-                        <div className="text-xs text-slate-500 uppercase font-semibold">Giá thuê trọn gói</div>
+                        <div className="text-xs text-slate-500 uppercase font-semibold">{t('search.results.priceHeader')}</div>
                         <div className="text-lg font-bold text-teal-600">
-                          {fac.price_per_month ? fac.price_per_month.toLocaleString('vi-VN') : '0'} đ <span className="text-xs text-slate-400 font-normal">/ tháng</span>
+                          {fac.price_per_month ? fac.price_per_month.toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN') : '0'} {t('search.results.currencySuffix')} <span className="text-xs text-slate-400 font-normal">{t('search.results.perMonthSuffix')}</span>
                         </div>
                       </div>
 
@@ -998,8 +998,8 @@ const SearchPage = () => {
                         <button
                           type="button"
                           onClick={(e) => handleToggleFavorite(e, fac.id)}
-                          aria-label={favoriteIds.includes(Number(fac.id)) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
-                          title={favoriteIds.includes(Number(fac.id)) ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+                          aria-label={favoriteIds.includes(Number(fac.id)) ? t('search.results.removeFavoriteLabel') : t('search.results.addFavoriteLabel')}
+                          title={favoriteIds.includes(Number(fac.id)) ? t('search.results.removeFavoriteLabel') : t('search.results.addFavoriteLabel')}
                           className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 transition-colors"
                         >
                           <Heart className={`w-4 h-4 ${favoriteIds.includes(Number(fac.id)) ? 'text-rose-500 fill-rose-500' : 'text-slate-400'}`} />
@@ -1011,17 +1011,17 @@ const SearchPage = () => {
                             e.stopPropagation();
                             handleGetDirections(fac);
                           }}
-                          title="Chỉ đường trên Google Maps"
+                          title={t('search.results.directionsTitle')}
                           className="px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold rounded-xl transition flex items-center gap-1 border border-teal-200 shadow-sm"
                         >
-                          <Navigation className="w-3.5 h-3.5" /> Chỉ đường
+                          <Navigation className="w-3.5 h-3.5" /> {t('search.results.directions')}
                         </button>
                         {/* Nút Chi tiết */}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleNavigateToDetail(fac.id); }}
                           className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition"
                         >
-                          Chi tiết
+                          {t('search.results.details')}
                         </button>
                       </div>
                     </div>
@@ -1062,7 +1062,7 @@ const SearchPage = () => {
                 eventHandlers={{
                   tileerror: () => {
                     setMapTileError(true);
-                    setToastMsg('Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được giữ lại.');
+                    setToastMsg(t('search.map.loadErrorToast'));
                     setToastType('error');
                   },
                   tileload: () => setMapTileError(false),
@@ -1070,11 +1070,10 @@ const SearchPage = () => {
               />
               {mapTileError && (
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[400] rounded-lg bg-white/95 border border-red-200 px-3 py-2 text-xs font-semibold text-red-700 shadow-lg">
-                  Không thể tải bản đồ Vietmap. Danh sách bãi xe vẫn được hiển thị.
+                  {t('search.map.loadErrorBanner')}
                 </div>
               )}
 
-              {/* Phạm vi tìm kiếm, ưu tiên tâm là địa điểm được search bằng chữ */}
               {hasSearched && (searchedLocation || userLocation) && (
                 <Circle
                   center={searchedLocation || userLocation}
@@ -1089,182 +1088,181 @@ const SearchPage = () => {
                 />
               )}
 
-            {/* Vị trí địa chỉ được tìm kiếm bằng chữ - Cho phép kéo thả di dời */}
-            {searchedLocation && (
-              <Marker
-                position={searchedLocation}
-                icon={searchedLocationIcon}
-                draggable={true}
-                eventHandlers={{
-                  dragend: handleSearchedLocationDragEnd,
-                }}
-              >
-                <Popup>
-                  <div className="p-1">
-                    <div className="font-bold text-red-600 text-xs flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" /> Điểm tìm kiếm của bạn
-                    </div>
-                    <p className="text-xs text-slate-700 mt-1">{keyword || 'Vị trí đã chọn'}</p>
-                    <p className="text-[10px] text-slate-400 mt-1 italic">
-                      Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế hơn
-                    </p>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-
-            {/* Vị trí của user - Cho phép kéo thả di dời */}
-            {userLocation && (
-              <Marker
-                position={userLocation}
-                icon={userIcon}
-                draggable={true}
-                eventHandlers={{
-                  dragend: handleUserLocationDragEnd,
-                }}
-              >
-                <Popup>
-                  <div className="p-1">
-                    <div className="font-bold text-teal-600 text-xs flex items-center gap-1">
-                      <Navigation className="w-3.5 h-3.5" /> Vị trí hiện tại của bạn
-                    </div>
-                    <p className="text-xs text-slate-700 mt-1">
-                      {isFallbackLocation ? 'Vị trí mặc định: Ninh Kiều, Cần Thơ' : (keyword || 'Vị trí của bạn')}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-1 italic">
-                      Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế hơn
-                    </p>
-                  </div>
-                </Popup>
-              </Marker>
-            )}
-
-            {/* Các bãi đỗ xe */}
-            {facilities.map(fac => {
-              const latitude = Number(fac.latitude);
-              const longitude = Number(fac.longitude);
-              if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
-                const isOutOfSlots = fac.available_slots !== undefined && fac.available_slots !== null
-                  ? Number(fac.available_slots) <= 0
-                  : false;
-                const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
-                const facilityRating = getFacilityRating(fac).average;
-                const amenityNames = (fac.facility_amenities || [])
-                  .map(item => item.amenity?.name || item.name)
-                  .filter(Boolean)
-                  .slice(0, 3);
-
-                return (
-                  <Marker key={fac.id} position={[latitude, longitude]} icon={facilityCarIcon}>
-                    <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
-                      <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
-                        <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">
-                          {primaryImage ? (
-                            <img
-                              src={primaryImage.image_url}
-                              alt={fac.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400">
-                              <CarFront className="w-8 h-8" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent" />
-                          <div className="absolute left-2.5 bottom-2 flex items-center gap-1.5">
-                            <span className="px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
-                              Đã xác thực
-                            </span>
-                            {isOutOfSlots && (
-                              <span className="px-2 py-1 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow-sm">
-                                Hết chỗ
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="p-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                #{String(fac.id).padStart(4, '0')}
-                              </p>
-                              <h4 className="mt-0.5 text-sm font-bold leading-tight text-slate-900 line-clamp-2">
-                                {fac.name}
-                              </h4>
-                            </div>
-                            {facilityRating !== null && facilityRating !== undefined ? (
-                              <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-1 text-[11px] font-bold text-amber-700">
-                                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                                {facilityRating}
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">
-                            <MapPin className="mt-0.5 w-3.5 h-3.5 shrink-0 text-teal-600" />
-                            <span className="line-clamp-2">{fac.address || 'Chưa cập nhật địa chỉ'}</span>
-                          </p>
-
-                          <div className="mt-3 grid grid-cols-2 gap-2">
-                            <div className="rounded-lg bg-teal-50 px-2 py-1.5">
-                              <p className="text-[10px] text-teal-700">Giá thuê tháng</p>
-                              <p className="mt-0.5 text-xs font-bold text-teal-800">
-                                {Number(fac.price_per_month || 0).toLocaleString('vi-VN')} đ
-                              </p>
-                            </div>
-                            <div className={`rounded-lg px-2 py-1.5 ${isOutOfSlots ? 'bg-rose-50 border border-rose-100' : 'bg-slate-50'}`}>
-                              <p className={`text-[10px] ${isOutOfSlots ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>Tình trạng chỗ</p>
-                              <p className={`mt-0.5 text-xs font-bold ${isOutOfSlots ? 'text-rose-700' : 'text-slate-800'}`}>
-                                {isOutOfSlots ? `Còn 0/${fac.capacity || 0} chỗ` : `Còn ${fac.available_slots ?? fac.capacity}/${fac.capacity || 0} chỗ`}
-                              </p>
-                            </div>
-                          </div>
-
-                          {amenityNames.length > 0 && (
-                            <div className="mt-2 flex flex-wrap gap-1">
-                              {amenityNames.map((amenity, index) => (
-                                <span key={`${amenity}-${index}`} className="rounded bg-slate-100 px-1.5 py-1 text-[10px] text-slate-600">
-                                  {amenity}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Hàng 2 nút: Xem chi tiết và Chỉ đường Google Maps */}
-                          <div className="mt-3 flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleNavigateToDetail(fac.id)}
-                              className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-slate-800 text-center"
-                            >
-                              Chi tiết
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGetDirections(fac);
-                              }}
-                              className="flex-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
-                              title="Chỉ đường trên Google Maps"
-                            >
-                              <Navigation className="w-3.5 h-3.5" /> Chỉ đường
-                              <ExternalLink className="w-3 h-3 opacity-80" />
-                            </button>
-                          </div>
-                        </div>
+              {/* Vị trí địa chỉ được tìm kiếm bằng chữ - Cho phép kéo thả di dời */}
+              {searchedLocation && (
+                <Marker
+                  position={searchedLocation}
+                  icon={searchedLocationIcon}
+                  draggable={true}
+                  eventHandlers={{
+                    dragend: handleSearchedLocationDragEnd,
+                  }}
+                >
+                  <Popup>
+                    <div className="p-1">
+                      <div className="font-bold text-red-600 text-xs flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" /> {t('search.map.searchPointTitle')}
                       </div>
-                    </Popup>
-                  </Marker>
-                );
-              }
-              return null;
-            })}
-          </MapContainer>
+                      <p className="text-xs text-slate-700 mt-1">{keyword || t('search.map.selectedLocationFallback')}</p>
+                      <p className="text-[10px] text-slate-400 mt-1 italic">
+                        {t('search.map.dragHint')}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Vị trí của user - Cho phép kéo thả di dời */}
+              {userLocation && (
+                <Marker
+                  position={userLocation}
+                  icon={userIcon}
+                  draggable={true}
+                  eventHandlers={{
+                    dragend: handleUserLocationDragEnd,
+                  }}
+                >
+                  <Popup>
+                    <div className="p-1">
+                      <div className="font-bold text-teal-600 text-xs flex items-center gap-1">
+                        <Navigation className="w-3.5 h-3.5" /> {t('search.map.currentLocationTitle')}
+                      </div>
+                      <p className="text-xs text-slate-700 mt-1">
+                        {isFallbackLocation ? t('search.map.defaultFallbackLocation') : (keyword || t('search.map.yourLocationFallback'))}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-1 italic">
+                        {t('search.map.dragHint')}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Các bãi đỗ xe */}
+              {facilities.map(fac => {
+                const latitude = Number(fac.latitude);
+                const longitude = Number(fac.longitude);
+                if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                  const isOutOfSlots = fac.available_slots !== undefined && fac.available_slots !== null
+                    ? Number(fac.available_slots) <= 0
+                    : false;
+                  const primaryImage = fac.images?.find(image => image.is_primary) || fac.images?.[0];
+                  const facilityRating = getFacilityRating(fac).average;
+                  const amenityNames = (fac.facility_amenities || [])
+                    .map(item => translateAmenityName(item.amenity?.name || item.name, i18n.language))
+                    .filter(Boolean)
+                    .slice(0, 3);
+
+                  return (
+                    <Marker key={fac.id} position={[latitude, longitude]} icon={facilityCarIcon}>
+                      <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
+                        <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
+                          <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">
+                            {primaryImage ? (
+                              <img
+                                src={primaryImage.image_url}
+                                alt={fac.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                <CarFront className="w-8 h-8" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent" />
+                            <div className="absolute left-2.5 bottom-2 flex items-center gap-1.5">
+                              <span className="px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
+                                {t('search.map.verifiedBadge')}
+                              </span>
+                              {isOutOfSlots && (
+                                <span className="px-2 py-1 rounded-md bg-rose-600 text-white text-[10px] font-bold shadow-sm">
+                                  {t('search.results.outOfSlots')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                  #{String(fac.id).padStart(4, '0')}
+                                </p>
+                                <h4 className="mt-0.5 text-sm font-bold leading-tight text-slate-900 line-clamp-2">
+                                  {fac.name}
+                                </h4>
+                              </div>
+                              {facilityRating !== null && facilityRating !== undefined ? (
+                                <span className="shrink-0 inline-flex items-center gap-1 rounded-md bg-amber-50 px-1.5 py-1 text-[11px] font-bold text-amber-700">
+                                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                                  {facilityRating}
+                                </span>
+                              ) : null}
+                            </div>
+
+                            <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">
+                              <MapPin className="mt-0.5 w-3.5 h-3.5 shrink-0 text-teal-600" />
+                              <span className="line-clamp-2">{fac.address || t('search.map.addressNotUpdated')}</span>
+                            </p>
+
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                              <div className="rounded-lg bg-teal-50 px-2 py-1.5">
+                                <p className="text-[10px] text-teal-700">{t('search.map.monthlyPriceLabel')}</p>
+                                <p className="mt-0.5 text-xs font-bold text-teal-800">
+                                  {Number(fac.price_per_month || 0).toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN')} {t('search.results.currencySuffix')}
+                                </p>
+                              </div>
+                              <div className={`rounded-lg px-2 py-1.5 ${isOutOfSlots ? 'bg-rose-50 border border-rose-100' : 'bg-slate-50'}`}>
+                                <p className={`text-[10px] ${isOutOfSlots ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>{t('search.map.slotStatusLabel')}</p>
+                                <p className={`mt-0.5 text-xs font-bold ${isOutOfSlots ? 'text-rose-700' : 'text-slate-800'}`}>
+                                  {isOutOfSlots ? t('search.results.slotsRemaining', { available: 0, total: fac.capacity || 0 }) : t('search.results.slotsRemaining', { available: fac.available_slots ?? fac.capacity, total: fac.capacity || 0 })}
+                                </p>
+                              </div>
+                            </div>
+
+                            {amenityNames.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {amenityNames.map((amenity, index) => (
+                                  <span key={`${amenity}-${index}`} className="rounded bg-slate-100 px-1.5 py-1 text-[10px] text-slate-600">
+                                    {amenity}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Hàng 2 nút: Xem chi tiết và Chỉ đường Google Maps */}
+                            <div className="mt-3 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleNavigateToDetail(fac.id)}
+                                className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-slate-800 text-center"
+                              >
+                                {t('search.results.details')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleGetDirections(fac);
+                                }}
+                                className="flex-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
+                                title={t('search.results.directionsTitle')}
+                              >
+                                <Navigation className="w-3.5 h-3.5" /> {t('search.results.directions')}
+                                <ExternalLink className="w-3 h-3 opacity-80" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                }
+                return null;
+              })}
+            </MapContainer>
           </div>
 
-          {/* OVERLAY LÀM MỜ KHI CHƯA TÌM KIẾM */}
           {!hasSearched && (
             <div
               onWheel={(e) => e.stopPropagation()}
@@ -1275,9 +1273,9 @@ const SearchPage = () => {
                   <Search className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-slate-900">Tìm kiếm để bắt đầu</div>
+                  <div className="text-sm font-bold text-slate-900">{t('search.map.startTitle')}</div>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    Nhập tên bãi đỗ, địa chỉ hoặc chọn vị trí và nhấn &quot;Tìm Kiếm&quot; để mở bản đồ tương tác
+                    {t('search.map.startDesc')}
                   </div>
                 </div>
               </div>
@@ -1297,22 +1295,20 @@ const SearchPage = () => {
         </div>
       </main>
 
-      {/* ═══ FLOATING COMPARE BAR ═══
-           Hiển thị khi có ít nhất 2 bãi được chọn
-           Cho phép người dùng xem lại danh sách và mở modal so sánh */}
+      {/*FLOATING COMPARE BAR */}
       {compareIds.length >= 2 && (
         <div
           id="floating-compare-bar"
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-auto max-w-xl px-5 py-3 bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700/50 flex items-center gap-4 animate-slideUp"
         >
-          {/* Thông tin bãi đã chọn */}
+          {/*chosen lots info*/}
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
               <GitCompareArrows className="w-3.5 h-3.5 text-teal-400" />
             </div>
             <div className="min-w-0">
               <p className="text-white font-bold text-xs">
-                Đã chọn <span className="text-teal-400">{compareIds.length}</span>/4 bãi xe để so sánh
+                {t('search.compareBar.selectedCount')} <span className="text-teal-400">{compareIds.length}</span>{t('search.compareBar.selectedCountSuffix')}
               </p>
               <p className="text-slate-400 text-[10px] truncate">
                 {facilities
@@ -1327,7 +1323,7 @@ const SearchPage = () => {
           <button
             id="compare-bar-clear-btn"
             onClick={() => setCompareIds([])}
-            title="Bỏ chọn tất cả"
+            title={t('search.compareBar.clearAllTitle')}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition shrink-0"
           >
             <X className="w-4 h-4" />
@@ -1340,7 +1336,7 @@ const SearchPage = () => {
             className="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 text-sm font-extrabold rounded-xl transition shrink-0 shadow-lg"
           >
             <GitCompareArrows className="w-4 h-4" />
-            So Sánh ({compareIds.length} bãi xe)
+            {t('search.compareBar.compareButton', { count: compareIds.length })}
           </button>
         </div>
       )}

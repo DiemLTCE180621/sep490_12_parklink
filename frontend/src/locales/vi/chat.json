@@ -1,0 +1,34 @@
+{
+  "list": {
+    "title": "Tin nhắn",
+    "empty": "Chưa có cuộc trò chuyện nào.",
+    "attachmentPreview": "[File đính kèm]",
+    "noMessages": "Chưa có tin nhắn"
+  },
+  "window": {
+    "brand": "ParkLink Chat",
+    "selectPrompt": "Chọn một cuộc trò chuyện để bắt đầu nhắn tin.",
+    "noMessagesYet": "Chưa có tin nhắn nào. Hãy gửi lời chào! 👋"
+  },
+  "input": {
+    "placeholder": "Nhập tin nhắn...",
+    "uploadMediaTitle": "Gửi hình ảnh/video",
+    "uploadFileTitle": "Gửi file, tài liệu (Word, Excel, PDF, Zip...)",
+    "sendFileError": "Có lỗi xảy ra khi gửi file đính kèm",
+    "sendTextError": "Có lỗi xảy ra khi gửi tin nhắn"
+  },
+  "message": {
+    "attachmentAlt": "Đính kèm",
+    "zoomAlt": "Phóng to",
+    "defaultFileName": "Tệp đính kèm",
+    "downloadTitle": "Tải xuống {{name}}",
+    "uploading": "Đang tải lên...",
+    "clickToDownload": "Nhấn để xem / tải về",
+    "sending": " • Đang gửi...",
+    "seen": " • Đã xem",
+    "sent": " • Đã gửi"
+  },
+  "errors": {
+    "uploadFailed": "Không thể tải file lên. Vui lòng thử lại."
+  }
+}

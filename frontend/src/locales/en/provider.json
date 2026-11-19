@@ -1,0 +1,596 @@
+{
+  "portal": {
+    "greeting": "Welcome back, {{name}}!",
+    "roleTitle": "Parking Provider",
+    "actions": {
+      "editProfile": "Edit Profile",
+      "googleAccount": "Google Account",
+      "changePassword": "Change Password",
+      "logout": "Log Out"
+    },
+    "menu": {
+      "title": "Provider Portal Menu",
+      "subtitle": "Facility Operations Control",
+      "itemsCount": "{{count}} items",
+      "viewing": "Currently viewing",
+      "allMenu": "All Menu",
+      "close": "Close"
+    },
+    "tabs": {
+      "facility": "Facility Information",
+      "activeCustomers": "Active Customers",
+      "monthlyRevenue": "Monthly Revenue",
+      "reservations": "Reservation Requests",
+      "contracts": "Confirmation Records",
+      "profile": "Personal Information",
+      "transactions": "Transaction History",
+      "complaints": "Complaints Management",
+      "reviews": "Customer Reviews",
+      "platformFees": "Platform Fees"
+    },
+    "profileTab": {
+      "title": "Personal Information",
+      "fullName": "Full Name",
+      "email": "Account Email",
+      "phone": "Phone Number",
+      "notUpdated": "Not updated",
+      "roleLabel": "System Account Role",
+      "roleBadge": "Parking Provider"
+    }
+  },
+  "dashboard": {
+    "title": "Operations Dashboard & Facility Information",
+    "subtitle": "Monitor live facility status, available parking slots, occupancy rate, rental requests, and estimated monthly revenue.",
+    "empty": {
+      "title": "No Parking Facility Found",
+      "subtitle": "Please register your parking facility to start managing operations."
+    },
+    "verificationStatus": {
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "PENDING": "Pending Approval"
+    },
+    "actions": {
+      "updateSlotsAndPrice": "Edit Facility",
+      "refresh": "Refresh",
+      "refreshTitle": "Reload facility operations data"
+    },
+    "kpis": {
+      "availableSlots": {
+        "label": "Available Vacant Slots",
+        "unit": "slots",
+        "hint": "Ready for tenants ({{percent}}%)"
+      },
+      "occupied": {
+        "label": "Occupied & Occupancy Rate",
+        "unit": "vehicles",
+        "hint": "Facility utilization rate"
+      },
+      "pendingRequests": {
+        "label": "Pending Rental Requests",
+        "unit": "requests",
+        "actionRequired": "ACTION REQUIRED",
+        "hint": "Waiting for review",
+        "viewDetails": "View Details",
+        "tooltip": "Click to review pending customer reservation requests"
+      },
+      "projectedRevenue": {
+        "label": "Estimated Monthly Revenue",
+        "currency": "VND",
+        "formula": "{{count}} active contracts × {{price}} VND"
+      }
+    },
+    "facilityDetails": {
+      "title": "Parking Facility Details",
+      "visibility": {
+        "visible": "Active / Visible",
+        "hidden": "Temporarily Closed (Hidden)"
+      },
+      "nameLabel": "Facility Name",
+      "addressLabel": "Facility Address",
+      "photosTitle": "Facility Photos",
+      "zoomHint": "Click a photo to zoom in",
+      "photoAlt": "Facility photo {{index}}",
+      "primaryBadge": "Primary Photo",
+      "noPhotos": "No photos have been uploaded for this facility yet",
+      "closePhoto": "Close image",
+      "lightboxAlt": "Parking facility photo preview"
+    },
+    "payment": {
+      "title": "Complete Platform Activation Fee Payment",
+      "description": "Scan the VietQR code below using your banking app to complete payment. Once paid, click Check Payment Status to activate public visibility.",
+      "qrAlt": "VietQR Payment Code",
+      "checking": "Checking...",
+      "checkButton": "CHECK PAYMENT STATUS",
+      "successTitle": "Payment Confirmed!",
+      "successBody": "Your parking facility is now Paid, Activated, and publicly visible on ParkLink.",
+      "toasts": {
+        "success": "Payment verified! Your parking facility is now active.",
+        "notReceived": "Payment has not been detected yet. Please wait a moment or try again.",
+        "checkError": "Unable to verify payment status."
+      }
+    },
+    "editModal": {
+      "title": "Update Facility Operational Information",
+      "subtitle": "Adjust live available vacant slots and monthly rental rate",
+      "closeTitle": "Close",
+      "capacityLabel": "Slot Capacity",
+      "fixedBadge": "Fixed",
+      "slotsUnit": "slots",
+      "occupiedLabel": "Currently Parked",
+      "liveBadge": "Live",
+      "vehiclesUnit": "vehicles",
+      "availableSlotsLabel": "Available Vacant Slots",
+      "percentVacant": "{{percent}}% vacant",
+      "decreaseTitle": "Decrease 1 vacant slot (vehicle parked)",
+      "increaseTitle": "Increase 1 vacant slot (vehicle departed)",
+      "maxSlotsHint": "/ {{total}} max slots",
+      "quickSelect": "Quick presets:",
+      "presetEmpty": "Full (0)",
+      "presetHalf": "Half ({{count}})",
+      "presetFull": "All Vacant ({{count}})",
+      "stepperNotePrefix": "Click",
+      "stepperNoteMinusAction": "when a vehicle enters, and",
+      "stepperNotePlusAction": "when a vehicle leaves to keep live availability accurate.",
+      "monthlyPriceLabel": "Monthly Rental Rate (VND)",
+      "priceBadgeUnit": "VND/month",
+      "pricePlaceholder": "e.g., 1500000",
+      "priceInputSuffix": "VND / MONTH",
+      "quickAdjust": "Quick adjust:",
+      "visibilityLabel": "Facility Visibility Status",
+      "visibilityVisibleTitle": "Visible",
+      "visibilityVisibleSub": "Discoverable in search",
+      "visibilityHiddenTitle": "Hidden",
+      "visibilityHiddenSub": "Hidden from search",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "validation": {
+        "slotsNonNegative": "Available vacant slots must be 0 or greater!",
+        "slotsExceedCapacity": "Available vacant slots ({{slots}}) cannot exceed registered capacity ({{capacity}} slots)!"
+      },
+      "toasts": {
+        "updateSuccess": "Updated successfully! Current availability: {{slots}}/{{capacity}} slots.",
+        "updateError": "Failed to update facility operational information"
+      }
+    }
+  },
+  "activeCustomers": {
+    "title": "Active Customers at Facility",
+    "subtitle": "Track active customers with valid monthly confirmation records, vehicle details, and remaining lease duration.",
+    "refresh": "Refresh",
+    "kpis": {
+      "activeRenters": {
+        "label": "Active Customers",
+        "hint": "Active confirmation records"
+      },
+      "availableSlots": {
+        "label": "Available Slots",
+        "unit": "slots",
+        "hint": "{{occupied}} parked vehicles"
+      },
+      "occupancyRate": {
+        "label": "Occupancy Rate"
+      },
+      "monthlyRevenue": {
+        "label": "Monthly Rental Revenue",
+        "hint": "From active customers"
+      }
+    },
+    "listTitle": "Active Customer List ({{count}}):",
+    "searchPlaceholder": "Search customer name, phone, license plate...",
+    "searchButton": "Search",
+    "loading": "Loading active customers...",
+    "loadError": "Unable to load active customers at this facility!",
+    "retry": "Retry",
+    "empty": {
+      "title": "No Active Customers Found",
+      "searchEmpty": "No active customers matched your search keywords.",
+      "defaultEmpty": "There are currently no customers with active rental contracts at your facility.",
+      "showAll": "View All"
+    },
+    "status": {
+      "expired": "Expired",
+      "daysRemaining": "{{days}} days left"
+    },
+    "card": {
+      "effectiveRange": "Term: {{start}} – {{end}}",
+      "chat": "Chat",
+      "viewContract": "View Record",
+      "contactInfo": "Contact Information",
+      "noPhone": "Phone number not set",
+      "idCardPrefix": "Citizen ID:",
+      "vehicleAndSpot": "Vehicle & Assigned Spot",
+      "noPlate": "License plate not specified",
+      "defaultVehicle": "Registered vehicle",
+      "spotLabel": "Spot:",
+      "freeSpot": "Open Lot",
+      "rateAndPayment": "Monthly Rate & Payment",
+      "perMonth": "/ month",
+      "paymentDeadline": "Due date: Day {{day}} monthly"
+    },
+    "pagination": {
+      "summary": "Showing {{current}} / {{total}} customers",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  },
+  "monthlyRevenue": {
+    "title": "Facility Monthly Revenue",
+    "subtitle": "Track projected monthly rental income from active contracts and 12-month annual distribution trends.",
+    "updating": "Updating report...",
+    "refresh": "Refresh",
+    "loadError": "Unable to load monthly revenue report.",
+    "kpis": {
+      "monthRevenue": {
+        "label": "Month {{month}} Revenue",
+        "hint": "Projected from active contracts"
+      },
+      "contractCount": {
+        "label": "Active Contract Count",
+        "hint": "Effective in selected month"
+      },
+      "avgPerContract": {
+        "label": "Average Revenue / Contract",
+        "hint": "Monthly rental price"
+      },
+      "annualProjected": {
+        "label": "Projected Annual Total ({{year}})",
+        "hint": "Sum of all 12 months"
+      }
+    },
+    "chart": {
+      "title": "{{year}} Monthly Revenue Trend",
+      "subtitle": "Select a bar column to view active contracts for that month.",
+      "barAria": "Month {{month}}: {{amount}}",
+      "monthShort": "M{{month}}"
+    },
+    "table": {
+      "title": "Active Contracts for {{month}}/{{year}} ({{count}}):",
+      "ariaLabel": "Active Contracts List",
+      "columns": {
+        "contract": "Contract ID",
+        "customer": "Customer Name",
+        "duration": "Duration",
+        "monthlyAmount": "Monthly Amount"
+      },
+      "empty": "No active contracts found in this month.",
+      "disclaimer": "Projected revenue is summed from the monthly rental rate of active confirmation records. Off-platform rent payments are not recorded by the system; contracts starting mid-month still count the full monthly rate."
+    },
+    "currency": "VND"
+  },
+  "reservations": {
+    "title": "Customer Reservation Requests",
+    "subtitle": "Review and approve or reject incoming monthly parking reservation requests.",
+    "backToFacility": "Back to Operations Dashboard",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search customer name, license plate...",
+    "loading": "Loading reservation requests...",
+    "loadError": "Unable to load customer reservation requests!",
+    "errorTitle": "Unable to Load Data",
+    "retry": "Retry",
+    "tabs": {
+      "all": "All ({{count}})",
+      "pending": "Pending ({{count}})",
+      "approved": "Approved ({{count}})",
+      "rejected": "Rejected ({{count}})",
+      "cancelled": "Cancelled ({{count}})"
+    },
+    "statuses": {
+      "PENDING": "Pending",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "CANCELLED": "Cancelled"
+    },
+    "empty": {
+      "title": "No Reservation Requests Found",
+      "searchEmpty": "No reservation requests matched your search keywords.",
+      "defaultEmpty": "There are currently no reservation requests in this category."
+    },
+    "card": {
+      "requestCode": "Request #{{id}}",
+      "submittedAt": "Submitted on {{date}}",
+      "customerSection": "Customer Information",
+      "defaultCustomer": "Customer",
+      "notUpdated": "Not provided",
+      "vehicleSection": "Vehicle & Start Date",
+      "startDate": "Start Date:",
+      "facilitySection": "Parking Facility"
+    },
+    "actions": {
+      "details": "View Details",
+      "viewContract": "View E-Confirmation",
+      "createContract": "Create E-Confirmation",
+      "accept": "Approve",
+      "reject": "Reject"
+    },
+    "confirmModal": {
+      "acceptTitle": "Confirm Reservation Approval",
+      "rejectTitle": "Confirm Reservation Rejection",
+      "acceptMessage": "Are you sure you want to approve the parking reservation request from \"{{name}}\"? Note: Once approved, you have {{deadline}} to create the E-Confirmation Record, otherwise the request will be automatically cancelled.",
+      "rejectMessage": "Are you sure you want to reject the parking reservation request from \"{{name}}\"?",
+      "confirmAccept": "Confirm Approval",
+      "confirmReject": "Confirm Rejection",
+      "cancel": "Cancel"
+    },
+    "toasts": {
+      "acceptSuccess": "Reservation approved! You have {{deadline}} to create the E-Confirmation Record.",
+      "rejectSuccess": "Reservation request rejected!",
+      "actionFailed": "Failed to process reservation action!",
+      "acceptFailed": "Failed to approve reservation request!",
+      "rejectFailed": "Failed to reject reservation request!"
+    },
+    "detail": {
+      "backToList": "Back to Reservation Requests",
+      "loading": "Loading reservation request #{{id}}...",
+      "loadError": "Unable to load customer reservation request details!",
+      "errorTitle": "Unable to Load Details",
+      "title": "Customer Reservation Request Details",
+      "submittedAt": "Submitted on: {{date}}",
+      "customerTitle": "Registered Customer Information",
+      "fullName": "Full Name",
+      "phone": "Phone Number",
+      "rentalInfoTitle": "Parking Registration Details",
+      "vehicleLabel": "Registered Vehicle",
+      "desiredStartDate": "Desired Start Date",
+      "idCardLabel": "Citizen ID / CCCD",
+      "addressLabel": "Residential / Contact Address",
+      "facilityTitle": "Selected Parking Facility",
+      "facilityName": "Facility Name",
+      "facilityAddress": "Address",
+      "listedPrice": "Listed Monthly Price",
+      "contractBoxTitle": "E-Confirmation Record",
+      "contractCode": "Code:",
+      "contractActive": "Active",
+      "contractPending": "Pending Customer Confirmation",
+      "createContractBoxTitle": "Create E-Confirmation Record",
+      "createContractHint": "This request has been approved. You have {{deadline}} from approval to create and send the E-Confirmation Record to the customer.",
+      "createContractBtn": "Create E-Confirmation Record",
+      "viewContractBtn": "View E-Confirmation Details",
+      "notFoundError": "Reservation request not found.",
+      "backToListButton": "Back to List",
+      "emailLabel": "Email",
+      "priceUnit": "VND/month",
+      "statusPendingApproval": "Pending Approval",
+      "statusCancelledByCustomer": "Cancelled by Customer",
+      "createContractHintFull": "This request has been approved. You have {{deadline}} from approval to create and send the E-Confirmation Record to the customer (otherwise it will be automatically cancelled)."
+    },
+    "defaultTargetName": "Request #{{id}}",
+    "defaultDeadline": "the required timeframe"
+  },
+  "contracts": {
+    "title": "E-Confirmation Record Management",
+    "subtitle": "Manage electronic confirmation records issued to monthly parking customers.",
+    "activeCustomersBtn": "Active Customers",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search record code, customer name...",
+    "loading": "Loading confirmation records...",
+    "loadError": "Unable to load E-Confirmation Records!",
+    "errorTitle": "Unable to Load Data",
+    "retry": "Retry",
+    "tabs": {
+      "all": "All ({{count}})",
+      "pending": "Pending Customer ({{count}})",
+      "active": "Active ({{count}})",
+      "extensionPending": "Extension Requests ({{count}})",
+      "terminationPending": "Termination Requests ({{count}})",
+      "terminated": "Terminated ({{count}})"
+    },
+    "statuses": {
+      "PENDING_CUSTOMER": "Pending Customer",
+      "ACTIVE": "Active",
+      "TERMINATED": "Terminated",
+      "CANCELLED": "Cancelled (Full)",
+      "PENDING_SIGNATURE": "Pending Customer"
+    },
+    "empty": {
+      "title": "No Confirmation Records Found",
+      "searchEmpty": "No confirmation records matched your search keywords.",
+      "defaultEmpty": "You have not created any E-Confirmation Records for approved requests yet."
+    },
+    "card": {
+      "createdAt": "Created on {{date}}",
+      "extensionBadge": "Extension Pending (+{{months}} mos)",
+      "terminationBadge": "Termination Requested ({{date}})",
+      "customerSection": "Customer (Party B)",
+      "costSection": "Rate & Duration",
+      "priceUnit": "VND/month",
+      "paymentDeadline": "Due date: Day {{day}} monthly",
+      "facilitySection": "Facility & Vehicle",
+      "defaultCustomer": "Customer",
+      "notUpdated": "Not updated"
+    },
+    "actions": {
+      "confirmTermination": "Confirm Termination",
+      "approveExtension": "Approve Extension (+{{months}} mos)",
+      "terminate": "Terminate",
+      "viewContract": "View Record"
+    },
+    "createPage": {
+      "breadcrumbDashboard": "Dashboard",
+      "breadcrumbReservations": "Reservation Requests",
+      "breadcrumbCurrent": "Create E-Confirmation Record",
+      "back": "Back",
+      "loading": "Loading reservation request #{{id}}...",
+      "notFoundTitle": "Reservation Request Not Found",
+      "expiredTitle": "Creation Deadline Expired — Reservation Auto-Cancelled!",
+      "expiredBody": "The {{deadline}} creation window after reservation approval has elapsed without a completed E-Confirmation Record, so the system automatically cancelled this request.",
+      "backToReservations": "Back to Reservation Requests",
+      "alreadyCreatedTitle": "An E-Confirmation Record Already Exists!",
+      "alreadyCreatedBody": "An electronic confirmation record has already been created for this reservation request. You can view its details or monitor signing status.",
+      "viewExistingContract": "View Record #{{id}}",
+      "unapprovedTitle": "Reservation Request Has Not Been Approved Yet",
+      "defaultSpot": "Open parking spot inside facility",
+      "defaultVehicle": "Registered vehicle",
+      "validation": {
+        "invalidPrice": "Please enter a valid agreed monthly rent (greater than 0 VND)!",
+        "missingDates": "Please select both start date and end date!",
+        "endBeforeStart": "End date must be after start date!",
+        "missingIdCard": "Please enter Party B's Citizen ID / CCCD number!",
+        "missingAddress": "Please enter Party B's residential / contact address!"
+      },
+      "toasts": {
+        "success": "E-Confirmation Record created and sent successfully! Redirecting...",
+        "error": "Unable to create E-Confirmation Record. Please try again!"
+      }
+    }
+  },
+  "complaints": {
+    "title": "Facility Complaints Management",
+    "subtitle": "Review and respond directly to feedback and complaints submitted by parking customers.",
+    "refreshTitle": "Reload complaints list",
+    "totalLabel": "Total:",
+    "searchPlaceholder": "Search by title, ID, customer...",
+    "loading": "Loading complaints...",
+    "loadError": "Unable to load complaints list!",
+    "errorTitle": "Unable to Load Data",
+    "retry": "Retry",
+    "overdueFilter": "Overdue Response",
+    "tabs": {
+      "ALL": "All",
+      "WAITING_PROVIDER": "Pending Response",
+      "PROVIDER_REPLIED": "Responded",
+      "RESOLVED": "Resolved"
+    },
+    "statuses": {
+      "WAITING_PROVIDER": "Needs Explanation",
+      "PENDING": "Needs Explanation",
+      "OPEN": "Needs Explanation",
+      "PROVIDER_REPLIED": "Resolved for Customer",
+      "PROCESSING": "Under Investigation",
+      "RESOLVED": "Resolved",
+      "REJECTED": "Rejected",
+      "CLOSED": "Closed"
+    },
+    "empty": {
+      "noComplaints": "No Complaints Yet",
+      "noResults": "No Matching Complaints",
+      "noComplaintsSub": "No customers have submitted complaints regarding your parking facility.",
+      "noResultsSub": "Try adjusting your search keywords or clearing status filters."
+    },
+    "card": {
+      "submittedAt": "Submitted on: {{date}}",
+      "adminInstruction": "Administrator Review & Directive:",
+      "overdue3Days": "OVERDUE (3+ DAYS)",
+      "deadline": "Deadline: {{date}}",
+      "forwardedAt": "Forwarded at: {{datetime}}",
+      "contentLabel": "Complaint Details:",
+      "imageAlt": "Complaint evidence {{index}}",
+      "customerLabel": "Customer:",
+      "sentResponses": "Submitted Responses:",
+      "defaultSender": "Parking Provider",
+      "overdueActionWarning": "OVERDUE (3+ DAYS). Please submit a response for the customer immediately!"
+    },
+    "toasts": {
+      "replySuccess": "Responded to complaint #{{id}} successfully! Customer has been notified."
+    },
+    "actions": {
+      "updateReply": "Update Response",
+      "submitReply": "Submit Response"
+    }
+  },
+  "reviews": {
+    "title": "Customer Reviews",
+    "subtitle": "Monitor and reply to customer ratings and reviews for your parking facilities.",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "loadError": "Unable to load customer reviews!",
+    "kpis": {
+      "totalReviews": "Total Reviews",
+      "repliedCount": "Replies Sent",
+      "avgRating": "Average Rating",
+      "reputationSub": "Facility reputation score",
+      "fiveStar": "5-Star Reviews",
+      "fiveStarSub": "Top customer rating",
+      "satisfactionRate": "Satisfaction Rate",
+      "satisfactionSub": "Positive customer feedback"
+    },
+    "searchPlaceholder": "Search by customer name or review text...",
+    "allStarsOption": "All Star Ratings",
+    "empty": {
+      "title": "No Reviews Yet",
+      "filterEmpty": "No reviews matched your current filter.",
+      "defaultEmpty": "Your parking facility has not received any customer reviews yet."
+    },
+    "item": {
+      "defaultCustomer": "Customer",
+      "providerReplyLabel": "Parking Provider Reply",
+      "editReply": "Edit",
+      "replyPlaceholder": "Write your reply to the customer...",
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "sendReply": "Send Reply",
+      "replyAction": "Reply to this review"
+    },
+    "toasts": {
+      "replySuccess": "Reply posted successfully!",
+      "replyError": "Failed to submit reply"
+    },
+    "starOption": "{{count}} Stars"
+  },
+  "transactions": {
+    "title": "Payment Transaction History",
+    "subtitle": "Track, monitor, and reconcile platform fee payment transactions for your facilities.",
+    "refresh": "Refresh",
+    "kpis": {
+      "totalCount": "Total Transactions",
+      "totalPaid": "Total Completed Payment"
+    },
+    "filters": {
+      "statusLabel": "Status",
+      "allStatuses": "All",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "filterButton": "Filter"
+    },
+    "statuses": {
+      "COMPLETED": "Completed",
+      "PENDING": "Pending",
+      "FAILED": "Failed"
+    },
+    "table": {
+      "transactionId": "Transaction ID",
+      "paymentTime": "Payment Timestamp",
+      "facilityName": "Facility",
+      "transactionType": "Type",
+      "amount": "Fee Amount",
+      "status": "Status"
+    },
+    "providerSubtitle": "Monitor platform fee payment transactions for your managed parking facilities.",
+    "currency": "VND",
+    "errors": {
+      "loadFailed": "Unable to load payment transaction history.",
+      "invalidDateRange": "Start date cannot be after end date."
+    },
+    "empty": "No transactions recorded during this period.",
+    "loading": "Loading transactions...",
+    "updating": "Updating...",
+    "pageLabel": "Page {{page}} / {{total}}",
+    "prevAria": "Previous page",
+    "nextAria": "Next page",
+    "typeLabels": {
+      "PLATFORM_FEE": "Platform Fee"
+    }
+  },
+  "platformFees": {
+    "title": "Applicable Platform Fee Packages",
+    "subtitle": "One-time platform fee based on facility slot capacity (Min – Max package) after field inspection",
+    "refresh": "Refresh",
+    "refreshTitle": "Refresh list",
+    "bannerNote": "One-time activation fee upon facility approval",
+    "loadError": "Unable to load platform fee packages",
+    "columns": {
+      "nameAndDesc": "Package Name & Description",
+      "slotTier": "Slot Capacity Range",
+      "oneTimeFee": "One-Time Fee",
+      "status": "Status"
+    },
+    "loading": "Loading platform fee packages...",
+    "empty": "No platform fee packages have been configured on the system.",
+    "slotRange": "{{min}} - {{max}} slots",
+    "slotFrom": "{{min}}+ slots",
+    "currency": "VND",
+    "active": "Active",
+    "inactive": "Inactive"
+  }
+}

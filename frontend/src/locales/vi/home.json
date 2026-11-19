@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "badge": "Mô Hình Thuê Bãi Đỗ Theo Tháng Uy Tín",
+    "titleBefore": "Tìm Bãi Đỗ Xe Cho Thuê ",
+    "titleHighlight": "Theo Tháng",
+    "titleAfter": " Gần Bạn",
+    "subtitle": "ParkLink kết nối trực tiếp chủ bãi đỗ xe và khách thuê dài hạn. Đặt chỗ giữ xe an toàn, bảo vệ tài sản, thanh toán minh bạch 100%."
+  },
+  "customerCard": {
+    "imageAlt": "Khách thuê xe",
+    "badge": "Khách Thuê Xe",
+    "title": "Bạn Cần Thuê Bãi Dài Hạn?",
+    "description": "Tìm bãi đỗ xe an toàn gần nhà hoặc công ty, ký hợp đồng thuê theo tháng rõ ràng, bảo vệ quyền lợi 100%.",
+    "cta": "Đăng Ký Khách Thuê"
+  },
+  "searchCard": {
+    "imageAlt": "Ký kết hợp đồng thuê bãi ParkLink",
+    "cta": "Tìm kiếm ngay"
+  },
+  "audience": {
+    "eyebrow": "ĐỐI TƯỢNG PHỤC VỤ",
+    "title": "Giải Pháp Linh Hoạt Cho Cả Hai Bên"
+  },
+  "providerCard": {
+    "imageAlt": "Chủ bãi đỗ xe",
+    "badge": "Chủ Bãi Đỗ Xe",
+    "title": "Bạn Là Chủ Bãi Xe?",
+    "description": "Đăng bãi đỗ xe lên ParkLink để tiếp cận khách thuê dài hạn, tối ưu công suất và nhận doanh thu ổn định.",
+    "cta": "Đăng Ký Chủ Bãi Xe"
+  },
+  "benefits": {
+    "title": "Tại Sao Lựa Chọn ParkLink?",
+    "subtitle": "Giải pháp kết nối trực tiếp không qua trung gian, tập trung duy nhất vào nhu cầu thuê bãi xe theo tháng",
+    "items": {
+      "monthly": {
+        "title": "Thuê Theo Tháng Dài Hạn",
+        "description": "Giữ chỗ đỗ xe ổn định hàng tháng mà không lo hết chỗ hay tăng giá đột ngột trong dịp cao điểm."
+      },
+      "verification": {
+        "title": "Xác Thực Nhanh Chóng",
+        "description": "Bãi xe và thông tin tài khoản Provider đều trải qua quy trình duyệt thực địa nghiêm ngặt từ ban quản trị."
+      },
+      "transparency": {
+        "title": "Vận Hành Minh Bạch",
+        "description": "Theo dõi hợp đồng, tình trạng chỗ đỗ và hóa đơn trực tuyến trên hệ thống web ParkLink mọi lúc mọi nơi."
+      }
+    }
+  }
+}

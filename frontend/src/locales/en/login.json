@@ -1,0 +1,38 @@
+{
+  "title": "Log In",
+  "subtitle": "Welcome back to the ParkLink monthly parking platform.",
+  "fields": {
+    "email": {
+      "label": "Email Address",
+      "placeholder": "Enter your email address"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter your password"
+    }
+  },
+  "forgotPassword": "Forgot Password?",
+  "submit": "Log In",
+  "submitting": "Signing in...",
+  "orContinueWith": "Or continue with",
+  "policyNotice": {
+    "prefix": "By signing in to ParkLink, you agree to comply with our ",
+    "linkText": "Terms of Service and Policies",
+    "suffix": "."
+  },
+  "noAccount": "Don't have an account?",
+  "registerCustomer": "Register as Customer",
+  "registerProvider": "Register as Parking Provider",
+  "google": {
+    "continueButton": "Continue with Google",
+    "noCredential": "Did not receive verification token from Google!",
+    "disclaimerPrefix": "By continuing with Google, you agree to ParkLink's ",
+    "disclaimerLink": "Terms of Service and Policies",
+    "disclaimerSuffix": "."
+  },
+  "errors": {
+    "missingCredentials": "Please enter both your email address and password!",
+    "invalidCredentials": "Invalid email address or password.",
+    "googleFailed": "Google sign-in failed!"
+  }
+}

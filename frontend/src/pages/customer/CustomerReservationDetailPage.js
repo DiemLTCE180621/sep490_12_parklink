@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getReservationDetail, cancelReservationRequest } from '../../services/reservationService';
 import timelineSettingService from '../../services/timelineSettingService';
+import { translateDurationText, translateVehicleInfoText } from '../../utils/translations';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import Toast from '../../components/common/Toast';
 import {
@@ -20,6 +22,9 @@ import {
 } from 'lucide-react';
 
 const CustomerReservationDetailPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -48,11 +53,11 @@ const CustomerReservationDetailPage = () => {
       const res = await getReservationDetail(id);
       const data = res.data?.reservation || res.reservation;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin yêu cầu thuê xe này.');
+        throw new Error(tRef.current('reservationDetail.notFoundError'));
       }
       setReservation(data);
     } catch (err) {
-      setError(err.message || 'Không thể tải chi tiết yêu cầu thuê!');
+      setError(err.message || tRef.current('reservationDetail.loadError'));
     } finally {
       setLoading(false);
     }
@@ -68,11 +73,11 @@ const CustomerReservationDetailPage = () => {
     try {
       setCancelling(true);
       await cancelReservationRequest(id);
-      setToastInfo({ message: 'Đã hủy yêu cầu thuê thành công!', type: 'success' });
+      setToastInfo({ message: t('reservationDetail.cancelSuccess'), type: 'success' });
       setReservation((prev) => (prev ? { ...prev, status: 'CANCELLED' } : null));
       setConfirmModalOpen(false);
     } catch (err) {
-      setToastInfo({ message: err.message || 'Hủy yêu cầu thuê không thành công!', type: 'error' });
+      setToastInfo({ message: err.message || t('reservationDetail.cancelError'), type: 'error' });
     } finally {
       setCancelling(false);
     }
@@ -84,28 +89,28 @@ const CustomerReservationDetailPage = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Chờ chủ bãi duyệt
+            {t('reservationDetail.badges.pending')}
           </span>
         );
       case 'APPROVED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đã phê duyệt
+            {t('reservationDetail.badges.approved')}
           </span>
         );
       case 'REJECTED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            Từ chối
+            {t('reservationDetail.badges.rejected')}
           </span>
         );
       case 'CANCELLED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Đã hủy
+            {t('reservationDetail.badges.cancelled')}
           </span>
         );
       default:
@@ -123,6 +128,8 @@ const CustomerReservationDetailPage = () => {
   const displayVehicle = rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim();
   const displayCccd = cccdMatch ? cccdMatch[1].trim() : null;
   const displayAddress = dcMatch ? dcMatch[1].trim() : null;
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-4 sm:px-6 lg:px-8 w-full">
@@ -135,25 +142,25 @@ const CustomerReservationDetailPage = () => {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lại danh sách yêu cầu
+            {t('reservationDetail.backToList')}
           </button>
         </div>
 
         {loading ? (
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-600">Đang tải thông tin yêu cầu #{id}...</p>
+            <p className="text-sm text-slate-600">{t('reservationDetail.loading', { id })}</p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-xl p-10 border border-slate-200 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">Không thể tải thông tin</h3>
+            <h3 className="text-base font-bold text-slate-900">{t('reservationDetail.errorTitle')}</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">{error}</p>
             <button
               onClick={fetchDetail}
               className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử lại
+              {t('reservationDetail.retry')}
             </button>
           </div>
         ) : reservation ? (
@@ -162,13 +169,13 @@ const CustomerReservationDetailPage = () => {
               <div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
                   <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                    Mã yêu cầu #{reservation.id}
+                    {t('reservationDetail.requestCode', { id: reservation.id })}
                   </span>
                   <span>•</span>
-                  <span>Ngày gửi: {new Date(reservation.created_at).toLocaleDateString('vi-VN')}</span>
+                  <span>{t('reservationDetail.submittedDate')} {new Date(reservation.created_at).toLocaleDateString(dateLocale)}</span>
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">
-                  Chi tiết yêu cầu thuê bãi đỗ xe
+                  {t('reservationDetail.title')}
                 </h1>
               </div>
 
@@ -179,7 +186,7 @@ const CustomerReservationDetailPage = () => {
               <div className="px-6 py-3.5 bg-amber-50/80 border-b border-amber-200 flex items-center gap-3 text-xs sm:text-sm text-amber-900">
                 <Clock className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>Yêu cầu đang chờ chủ bãi phê duyệt:</strong> Chủ bãi có <strong className="text-amber-950 font-bold">{timelineSettings?.reservationResponseText || 'thời hạn quy định'}</strong> để phản hồi chấp nhận hoặc từ chối. Quá thời hạn này, hệ thống sẽ tự động hủy yêu cầu.
+                  <strong>{t('reservationDetail.alerts.pendingPrefix')}</strong> {t('reservationDetail.alerts.pendingBodyBefore')} <strong className="text-amber-950 font-bold">{timelineSettings?.reservationResponseText ? translateDurationText(timelineSettings.reservationResponseText, i18n.language) : t('reservationDetail.alerts.pendingDefaultDuration')}</strong> {t('reservationDetail.alerts.pendingBodyAfter')}
                 </span>
               </div>
             )}
@@ -189,14 +196,14 @@ const CustomerReservationDetailPage = () => {
                 <div className="flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>
-                    <strong>Hợp đồng điện tử đã được tạo:</strong> Bạn có <strong className="underline font-bold">{timelineSettings?.contractSigningText || '5 phút'}</strong> để đọc và ký xác nhận trực tuyến trước khi hợp đồng tự động hủy.
+                    <strong>{t('reservationDetail.alerts.approvedContractPrefix')}</strong> {t('reservationDetail.alerts.approvedContractBefore')} <strong className="underline font-bold">{timelineSettings?.contractSigningText ? translateDurationText(timelineSettings.contractSigningText, i18n.language) : t('reservationDetail.alerts.approvedContractDefaultDuration')}</strong> {t('reservationDetail.alerts.approvedContractAfter')}
                   </span>
                 </div>
                 <Link
                   to={`/my-contracts/${reservation.confirmation_record.id}`}
                   className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-lg whitespace-nowrap transition"
                 >
-                  Ký hợp đồng ngay
+                  {t('reservationDetail.alerts.signNow')}
                 </Link>
               </div>
             )}
@@ -205,7 +212,7 @@ const CustomerReservationDetailPage = () => {
               <div className="px-6 py-3.5 bg-teal-50/80 border-b border-teal-200 flex items-center gap-3 text-xs sm:text-sm text-teal-900">
                 <Clock className="w-4 h-4 text-teal-600 shrink-0" />
                 <span>
-                  <strong>Chủ bãi đã phê duyệt yêu cầu:</strong> Chủ bãi đang tiến hành soạn thảo hợp đồng điện tử ({timelineSettings?.contractCreationText || 'thời hạn quy định'}). Bạn vẫn có quyền hủy yêu cầu nếu thay đổi kế hoạch.
+                  <strong>{t('reservationDetail.alerts.approvedWaitingPrefix')}</strong> {t('reservationDetail.alerts.approvedWaitingBody', { duration: timelineSettings?.contractCreationText ? translateDurationText(timelineSettings.contractCreationText, i18n.language) : t('reservationDetail.alerts.pendingDefaultDuration') })}
                 </span>
               </div>
             )}
@@ -214,7 +221,7 @@ const CustomerReservationDetailPage = () => {
               <div className="px-6 py-3.5 bg-amber-50 border-b border-amber-200 flex items-center gap-3 text-xs text-amber-800">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>
-                  <strong>Yêu cầu đặt chỗ đã tự động hủy do bãi xe hết chỗ trống:</strong> Chỗ trống cuối cùng tại bãi đỗ xe này đã được chủ bãi và khách hàng khác hoàn tất ký kết hợp đồng trước đó.
+                  <strong>{t('reservationDetail.alerts.autoCancelledSlotPrefix')}</strong> {t('reservationDetail.alerts.autoCancelledSlotBody')}
                 </span>
               </div>
             )}
@@ -224,26 +231,26 @@ const CustomerReservationDetailPage = () => {
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="text-base font-bold text-slate-900">
-                      Thông tin bãi đỗ xe
+                      {t('reservationDetail.facilityCard.title')}
                     </h2>
                     {reservation.facility?.id && (
                       <Link
                         to={`/facility/${reservation.facility.id}`}
                         className="text-xs font-medium text-teal-600 hover:text-teal-700 inline-flex items-center gap-1"
                       >
-                        Xem trang bãi xe <ExternalLink className="w-3.5 h-3.5" />
+                        {t('reservationDetail.facilityCard.viewPage')} <ExternalLink className="w-3.5 h-3.5" />
                       </Link>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm pt-1">
                     <div>
-                      <span className="text-xs text-slate-500 block">Tên bãi xe</span>
+                      <span className="text-xs text-slate-500 block">{t('reservationDetail.facilityCard.nameLabel')}</span>
                       <p className="font-semibold text-slate-900 mt-0.5">{reservation.facility?.name}</p>
                     </div>
 
                     <div className="sm:col-span-2">
-                      <span className="text-xs text-slate-500 block">Địa chỉ</span>
+                      <span className="text-xs text-slate-500 block">{t('reservationDetail.facilityCard.addressLabel')}</span>
                       <p className="text-slate-700 flex items-start gap-1.5 mt-0.5">
                         <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                         <span>{reservation.facility?.address}</span>
@@ -252,49 +259,49 @@ const CustomerReservationDetailPage = () => {
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-sm">
-                    <span className="text-slate-500">Giá thuê niêm yết</span>
+                    <span className="text-slate-500">{t('reservationDetail.facilityCard.listedPriceLabel')}</span>
                     <span className="text-base font-bold text-teal-700">
-                      {Number(reservation.facility?.price_per_month || 0).toLocaleString('vi-VN')} đ/tháng
+                      {Number(reservation.facility?.price_per_month || 0).toLocaleString(numberLocale)} {t('reservationDetail.facilityCard.priceUnit')}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-6 space-y-3">
                   <h2 className="text-base font-bold text-slate-900">
-                    Thông tin đăng ký gửi giữ
+                    {t('reservationDetail.registrationCard.title')}
                   </h2>
 
                   <div className="divide-y divide-slate-100 text-sm">
                     <div className="py-2.5 flex justify-between gap-4">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <Car className="w-4 h-4 text-slate-400" />
-                        Phương tiện
+                        {t('reservationDetail.registrationCard.vehicleLabel')}
                       </span>
                       <span className="font-semibold text-slate-900 text-right">
-                        {displayVehicle || reservation.vehicle_info}
+                        {translateVehicleInfoText(displayVehicle || reservation.vehicle_info, i18n.language)}
                       </span>
                     </div>
 
                     <div className="py-2.5 flex justify-between gap-4">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <Calendar className="w-4 h-4 text-slate-400" />
-                        Ngày bắt đầu dự kiến
+                        {t('reservationDetail.registrationCard.startDateLabel')}
                       </span>
                       <span className="font-semibold text-slate-900">
-                        {new Date(reservation.desired_start_date).toLocaleDateString('vi-VN')}
+                        {new Date(reservation.desired_start_date).toLocaleDateString(dateLocale)}
                       </span>
                     </div>
 
                     {displayCccd && (
                       <div className="py-2.5 flex justify-between gap-4">
-                        <span className="text-slate-500">Số CCCD / CMND</span>
+                        <span className="text-slate-500">{t('reservationDetail.registrationCard.citizenIdLabel')}</span>
                         <span className="font-medium text-slate-900">{displayCccd}</span>
                       </div>
                     )}
 
                     {displayAddress && (
                       <div className="py-2.5 flex justify-between gap-4">
-                        <span className="text-slate-500 shrink-0">Địa chỉ liên hệ</span>
+                        <span className="text-slate-500 shrink-0">{t('reservationDetail.registrationCard.addressLabel')}</span>
                         <span className="font-medium text-slate-900 text-right">{displayAddress}</span>
                       </div>
                     )}
@@ -305,7 +312,7 @@ const CustomerReservationDetailPage = () => {
               <div className="lg:col-span-4 divide-y divide-slate-200 flex flex-col justify-between">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
-                    Liên hệ chủ bãi xe
+                    {t('reservationDetail.providerCard.title')}
                   </h2>
 
                   {reservation.facility?.provider ? (
@@ -323,7 +330,7 @@ const CustomerReservationDetailPage = () => {
                           href={`tel:${reservation.facility.provider.phone_number}`}
                           className="text-teal-700 hover:underline font-medium"
                         >
-                          {reservation.facility.provider.phone_number || 'Chưa cập nhật'}
+                          {reservation.facility.provider.phone_number || t('reservationDetail.providerCard.phoneNotUpdated')}
                         </a>
                       </div>
 
@@ -335,7 +342,7 @@ const CustomerReservationDetailPage = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-500">Chưa có thông tin liên hệ.</p>
+                    <p className="text-xs text-slate-500">{t('reservationDetail.providerCard.noContact')}</p>
                   )}
 
                   {reservation.confirmation_record && (
@@ -343,16 +350,16 @@ const CustomerReservationDetailPage = () => {
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <h3 className="text-sm font-bold text-slate-900">
-                            Hợp đồng điện tử
+                            {t('reservationDetail.contractBox.title')}
                           </h3>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Mã: <strong className="font-mono text-slate-800">{reservation.confirmation_record.contract_code}</strong>
+                            {t('reservationDetail.contractBox.codeLabel')} <strong className="font-mono text-slate-800">{reservation.confirmation_record.contract_code}</strong>
                           </p>
                         </div>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
                           {reservation.confirmation_record.status === 'ACTIVE'
-                            ? 'Đang hiệu lực'
-                            : 'Chờ xác nhận'}
+                            ? t('reservationDetail.contractBox.statusActive')
+                            : t('reservationDetail.contractBox.statusPending')}
                         </span>
                       </div>
 
@@ -361,7 +368,7 @@ const CustomerReservationDetailPage = () => {
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition"
                       >
                         <FileText className="w-4 h-4" />
-                        Xem văn bản hợp đồng
+                        {t('reservationDetail.contractBox.viewContract')}
                       </Link>
                     </div>
                   )}
@@ -374,7 +381,7 @@ const CustomerReservationDetailPage = () => {
                       disabled={cancelling}
                       className="w-full py-2.5 px-4 bg-white hover:bg-red-50 text-red-600 font-medium text-xs rounded-lg border border-red-200 transition"
                     >
-                      {cancelling ? 'Đang hủy yêu cầu...' : 'Hủy yêu cầu thuê'}
+                      {cancelling ? t('reservationDetail.actions.cancelling') : t('reservationDetail.actions.cancel')}
                     </button>
                   )}
 
@@ -383,7 +390,7 @@ const CustomerReservationDetailPage = () => {
                     onClick={() => navigate('/my-reservations')}
                     className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition"
                   >
-                    Quay lại danh sách
+                    {t('reservationDetail.actions.backToList')}
                   </button>
                 </div>
               </div>
@@ -396,10 +403,10 @@ const CustomerReservationDetailPage = () => {
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
         onConfirm={executeCancelRequest}
-        title="Hủy yêu cầu thuê bãi xe"
-        message="Bạn có chắc chắn muốn hủy yêu cầu thuê đỗ xe này không? Thao tác này không thể hoàn tác."
-        confirmText="Đồng ý hủy"
-        cancelText="Quay lại"
+        title={t('reservations.cancelConfirm.title')}
+        message={t('reservations.cancelConfirm.message')}
+        confirmText={t('reservations.cancelConfirm.confirmText')}
+        cancelText={t('reservations.cancelConfirm.cancelText')}
         type="danger"
         loading={cancelling}
       />

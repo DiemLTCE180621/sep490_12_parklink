@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, User, Building2, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import policyService from '../services/policyService';
+import { translateSystemPolicy } from '../utils/translations';
 
 const PolicyPage = () => {
+  const { t, i18n } = useTranslation('common');
   const { identifier } = useParams();
   const navigate = useNavigate();
 
@@ -24,7 +27,7 @@ const PolicyPage = () => {
         setActiveTab(list[0].policy_type);
       }
     } catch (err) {
-      setError('Không thể tải danh sách chính sách hệ thống. Vui lòng thử lại sau.');
+      setError('__LOAD_ERROR__');
     } finally {
       setLoading(false);
     }
@@ -35,10 +38,11 @@ const PolicyPage = () => {
   }, [fetchPolicies]);
 
   const currentPolicy = policies.find(p => p.policy_type === activeTab) || policies[0];
+  const localizedPolicy = translateSystemPolicy(currentPolicy, i18n.language);
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return 'Hiện hành';
-    return new Date(dateStr).toLocaleDateString('vi-VN', {
+    if (!dateStr) return t('policyPage.currentStatus');
+    return new Date(dateStr).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
@@ -54,13 +58,13 @@ const PolicyPage = () => {
           <div className="relative z-10 space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold border border-teal-500/30">
               <ShieldCheck className="w-4 h-4 text-teal-400" />
-              <span>Chính Sách & Quy Định Vận Hành ParkLink</span>
+              <span>{t('policyPage.badge')}</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              Điều Khoản Dịch Vụ Hệ Thống
+              {t('policyPage.title')}
             </h1>
             <p className="text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-              Các chính sách và quy chuẩn minh bạch nhằm bảo vệ quyền lợi của Khách thuê, Chủ bãi đỗ xe và đảm bảo chất lượng dịch vụ trên nền tảng ParkLink.
+              {t('policyPage.subtitle')}
             </p>
           </div>
         </div>
@@ -70,9 +74,9 @@ const PolicyPage = () => {
             <CheckCircle2 className="w-5 h-5 text-teal-600" />
           </div>
           <div className="space-y-1 text-xs sm:text-sm text-slate-700 leading-relaxed">
-            <strong className="text-slate-900 font-bold block">Điều khoản quy chuẩn mặc định:</strong>
+            <strong className="text-slate-900 font-bold block">{t('policyPage.noticeTitle')}</strong>
             <p>
-              "ParkLink có quyền cập nhật, sửa đổi các điều khoản này để phù hợp với quy định vận hành thực tế. Việc người dùng tiếp tục truy cập và sử dụng dịch vụ sau khi điều khoản được cập nhật đồng nghĩa với việc người dùng chấp thuận toàn bộ nội dung chính sách mới nhất."
+              {t('policyPage.noticeBody')}
             </p>
           </div>
         </div>
@@ -80,12 +84,12 @@ const PolicyPage = () => {
         {loading ? (
           <div className="bg-white rounded-3xl p-16 text-center border border-slate-100 shadow-sm space-y-3">
             <div className="w-10 h-10 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-            <p className="text-slate-600 text-sm font-medium">Đang tải nội dung văn bản...</p>
+            <p className="text-slate-600 text-sm font-medium">{t('policyPage.loading')}</p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-3xl p-10 text-center border border-red-100 shadow-sm space-y-3 text-red-600">
             <AlertCircle className="w-8 h-8 mx-auto" />
-            <p>{error}</p>
+            <p>{error === '__LOAD_ERROR__' ? t('policyPage.loadError') : error}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
@@ -93,7 +97,7 @@ const PolicyPage = () => {
             {/* Sidebar danh mục Tab chính sách */}
             <div className="md:col-span-1 bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm space-y-1.5 sticky top-24">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 py-1 block">
-                Danh mục chính sách
+                {t('policyPage.sidebarTitle')}
               </span>
 
               {policies.map((pol) => {
@@ -117,7 +121,7 @@ const PolicyPage = () => {
                     <div className="flex items-center gap-2.5 truncate">
                       <Icon className="w-4 h-4 shrink-0" />
                       <span className="truncate">
-                        {isCustomer ? 'Dành Cho Khách Hàng' : 'Dành Cho Chủ Bãi Xe'}
+                        {isCustomer ? t('policyPage.tabCustomer') : t('policyPage.tabProvider')}
                       </span>
                     </div>
                     <ChevronRight className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -133,24 +137,24 @@ const PolicyPage = () => {
               <div className="border-b border-slate-100 pb-5 space-y-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider">
-                    {currentPolicy?.policy_type === 'CUSTOMER' ? 'Khách hàng cá nhân' : 'Đối tác bãi đỗ xe'}
+                    {currentPolicy?.policy_type === 'CUSTOMER' ? t('policyPage.audienceCustomer') : t('policyPage.audienceProvider')}
                   </span>
                   <div className="text-xs text-slate-500 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-teal-600" />
                     <span>
-                      Cập nhật lần cuối: <strong>{formatDate(currentPolicy?.updated_at)}</strong>
+                      {t('policyPage.lastUpdated')} <strong>{formatDate(localizedPolicy?.updated_at)}</strong>
                     </span>
                   </div>
                 </div>
 
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                  {currentPolicy?.title}
+                  {localizedPolicy?.title}
                 </h2>
               </div>
 
               {/* Văn bản nội dung */}
               <div className="prose prose-slate max-w-none text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-line">
-                {currentPolicy?.content}
+                {localizedPolicy?.content}
               </div>
             </div>
           </div>

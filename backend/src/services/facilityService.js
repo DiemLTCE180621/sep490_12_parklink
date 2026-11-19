@@ -64,7 +64,7 @@ class FacilityService {
       ? Number(radius)
       : 3;
 
-    // Tính khoảng cách nếu có tọa độ GPS
+    //calculate distant
     const facilitiesWithDistance = facilitiesWithRatings.map(facility => {
       if (!facility.latitude || !facility.longitude) return { ...facility, distance: null };
 
@@ -72,7 +72,6 @@ class FacilityService {
       return { ...facility, distance };
     });
 
-    // Lọc theo bán kính khi có vị trí
     const withinRadius = facilitiesWithDistance
       .filter(f => f.distance !== null && f.distance <= effectiveRadius)
       .sort((a, b) => a.distance - b.distance);
@@ -97,12 +96,7 @@ class FacilityService {
     return await facilityRepository.getAllAmenities();
   }
 
-  /**
-   * So sánh chi tiết 2–4 bãi đỗ xe.
-   * Validate số lượng ID, gọi repository lấy dữ liệu thô,
-   * rồi xây dựng ma trận so sánh (comparison matrix) chuẩn hóa để trả về frontend.
-   * @param {number[]} ids - Mảng 2–4 ID bãi đỗ xe (đã được parse sang số)
-   */
+  //compare
   async compareFacilities(ids, location = {}) {
     const normalizedIds = Array.isArray(ids)
       ? ids
@@ -110,7 +104,7 @@ class FacilityService {
         .filter(id => Number.isInteger(id) && id > 0)
       : [];
 
-    // Validate số lượng: phải từ 2 đến 4 bãi, không được trùng ID
+    //validate number
     if (
       normalizedIds.length < 2 ||
       normalizedIds.length > 4 ||
@@ -119,10 +113,10 @@ class FacilityService {
       throw new Error('Vui lòng chọn từ 2 đến 4 bãi đỗ xe để so sánh.');
     }
 
-    // Lấy dữ liệu thô từ repository
+    //fetch data from repo
     const facilities = await facilityRepository.findByIdsForCompare(normalizedIds);
 
-    // Kiểm tra xem tất cả ID có tồn tại và đang ACTIVE không
+    //check if id active 
     if (facilities.length !== normalizedIds.length) {
       const foundIds = facilities.map(f => f.id);
       const notFoundIds = normalizedIds.filter(id => !foundIds.includes(id));
@@ -141,18 +135,16 @@ class FacilityService {
     );
     const activeContractsMap = new Map(activeContractsByFacility);
 
-    // Xây dựng comparison matrix: chuẩn hóa dữ liệu từng bãi
+    //compare matric
     const comparisonMatrix = facilities.map(facility => {
-      // Tính điểm đánh giá trung bình từ danh sách reviews
+      //rating
       const ratings = facility.reviews.map(r => r.rating);
       const avgRating = ratings.length > 0
         ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
         : null;
 
-      // Lấy ảnh đại diện (primary hoặc ảnh đầu tiên)
       const primaryImage = facility.images.find(img => img.is_primary) || facility.images[0] || null;
 
-      // Danh sách tên tiện ích
       const amenities = facility.facility_amenities.map(fa => fa.amenity.name);
       const activeContracts = activeContractsMap.get(facility.id) || 0;
       const distance = hasLocation && facility.latitude !== null && facility.longitude !== null
@@ -186,9 +178,9 @@ class FacilityService {
       throw new Error('ID bãi đỗ xe không hợp lệ');
     }
 
-    const [facility, activeVehicleTypes] = await Promise.all([
+    const [facility, allVehicleTypes] = await Promise.all([
       facilityRepository.getFacilityDetails(facilityId),
-      vehicleTypeRepository.findActive()
+      vehicleTypeRepository.findAll()
     ]);
     if (!facility) {
       throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
@@ -197,8 +189,6 @@ class FacilityService {
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
     const availableSlots = Math.max(0, facility.capacity - activeContractsCount);
 
-    // Lọc các loại xe còn đang hoạt động (is_active = true) từ Backend;
-    // ưu tiên bảng liên kết facility_vehicle_types, fallback qua mảng JSON cũ nếu cơ sở chưa đồng bộ bảng liên kết.
     let parsedRawTypes = [];
     if (Array.isArray(facility.vehicle_types)) {
       parsedRawTypes = facility.vehicle_types;
@@ -211,23 +201,24 @@ class FacilityService {
       }
     }
 
-    const activeByCode = new Map(activeVehicleTypes.map((vt) => [vt.type_code, vt]));
-    let activeFacilityVehicleTypes = [];
+    // Giữ lại toàn bộ loại xe cơ sở đã đăng ký từ trước, kể cả khi Admin tắt is_active sau này
+    const vehicleTypeByCode = new Map(allVehicleTypes.map((vt) => [vt.type_code, vt]));
+    let registeredFacilityVehicleTypes = [];
     if (Array.isArray(facility.facility_vehicle_types) && facility.facility_vehicle_types.length > 0) {
-      activeFacilityVehicleTypes = facility.facility_vehicle_types.filter(
-        (fvt) => fvt.vehicle_type && fvt.vehicle_type.is_active === true
+      registeredFacilityVehicleTypes = facility.facility_vehicle_types.filter(
+        (fvt) => Boolean(fvt.vehicle_type)
       );
     } else {
-      activeFacilityVehicleTypes = parsedRawTypes
+      registeredFacilityVehicleTypes = parsedRawTypes
         .map((item) => {
           const code = typeof item === 'string' ? item : item?.type_code || item?.id;
-          const vt = activeByCode.get(code);
+          const vt = vehicleTypeByCode.get(code);
           return vt ? { facility_id: facilityId, vehicle_type_id: vt.id, vehicle_type: vt } : null;
         })
         .filter(Boolean);
     }
 
-    // Format data
+    //format data
     const ratings = facility.reviews.map(r => r.rating);
     const avgRating = ratings.length > 0
       ? parseFloat((ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1))
@@ -237,8 +228,8 @@ class FacilityService {
       ...facility,
       avg_rating: avgRating,
       total_reviews: ratings.length,
-      facility_vehicle_types: activeFacilityVehicleTypes,
-      vehicle_types: activeFacilityVehicleTypes.map((fvt) => fvt.vehicle_type.type_code),
+      facility_vehicle_types: registeredFacilityVehicleTypes,
+      vehicle_types: registeredFacilityVehicleTypes.map((fvt) => fvt.vehicle_type.type_code),
       active_contracts: activeContractsCount,
       available_slots: availableSlots
     };
@@ -255,11 +246,9 @@ class FacilityService {
       throw new Error('Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động');
     }
 
-    // Đếm số lượng xe/hợp đồng đang gửi hiệu lực (ACTIVE) tại bãi
+    //count active contract
     const activeContractsCount = await facilityRepository.getActiveContractsCount(facilityId);
 
-    // LOGIC CHUẨN: Số chỗ còn trống thực tế = Sức chứa (capacity) trừ số xe đang gửi (activeContractsCount)
-    // Đảm bảo nguyên lý: Sức chứa = Đang gửi + Còn trống
     const availableSlots = Math.max(0, facility.capacity - activeContractsCount);
 
     return {

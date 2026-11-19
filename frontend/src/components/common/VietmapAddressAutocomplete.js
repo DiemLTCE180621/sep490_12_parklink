@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Building2, Loader2, MapPin } from 'lucide-react';
 import vietmapService from '../../services/vietmapService';
 import facilityService from '../../services/facilityService';
@@ -71,6 +72,7 @@ const VietmapAddressAutocomplete = ({
   minChars = 2,
   includeFacilities = false,
 }) => {
+  const { t } = useTranslation('common');
   const [suggestions, setSuggestions] = useState([]);
   const [facilitySuggestions, setFacilitySuggestions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -216,10 +218,10 @@ const VietmapAddressAutocomplete = ({
             <div>
               <div className="px-3.5 py-2 bg-teal-50/80 flex items-center justify-between text-[11px] font-bold text-teal-800 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-teal-600" /> Bãi đỗ xe ParkLink
+                  <Building2 className="w-3.5 h-3.5 text-teal-600" /> {t('autocomplete.facilitiesGroup')}
                 </span>
                 <span className="text-[10px] text-teal-600 font-semibold px-1.5 py-0.5 rounded bg-teal-100">
-                  {facilitySuggestions.length} kết quả
+                  {t('autocomplete.resultsCount', { count: facilitySuggestions.length })}
                 </span>
               </div>
               {facilitySuggestions.map((fac) => (
@@ -240,7 +242,7 @@ const VietmapAddressAutocomplete = ({
                       </p>
                       {fac.price_per_month && (
                         <span className="text-xs font-bold text-teal-600 shrink-0">
-                          {Number(fac.price_per_month).toLocaleString('vi-VN')} đ/tháng
+                          {Number(fac.price_per_month).toLocaleString('vi-VN')} {t('autocomplete.pricePerMonthSuffix')}
                         </span>
                       )}
                     </div>
@@ -255,7 +257,7 @@ const VietmapAddressAutocomplete = ({
             <div>
               <div className="px-3.5 py-2 bg-slate-50 flex items-center justify-between text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" /> Địa điểm / Tuyến đường (Vietmap)
+                  <MapPin className="w-3.5 h-3.5 text-slate-500" /> {t('autocomplete.placesGroup')}
                 </span>
               </div>
               {suggestions.map((suggestion, index) => (

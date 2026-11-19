@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Heart, MapPin, Car, Info, Loader2, Search, Bookmark, ArrowRight, X, Star, ShieldCheck } from 'lucide-react';
 import { getFavorites, removeFavorite } from '../../services/favoriteService';
+import { translateAmenityName } from '../../utils/translations';
 import Toast from '../../components/common/Toast';
 
 const FavoriteFacilitiesPage = () => {
+  const { t, i18n } = useTranslation('customer');
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -24,7 +27,7 @@ const FavoriteFacilitiesPage = () => {
       // Đảm bảo luôn là mảng để tránh lỗi .length trên undefined
       setFavorites(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách yêu thích. Vui lòng thử lại.');
+      setError(err.message || '__LOAD_ERROR__');
       setFavorites([]);
     } finally {
       setLoading(false);
@@ -36,10 +39,10 @@ const FavoriteFacilitiesPage = () => {
     try {
       await removeFavorite(facilityId);
       setFavorites(prev => prev.filter(f => f.id !== facilityId));
-      setToast({ message: 'Đã xóa khỏi danh sách yêu thích', type: 'success' });
+      setToast({ message: t('favorites.removeSuccess'), type: 'success' });
     } catch (err) {
       setToast({
-        message: err.message || 'Không thể xóa bãi đỗ xe khỏi danh sách yêu thích. Vui lòng thử lại.',
+        message: err.message || t('favorites.removeError'),
         type: 'error'
       });
     }
@@ -64,7 +67,7 @@ const FavoriteFacilitiesPage = () => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center bg-slate-50">
         <Loader2 className="w-10 h-10 text-teal-600 animate-spin mb-4" />
-        <p className="text-slate-500 font-medium animate-pulse">Đang tải danh sách yêu thích...</p>
+        <p className="text-slate-500 font-medium animate-pulse">{t('favorites.loading')}</p>
       </div>
     );
   }
@@ -74,11 +77,11 @@ const FavoriteFacilitiesPage = () => {
       <div className="max-w-[1600px] mx-auto px-4 md:px-8 xl:px-10 space-y-7">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-            <Link to="/" className="hover:text-teal-700 transition-colors">Trang chủ</Link>
+            <Link to="/" className="hover:text-teal-700 transition-colors">{t('favorites.breadcrumbHome')}</Link>
             <span className="text-slate-300">/</span>
-            <Link to="/dashboard" className="hover:text-teal-700 transition-colors">Tài khoản của tôi</Link>
+            <Link to="/dashboard" className="hover:text-teal-700 transition-colors">{t('favorites.breadcrumbAccount')}</Link>
             <span className="text-slate-300">/</span>
-            <span className="text-teal-700 font-semibold">Bãi xe yêu thích</span>
+            <span className="text-teal-700 font-semibold">{t('favorites.breadcrumbCurrent')}</span>
           </nav>
         </div>
 
@@ -86,18 +89,18 @@ const FavoriteFacilitiesPage = () => {
           <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="max-w-2xl flex flex-col gap-2.5">
               <div className="inline-flex items-center gap-2 text-teal-700 text-xs font-semibold w-max">
-                <Bookmark className="w-4 h-4 fill-current" /> ƯU TIÊN THEO DÕI BÃI XE
+                <Bookmark className="w-4 h-4 fill-current" /> {t('favorites.tag')}
               </div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
-                Bãi xe yêu thích <span className="text-slate-500 font-normal text-xl md:text-2xl">(Favorite Facilities)</span>
+                {t('favorites.title')}
               </h1>
-              <p className="text-sm text-slate-600 leading-relaxed">Quản lý danh sách các bãi đỗ xe bạn đã lưu để theo dõi và truy cập nhanh.</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{t('favorites.subtitle')}</p>
             </div>
             <div className="grid grid-cols-2 gap-3 w-full sm:w-auto">
               <div className="px-3.5 py-1.5 min-w-[130px] border-l border-teal-200 col-start-2">
-                <span className="text-xs text-teal-700 font-medium flex items-center gap-1">Đã lưu</span>
+                <span className="text-xs text-teal-700 font-medium flex items-center gap-1">{t('favorites.savedLabel')}</span>
                 <span className="block text-2xl font-bold text-teal-700 mt-0.5">{favorites.length}</span>
-                <span className="text-[11px] text-slate-500">bãi trong danh sách</span>
+                <span className="text-[11px] text-slate-500">{t('favorites.savedUnit')}</span>
               </div>
             </div>
           </div>
@@ -107,41 +110,41 @@ const FavoriteFacilitiesPage = () => {
           <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-              <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Tìm bãi đã lưu theo tên, tuyến đường..." className="w-full bg-slate-50 pl-10 pr-10 py-2.5 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-teal-600 transition-all" />
+              <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('favorites.searchPlaceholder')} className="w-full bg-slate-50 pl-10 pr-10 py-2.5 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-teal-600 transition-all" />
               {searchTerm && <button type="button" onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"><X className="w-4 h-4" /></button>}
             </div>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-slate-50 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-600">
-              <option value="recent">Sắp xếp: Mới lưu gần đây</option>
-              <option value="price-asc">Giá thuê: Thấp đến cao</option>
-              <option value="price-desc">Giá thuê: Cao đến thấp</option>
-              <option value="rating">Đánh giá cao nhất</option>
+              <option value="recent">{t('favorites.sortRecent')}</option>
+              <option value="price-asc">{t('favorites.sortPriceAsc')}</option>
+              <option value="price-desc">{t('favorites.sortPriceDesc')}</option>
+              <option value="rating">{t('favorites.sortRating')}</option>
             </select>
           </div>
           <Link to="/search" className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-teal-700 hover:text-teal-900 text-xs font-bold transition-all shrink-0">
-            <MapPin className="w-4 h-4" /> Tìm thêm bãi xe
+            <MapPin className="w-4 h-4" /> {t('favorites.findMore')}
           </Link>
         </div>
 
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 border border-red-100 flex items-center gap-2">
             <Info className="w-5 h-5 shrink-0" />
-            <p className="font-medium">{error}</p>
+            <p className="font-medium">{error === '__LOAD_ERROR__' ? t('favorites.loadError') : error}</p>
           </div>
         )}
 
         {favorites.length === 0 && !error ? (
           <div className="py-16 text-center border-y border-slate-200">
             <Heart className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-700 mb-2">Chưa có bãi xe nào</h3>
-            <p className="text-slate-500 max-w-md mx-auto mb-6">Bạn chưa lưu bãi xe nào. Hãy tìm và lưu các bãi xe bạn quan tâm để truy cập nhanh.</p>
-            <Link to="/search" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition-colors inline-flex items-center gap-2"><Search className="w-4 h-4" /> Tìm bãi đỗ xe ngay</Link>
+            <h3 className="text-xl font-bold text-slate-700 mb-2">{t('favorites.emptyTitle')}</h3>
+            <p className="text-slate-500 max-w-md mx-auto mb-6">{t('favorites.emptyDesc')}</p>
+            <Link to="/search" className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition-colors inline-flex items-center gap-2"><Search className="w-4 h-4" /> {t('favorites.findNow')}</Link>
           </div>
         ) : filteredFavorites.length === 0 ? (
           <div className="py-16 text-center border-y border-dashed border-slate-300">
             <Heart className="w-14 h-14 text-slate-200 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-800">Không tìm thấy bãi xe phù hợp</h3>
-            <p className="text-sm text-slate-500 mt-1 mb-5">Thử thay đổi từ khóa tìm kiếm của bạn.</p>
-            <button type="button" onClick={() => setSearchTerm('')} className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-semibold text-xs">Đặt lại tìm kiếm</button>
+            <h3 className="text-lg font-bold text-slate-800">{t('favorites.noMatchTitle')}</h3>
+            <p className="text-sm text-slate-500 mt-1 mb-5">{t('favorites.noMatchDesc')}</p>
+            <button type="button" onClick={() => setSearchTerm('')} className="px-5 py-2.5 rounded-lg bg-teal-600 text-white font-semibold text-xs">{t('favorites.resetSearch')}</button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -166,16 +169,16 @@ const FavoriteFacilitiesPage = () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-900/30 pointer-events-none" />
                     <button
                       onClick={(e) => handleToggleFavorite(e, facility.id)}
-                      aria-label="Bỏ lưu khỏi danh sách yêu thích"
+                      aria-label={t('favorites.removeAria')}
                       className="absolute top-3 right-3 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-transform active:scale-90 flex items-center justify-center z-10"
                     >
                       <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
                     </button>
                     <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-bold bg-teal-600 text-white shadow-sm flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Đã lưu
+                      <ShieldCheck className="w-3.5 h-3.5" /> {t('favorites.savedBadge')}
                     </div>
                     <div className="absolute bottom-3 inset-x-3 flex items-center justify-between text-xs text-white">
-                      <span className="inline-flex items-center gap-1 font-semibold bg-black/40 backdrop-blur-md px-2 py-1 rounded"><Car className="w-3.5 h-3.5 text-teal-300" /> Sức chứa {facility.capacity || '—'} chỗ</span>
+                      <span className="inline-flex items-center gap-1 font-semibold bg-black/40 backdrop-blur-md px-2 py-1 rounded"><Car className="w-3.5 h-3.5 text-teal-300" /> {t('favorites.capacityBadge', { count: facility.capacity || '—' })}</span>
                     </div>
                   </div>
 
@@ -193,29 +196,48 @@ const FavoriteFacilitiesPage = () => {
                     </p>
 
                     <div className="flex flex-wrap gap-1.5 pt-1">
-                      {(facility.facility_amenities || []).slice(0, 3).map((item) => <span key={item.amenity?.id || item.amenity_id} className="px-2 py-1 bg-slate-100 rounded text-[11px] font-medium text-slate-600 flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-teal-600" /> {item.amenity?.name || 'Tiện ích'}</span>)}
-                      {(!facility.facility_amenities || facility.facility_amenities.length === 0) && <span className="text-[11px] text-slate-400">Chưa có thông tin tiện ích</span>}
+                      {(facility.facility_amenities || []).slice(0, 3).map((item) => (
+                        <span key={item.amenity?.id || item.amenity_id} className="px-2 py-1 bg-slate-100 rounded text-[11px] font-medium text-slate-600 flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-teal-600" /> {item.amenity?.name ? translateAmenityName(item.amenity.name, i18n.language) : t('favorites.amenityFallback')}
+                        </span>
+                      ))}
+                      {(!facility.facility_amenities || facility.facility_amenities.length === 0) && <span className="text-[11px] text-slate-400">{t('favorites.noAmenities')}</span>}
                     </div>
                   </div>
                 </div>
                 <div className="p-5 pt-0 mt-2 flex flex-col gap-3">
                   <div className="flex items-baseline justify-between pt-3 border-t border-slate-100">
-                    <span className="text-xs text-slate-500">Giá thuê tháng niêm yết:</span>
-                    <div className="text-right"><span className="text-lg font-bold text-teal-700">{Number(facility.price_per_month || 0).toLocaleString('vi-VN')} đ</span><span className="text-[11px] text-slate-500">/tháng</span></div>
+                    <span className="text-xs text-slate-500">{t('favorites.listedPriceLabel')}</span>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-teal-700">
+                        {Number(facility.price_per_month || 0).toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN')} {t('favorites.currencySuffix')}
+                      </span>
+                      <span className="text-[11px] text-slate-500">{t('favorites.perMonthUnit')}</span>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => navigate(`/facility/${facility.id}`)} className="w-full py-2.5 px-3 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors">Xem chi tiết</button>
-                    <button type="button" onClick={() => navigate(`/facility/${facility.id}`)} className="w-full py-2.5 px-3 rounded-lg text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-all flex items-center justify-center gap-1"><ArrowRight className="w-4 h-4" /> Giữ chỗ ngay</button>
+                    <button type="button" onClick={() => navigate(`/facility/${facility.id}`)} className="w-full py-2.5 px-3 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors">{t('favorites.viewDetails')}</button>
+                    <button type="button" onClick={() => navigate(`/facility/${facility.id}`)} className="w-full py-2.5 px-3 rounded-lg text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition-all flex items-center justify-center gap-1"><ArrowRight className="w-4 h-4" /> {t('favorites.reserveNow')}</button>
                   </div>
                 </div>
               </article>
             ))}
           </div>
         )}
-        {filteredFavorites.length > 0 && <div className="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-slate-200 text-xs text-slate-600 font-medium">Hiển thị <strong className="text-slate-900">{filteredFavorites.length}</strong> trên tổng số <strong className="text-slate-900">{favorites.length}</strong> bãi xe đã lưu</div>}
+        {filteredFavorites.length > 0 && (
+          <div className="bg-white rounded-xl px-5 py-3.5 shadow-sm border border-slate-200 text-xs text-slate-600 font-medium">
+            {t('favorites.showingPrefix')} <strong className="text-slate-900">{filteredFavorites.length}</strong> {t('favorites.showingMiddle')} <strong className="text-slate-900">{favorites.length}</strong> {t('favorites.showingSuffix')}
+          </div>
+        )}
         <section className="relative overflow-hidden rounded-2xl bg-white shadow-sm border border-slate-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-start gap-4"><div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0"><MapPin className="w-6 h-6" /></div><div><h4 className="text-base md:text-lg font-bold text-slate-900">Bạn cần mở rộng vị trí tìm kiếm?</h4><p className="text-xs md:text-sm text-slate-600 mt-1">Khám phá thêm các bãi đỗ xe đã được kiểm định trên mạng lưới ParkLink.</p></div></div>
-          <Link to="/search" className="w-full md:w-auto px-5 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm transition-all inline-flex items-center justify-center gap-2 shrink-0"><Search className="w-4 h-4" /> Khám phá bãi xe</Link>
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0"><MapPin className="w-6 h-6" /></div>
+            <div>
+              <h4 className="text-base md:text-lg font-bold text-slate-900">{t('favorites.expandTitle')}</h4>
+              <p className="text-xs md:text-sm text-slate-600 mt-1">{t('favorites.expandDesc')}</p>
+            </div>
+          </div>
+          <Link to="/search" className="w-full md:w-auto px-5 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm transition-all inline-flex items-center justify-center gap-2 shrink-0"><Search className="w-4 h-4" /> {t('favorites.exploreButton')}</Link>
         </section>
       </div>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
