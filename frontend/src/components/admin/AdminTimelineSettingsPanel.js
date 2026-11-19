@@ -34,7 +34,7 @@ const AdminTimelineSettingsPanel = () => {
     try {
       setLoading(true);
       const res = await timelineSettingService.getSettings();
-      const settings = res?.data?.data?.settings;
+      const settings = res?.data?.settings || res?.data?.data?.settings || res?.settings;
       if (settings) {
         setFormData({
           reservation_response_value: settings.reservation_response_value ?? 12,
@@ -112,7 +112,7 @@ const AdminTimelineSettingsPanel = () => {
         message: 'Cập nhật cấu hình thời hạn hệ thống thành công!',
         type: 'success'
       });
-      const settings = res?.data?.data?.settings;
+      const settings = res?.data?.settings || res?.data?.data?.settings || res?.settings;
       if (settings) {
         setLastUpdated({
           updated_at: settings.updated_at,

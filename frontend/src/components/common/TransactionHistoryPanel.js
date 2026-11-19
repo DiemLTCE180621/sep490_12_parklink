@@ -26,16 +26,16 @@ const TransactionHistoryPanel = ({ role }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
     setLoading(true);
     setError('');
-    transactionService.getHistory(role, { ...appliedFilters, page, limit: 10 })
-      .then((response) => { if (active) setData(response.data); })
+    transactionService.getHistory(role, { ...appliedFilters, page, limit: 10 }, controller.signal)
+      .then((response) => { if (!controller.signal.aborted) setData(response.data); })
       .catch((requestError) => {
-        if (active) setError(requestError.response?.data?.message || requestError.message || '__LOAD_ERROR__');
+        if (!controller.signal.aborted) setError(requestError.response?.data?.message || requestError.message || 'LOAD_ERROR');
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
   }, [role, appliedFilters, page, refresh]);
 
   const applyFilters = (event) => {

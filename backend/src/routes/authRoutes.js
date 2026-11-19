@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
-const vehicleTypeController = require('../controllers/vehicleTypeController');
 const {
   validateRegisterCustomer,
   validateRegisterProvider,
@@ -15,9 +14,6 @@ const {
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 
 router.get('/amenities', authController.getAmenities);
-
-// Lấy danh mục loại phương tiện hệ thống (Bảng vehicle_types)
-router.get('/vehicle-types', vehicleTypeController.getActiveVehicleTypes);
 
 // Lấy thông tin liên hệ hệ thống (Email, Hotline Admin)
 router.get('/contact-info', authController.getContactInfo);

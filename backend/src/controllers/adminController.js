@@ -13,6 +13,76 @@ class AdminController {
     }
   }
 
+  async getDashboardPlatformFeeTransactionsByMonth(req, res, next) {
+    try {
+      const { month } = req.params;
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+        return res.status(400).json({ status: "fail", message: "Tháng giao dịch không hợp lệ." });
+      }
+
+      const transactions = await adminService.getDashboardPlatformFeeTransactionsByMonth(month);
+      return res.json({ status: "success", data: transactions });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportRevenueReport(req, res, next) {
+    try {
+      const { from, to, period, month, year, facility_id } = req.query;
+
+      let calculatedFrom = from;
+      let calculatedTo = to;
+      let periodLabel = null;
+
+      if (period && /^\d{4}-(?:0[1-9]|1[0-2])$/.test(period)) {
+        const [y, m] = period.split("-").map(Number);
+        const lastDay = new Date(y, m, 0).getDate();
+        calculatedFrom = `${y}-${String(m).padStart(2, "0")}-01`;
+        calculatedTo = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+        periodLabel = `Tháng ${m}/${y}`;
+      } else if (month && year) {
+        const m = Number(month);
+        const y = Number(year);
+        if (m >= 1 && m <= 12 && y >= 2000 && y <= 2100) {
+          const lastDay = new Date(y, m, 0).getDate();
+          calculatedFrom = `${y}-${String(m).padStart(2, "0")}-01`;
+          calculatedTo = `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+          periodLabel = `Tháng ${m}/${y}`;
+        }
+      }
+
+      if (calculatedFrom && !/^\d{4}-\d{2}-\d{2}$/.test(calculatedFrom)) {
+        return res.status(400).json({ status: "fail", message: "Ngày bắt đầu không đúng định dạng YYYY-MM-DD!" });
+      }
+      if (calculatedTo && !/^\d{4}-\d{2}-\d{2}$/.test(calculatedTo)) {
+        return res.status(400).json({ status: "fail", message: "Ngày kết thúc không đúng định dạng YYYY-MM-DD!" });
+      }
+      if (calculatedFrom && calculatedTo && calculatedFrom > calculatedTo) {
+        return res.status(400).json({ status: "fail", message: "Ngày bắt đầu không được lớn hơn ngày kết thúc!" });
+      }
+      if (facility_id !== undefined && facility_id !== "") {
+        const parsedId = Number(facility_id);
+        if (!Number.isInteger(parsedId) || parsedId <= 0) {
+          return res.status(400).json({ status: "fail", message: "Mã cơ sở bãi xe (facility_id) phải là số nguyên dương hợp lệ!" });
+        }
+      }
+
+      const { filename, contentType, content } = await adminService.exportRevenueReport({
+        from: calculatedFrom,
+        to: calculatedTo,
+        periodLabel,
+        facilityId: facility_id
+      });
+
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(filename)}"`);
+      return res.status(200).send(content);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   /**
    * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt / đang chuẩn bị
    */
@@ -258,6 +328,24 @@ class AdminController {
         return res
           .status(error.status)
           .json({ status: "fail", message: error.message });
+      next(error);
+    }
+  }
+
+  async getProviderRevenueStatistics(req, res, next) {
+    try {
+      const { year, month, facility_id, provider_id } = req.query;
+      const data = await adminService.getProviderRevenueStatistics({
+        year: year ? parseInt(year, 10) : undefined,
+        month: month ? parseInt(month, 10) : undefined,
+        facilityId: facility_id ? parseInt(facility_id, 10) : undefined,
+        providerId: provider_id ? parseInt(provider_id, 10) : undefined,
+      });
+      return res.status(200).json({
+        status: "success",
+        data,
+      });
+    } catch (error) {
       next(error);
     }
   }

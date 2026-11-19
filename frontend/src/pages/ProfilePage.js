@@ -254,7 +254,7 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {(!hasPhone || !hasAddress) && (
+          {roleName === 'CUSTOMER' && (!hasPhone || !hasAddress) && (
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs sm:text-sm">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
               <span>
@@ -362,7 +362,9 @@ const ProfilePage = () => {
                 <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-slate-700">{t('fields.address.contractPreview')}</span>
+                    <span className="font-bold text-slate-700">
+                      {roleName === 'CUSTOMER' ? 'Địa chỉ ghi trên thông tin thuê bãi: ' : 'Địa chỉ liên hệ: '}
+                    </span>
                     <span className="text-teal-800 font-semibold">
                       {computeFullAddress(streetDetail, administrativeAddress) || t('fields.address.notSet')}
                     </span>

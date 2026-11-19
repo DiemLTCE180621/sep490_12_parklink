@@ -2,7 +2,7 @@ const facilityRepository = require('../repositories/facilityRepository');
 
 class WebhookController {
 
-  async handlePaymentWebhook(req, res, next) {
+  async handlePaymentWebhook(req, res) {
     try {
       // Xác thực Secret Key từ SePay (Nếu đã cấu hình)
       const sepaySecret = process.env.SEPAY_SECRET_KEY;
@@ -13,10 +13,6 @@ class WebhookController {
           return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
       }
-
-      console.log('--- NHẬN WEBHOOK TỪ SEPAY ---');
-      console.log('Headers:', req.headers);
-      console.log('Payload:', JSON.stringify(req.body, null, 2));
 
       // SePay gửi dạng flat object, hỗ trợ cả 2 dạng: flat và lồng trong mảng data[]
       let transactionList = [];
@@ -37,8 +33,6 @@ class WebhookController {
         // Chỉ xử lý giao dịch tiền vào (transferType: "in")
         const transferType = transaction.transferType || 'in';
 
-        console.log(`[WEBHOOK] Giao dịch: Nội dung="${content}", Số tiền=${amount}, Loại=${transferType}`);
-
         if (transferType !== 'in' || !Number.isFinite(amount) || amount <= 0) {
           console.log(`[WEBHOOK] Bỏ qua: Loại giao dịch hoặc số tiền không hợp lệ.`);
           continue;
@@ -50,7 +44,7 @@ class WebhookController {
           const facilityId = parseInt(match[1], 10);
           console.log(`[WEBHOOK] ==> Phát hiện thanh toán cho Bãi đỗ xe ID: ${facilityId}`);
 
-          const facility = await facilityRepository.findById(facilityId);
+          const facility = await facilityRepository.findPaymentInfo(facilityId);
           if (facility) {
             if (facility.verification_status === 'APPROVED' && facility.payment_status !== 'PAID') {
               // Yêu cầu user chỉ cần trả 1% phí (chia 100)
@@ -71,7 +65,7 @@ class WebhookController {
             console.log(`[WEBHOOK] ==> KHÔNG TÌM THẤY: Bãi đỗ xe ID ${facilityId}`);
           }
         } else {
-          console.log(`[WEBHOOK] Không có mã PARKLINK trong nội dung: "${content}"`);
+          console.log('[WEBHOOK] Bỏ qua giao dịch không có mã PARKLINK.');
         }
       }
 
@@ -79,8 +73,8 @@ class WebhookController {
       res.json({ success: true, message: `Đã xử lý ${processedCount} giao dịch hợp lệ.` });
     } catch (error) {
       console.error('[WEBHOOK] Lỗi:', error);
-      // Vẫn trả 200 để SePay không retry liên tục
-      res.status(200).json({ success: false, message: 'Lỗi xử lý nội bộ, đã ghi log.' });
+      // Giao dịch được cập nhật nguyên tử; webhook có thể gửi lại nếu xử lý lỗi.
+      res.status(500).json({ success: false, message: 'Lỗi xử lý nội bộ.' });
     }
   }
 }

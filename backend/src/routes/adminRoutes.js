@@ -10,6 +10,8 @@ router.use(authenticateToken, authorizeRoles('ADMIN'));
 router.get('/transactions', require('../controllers/transactionController').getHistory);
 
 router.get('/dashboard/overview', adminController.getDashboardOverview);
+router.get('/dashboard/platform-fees/:month', adminController.getDashboardPlatformFeeTransactionsByMonth);
+router.get('/dashboard/export-revenue', adminController.exportRevenueReport);
 
 /**
  * M2-UC20: View pending owner registrations
@@ -71,10 +73,18 @@ router.put('/facilities/:id', adminController.updateFacility);
  */
 const confirmationRecordController = require('../controllers/confirmationRecordController');
 const { validateAdminQueryConfirmationRecords } = require('../validations/confirmationRecordValidation');
+const { validateProviderRevenueQuery } = require('../validations/adminValidation');
+
 router.get(
   '/confirmation-records',
   validateAdminQueryConfirmationRecords,
   confirmationRecordController.getAllConfirmationRecords
+);
+
+router.get(
+  '/reports/provider-revenue',
+  validateProviderRevenueQuery,
+  adminController.getProviderRevenueStatistics
 );
 
 module.exports = router;

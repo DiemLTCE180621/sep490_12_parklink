@@ -8,6 +8,9 @@ const adminService = {
   getDashboardOverview: async () => {
     return await api.get('/admin/dashboard/overview');
   },
+  getDashboardPlatformFeeTransactionsByMonth: async (month) => {
+    return await api.get(`/admin/dashboard/platform-fees/${month}`);
+  },
 
   /**
    * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt hoặc đang chuẩn bị
@@ -134,6 +137,17 @@ const adminService = {
    */
   toggleVehicleTypeStatus: async (id) => {
     return await api.patch(`/vehicle-types/${id}/toggle-status`);
+  },
+
+  getProviderRevenueStatistics: async (params = {}) => {
+    return await api.get('/admin/reports/provider-revenue', { params });
+  },
+
+  exportRevenueReport: async (params = {}) => {
+    return await api.get('/admin/dashboard/export-revenue', {
+      params,
+      responseType: 'blob'
+    });
   }
 };
 
