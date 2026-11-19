@@ -1,16 +1,9 @@
-/**
- * Middleware validation kiểm tra tính hợp lệ của dữ liệu đầu vào cho User Management API
- */
-
 const {
   cleanText,
   isValidName,
   isValidPhone
 } = require('../utils/validators');
 
-/**
- * Validate cập nhật thông tin người dùng từ Admin (UC13)
- */
 const validateUpdateUser = (req, res, next) => {
   const { full_name, phone_number } = req.body;
   const errors = [];
@@ -44,9 +37,6 @@ const validateUpdateUser = (req, res, next) => {
   next();
 };
 
-/**
- * Validate User ID từ params
- */
 const validateUserId = (req, res, next) => {
   const userId = parseInt(req.params.id, 10);
   if (isNaN(userId) || userId <= 0) {

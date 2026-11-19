@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, Shield, X, RefreshCw, AlertCircle } from 'lucide-react';
 import userService from '../../services/userService';
 
-/**
- * Modal chỉnh sửa thông tin tài khoản người dùng từ Admin (UC13)
- */
 const EditUserModal = ({ isOpen, onClose, user, onSuccess }) => {
   const [fullName, setFullName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');

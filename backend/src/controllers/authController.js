@@ -31,7 +31,7 @@ class AuthController {
       const result = await authService.registerCustomer(req.body);
       return res.status(201).json({
         status: 'success',
-        message: 'Đăng ký tài khoản khách hàng thành công! Mật khẩu ngẫu nhiên đã được tạo.',
+        message: 'Đăng ký tài khoản thành công! Mật khẩu tạm thời đã được gửi về email của bạn.',
         data: result
       });
     } catch (error) {

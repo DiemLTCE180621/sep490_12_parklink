@@ -4,10 +4,9 @@ import { Mail, KeyRound, Lock, AlertCircle, CheckCircle2, ArrowRight, RefreshCw,
 import authService from '../../services/authService';
 import { isValidPassword } from '../../utils/validators';
 
-// Trang Quên mật khẩu (UC06)
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1: Yêu cầu OTP, 2: Nhập OTP & Đổi mật khẩu
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -20,7 +19,6 @@ const ForgotPasswordPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [simulatedOtp, setSimulatedOtp] = useState('');
 
-  // Bước 1: Gửi yêu cầu nhận mã OTP
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     setError('');
@@ -46,7 +44,6 @@ const ForgotPasswordPage = () => {
     }
   };
 
-  // Bước 2: Xác nhận mã OTP và đổi mật khẩu mới
   const handleVerifyAndReset = async (e) => {
     e.preventDefault();
     setError('');
@@ -63,7 +60,7 @@ const ForgotPasswordPage = () => {
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Mật khẩu nhập lại không trùng khớp!');
+      setError('Mật khẩu xác nhận không khớp.');
       return;
     }
 
@@ -88,7 +85,6 @@ const ForgotPasswordPage = () => {
   return (
     <div className="min-h-[calc(100vh-80px)] flex flex-col justify-center items-center py-10 px-4 sm:px-6 lg:px-8 bg-slate-50">
       <div className="w-full max-w-md space-y-6">
-        {/* Header tiêu đề */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-600 text-white shadow-lg shadow-teal-600/20 mb-2">
             <KeyRound className="w-7 h-7" />
@@ -103,7 +99,6 @@ const ForgotPasswordPage = () => {
           </p>
         </div>
 
-        {/* Card Form */}
         <div className="bg-white py-8 px-6 sm:px-10 shadow-xl rounded-3xl border border-slate-100">
           {error && (
             <div className="mb-5 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5">
@@ -147,7 +142,6 @@ const ForgotPasswordPage = () => {
                 </div>
               </div>
 
-              {/* Thông tin hướng dẫn ngắn */}
               <div className="p-3.5 bg-teal-50/70 border border-teal-100 rounded-xl text-xs text-teal-800 flex items-start gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                 <span>Hệ thống sẽ gửi mã xác thực OTP gồm 6 chữ số có hiệu lực trong 15 phút đến email này.</span>

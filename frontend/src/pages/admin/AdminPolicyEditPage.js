@@ -76,8 +76,8 @@ const AdminPolicyEditPage = () => {
         state: {
           adminTab: 'policies',
           message: formData.notifyUsers
-            ? 'Cập nhật chính sách thành công và đã phát thông báo tới người dùng!'
-            : 'Cập nhật chính sách hệ thống thành công!',
+            ? 'Cập nhật chính sách và gửi thông báo thành công.'
+            : 'Cập nhật chính sách thành công.',
           type: 'success'
         }
       });

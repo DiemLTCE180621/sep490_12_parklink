@@ -3,23 +3,16 @@ const roleRepository = require("../repositories/roleRepository");
 const emailService = require("../utils/emailService");
 const bcrypt = require("bcryptjs");
 
-/**
- * Service xử lý logic nghiệp vụ dành riêng cho Quản lý Nhân viên khảo sát thực địa (Field Inspector)
- */
 class FieldInspectorService {
-  /**
-   * UC-86: Tạo tài khoản Nhân viên khảo sát thực địa (Field Inspector) & tự động gửi mail mật khẩu
-   * @param {object} params - { email, full_name, phone_number, address }
-   */
   async createFieldInspectorAccount({ email, full_name, phone_number, address }) {
     if (!email || !full_name || !phone_number) {
-      throw Object.assign(new Error("Vui lòng nhập đầy đủ thông tin (Email, Họ tên, SĐT)!"), { status: 400 });
+      throw Object.assign(new Error("Vui lòng nhập đầy đủ thông tin (Email, Họ tên, SĐT)."), { status: 400 });
     }
 
     const trimmedEmail = email.trim().toLowerCase();
     const existingUser = await fieldInspectorRepository.findInspectorByEmail(trimmedEmail);
     if (existingUser) {
-      throw Object.assign(new Error("Địa chỉ email này đã được sử dụng trong hệ thống!"), { status: 400 });
+      throw Object.assign(new Error("Địa chỉ email này đã được sử dụng."), { status: 400 });
     }
 
     let inspectorRole = await roleRepository.findByName("FIELD_INSPECTOR");
@@ -30,12 +23,10 @@ class FieldInspectorService {
       });
     }
 
-    // Sinh mật khẩu ngẫu nhiên & băm password
     const tempPassword = emailService.generateRandomPassword();
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(tempPassword, salt);
 
-    // Lưu vào CSDL qua FieldInspectorRepository
     const newUser = await fieldInspectorRepository.createInspector({
       email: trimmedEmail,
       full_name: full_name.trim(),
@@ -47,7 +38,6 @@ class FieldInspectorService {
       requires_password_change: true
     });
 
-    // Gửi email thông báo mật khẩu cho Nhân viên khảo sát
     await emailService.sendFieldInspectorWelcomeEmail({
       toEmail: trimmedEmail,
       fullName: full_name.trim(),
@@ -55,14 +45,10 @@ class FieldInspectorService {
       address: address ? address.trim() : null
     });
 
-    // Loại bỏ thông tin password_hash trước khi trả về
     const { password_hash: _, ...safeUser } = newUser;
     return safeUser;
   }
 
-  /**
-   * UC-87: Lấy danh sách tài khoản Nhân viên khảo sát thực địa (kèm phân trang & tìm kiếm)
-   */
   async getFieldInspectorsList({ search, address, page, limit }) {
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
@@ -74,17 +60,14 @@ class FieldInspectorService {
     });
   }
 
-  /**
-   * UC-88: Cập nhật thông tin tài khoản Nhân viên khảo sát thực địa
-   */
   async updateFieldInspectorInfo(inspectorId, { full_name, phone_number, address, status }) {
     const inspector = await fieldInspectorRepository.findInspectorById(inspectorId);
     if (!inspector) {
-      throw Object.assign(new Error("Tài khoản Nhân viên khảo sát không tồn tại!"), { status: 404 });
+      throw Object.assign(new Error("Không tìm thấy tài khoản nhân viên khảo sát."), { status: 404 });
     }
 
     if (inspector.role?.name !== "FIELD_INSPECTOR") {
-      throw Object.assign(new Error("Tài khoản này không phải là Nhân viên khảo sát thực địa!"), { status: 400 });
+      throw Object.assign(new Error("Tài khoản này không phải là nhân viên khảo sát."), { status: 400 });
     }
 
     const updateData = {};
@@ -96,10 +79,6 @@ class FieldInspectorService {
     return await fieldInspectorRepository.updateInspector(inspectorId, updateData);
   }
 
-  /**
-   * Lấy danh sách tất cả Nhân viên khảo sát đang hoạt động (ACTIVE)
-   * dùng cho việc Admin phân công nhiệm vụ khảo sát thực địa
-   */
   async getActiveFieldInspectors() {
     return await fieldInspectorRepository.findActiveInspectors();
   }

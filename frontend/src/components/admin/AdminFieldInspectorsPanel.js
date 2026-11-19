@@ -20,7 +20,6 @@ const AdminFieldInspectorsPanel = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Dropdown Filter theo Địa chỉ (Tỉnh/Thành -> Phường/Xã)
   const [provinces, setProvinces] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
@@ -28,17 +27,14 @@ const AdminFieldInspectorsPanel = () => {
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
 
-  // Confirmation Dialog State (Lock / Unlock / Reset Password)
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, type: '', inspector: null });
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Modal State cho UC-86 (Create)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ email: '', full_name: '', phone_number: '', address: '' });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  // Modal State cho UC-88 (Update)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingInspector, setEditingInspector] = useState(null);
   const [editForm, setEditForm] = useState({ full_name: '', phone_number: '', address: '', status: 'ACTIVE' });
@@ -63,7 +59,6 @@ const AdminFieldInspectorsPanel = () => {
     return () => { isMounted = false; };
   }, []);
 
-  // Tải danh sách Phường / Xã khi Tỉnh / Thành phố thay đổi
   useEffect(() => {
     if (!selectedProvinceCode) {
       setWards([]);
@@ -87,7 +82,6 @@ const AdminFieldInspectorsPanel = () => {
     return () => { isMounted = false; };
   }, [selectedProvinceCode]);
 
-  // Xử lý khi chọn Tỉnh / Thành phố
   const handleProvinceSelect = (e) => {
     const code = e.target.value;
     setSelectedProvinceCode(code);
@@ -100,7 +94,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Xử lý khi chọn Phường / Xã
   const handleWardSelect = (e) => {
     const code = e.target.value;
     setSelectedWardCode(code);
@@ -113,7 +106,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Đặt lại tất cả bộ lọc
   const handleResetFilters = () => {
     setSearch('');
     setSelectedProvinceCode('');
@@ -122,7 +114,6 @@ const AdminFieldInspectorsPanel = () => {
     setWards([]);
   };
 
-  // UC-87: Fetch Field Inspectors List
   const fetchInspectors = useCallback(async (page = 1) => {
     try {
       setLoading(true);
@@ -150,7 +141,6 @@ const AdminFieldInspectorsPanel = () => {
     fetchInspectors(1);
   }, [fetchInspectors]);
 
-  // UC-86: Submit Create Field Inspector
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     setCreateError('');
@@ -163,7 +153,7 @@ const AdminFieldInspectorsPanel = () => {
     try {
       setCreateLoading(true);
       const res = await fieldInspectorService.createFieldInspector(createForm);
-      setSuccessMessage(res.data?.message || 'Tạo tài khoản Nhân viên khảo sát thực địa thành công! Mật khẩu đã được gửi qua email.');
+      setSuccessMessage(res.data?.message || 'Tạo tài khoản nhân viên khảo sát thành công. Mật khẩu tạm thời đã được gửi qua email.');
       setIsCreateModalOpen(false);
       setCreateForm({ email: '', full_name: '', phone_number: '', address: '' });
       fetchInspectors(1);
@@ -174,7 +164,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // UC-88: Open Edit Modal
   const handleOpenEditModal = (inspector) => {
     setEditingInspector(inspector);
     setEditForm({
@@ -187,7 +176,6 @@ const AdminFieldInspectorsPanel = () => {
     setIsEditModalOpen(true);
   };
 
-  // UC-88: Submit Update Field Inspector
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditError('');
@@ -211,7 +199,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Mở Popup Đặt lại mật khẩu
   const handleOpenResetPassword = (inspector) => {
     setConfirmDialog({
       isOpen: true,
@@ -220,7 +207,6 @@ const AdminFieldInspectorsPanel = () => {
     });
   };
 
-  // Mở Popup Khóa / Mở khóa
   const handleOpenToggleStatus = (inspector) => {
     const isBlocked = (inspector.status || '').toUpperCase() === 'BLOCKED';
     setConfirmDialog({
@@ -230,7 +216,6 @@ const AdminFieldInspectorsPanel = () => {
     });
   };
 
-  // Thực thi hành động từ Confirm Dialog
   const handleConfirmAction = async () => {
     const { type, inspector } = confirmDialog;
     if (!inspector) return;
@@ -241,14 +226,14 @@ const AdminFieldInspectorsPanel = () => {
 
       if (type === 'LOCK' || type === 'UNLOCK') {
         const res = await userService.toggleUserStatus(inspector.id);
-        const actionMsg = res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!');
+        const actionMsg = res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.');
         setSuccessMessage(actionMsg);
         setInspectors((prev) =>
           prev.map((i) => (i.id === inspector.id ? { ...i, status: type === 'LOCK' ? 'BLOCKED' : 'ACTIVE' } : i))
         );
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(inspector.id);
-        const msg = res.message || 'Đặt lại mật khẩu thành công! Mật khẩu mới đã được gửi tới email.';
+        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi qua email.';
         setSuccessMessage(msg);
       }
 
@@ -315,7 +300,6 @@ const AdminFieldInspectorsPanel = () => {
       {/* Search & Address Filter Bar */}
       <div className="space-y-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Ô 1: Tìm kiếm theo Tên, Email, SĐT */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <Search className="w-4 h-4" />
@@ -329,7 +313,6 @@ const AdminFieldInspectorsPanel = () => {
             />
           </div>
 
-          {/* Ô 2: List chọn Tỉnh / Thành phố */}
           <div className="relative">
             <select
               value={selectedProvinceCode}
@@ -346,7 +329,6 @@ const AdminFieldInspectorsPanel = () => {
             </select>
           </div>
 
-          {/* Ô 3: List chọn Phường / Xã */}
           <div className="relative">
             <select
               value={selectedWardCode}
@@ -363,7 +345,6 @@ const AdminFieldInspectorsPanel = () => {
             </select>
           </div>
 
-          {/* Ô 4: Nút Làm mới */}
           <button
             type="button"
             onClick={handleResetFilters}
@@ -374,7 +355,6 @@ const AdminFieldInspectorsPanel = () => {
           </button>
         </div>
 
-        {/* Hiển thị chi tiết khi đang lọc */}
         {(search || addressFilter) && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-1 border-t border-slate-200/60">
             <span className="font-semibold">Đang lọc theo:</span>
@@ -475,7 +455,6 @@ const AdminFieldInspectorsPanel = () => {
                   <td className="py-3 px-4">{getStatusBadge(inspector.status)}</td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      {/* Chỉnh sửa thông tin */}
                       <button
                         onClick={() => handleOpenEditModal(inspector)}
                         title="Chỉnh sửa thông tin"
@@ -484,7 +463,6 @@ const AdminFieldInspectorsPanel = () => {
                         <Edit className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Đặt lại mật khẩu */}
                       <button
                         onClick={() => handleOpenResetPassword(inspector)}
                         title="Đặt lại mật khẩu"
@@ -493,7 +471,6 @@ const AdminFieldInspectorsPanel = () => {
                         <KeyRound className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Khóa / Mở khóa tài khoản */}
                       <button
                         onClick={() => handleOpenToggleStatus(inspector)}
                         title={(inspector.status || '').toUpperCase() === 'BLOCKED' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
@@ -518,7 +495,6 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-600">
           <div>
@@ -543,7 +519,6 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* MODAL UC-86: CREATE FIELD INSPECTOR */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
@@ -643,7 +618,6 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* MODAL UC-88: EDIT FIELD INSPECTOR */}
       {isEditModalOpen && editingInspector && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">

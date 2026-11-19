@@ -19,7 +19,7 @@ class PolicyService {
     }
 
     if (!policy) {
-      const error = new Error('Không tìm thấy chính sách được yêu cầu!');
+      const error = new Error('Không tìm thấy chính sách.');
       error.status = 404;
       throw error;
     }
@@ -37,7 +37,7 @@ class PolicyService {
 
     const existingPolicy = await policyRepository.findById(id);
     if (!existingPolicy) {
-      const error = new Error('Chính sách không tồn tại trong hệ thống!');
+      const error = new Error('Không tìm thấy chính sách.');
       error.status = 404;
       throw error;
     }

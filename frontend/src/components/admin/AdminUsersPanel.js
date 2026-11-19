@@ -37,14 +37,12 @@ const AdminUsersPanel = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // UC13: State cho Edit User Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUserForEdit, setSelectedUserForEdit] = useState(null);
 
-  // State cho Confirm Dialog (UC10: Reset mật khẩu, UC14/15: Khóa/Mở khóa)
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
-    type: '', // 'LOCK' | 'UNLOCK' | 'RESET_PASSWORD'
+    type: '',
     user: null
   });
   const [actionLoading, setActionLoading] = useState(false);
@@ -88,7 +86,6 @@ const AdminUsersPanel = () => {
     navigate(`/admin/users/${userId}`);
   };
 
-  // Mở modal sửa thông tin người dùng (UC13)
   const handleOpenEdit = (user) => {
     setSelectedUserForEdit(user);
     setIsEditModalOpen(true);
@@ -99,7 +96,6 @@ const AdminUsersPanel = () => {
     setUsers((prev) => prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u)));
   };
 
-  // Mở dialog xác nhận Khóa / Mở khóa (UC14, UC15)
   const handleOpenToggleStatus = (user) => {
     setConfirmDialog({
       isOpen: true,
@@ -108,7 +104,6 @@ const AdminUsersPanel = () => {
     });
   };
 
-  // Mở dialog xác nhận Reset mật khẩu (UC10)
   const handleOpenResetPassword = (user) => {
     setConfirmDialog({
       isOpen: true,
@@ -117,7 +112,6 @@ const AdminUsersPanel = () => {
     });
   };
 
-  // Thực thi hành động từ Confirm Dialog
   const handleConfirmAction = async () => {
     const { type, user } = confirmDialog;
     if (!user) return;
@@ -128,14 +122,14 @@ const AdminUsersPanel = () => {
 
       if (type === 'LOCK' || type === 'UNLOCK') {
         const res = await userService.toggleUserStatus(user.id);
-        const actionMsg = res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!');
+        const actionMsg = res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.');
         setSuccessMessage(actionMsg);
         setUsers((prev) =>
           prev.map((u) => (u.id === user.id ? { ...u, status: type === 'LOCK' ? 'BLOCKED' : 'ACTIVE' } : u))
         );
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(user.id);
-        const msg = res.message || 'Đặt lại mật khẩu thành công! Mật khẩu mới đã được gửi tới email.';
+        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi tới email.';
         setSuccessMessage(msg);
       }
 
@@ -190,7 +184,6 @@ const AdminUsersPanel = () => {
 
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-      {/* Title */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -205,7 +198,6 @@ const AdminUsersPanel = () => {
         </div>
       </div>
 
-      {/* Thông báo thành công */}
       {successMessage && (
         <div className="p-4 bg-emerald-50 text-emerald-800 text-xs font-medium rounded-2xl border border-emerald-200 flex justify-between items-center animate-in fade-in">
           <span className="flex items-center gap-2">
@@ -220,7 +212,6 @@ const AdminUsersPanel = () => {
 
       {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-3">
-        {/* Input Tìm kiếm */}
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
             <Search className="w-4 h-4" />
@@ -318,7 +309,6 @@ const AdminUsersPanel = () => {
                     <td className="py-3 px-4">{getStatusBadge(u.status)}</td>
                     <td className="py-3 px-4 text-center">
                       <div className="inline-flex items-center gap-1.5">
-                        {/* UC12: Xem chi tiết */}
                         <button
                           onClick={() => handleViewUserDetail(u.id)}
                           title="Xem chi tiết người dùng"
@@ -327,7 +317,6 @@ const AdminUsersPanel = () => {
                           <Eye className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* UC13: Chỉnh sửa thông tin */}
                         <button
                           onClick={() => handleOpenEdit(u)}
                           title="Chỉnh sửa thông tin tài khoản"
@@ -336,7 +325,6 @@ const AdminUsersPanel = () => {
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* UC10: Đặt lại mật khẩu */}
                         {!isAdmin && (
                           <button
                             onClick={() => handleOpenResetPassword(u)}
@@ -347,7 +335,6 @@ const AdminUsersPanel = () => {
                           </button>
                         )}
 
-                        {/* UC14 & UC15: Khóa / Mở khóa tài khoản */}
                         {!isAdmin && (
                           <button
                             onClick={() => handleOpenToggleStatus(u)}
@@ -396,7 +383,6 @@ const AdminUsersPanel = () => {
         </div>
       )}
 
-      {/* UC13: MODAL SỬA THÔNG TIN USER */}
       <EditUserModal
         isOpen={isEditModalOpen}
         onClose={() => {
@@ -407,7 +393,6 @@ const AdminUsersPanel = () => {
         onSuccess={handleEditSuccess}
       />
 
-      {/* CONFIRMATION DIALOG (CHO UC10, UC14, UC15) */}
       {confirmDialog.isOpen && confirmDialog.user && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
@@ -449,17 +434,17 @@ const AdminUsersPanel = () => {
                   </p>
                   {confirmDialog.user.role?.name === 'PROVIDER' && (
                     <p className="text-rose-600 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Vì đây là tài khoản Đối tác, cơ sở bãi đỗ xe liên kết cũng sẽ tự động chuyển sang trạng thái ẨN để đảm bảo an toàn giao dịch.
+                      Lưu ý: Cơ sở bãi xe liên kết sẽ bị ẩn và các yêu cầu đặt chỗ đang chờ sẽ bị hủy.
                     </p>
                   )}
                   {confirmDialog.user.role?.name === 'CUSTOMER' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Các yêu cầu đặt chỗ đang chờ duyệt của khách hàng này sẽ tự động được hủy.
+                      Lưu ý: Các yêu cầu đặt chỗ đang chờ của khách hàng này sẽ bị hủy.
                     </p>
                   )}
                   {confirmDialog.user.role?.name === 'FIELD_INSPECTOR' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                      Lưu ý: Các cơ sở đang phân công cho nhân viên này sẽ được chuyển về chờ duyệt lại.
                     </p>
                   )}
                 </div>
@@ -471,7 +456,7 @@ const AdminUsersPanel = () => {
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  Hệ thống sẽ tự động tạo một mật khẩu ngẫu nhiên mới và gửi thông báo qua email tới <strong>{confirmDialog.user.email}</strong>. Người dùng sẽ bị bắt buộc đổi mật khẩu mới ở lần đăng nhập tiếp theo.
+                  Hệ thống sẽ tạo mật khẩu tạm thời mới và gửi qua email tới <strong>{confirmDialog.user.email}</strong>. Người dùng sẽ đổi mật khẩu ở lần đăng nhập tiếp theo.
                 </p>
               )}
             </div>
