@@ -4,6 +4,7 @@ import {
   AlertCircle, Lock, CircleDollarSign, Eye, EyeOff, Sparkles, Save,
   RefreshCw, Clock, Image as ImageIcon
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import providerService from '../../services/providerService';
@@ -11,6 +12,7 @@ import { getProviderReservations } from '../../services/reservationService';
 import Toast from '../common/Toast';
 
 const ProviderDashboardPanel = ({ onNavigateToTab }) => {
+  const { t } = useTranslation('provider');
   const { user, refreshUser } = useAuth();
   const [isPaying, setIsPaying] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -106,13 +108,13 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
       const slotsNum = parseInt(editData.available_slots, 10);
 
       if (isNaN(slotsNum) || slotsNum < 0) {
-        setToastInfo({ message: "Số chỗ trống hiện tại phải lớn hơn hoặc bằng 0!", type: 'error' });
+        setToastInfo({ message: t('dashboard.editModal.validation.slotsNonNegative'), type: 'error' });
         return;
       }
 
       if (slotsNum > totalCapacity) {
         setToastInfo({
-          message: `Số chỗ trống (${slotsNum}) không thể vượt quá tổng sức chứa đăng ký (${totalCapacity} chỗ)!`,
+          message: t('dashboard.editModal.validation.slotsExceedCapacity', { slots: slotsNum, capacity: totalCapacity }),
           type: 'error'
         });
         return;
@@ -133,12 +135,12 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
       await fetchFacilityData();
 
       setToastInfo({
-        message: `Cập nhật thành công! Chỗ trống hiện tại: ${slotsNum}/${totalCapacity} chỗ.`,
+        message: t('dashboard.editModal.toasts.updateSuccess', { slots: slotsNum, capacity: totalCapacity }),
         type: 'success'
       });
       setIsEditing(false);
     } catch (error) {
-      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Cập nhật bãi đỗ xe thất bại";
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || t('dashboard.editModal.toasts.updateError');
       setToastInfo({ message: errorMsg, type: 'error' });
     } finally {
       setIsSubmitting(false);
@@ -179,17 +181,17 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
       if (latestFacility && latestFacility.payment_status === 'PAID') {
         setPaymentSuccess(true);
-        setToastInfo({ message: "Thanh toán thành công! Bãi đỗ xe đã được kích hoạt.", type: 'success' });
+        setToastInfo({ message: t('dashboard.payment.toasts.success'), type: 'success' });
         await refreshUser();
         await fetchFacilityData();
         setTimeout(() => {
           setPaymentSuccess(false);
         }, 3000);
       } else {
-        setToastInfo({ message: "Hệ thống chưa nhận được thanh toán. Vui lòng đợi thêm hoặc kiểm tra lại.", type: 'error' });
+        setToastInfo({ message: t('dashboard.payment.toasts.notReceived'), type: 'error' });
       }
     } catch (err) {
-      setToastInfo({ message: "Không thể kiểm tra trạng thái thanh toán.", type: 'error' });
+      setToastInfo({ message: t('dashboard.payment.toasts.checkError'), type: 'error' });
     } finally {
       setIsPaying(false);
     }
@@ -199,8 +201,8 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
     return (
       <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md text-center py-16">
         <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-slate-700">Chưa tìm thấy thông tin bãi đỗ xe</h3>
-        <p className="text-sm text-slate-500 mt-1">Vui lòng đăng ký cơ sở bãi đỗ xe để bắt đầu quản lý.</p>
+        <h3 className="text-lg font-bold text-slate-700">{t('dashboard.empty.title')}</h3>
+        <p className="text-sm text-slate-500 mt-1">{t('dashboard.empty.subtitle')}</p>
       </div>
     );
   }
@@ -224,10 +226,10 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
           <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-teal-600" /> Thông Tin Bãi Xe Và Vận Hành Cơ Sở
+                <Building2 className="w-5 h-5 text-teal-600" /> {t('dashboard.title')}
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Theo dõi tình trạng hoạt động, chỗ trống thực tế, tỷ lệ lấp đầy, yêu cầu thuê và dự kiến doanh thu tháng.
+                {t('dashboard.subtitle')}
               </p>
             </div>
 
@@ -237,24 +239,24 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   'bg-amber-50 text-amber-800 border-amber-200'
                 }`}>
                 <Clock className="w-3.5 h-3.5" />
-                {currentFacility.verification_status === 'APPROVED' ? 'Đã Phê Duyệt' :
-                  currentFacility.verification_status === 'REJECTED' ? 'Bị Từ Chối' : 'Chờ Phê Duyệt'}
+                {currentFacility.verification_status === 'APPROVED' ? t('dashboard.verificationStatus.APPROVED') :
+                  currentFacility.verification_status === 'REJECTED' ? t('dashboard.verificationStatus.REJECTED') : t('dashboard.verificationStatus.PENDING')}
               </span>
 
               <button
                 onClick={handleOpenEdit}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
               >
-                <Edit3 className="w-3.5 h-3.5" /> Cập nhật chỗ trống & giá
+                <Edit3 className="w-3.5 h-3.5" /> {t('dashboard.actions.updateSlotsAndPrice')}
               </button>
 
               <button
                 onClick={fetchFacilityData}
                 disabled={loading}
                 className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200"
-                title="Tải lại dữ liệu bãi xe"
+                title={t('dashboard.actions.refreshTitle')}
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Làm mới
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> {t('dashboard.actions.refresh')}
               </button>
             </div>
           </div>
@@ -262,14 +264,14 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
           <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
             <div className="p-5">
               <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Chỗ trống hiện tại</span>
+                <span>{t('dashboard.kpis.availableSlots.label')}</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 mt-2">
                 <span className="text-2xl font-black text-emerald-950">{currentAvailableSlots}</span>
-                <span className="text-xs font-bold text-emerald-700">/ {totalCapacity} chỗ</span>
+                <span className="text-xs font-bold text-emerald-700">/ {totalCapacity} {t('dashboard.kpis.availableSlots.unit')}</span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
@@ -277,19 +279,19 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   style={{ width: `${slotPercent}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Sẵn sàng đón khách ({slotPercent}%)</p>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">{t('dashboard.kpis.availableSlots.hint', { percent: slotPercent })}</p>
             </div>
 
             <div className="p-5">
               <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Đang gửi & Tỷ lệ lấp đầy</span>
+                <span>{t('dashboard.kpis.occupied.label')}</span>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                   <Car className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-black text-blue-950">{occupiedSlots}</span>
-                <span className="text-xs font-semibold text-blue-700">xe</span>
+                <span className="text-xs font-semibold text-blue-700">{t('dashboard.kpis.occupied.unit')}</span>
                 <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 ml-auto">
                   {occupancyRate}%
                 </span>
@@ -300,16 +302,16 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   style={{ width: `${Math.min(100, occupancyRate)}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">Công suất sử dụng bãi xe</p>
+              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">{t('dashboard.kpis.occupied.hint')}</p>
             </div>
 
             <div
               onClick={() => onNavigateToTab && onNavigateToTab('reservations')}
               className={`p-5 transition ${onNavigateToTab ? 'cursor-pointer hover:bg-slate-50' : ''} ${pendingReservationsCount > 0 ? 'bg-amber-50/30' : ''}`}
-              title={onNavigateToTab ? 'Nhấn để chuyển sang duyệt yêu cầu thuê' : undefined}
+              title={onNavigateToTab ? t('dashboard.kpis.pendingRequests.tooltip') : undefined}
             >
               <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Yêu cầu chờ duyệt</span>
+                <span>{t('dashboard.kpis.pendingRequests.label')}</span>
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingReservationsCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
                   }`}>
                   <Clock className="w-4 h-4" />
@@ -320,10 +322,10 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   }`}>
                   {pendingReservationsCount}
                 </span>
-                <span className="text-xs font-semibold text-slate-500">yêu cầu</span>
+                <span className="text-xs font-semibold text-slate-500">{t('dashboard.kpis.pendingRequests.unit')}</span>
                 {pendingReservationsCount > 0 && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white ml-auto animate-pulse">
-                    Cần xử lý
+                    {t('dashboard.kpis.pendingRequests.actionRequired')}
                   </span>
                 )}
               </div>
@@ -334,20 +336,20 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                 />
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5 font-medium flex items-center justify-between">
-                <span>Khách đang chờ duyệt</span>
-                {onNavigateToTab && <span className="text-teal-700 font-bold hover:underline">Chi tiết &rarr;</span>}
+                <span>{t('dashboard.kpis.pendingRequests.hint')}</span>
+                {onNavigateToTab && <span className="text-teal-700 font-bold hover:underline">{t('dashboard.kpis.pendingRequests.viewDetails')} &rarr;</span>}
               </p>
             </div>
 
             <div className="p-5">
               <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <span>Dự kiến DT tháng</span>
+                <span>{t('dashboard.kpis.projectedRevenue.label')}</span>
                 <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
                   <CircleDollarSign className="w-4 h-4" />
                 </div>
               </div>
               <div className="text-xl font-black text-teal-950 mt-2 truncate">
-                {estimatedMonthlyRevenue.toLocaleString('vi-VN')} <span className="text-xs font-semibold text-teal-700">đ</span>
+                {estimatedMonthlyRevenue.toLocaleString('vi-VN')} <span className="text-xs font-semibold text-teal-700">{t('dashboard.kpis.projectedRevenue.currency')}</span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
@@ -356,7 +358,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                 />
               </div>
               <p className="text-[11px] text-slate-400 mt-1.5 font-medium truncate">
-                {activeContracts} hợp đồng &times; {monthlyPrice.toLocaleString('vi-VN')}đ
+                {t('dashboard.kpis.projectedRevenue.formula', { count: activeContracts, price: monthlyPrice.toLocaleString('vi-VN') })}
               </p>
             </div>
           </div>
@@ -364,16 +366,16 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
           <div className="p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal-600" /> Chi Tiết Cơ Sở Bãi Xe
+                <Building2 className="w-4 h-4 text-teal-600" /> {t('dashboard.facilityDetails.title')}
               </h3>
               <div className="flex items-center gap-2">
                 {currentFacility.visibility_status === 'VISIBLE' ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    <Eye className="w-3.5 h-3.5" /> Đang hoạt động công khai
+                    <Eye className="w-3.5 h-3.5" /> {t('dashboard.facilityDetails.visibility.visible')}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                    <EyeOff className="w-3.5 h-3.5" /> Tạm đóng cửa (Ẩn)
+                    <EyeOff className="w-3.5 h-3.5" /> {t('dashboard.facilityDetails.visibility.hidden')}
                   </span>
                 )}
               </div>
@@ -381,11 +383,11 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <span className="text-slate-400 font-semibold uppercase tracking-wider">Tên bãi đỗ xe</span>
+                <span className="text-slate-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.nameLabel')}</span>
                 <p className="text-base font-bold text-slate-900">{currentFacility.name}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-400 font-semibold uppercase tracking-wider">Địa chỉ cơ sở</span>
+                <span className="text-slate-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.addressLabel')}</span>
                 <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" /> {currentFacility.address}
                 </p>
@@ -396,11 +398,11 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <ImageIcon className="w-4 h-4 text-teal-600" />
-                  Hình Ảnh Bãi Đỗ Xe {facilityImages.length > 0 ? `(${facilityImages.length})` : ''}
+                  {t('dashboard.facilityDetails.photosTitle')} {facilityImages.length > 0 ? `(${facilityImages.length})` : ''}
                 </span>
                 {facilityImages.length > 0 && (
                   <span className="text-[11px] text-slate-400">
-                    Nhấp vào ảnh để phóng to
+                    {t('dashboard.facilityDetails.zoomHint')}
                   </span>
                 )}
               </div>
@@ -415,7 +417,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     >
                       <img
                         src={img.image_url}
-                        alt={`Bãi xe ${idx + 1}`}
+                        alt={t('dashboard.facilityDetails.photoAlt', { index: idx + 1 })}
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
                       <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -425,7 +427,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                       </div>
                       {img.is_primary && (
                         <span className="absolute top-2 left-2 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
-                          Ảnh chính
+                          {t('dashboard.facilityDetails.primaryBadge')}
                         </span>
                       )}
                     </div>
@@ -434,22 +436,22 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
               ) : (
                 <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
                   <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
-                  <p className="text-xs text-slate-500 font-medium">Chưa có hình ảnh nào được tải lên cho cơ sở này</p>
+                  <p className="text-xs text-slate-500 font-medium">{t('dashboard.facilityDetails.noPhotos')}</p>
                 </div>
               )}
             </div>
 
             {currentFacility.verification_status === 'APPROVED' && currentFacility.payment_status === 'UNPAID' && (
               <div className="mt-4 p-6 border-2 border-dashed border-teal-200 rounded-2xl bg-teal-50 text-center space-y-4">
-                <h4 className="font-bold text-teal-900 text-base">Hoàn Tất Thanh Toán Phí Nền Tảng</h4>
+                <h4 className="font-bold text-teal-900 text-base">{t('dashboard.payment.title')}</h4>
                 <p className="text-xs text-teal-800 max-w-lg mx-auto">
-                  Quét mã QR dưới đây bằng ứng dụng ngân hàng để thanh toán. Sau khi thanh toán, nhấn xác nhận để bãi đỗ xe của bạn được hiển thị công khai.
+                  {t('dashboard.payment.description')}
                 </p>
 
                 <div className="flex justify-center my-3">
                   <img
                     src={`https://img.vietqr.io/image/MB-881666787988-compact2.png?amount=${currentFacility.system_fee / 100}&addInfo=${encodeURIComponent('PARKLINK F' + currentFacility.id)}&accountName=PARKLINK`}
-                    alt="QR Code Thanh Toán"
+                    alt={t('dashboard.payment.qrAlt')}
                     className="w-44 h-44 rounded-2xl shadow-md border-2 border-white"
                   />
                 </div>
@@ -460,7 +462,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     onClick={handleCheckPayment}
                     className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50"
                   >
-                    {isPaying ? 'Đang xử lý...' : 'Kiểm tra thanh toán'}
+                    {isPaying ? t('dashboard.payment.checking') : t('dashboard.payment.checkButton')}
                   </button>
                 </div>
               </div>
@@ -482,13 +484,13 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
             <button
               onClick={() => setSelectedImagePreview(null)}
               className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition z-10"
-              title="Đóng ảnh"
+              title={t('dashboard.facilityDetails.closePhoto')}
             >
               <X className="w-5 h-5" />
             </button>
             <img
               src={selectedImagePreview}
-              alt="Xem ảnh bãi xe"
+              alt={t('dashboard.facilityDetails.lightboxAlt')}
               className="max-h-[82vh] w-auto max-w-full rounded-2xl object-contain mx-auto"
             />
           </div>
@@ -502,9 +504,9 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
             <div className="w-20 h-20 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-teal-200">
               <CheckCircle2 className="w-10 h-10 text-teal-600 animate-bounce" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Thanh Toán Thành Công!</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">{t('dashboard.payment.successTitle')}</h3>
             <p className="text-slate-600 text-xs mb-6">
-              Bãi đỗ xe của bạn đã được kích hoạt và hiển thị công khai trên hệ thống ParkLink.
+              {t('dashboard.payment.successBody')}
             </p>
             <div className="w-full bg-slate-100 h-1.5 overflow-hidden rounded-full">
               <div className="bg-teal-500 h-full rounded-full w-full transition-all duration-1000"></div>
@@ -523,10 +525,10 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">
-                    Cập Nhật Chỗ Trống & Giá Thuê Cơ Sở
+                    {t('dashboard.editModal.title')}
                   </h3>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    Điều chỉnh số chỗ trống thực tế đón khách và giá thuê hàng tháng
+                    {t('dashboard.editModal.subtitle')}
                   </p>
                 </div>
               </div>
@@ -534,7 +536,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
               <button
                 onClick={() => setIsEditing(false)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition shrink-0"
-                title="Đóng"
+                title={t('dashboard.editModal.closeTitle')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -550,21 +552,21 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
                       <div className="flex items-center justify-between text-slate-500 font-bold mb-1">
                         <span className="flex items-center gap-1">
-                          <Lock className="w-3 h-3 text-slate-400" /> Sức chứa
+                          <Lock className="w-3 h-3 text-slate-400" /> {t('dashboard.editModal.capacityLabel')}
                         </span>
-                        <span className="bg-slate-200/70 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">Cố định</span>
+                        <span className="bg-slate-200/70 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">{t('dashboard.editModal.fixedBadge')}</span>
                       </div>
-                      <p className="text-lg font-black text-slate-900">{totalCapacity} <span className="text-xs font-semibold text-slate-500">slots</span></p>
+                      <p className="text-lg font-black text-slate-900">{totalCapacity} <span className="text-xs font-semibold text-slate-500">{t('dashboard.editModal.slotsUnit')}</span></p>
                     </div>
 
                     <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs">
                       <div className="flex items-center justify-between text-blue-700 font-bold mb-1">
                         <span className="flex items-center gap-1">
-                          <Car className="w-3 h-3 text-blue-500" /> Có xe đỗ
+                          <Car className="w-3 h-3 text-blue-500" /> {t('dashboard.editModal.occupiedLabel')}
                         </span>
-                        <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px]">Thực tế</span>
+                        <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px]">{t('dashboard.editModal.liveBadge')}</span>
                       </div>
-                      <p className="text-lg font-black text-blue-950">{editOccupiedSlots} <span className="text-xs font-semibold text-blue-700">xe</span></p>
+                      <p className="text-lg font-black text-blue-950">{editOccupiedSlots} <span className="text-xs font-semibold text-blue-700">{t('dashboard.editModal.vehiclesUnit')}</span></p>
                     </div>
                   </div>
 
@@ -572,10 +574,10 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
                         <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                        Số Chỗ Trống Khả Dụng <span className="text-red-500">*</span>
+                        {t('dashboard.editModal.availableSlotsLabel')} <span className="text-red-500">*</span>
                       </label>
                       <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-teal-100 text-teal-800 border border-teal-200">
-                        {editSlotPercent}% trống
+                        {t('dashboard.editModal.percentVacant', { percent: editSlotPercent })}
                       </span>
                     </div>
 
@@ -585,7 +587,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         onClick={() => handleSlotStep(-1)}
                         disabled={Number(editData.available_slots) <= 0}
                         className="w-11 h-11 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-800 font-bold flex items-center justify-center transition shrink-0"
-                        title="Giảm 1 chỗ trống (có xe vào gửi)"
+                        title={t('dashboard.editModal.decreaseTitle')}
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -605,7 +607,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           }}
                         />
                         <span className="text-[11px] font-semibold text-slate-400 block mt-0.5">
-                          / {totalCapacity} chỗ tối đa
+                          {t('dashboard.editModal.maxSlotsHint', { total: totalCapacity })}
                         </span>
                       </div>
 
@@ -614,7 +616,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         onClick={() => handleSlotStep(1)}
                         disabled={Number(editData.available_slots) >= totalCapacity}
                         className="w-11 h-11 rounded-lg bg-teal-600 hover:bg-teal-700 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white font-bold flex items-center justify-center transition shrink-0 shadow-sm"
-                        title="Tăng 1 chỗ trống (có xe rời bãi)"
+                        title={t('dashboard.editModal.increaseTitle')}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -628,7 +630,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                      <span className="text-[11px] text-slate-400 font-medium">Chọn nhanh:</span>
+                      <span className="text-[11px] text-slate-400 font-medium">{t('dashboard.editModal.quickSelect')}</span>
                       <button
                         type="button"
                         onClick={() => handleQuickPreset(0)}
@@ -637,7 +639,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                       >
-                        Hết chỗ (0)
+                        {t('dashboard.editModal.presetEmpty')}
                       </button>
                       {totalCapacity > 2 && (
                         <button
@@ -648,7 +650,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                             : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                             }`}
                         >
-                          Nửa bãi ({Math.floor(totalCapacity / 2)})
+                          {t('dashboard.editModal.presetHalf', { count: Math.floor(totalCapacity / 2) })}
                         </button>
                       )}
                       <button
@@ -659,13 +661,13 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                       >
-                        Trống hoàn toàn ({totalCapacity})
+                        {t('dashboard.editModal.presetFull', { count: totalCapacity })}
                       </button>
                     </div>
 
                     <p className="text-[11px] text-slate-500 flex items-start gap-1 font-medium pt-1 border-t border-slate-200/60">
                       <AlertCircle className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
-                      <span>Bấm <strong>(-)</strong> khi có xe vãng lai vào gửi, bấm <strong>(+)</strong> khi xe rời bãi để khách thấy đúng số chỗ.</span>
+                      <span>{t('dashboard.editModal.stepperNotePrefix')} <strong>(-)</strong> {t('dashboard.editModal.stepperNoteMinusAction')} <strong>(+)</strong> {t('dashboard.editModal.stepperNotePlusAction')}</span>
                     </p>
                   </div>
                 </div>
@@ -675,11 +677,11 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     <div className="flex justify-between items-center text-xs">
                       <label className="font-bold text-slate-800 flex items-center gap-1">
                         <CircleDollarSign className="w-3.5 h-3.5 text-teal-600" />
-                        Giá Thuê Theo Tháng (VNĐ) <span className="text-red-500">*</span>
+                        {t('dashboard.editModal.monthlyPriceLabel')} <span className="text-red-500">*</span>
                       </label>
                       {editData.price_per_month !== '' && !isNaN(Number(editData.price_per_month)) && (
                         <span className="font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
-                          {Number(editData.price_per_month).toLocaleString('vi-VN')} đ/tháng
+                          {Number(editData.price_per_month).toLocaleString('vi-VN')} {t('dashboard.editModal.priceBadgeUnit')}
                         </span>
                       )}
                     </div>
@@ -691,17 +693,17 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         min="0"
                         step="50000"
                         className="w-full px-3.5 py-2.5 text-sm font-bold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
-                        placeholder="Ví dụ: 1500000"
+                        placeholder={t('dashboard.editModal.pricePlaceholder')}
                         value={editData.price_per_month}
                         onChange={(e) => setEditData({ ...editData, price_per_month: e.target.value })}
                       />
                       <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">
-                        VNĐ / THÁNG
+                        {t('dashboard.editModal.priceInputSuffix')}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 pt-0.5">
-                      <span className="text-[11px] text-slate-400 font-medium">Điều chỉnh nhanh:</span>
+                      <span className="text-[11px] text-slate-400 font-medium">{t('dashboard.editModal.quickAdjust')}</span>
                       <button
                         type="button"
                         onClick={() => handlePriceQuickAdjust(-100000)}
@@ -729,7 +731,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   {currentFacility.payment_status === 'PAID' && (
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
                       <label className="text-xs font-bold text-slate-800 block">
-                        Trạng Thái Hoạt Động Của Bãi Xe
+                        {t('dashboard.editModal.visibilityLabel')}
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div
@@ -744,8 +746,8 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                             <Eye className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="text-xs font-bold">Đang Hoạt Động</p>
-                            <p className="text-[10px] text-slate-500">Hiển thị tìm kiếm</p>
+                            <p className="text-xs font-bold">{t('dashboard.editModal.visibilityVisibleTitle')}</p>
+                            <p className="text-[10px] text-slate-500">{t('dashboard.editModal.visibilityVisibleSub')}</p>
                           </div>
                         </div>
 
@@ -761,8 +763,8 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                             <EyeOff className="w-4 h-4" />
                           </div>
                           <div>
-                            <p className="text-xs font-bold">Tạm Đóng Cửa</p>
-                            <p className="text-[10px] text-slate-500">Ẩn khỏi tìm kiếm</p>
+                            <p className="text-xs font-bold">{t('dashboard.editModal.visibilityHiddenTitle')}</p>
+                            <p className="text-[10px] text-slate-500">{t('dashboard.editModal.visibilityHiddenSub')}</p>
                           </div>
                         </div>
                       </div>
@@ -778,7 +780,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   onClick={() => setIsEditing(false)}
                   className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition text-xs"
                 >
-                  Hủy bỏ
+                  {t('dashboard.editModal.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -788,12 +790,12 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   {isSubmitting ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      Đang lưu...
+                      {t('dashboard.editModal.saving')}
                     </>
                   ) : (
                     <>
                       <Save className="w-3.5 h-3.5" />
-                      Lưu Thay Đổi
+                      {t('dashboard.editModal.saveChanges')}
                     </>
                   )}
                 </button>

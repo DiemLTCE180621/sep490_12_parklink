@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getMyReservations, cancelReservationRequest } from '../../services/reservationService';
 import timelineSettingService from '../../services/timelineSettingService';
+import { translateDurationText, translateVehicleInfoText } from '../../utils/translations';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import Toast from '../../components/common/Toast';
 import { Link, useNavigate } from 'react-router-dom';
@@ -19,6 +21,9 @@ import {
 } from 'lucide-react';
 
 const CustomerReservationsPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,7 +56,7 @@ const CustomerReservationsPage = () => {
       const list = res.data?.reservations || res.reservations || [];
       setReservations(list);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách yêu cầu thuê xe của bạn!');
+      setError(err.message || tRef.current('reservations.loadError'));
     } finally {
       setLoading(false);
     }
@@ -77,19 +82,21 @@ const CustomerReservationsPage = () => {
     try {
       setCancellingId(targetCancelId);
       await cancelReservationRequest(targetCancelId);
-      setToastInfo({ message: 'Đã hủy yêu cầu thuê thành công!', type: 'success' });
+      setToastInfo({ message: t('reservations.cancelSuccess'), type: 'success' });
       setConfirmModalOpen(false);
       setTargetCancelId(null);
       fetchMyReservations();
     } catch (err) {
-      setToastInfo({ message: err.message || 'Hủy yêu cầu thuê không thành công!', type: 'error' });
+      setToastInfo({ message: err.message || t('reservations.cancelError'), type: 'error' });
     } finally {
       setCancellingId(null);
     }
   };
 
   const cleanVehicleDisplay = (rawVehicle = '') => {
-    return rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim() || 'Chưa cập nhật';
+    const cleaned = rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim();
+    if (!cleaned) return t('reservations.notUpdated');
+    return translateVehicleInfoText(cleaned, i18n.language);
   };
 
   const filteredReservations = reservations.filter((item) => {
@@ -125,28 +132,28 @@ const CustomerReservationsPage = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Chờ duyệt
+            {t('reservations.badges.pending')}
           </span>
         );
       case 'APPROVED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đã duyệt
+            {t('reservations.badges.approved')}
           </span>
         );
       case 'REJECTED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            Từ chối
+            {t('reservations.badges.rejected')}
           </span>
         );
       case 'CANCELLED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Đã hủy
+            {t('reservations.badges.cancelled')}
           </span>
         );
       default:
@@ -163,9 +170,9 @@ const CustomerReservationsPage = () => {
       <div className="w-full space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Yêu cầu thuê chỗ của tôi</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{t('reservations.title')}</h1>
             <p className="text-sm text-slate-500 mt-1">
-              Theo dõi trạng thái phê duyệt và hợp đồng cho các yêu cầu đặt chỗ theo tháng.
+              {t('reservations.subtitle')}
             </p>
           </div>
 
@@ -176,7 +183,7 @@ const CustomerReservationsPage = () => {
               className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-              Làm mới
+              {t('reservations.refresh')}
             </button>
 
             <Link
@@ -184,7 +191,7 @@ const CustomerReservationsPage = () => {
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition flex items-center gap-1.5"
             >
               <Plus className="w-4 h-4" />
-              Tìm bãi đỗ mới
+              {t('reservations.findNew')}
             </Link>
           </div>
         </div>
@@ -199,7 +206,7 @@ const CustomerReservationsPage = () => {
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Tất cả ({totalCount})
+              {t('reservations.tabs.all', { count: totalCount })}
             </button>
             <button
               onClick={() => setActiveTab('PENDING')}
@@ -209,7 +216,7 @@ const CustomerReservationsPage = () => {
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Chờ duyệt ({pendingCount})
+              {t('reservations.tabs.pending', { count: pendingCount })}
             </button>
             <button
               onClick={() => setActiveTab('APPROVED')}
@@ -219,7 +226,7 @@ const CustomerReservationsPage = () => {
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Đã duyệt ({approvedCount})
+              {t('reservations.tabs.approved', { count: approvedCount })}
             </button>
             <button
               onClick={() => setActiveTab('CANCELLED')}
@@ -229,7 +236,7 @@ const CustomerReservationsPage = () => {
                   : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              Đã hủy / Từ chối ({otherCount})
+              {t('reservations.tabs.cancelledRejected', { count: otherCount })}
             </button>
           </div>
 
@@ -239,7 +246,7 @@ const CustomerReservationsPage = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm bãi xe, biển số..."
+              placeholder={t('reservations.searchPlaceholder')}
               className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600 transition"
             />
           </div>
@@ -248,7 +255,7 @@ const CustomerReservationsPage = () => {
         {loading ? (
           <div className="py-16 text-center bg-white rounded-xl border border-slate-200">
             <Loader2 className="w-7 h-7 text-teal-600 animate-spin mx-auto mb-2.5" />
-            <p className="text-sm text-slate-500">Đang tải danh sách yêu cầu...</p>
+            <p className="text-sm text-slate-500">{t('reservations.loading')}</p>
           </div>
         ) : error ? (
           <div className="p-4 bg-red-50 rounded-xl border border-red-200 text-red-700 flex items-center gap-3 text-sm">
@@ -258,11 +265,11 @@ const CustomerReservationsPage = () => {
         ) : filteredReservations.length === 0 ? (
           <div className="py-14 px-6 text-center bg-white rounded-xl border border-slate-200 space-y-3">
             <Car className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-semibold text-slate-800">Không có yêu cầu thuê nào</h3>
+            <h3 className="text-base font-semibold text-slate-800">{t('reservations.emptyTitle')}</h3>
             <p className="text-slate-500 text-xs max-w-sm mx-auto">
               {searchTerm
-                ? 'Không tìm thấy yêu cầu nào khớp với từ khóa tìm kiếm.'
-                : 'Bạn chưa có yêu cầu thuê chỗ đỗ xe nào trong mục này.'}
+                ? t('reservations.emptySearch')
+                : t('reservations.emptyDefault')}
             </p>
             {!searchTerm && (
               <div className="pt-1">
@@ -270,7 +277,7 @@ const CustomerReservationsPage = () => {
                   to="/search"
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition"
                 >
-                  Tìm bãi đỗ xe
+                  {t('reservations.findButton')}
                 </Link>
               </div>
             )}
@@ -292,18 +299,18 @@ const CustomerReservationsPage = () => {
                         #{item.id}
                       </span>
                       <span>•</span>
-                      <span>Ngày gửi: {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
+                      <span>{t('reservations.card.submittedDate')} {new Date(item.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN')}</span>
                     </div>
 
                     <div className="flex items-center gap-2">
                       {item.status === 'PENDING' && (
                         <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 font-medium">
-                          <Clock className="w-3 h-3 text-amber-600" /> Hạn phản hồi: {timelineSettings?.reservationResponseText || 'quy định'}
+                          <Clock className="w-3 h-3 text-amber-600" /> {t('reservations.card.responseDeadline', { duration: timelineSettings?.reservationResponseText ? translateDurationText(timelineSettings.reservationResponseText, i18n.language) : t('reservations.card.responseDefaultDuration') })}
                         </span>
                       )}
                       {item.status === 'APPROVED' && item.confirmation_record && item.confirmation_record.status === 'PENDING_SIGNATURE' && (
                         <span className="text-[11px] text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 font-medium">
-                          <Clock className="w-3 h-3 text-teal-600" /> Hạn ký HĐ: {timelineSettings?.contractSigningText || '5 phút'}
+                          <Clock className="w-3 h-3 text-teal-600" /> {t('reservations.card.signingDeadline', { duration: timelineSettings?.contractSigningText ? translateDurationText(timelineSettings.contractSigningText, i18n.language) : t('reservations.card.signingDefaultDuration') })}
                         </span>
                       )}
                       {getStatusBadge(item.status)}
@@ -313,7 +320,7 @@ const CustomerReservationsPage = () => {
                   <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <h3 className="text-base font-bold text-slate-900 truncate">
-                        {item.facility?.name || 'Bãi đỗ xe'}
+                        {item.facility?.name || t('reservations.card.facilityFallback')}
                       </h3>
                       <p className="text-xs text-slate-500 flex items-center gap-1.5 truncate">
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -328,7 +335,7 @@ const CustomerReservationsPage = () => {
                         <span className="inline-flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>
-                            Bắt đầu: <strong className="text-slate-800">{new Date(item.desired_start_date).toLocaleDateString('vi-VN')}</strong>
+                            {t('reservations.card.startDateLabel')} <strong className="text-slate-800">{new Date(item.desired_start_date).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN')}</strong>
                           </span>
                         </span>
                       </div>
@@ -336,9 +343,9 @@ const CustomerReservationsPage = () => {
 
                     <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100 shrink-0">
                       <div className="text-left sm:text-right">
-                        <span className="text-[11px] text-slate-400 block">Giá thuê</span>
+                        <span className="text-[11px] text-slate-400 block">{t('reservations.card.priceLabel')}</span>
                         <span className="text-sm font-bold text-teal-700">
-                          {Number(item.facility?.price_per_month || 0).toLocaleString('vi-VN')} đ/tháng
+                          {Number(item.facility?.price_per_month || 0).toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN')} {t('reservations.card.priceUnit')}
                         </span>
                       </div>
 
@@ -350,7 +357,7 @@ const CustomerReservationsPage = () => {
                             className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium text-xs rounded-lg border border-teal-200 transition inline-flex items-center gap-1"
                           >
                             <FileText className="w-3.5 h-3.5" />
-                            Hợp đồng
+                            {t('reservations.card.contractButton')}
                           </Link>
                         )}
 
@@ -361,7 +368,7 @@ const CustomerReservationsPage = () => {
                             disabled={cancellingId === item.id}
                             className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 font-medium text-xs rounded-lg border border-slate-200 hover:border-red-200 transition"
                           >
-                            {cancellingId === item.id ? 'Đang hủy...' : 'Hủy yêu cầu'}
+                            {cancellingId === item.id ? t('reservations.card.cancelling') : t('reservations.card.cancelButton')}
                           </button>
                         )}
 
@@ -372,7 +379,7 @@ const CustomerReservationsPage = () => {
                           }}
                           className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition inline-flex items-center gap-1"
                         >
-                          Chi tiết
+                          {t('reservations.card.detailsButton')}
                           <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -392,10 +399,10 @@ const CustomerReservationsPage = () => {
           setTargetCancelId(null);
         }}
         onConfirm={executeCancelRequest}
-        title="Hủy yêu cầu thuê bãi xe"
-        message="Bạn có chắc chắn muốn hủy yêu cầu thuê đỗ xe này không? Thao tác này không thể hoàn tác."
-        confirmText="Đồng ý hủy"
-        cancelText="Quay lại"
+        title={t('reservations.cancelConfirm.title')}
+        message={t('reservations.cancelConfirm.message')}
+        confirmText={t('reservations.cancelConfirm.confirmText')}
+        cancelText={t('reservations.cancelConfirm.cancelText')}
         type="danger"
         loading={!!cancellingId}
       />

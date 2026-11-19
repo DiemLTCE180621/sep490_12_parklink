@@ -1,0 +1,165 @@
+{
+  "app": {
+    "loading": "Loading ParkLink...",
+    "tagline": "Monthly Parking Rental"
+  },
+  "nav": {
+    "home": "Home",
+    "search": "Find Parking",
+    "myReservations": "My Reservations",
+    "myContracts": "My Contracts",
+    "becomeProvider": "List Your Parking",
+    "becomeProviderMobile": "List Your Parking (Provider)",
+    "messages": "Messages",
+    "signedInWith": "Signed in with email",
+    "myFavorites": "Favorite Parkings",
+    "myComplaints": "My Complaints",
+    "logout": "Log out",
+    "login": "Log In",
+    "register": "Sign Up",
+    "registerCustomer": "Customer Sign Up"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "PROVIDER": "Provider",
+    "FIELD_INSPECTOR": "Field Inspector",
+    "CUSTOMER": "Customer"
+  },
+  "dashboardLinks": {
+    "ADMIN": "Admin Dashboard",
+    "PROVIDER": "Provider Dashboard",
+    "FIELD_INSPECTOR": "Inspector Dashboard",
+    "DEFAULT": "My Profile"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "back": "Back",
+    "search": "Search",
+    "viewDetail": "View Details"
+  },
+  "language": {
+    "switchToEn": "Switch to English",
+    "switchToVi": "Switch to Vietnamese"
+  },
+  "footer": {
+    "copyright": "© 2026 ParkLink Project. All rights reserved by SEP490-12-ParkLink Team.",
+    "providerTagline": "A trusted, transparent, and secure platform connecting monthly parking facility providers.",
+    "rulesAndPoliciesTitle": "Rules & Policies",
+    "parklinkPolicies": "ParkLink Policies",
+    "partnerTechSupport": "Provider Technical Support",
+    "adminHotline": "Admin Hotline: ",
+    "guestTagline": "A trusted, transparent, and convenient platform connecting monthly parking renters.",
+    "monthlyOnlyBadge": "Monthly rentals only — Complete peace of mind",
+    "forCustomersTitle": "For Customers",
+    "findParkingNearby": "Find parking near you",
+    "customerPolicyLink": "Monthly Parking Rental Policies",
+    "forProvidersTitle": "Parking Providers",
+    "providerPolicyLink": "Provider Operating Policies",
+    "supportAndContactTitle": "Support & Contact",
+    "footerPolicyLink": "ParkLink Policies & Terms of Service"
+  },
+  "mapPicker": {
+    "popupTitle": "Parking Facility Location",
+    "popupMarked": "Pinned on the map",
+    "popupDragHint": "Drag the pin to fine-tune the exact location",
+    "addressPlaceholder": "Enter an address and select a suggestion...",
+    "locating": "Locating...",
+    "centerMap": "Center Map on Address",
+    "updatingAddress": "Updating address...",
+    "helperHint": "The pin is automatically placed from the address. You can drag the pin or click on the map to adjust the exact location.",
+    "selectedLabel": "Selected facility location: ",
+    "selectedFallback": "Location marked on the map",
+    "selectedDragHint": "(Location pinned automatically. You can drag the pin on the map for the highest accuracy)."
+  },
+  "autocomplete": {
+    "facilitiesGroup": "ParkLink Parking Facilities",
+    "resultsCount": "{{count}} results",
+    "pricePerMonthSuffix": "VND/month",
+    "placesGroup": "Places / Streets (Vietmap)"
+  },
+  "policyModal": {
+    "fallbackTitle": "Terms of Service and Policies",
+    "lastUpdated": "Last updated:",
+    "currentStatus": "Active",
+    "loading": "Loading policy details...",
+    "loadError": "Failed to load policy content!",
+    "noticeTitle": "General Notice:",
+    "noticeBody": "ParkLink reserves the right to update or revise these terms to align with operational regulations. Continued access and use of the platform after updates constitutes acceptance of the latest policy terms.",
+    "emptyContent": "No policy content is currently available.",
+    "closeButton": "I Understand & Close"
+  },
+  "policyPage": {
+    "badge": "ParkLink Policies & Operating Regulations",
+    "title": "System Terms of Service",
+    "subtitle": "Transparent policies and standards designed to protect the rights of Customers, Parking Providers, and ensure service quality across the ParkLink platform.",
+    "noticeTitle": "Standard Governing Provision:",
+    "noticeBody": "\"ParkLink reserves the right to update or revise these terms to align with actual operational requirements. Continued access and use of the platform after any update constitutes full acceptance of the latest policy content.\"",
+    "loading": "Loading policy documents...",
+    "loadError": "Unable to load system policies. Please try again later.",
+    "sidebarTitle": "Policy Categories",
+    "tabCustomer": "For Customers",
+    "tabProvider": "For Parking Providers",
+    "audienceCustomer": "Individual Customer",
+    "audienceProvider": "Parking Provider Partner",
+    "lastUpdated": "Last updated:",
+    "currentStatus": "Active"
+  },
+  "notifications": {
+    "title": "System Notifications",
+    "unreadBadge": "{{count}} unread",
+    "markAllRead": "Mark all as read",
+    "tabAll": "All ({{count}})",
+    "tabUnread": "Unread ({{count}})",
+    "loading": "Loading notifications...",
+    "emptyTitle": "No new notifications",
+    "emptyUnread": "You have read all notifications",
+    "emptyAll": "No notifications from the system yet",
+    "clickToMarkRead": "Click to mark as read",
+    "viewDetail": "Details",
+    "unreadDotTitle": "Unread",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    },
+    "badges": {
+      "urgent": "[URGENT]",
+      "important": "[IMPORTANT]",
+      "system": "[SYSTEM]",
+      "reservation": "[RESERVATION]",
+      "contract": "[CONTRACT]",
+      "complaint": "[COMPLAINT]",
+      "general": "[NOTIFICATION]"
+    },
+    "priorities": {
+      "urgent": "URGENT",
+      "important": "IMPORTANT",
+      "normal": "NORMAL"
+    },
+    "errors": {
+      "loadFailed": "Unable to load notifications.",
+      "markReadFailed": "Unable to mark notification as read.",
+      "markAllReadFailed": "Unable to mark all notifications as read."
+    },
+    "modal": {
+      "markedRead": "Marked as read",
+      "unread": "Unread",
+      "contentLabel": "Notification details:",
+      "viewPolicy": "View Policy",
+      "close": "Close"
+    }
+  },
+  "addressSelector": {
+    "provinceLabel": "Province / City",
+    "provincePlaceholder": "-- Select Province / City --",
+    "wardLabel": "Ward / Commune",
+    "wardPlaceholder": "-- Select Ward / Commune --",
+    "selectedArea": "Selected area:"
+  }
+}

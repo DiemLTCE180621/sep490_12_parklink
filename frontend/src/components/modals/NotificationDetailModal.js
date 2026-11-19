@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Radio,
   CalendarCheck,
@@ -15,8 +16,8 @@ import {
 import { markNotificationAsRead } from '../../services/notificationService';
 import Toast from '../common/Toast';
 
-//icon and collor for notification type and priority
-const getTypeStyle = (type = '', priority = '') => {
+// Icon, màu sắc và nhãn cho loại và mức độ ưu tiên thông báo
+const getTypeStyle = (type = '', priority = '', t) => {
   const normType = (type || '').toUpperCase();
   const normPriority = (priority || '').toUpperCase();
 
@@ -25,7 +26,7 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: ShieldAlert,
       bgColor: 'bg-rose-100 text-rose-700',
       badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
-      label: '[KHẨN CẤP]'
+      label: t('notifications.badges.urgent')
     };
   }
   if (normPriority.includes('QUAN TRỌNG')) {
@@ -33,7 +34,7 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: AlertTriangle,
       bgColor: 'bg-amber-100 text-amber-800',
       badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
-      label: '[QUAN TRỌNG]'
+      label: t('notifications.badges.important')
     };
   }
   if (normType.includes('BẢO TRÌ') || normType.includes('MAINTENANCE') || normType.includes('HỆ THỐNG')) {
@@ -41,7 +42,7 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: Radio,
       bgColor: 'bg-indigo-100 text-indigo-700',
       badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      label: '[HỆ THỐNG]'
+      label: t('notifications.badges.system')
     };
   }
   if (normType.includes('ĐẶT CHỖ') || normType.includes('RESERVATION') || normType.includes('BOOKING')) {
@@ -49,7 +50,7 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: CalendarCheck,
       bgColor: 'bg-teal-100 text-teal-700',
       badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
-      label: '[ĐẶT CHỖ]'
+      label: t('notifications.badges.reservation')
     };
   }
   if (normType.includes('HỢP ĐỒNG') || normType.includes('CONTRACT')) {
@@ -57,7 +58,7 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: FileText,
       bgColor: 'bg-amber-100 text-amber-700',
       badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
-      label: '[HỢP ĐỒNG]'
+      label: t('notifications.badges.contract')
     };
   }
   if (normType.includes('KHIẾU NẠI') || normType.includes('COMPLAINT')) {
@@ -65,19 +66,23 @@ const getTypeStyle = (type = '', priority = '') => {
       icon: AlertCircle,
       bgColor: 'bg-rose-100 text-rose-700',
       badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
-      label: '[KHIẾU NẠI]'
+      label: t('notifications.badges.complaint')
     };
   }
   return {
     icon: Info,
     bgColor: 'bg-slate-100 text-slate-700',
     badgeColor: 'bg-slate-50 text-slate-700 border-slate-200',
-    label: '[THÔNG BÁO]'
+    label: t('notifications.badges.general')
   };
 };
 
 //modal for full noti, auto mark as read when open
 const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, autoMarkAsRead = true }) => {
+  const { t, i18n } = useTranslation('common');
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const markedIdRef = React.useRef(null);
   const [toast, setToast] = React.useState(null);
 
@@ -99,7 +104,7 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
         })
         .catch((err) => {
           console.error('Lỗi tự động đánh dấu đã đọc khi xem chi tiết:', err);
-          setToast({ message: err.message || 'Không thể đánh dấu thông báo đã đọc.', type: 'error' });
+          setToast({ message: err.message || tRef.current('notifications.errors.markReadFailed'), type: 'error' });
         });
     }
     if (!isOpen) {
@@ -109,11 +114,11 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
 
   if (!isOpen || !notification) return null;
 
-  const style = getTypeStyle(notification.type || notification.category, notification.priority);
+  const style = getTypeStyle(notification.type || notification.category, notification.priority, t);
   const IconComponent = style.icon;
 
   const formattedDate = notification.created_at
-    ? new Date(notification.created_at).toLocaleString('vi-VN', {
+    ? new Date(notification.created_at).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'vi-VN', {
       hour: '2-digit',
       minute: '2-digit',
       day: '2-digit',
@@ -143,6 +148,20 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
   const policyUrl = getPolicyUrl();
   const displayContent = (notification.content || '').replace(/\s*(?:tại:?\s*)?\/policies[\w\-]*/gi, '');
 
+  const formatPriorityLabel = (rawPriority) => {
+    const norm = (rawPriority || '').toUpperCase();
+    if (norm.includes('KHẨN CẤP') || norm === 'URGENT') return t('notifications.priorities.urgent');
+    if (norm.includes('QUAN TRỌNG') || norm === 'IMPORTANT') return t('notifications.priorities.important');
+    if (norm.includes('THÔNG THƯỜNG') || norm.includes('BÌNH THƯỜNG') || norm === 'NORMAL') {
+      return t('notifications.priorities.normal');
+    }
+    return rawPriority;
+  };
+
+  const categoryBadgeLabel = i18n.language?.startsWith('en')
+    ? style.label
+    : (notification.category || style.label);
+
   return (
     <>
       {toast && (
@@ -163,11 +182,11 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
               <div>
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className={`text-xs font-black tracking-wider uppercase px-2.5 py-0.5 rounded-none border ${style.badgeColor}`}>
-                    {notification.category || style.label}
+                    {categoryBadgeLabel}
                   </span>
                   {notification.priority && (
                     <span className="text-xs font-bold px-2.5 py-0.5 rounded-none bg-slate-200 text-slate-800">
-                      {notification.priority}
+                      {formatPriorityLabel(notification.priority)}
                     </span>
                   )}
                 </div>
@@ -189,13 +208,13 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
               : 'text-amber-800 bg-amber-50 border-amber-200'
               }`}>
               <CheckCheck className={`w-4 h-4 ${notification.is_read ? 'text-teal-600' : 'text-amber-600'}`} />
-              {notification.is_read ? 'Đã đánh dấu đã đọc' : 'Chưa đánh dấu đã đọc'}
+              {notification.is_read ? t('notifications.modal.markedRead') : t('notifications.modal.unread')}
             </span>
           </div>
           {/* Nội dung chi tiết thông báo */}
           <div className="p-6 sm:p-8 flex-1 flex flex-col min-h-0 overflow-hidden">
             <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 shrink-0">
-              Nội dung thông báo chi tiết:
+              {t('notifications.modal.contentLabel')}
             </div>
             <div className="p-6 rounded-none bg-slate-50 border-2 border-slate-200 text-slate-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
               {displayContent || notification.content}
@@ -210,7 +229,7 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
                 onClick={onClose}
                 className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
               >
-                <span>Xem Chính Sách</span>
+                <span>{t('notifications.modal.viewPolicy')}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             ) : (
@@ -221,7 +240,7 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
               onClick={onClose}
               className="px-8 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
             >
-              Đóng thông báo
+              {t('notifications.modal.close')}
             </button>
           </div>
         </div>

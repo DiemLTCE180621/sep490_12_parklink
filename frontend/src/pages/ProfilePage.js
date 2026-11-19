@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Shield, Save, AlertCircle, CheckCircle2, ArrowLeft, MapPin, Camera, Loader2, Home } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import uploadService from '../services/uploadService';
 import AddressSelector from '../components/common/AddressSelector';
 
 const ProfilePage = () => {
+  const { t } = useTranslation('profile');
   const { user, updateProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -65,12 +67,12 @@ const ProfilePage = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn tệp hình ảnh hợp lệ (JPG, PNG, WebP, AVIF)!');
+      setError(t('messages.avatarInvalidType'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError('Dung lượng hình ảnh đại diện không được vượt quá 5MB!');
+      setError(t('messages.avatarTooLarge'));
       return;
     }
 
@@ -85,7 +87,7 @@ const ProfilePage = () => {
         uploadRes?.data?.data?.[0] ||
         uploadRes?.data?.[0];
       if (!uploadedUrl) {
-        throw new Error('Không nhận được đường dẫn ảnh từ máy chủ!');
+        throw new Error(t('messages.avatarNoUrl'));
       }
 
       setAvatarUrl(uploadedUrl);
@@ -97,9 +99,9 @@ const ProfilePage = () => {
         address: currentFullAddress || user?.address || undefined,
         avatar_url: uploadedUrl
       });
-      setSuccessMessage('Cập nhật ảnh đại diện thành công!');
+      setSuccessMessage(t('messages.avatarSuccess'));
     } catch (uploadErr) {
-      setError(uploadErr.response?.data?.message || uploadErr.message || 'Lỗi khi tải ảnh lên!');
+      setError(uploadErr.response?.data?.message || uploadErr.message || t('messages.avatarUploadError'));
     } finally {
       setUploadingAvatar(false);
       if (fileInputRef.current) {
@@ -118,19 +120,19 @@ const ProfilePage = () => {
     const cleanAddress = computeFullAddress(streetDetail, administrativeAddress);
 
     if (!cleanName || cleanName.length < 2) {
-      setError('Họ và tên phải chứa ít nhất 2 ký tự.');
+      setError(t('messages.fullNameMinLength'));
       return;
     }
 
     const phoneRegex = /^0\d{9}$/;
     if (!phoneRegex.test(cleanPhone)) {
-      setError('Số điện thoại phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).');
+      setError(t('messages.phoneInvalid'));
       return;
     }
 
     try {
       setLoading(true);
-      const res = await updateProfile({
+      await updateProfile({
         full_name: cleanName,
         phone_number: cleanPhone,
         address: cleanAddress,
@@ -139,13 +141,13 @@ const ProfilePage = () => {
       if (refreshUser) {
         await refreshUser();
       }
-      setSuccessMessage(res?.message || 'Cập nhật thông tin cá nhân thành công!');
+      setSuccessMessage(t('messages.updateSuccess'));
     } catch (err) {
       const errList = (err.errors && err.errors.length > 0)
         ? err.errors
         : (err.response?.data?.errors && err.response?.data?.errors.length > 0)
           ? err.response.data.errors
-          : [err.message || err.response?.data?.message || 'Cập nhật thất bại! Vui lòng thử lại.'];
+          : [err.message || err.response?.data?.message || t('messages.updateError')];
       setError(Array.isArray(errList) ? errList[0] : errList);
     } finally {
       setLoading(false);
@@ -156,11 +158,11 @@ const ProfilePage = () => {
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'ADMIN': return 'Quản Trị Viên';
-      case 'PROVIDER': return 'Chủ Bãi Đỗ Xe';
-      case 'FIELD_INSPECTOR': return 'Nhân Viên Khảo Sát';
+      case 'ADMIN': return t('roles.ADMIN');
+      case 'PROVIDER': return t('roles.PROVIDER');
+      case 'FIELD_INSPECTOR': return t('roles.FIELD_INSPECTOR');
       case 'CUSTOMER':
-      default: return 'Khách Thuê';
+      default: return t('roles.CUSTOMER');
     }
   };
 
@@ -174,7 +176,7 @@ const ProfilePage = () => {
           onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-teal-600 transition"
         >
-          <ArrowLeft className="w-4 h-4" /> Quay lại
+          <ArrowLeft className="w-4 h-4" /> {t('header.back')}
         </button>
 
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl">
@@ -199,7 +201,7 @@ const ProfilePage = () => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  title="Thay đổi ảnh đại diện"
+                  title={t('header.avatarTitle')}
                   className="absolute -bottom-2 -right-2 p-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-lg border-2 border-slate-900 transition flex items-center justify-center disabled:opacity-50"
                 >
                   {uploadingAvatar ? (
@@ -218,9 +220,9 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">{user?.full_name || 'Hồ sơ người dùng'}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold">{user?.full_name || t('header.fallbackName')}</h1>
                 <p className="text-teal-300 text-xs font-medium mt-1">{user?.email}</p>
-                <p className="text-slate-400 text-[11px] mt-0.5">Nhấn vào biểu tượng máy ảnh để cập nhật ảnh đại diện</p>
+                <p className="text-slate-400 text-[11px] mt-0.5">{t('header.avatarHint')}</p>
               </div>
             </div>
 
@@ -234,8 +236,8 @@ const ProfilePage = () => {
 
         <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-md space-y-6">
           <div className="border-b border-slate-100 pb-4">
-            <h2 className="text-lg font-bold text-slate-900">Thông Tin Cá Nhân</h2>
-            <p className="text-slate-500 text-xs mt-0.5">Quản lý và cập nhật thông tin liên hệ của bạn</p>
+            <h2 className="text-lg font-bold text-slate-900">{t('section.title')}</h2>
+            <p className="text-slate-500 text-xs mt-0.5">{t('section.subtitle')}</p>
           </div>
 
           {error && (
@@ -257,10 +259,10 @@ const ProfilePage = () => {
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
               <span>
                 {!hasPhone && !hasAddress
-                  ? 'Vui lòng cập nhật số điện thoại và địa chỉ để chủ bãi xe dễ dàng liên hệ và hoàn tất thông tin khi bạn thuê bãi xe.'
+                  ? t('warnings.missingBoth')
                   : !hasPhone
-                    ? 'Vui lòng cập nhật số điện thoại để chủ bãi xe có thể liên lạc với bạn khi cần.'
-                    : 'Vui lòng bổ sung địa chỉ để hoàn tất thông tin khi gửi yêu cầu thuê bãi xe.'}
+                    ? t('warnings.missingPhone')
+                    : t('warnings.missingAddress')}
               </span>
             </div>
           )}
@@ -268,7 +270,7 @@ const ProfilePage = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                <Mail className="w-4 h-4 text-slate-400" /> Địa Chỉ Email (Không thể thay đổi)
+                <Mail className="w-4 h-4 text-slate-400" /> {t('fields.email.label')}
               </label>
               <div className="relative">
                 <input
@@ -282,13 +284,13 @@ const ProfilePage = () => {
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-4 h-4 text-teal-600" /> Họ Và Tên <span className="text-red-500">*</span>
+                <User className="w-4 h-4 text-teal-600" /> {t('fields.fullName.label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Nhập họ và tên"
+                placeholder={t('fields.fullName.placeholder')}
                 className="w-full px-4 py-3 bg-white border border-slate-300 rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 required
               />
@@ -296,31 +298,31 @@ const ProfilePage = () => {
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Phone className="w-4 h-4 text-teal-600" /> Số Điện Thoại <span className="text-red-500">*</span>
+                <Phone className="w-4 h-4 text-teal-600" /> {t('fields.phone.label')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Nhập số điện thoại"
+                placeholder={t('fields.phone.placeholder')}
                 maxLength={10}
                 className="w-full px-4 py-3 bg-white border border-slate-300 rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                 required
               />
-              <p className="text-[11px] text-slate-500">Gồm đúng 10 chữ số, bắt đầu bằng số 0.</p>
+              <p className="text-[11px] text-slate-500">{t('fields.phone.hint')}</p>
             </div>
 
             {roleName === 'FIELD_INSPECTOR' ? (
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-teal-600" /> ĐỊA CHỈ PHÂN CÔNG
+                  <MapPin className="w-4 h-4 text-teal-600" /> {t('fields.assignedAddress.label')}
                 </label>
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="font-semibold text-slate-900 text-sm">
-                    {user?.address || 'Chưa cập nhật địa chỉ'}
+                    {user?.address || t('fields.assignedAddress.empty')}
                   </span>
                   <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200 w-max shrink-0">
-                    Do Quản trị viên phân công
+                    {t('fields.assignedAddress.note')}
                   </span>
                 </div>
               </div>
@@ -328,15 +330,15 @@ const ProfilePage = () => {
               <div className="space-y-4 p-5 bg-slate-50/70 rounded-2xl border border-slate-200">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ Thường Trú / Liên Hệ
+                    <MapPin className="w-4 h-4 text-teal-600" /> {t('fields.address.label')}
                   </label>
                   <span className="text-[11px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                    Chuẩn hành chính
+                    {t('fields.address.formatHint')}
                   </span>
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase">Khu vực hành chính</span>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase">{t('fields.address.areaLabel')}</span>
                   <AddressSelector
                     value={administrativeAddress}
                     onChange={(selectedAdmin) => setAdministrativeAddress(selectedAdmin)}
@@ -345,13 +347,13 @@ const ProfilePage = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
-                    <Home className="w-3.5 h-3.5 text-slate-400" /> Số nhà, tên đường, hẻm / ngõ chi tiết
+                    <Home className="w-3.5 h-3.5 text-slate-400" /> {t('fields.address.streetDetailLabel')}
                   </label>
                   <input
                     type="text"
                     value={streetDetail}
                     onChange={(e) => setStreetDetail(e.target.value)}
-                    placeholder="Ví dụ: Số 123/45, Đường 30 Tháng 4"
+                    placeholder={t('fields.address.streetDetailPlaceholder')}
                     maxLength={150}
                     className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   />
@@ -364,7 +366,7 @@ const ProfilePage = () => {
                       {roleName === 'CUSTOMER' ? 'Địa chỉ ghi trên thông tin thuê bãi: ' : 'Địa chỉ liên hệ: '}
                     </span>
                     <span className="text-teal-800 font-semibold">
-                      {computeFullAddress(streetDetail, administrativeAddress) || 'Chưa thiết lập'}
+                      {computeFullAddress(streetDetail, administrativeAddress) || t('fields.address.notSet')}
                     </span>
                   </div>
                 </div>
@@ -374,7 +376,7 @@ const ProfilePage = () => {
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-teal-600" />
-                <span className="font-bold text-slate-600">Vai Trò Hệ Thống:</span>
+                <span className="font-bold text-slate-600">{t('fields.accountRole.label')}</span>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
                 {getRoleLabel(roleName)}
@@ -384,14 +386,14 @@ const ProfilePage = () => {
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-teal-600" />
-                <span className="font-bold text-slate-600">Phương Thức Đăng Nhập:</span>
+                <span className="font-bold text-slate-600">{t('fields.authMethod.label')}</span>
               </div>
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
                 {user?.has_password === false
-                  ? 'Google'
+                  ? t('fields.authMethod.google')
                   : localStorage.getItem('parklink_login_method') === 'google'
-                    ? 'Google & Mật khẩu'
-                    : 'Email & Mật khẩu'}
+                    ? t('fields.authMethod.googleAndPassword')
+                    : t('fields.authMethod.emailAndPassword')}
               </span>
             </div>
 
@@ -402,7 +404,7 @@ const ProfilePage = () => {
                 className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
               >
                 <Save className="w-4 h-4" />
-                {loading ? 'Đang cập nhật...' : 'Lưu Thay Đổi'}
+                {loading ? t('actions.saving') : t('actions.saveChanges')}
               </button>
             </div>
           </form>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { facilityCarIcon } from '../../utils/mapIcons';
@@ -8,6 +9,7 @@ import {
   SEA_MAP_BOUNDS,
   VIETNAM_SEA_MAP_OPTIONS,
 } from '../../utils/mapUtils';
+import { translateAmenityName, translateVehicleTypeName } from '../../utils/translations';
 import ReviewSection from '../../components/common/ReviewSection';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +23,10 @@ import {
 } from 'lucide-react';
 
 const FacilityDetailPage = () => {
+  const { t, i18n } = useTranslation('facility');
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,11 +76,11 @@ const FacilityDetailPage = () => {
       if (error.response?.status === 404 || error.message?.includes('Không tìm thấy')) {
         navigate('/search', {
           replace: true,
-          state: { facilityError: 'Không tìm thấy bãi đỗ xe hoặc bãi đỗ xe không hoạt động' }
+          state: { facilityError: tRef.current('detail.toasts.notFoundOrInactive') }
         });
         return;
       }
-      setToastMsg('Không thể tải thông tin bãi đỗ xe');
+      setToastMsg(tRef.current('detail.toasts.loadError'));
       setToastType('error');
     } finally {
       if (showLoading) setLoading(false);
@@ -127,7 +133,7 @@ const FacilityDetailPage = () => {
 
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập bằng tài khoản Khách hàng để lưu bãi xe!');
+      setToastMsg(t('detail.toasts.loginCustomerToSave'));
       setToastType('error');
       setTimeout(() => navigate('/login'), 1500);
       return;
@@ -137,15 +143,15 @@ const FacilityDetailPage = () => {
       if (isFavorite) {
         await removeFavorite(facilityId);
         setIsFavorite(false);
-        setToastMsg('Đã xóa khỏi danh sách yêu thích');
+        setToastMsg(t('detail.toasts.favoriteRemoved'));
       } else {
         await addFavorite(facilityId);
         setIsFavorite(true);
-        setToastMsg('Đã thêm vào danh sách yêu thích');
+        setToastMsg(t('detail.toasts.favoriteAdded'));
       }
       setToastType('success');
     } catch (error) {
-      setToastMsg(error.message || 'Không thể cập nhật danh sách yêu thích. Vui lòng thử lại.');
+      setToastMsg(error.message || t('detail.toasts.favoriteError'));
       setToastType('error');
     }
   };
@@ -153,13 +159,13 @@ const FacilityDetailPage = () => {
   const handleChatClick = async () => {
     if (isChatLoading) return;
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập để nhắn tin!');
+      setToastMsg(t('detail.toasts.loginToChat'));
       setToastType('error');
       setTimeout(() => navigate('/login'), 1500);
       return;
     }
     if (user?.role?.name === 'PROVIDER') {
-      setToastMsg('Chủ bãi không thể tự nhắn cho mình!');
+      setToastMsg(t('detail.toasts.selfChatError'));
       setToastType('error');
       return;
     }
@@ -174,7 +180,7 @@ const FacilityDetailPage = () => {
     } catch (error) {
       console.error(error);
       const errorMsg = error.response?.data?.message || error.message;
-      setToastMsg('Lỗi khi tạo phòng chat: ' + errorMsg);
+      setToastMsg(t('detail.toasts.chatRoomError', { message: errorMsg }));
       setToastType('error');
     } finally {
       setIsChatLoading(false);
@@ -183,7 +189,7 @@ const FacilityDetailPage = () => {
 
   const handleOpenReservation = () => {
     if (!isAuthenticated) {
-      setToastMsg('Vui lòng đăng nhập tài khoản Khách hàng để gửi yêu cầu thuê!');
+      setToastMsg(t('detail.toasts.loginCustomerToReserve'));
       setToastType('error');
       setTimeout(() => {
         navigate('/login', { state: { from: `/facilities/${facilityId}/reserve` } });
@@ -192,13 +198,13 @@ const FacilityDetailPage = () => {
     }
 
     if (user?.role?.name === 'PROVIDER') {
-      setToastMsg('Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng sử dụng tài khoản Khách hàng.');
+      setToastMsg(t('detail.toasts.providerCannotReserve'));
       setToastType('error');
       return;
     }
 
     if (availability && availability.available_slots <= 0) {
-      setToastMsg('Bãi đỗ xe đã hết chỗ trống!');
+      setToastMsg(t('detail.toasts.outOfSlotsError'));
       setToastType('error');
       return;
     }
@@ -208,7 +214,7 @@ const FacilityDetailPage = () => {
 
   const handleGetDirections = () => {
     if (!hasCoordinates && !facility?.address) {
-      setToastMsg('Bãi đỗ xe này chưa có thông tin vị trí hoặc địa chỉ để chỉ đường.');
+      setToastMsg(t('detail.toasts.noDirectionsInfo'));
       setToastType('error');
       return;
     }
@@ -218,15 +224,17 @@ const FacilityDetailPage = () => {
     //user inputted location as origin
     const origin = preferredOriginCoords || preferredOriginAddress;
     if (origin) {
-      const fromLabel = preferredOriginAddress ? `từ "${preferredOriginAddress}"` : 'từ điểm ghim tìm kiếm';
+      const originLabel = preferredOriginAddress
+        ? t('detail.toasts.fromAddress', { address: preferredOriginAddress })
+        : t('detail.toasts.fromSearchPin');
       const opened = openGoogleMapsDirections({
         origin,
         destination,
         travelMode: 'driving',
       });
       setToastMsg(opened
-        ? `Đang mở chỉ đường ${fromLabel} trên Google Maps...`
-        : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+        ? t('detail.toasts.openingDirectionsFrom', { origin: originLabel })
+        : t('detail.toasts.popupBlocked'));
       setToastType(opened ? 'success' : 'error');
       return;
     }
@@ -241,15 +249,15 @@ const FacilityDetailPage = () => {
             travelMode: 'driving',
           });
           setToastMsg(opened
-            ? 'Đang mở chỉ đường trên Google Maps...'
-            : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+            ? t('detail.toasts.openingDirections')
+            : t('detail.toasts.popupBlocked'));
           setToastType(opened ? 'success' : 'error');
         },
         () => {
           const opened = openGoogleMapsDirections({ destination, travelMode: 'driving' });
           setToastMsg(opened
-            ? 'Đang mở chỉ đường trên Google Maps...'
-            : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+            ? t('detail.toasts.openingDirections')
+            : t('detail.toasts.popupBlocked'));
           setToastType(opened ? 'success' : 'error');
         },
         { enableHighAccuracy: true, timeout: 4000 }
@@ -257,8 +265,8 @@ const FacilityDetailPage = () => {
     } else {
       const opened = openGoogleMapsDirections({ destination, travelMode: 'driving' });
       setToastMsg(opened
-        ? 'Đang mở chỉ đường trên Google Maps...'
-        : 'Trình duyệt đã chặn cửa sổ Google Maps. Vui lòng cho phép popup và thử lại.');
+        ? t('detail.toasts.openingDirections')
+        : t('detail.toasts.popupBlocked'));
       setToastType(opened ? 'success' : 'error');
     }
   };
@@ -275,12 +283,12 @@ const FacilityDetailPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">Không tìm thấy bãi đỗ xe</h2>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('detail.notFoundTitle')}</h2>
           <button
             onClick={() => navigate('/')}
             className="text-teal-600 font-semibold hover:underline"
           >
-            Quay lại trang chủ
+            {t('detail.backHome')}
           </button>
         </div>
       </div>
@@ -290,15 +298,16 @@ const FacilityDetailPage = () => {
   const images = facility.images || [];
   const currentImage = images[activeImage] || images[0];
   const facilityCode = `FAC-${String(facility.id).padStart(4, '0')}`;
+  // Giữ lại các loại xe đã đăng ký của bãi, không ẩn khi Admin tắt is_active
   const activeVehicleTypes = (Array.isArray(facility.facility_vehicle_types) ? facility.facility_vehicle_types : [])
     .map((fvt) => fvt.vehicle_type)
-    .filter((vt) => vt && vt.is_active !== false && vt.name);
-  const providerName = facility.provider?.full_name || 'Chủ bãi xe';
+    .filter((vt) => vt && vt.name);
+  const providerName = facility.provider?.full_name || t('detail.fallbackProvider');
   const latitude = Number(facility.latitude);
   const longitude = Number(facility.longitude);
   const hasCoordinates = Number.isFinite(latitude) && Number.isFinite(longitude);
   const vietmapTileKey = process.env.REACT_APP_VIETMAP_TILE_KEY;
-  const formatPrice = (value) => Number(value || 0).toLocaleString('vi-VN');
+  const formatPrice = (value) => Number(value || 0).toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN');
 
   //slot = total capacity - active contract
   const effectiveAvailableSlots = availability
@@ -316,15 +325,15 @@ const FacilityDetailPage = () => {
       <div className="max-w-8xl mx-auto space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-            <button onClick={() => navigate('/')} className="hover:text-teal-700 transition-colors">Trang chủ</button>
+            <button onClick={() => navigate('/')} className="hover:text-teal-700 transition-colors">{t('detail.breadcrumbHome')}</button>
             <span>/</span>
-            <button onClick={() => navigate('/search')} className="hover:text-teal-700 transition-colors">Tìm bãi xe</button>
+            <button onClick={() => navigate('/search')} className="hover:text-teal-700 transition-colors">{t('detail.breadcrumbSearch')}</button>
             <span>/</span>
             <span className="text-teal-700 font-semibold truncate max-w-[220px]">{facility.name}</span>
           </nav>
           <div className="inline-flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-full text-xs text-slate-600">
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-slate-400">Mã bãi:</span>
+            <span className="text-slate-400">{t('detail.facilityCode')}</span>
             <strong className="text-slate-800">{facilityCode}</strong>
           </div>
         </div>
@@ -351,30 +360,30 @@ const FacilityDetailPage = () => {
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
                     <Car className="w-12 h-12 text-slate-600" />
-                    <span>Chưa có hình ảnh bãi xe</span>
+                    <span>{t('detail.noImages')}</span>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-black/20 pointer-events-none" />
                 <div className="absolute top-3 left-3 right-3 z-20 flex justify-between items-start">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/75 text-white text-xs font-medium">
                     <span className="z-11 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    Đã xác thực thực tế
+                    {t('detail.fieldVerifiedBadge')}
                   </span>
                   <span className="px-2.5 py-1 rounded-full bg-slate-900/75 text-white text-xs font-semibold">
-                    {images.length ? `${activeImage + 1} / ${images.length}` : '0 ảnh'}
+                    {images.length ? t('detail.photoCount', { current: activeImage + 1, total: images.length }) : t('detail.zeroPhotos')}
                   </span>
                 </div>
                 {images.length > 1 && (
                   <>
-                    <button onClick={() => setActiveImage((activeImage - 1 + images.length) % images.length)} aria-label="Ảnh trước" className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 text-slate-800 flex items-center justify-center shadow hover:bg-white">
+                    <button onClick={() => setActiveImage((activeImage - 1 + images.length) % images.length)} aria-label={t('detail.prevImageAria')} className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 text-slate-800 flex items-center justify-center shadow hover:bg-white">
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <button onClick={() => setActiveImage((activeImage + 1) % images.length)} aria-label="Ảnh kế tiếp" className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 text-slate-800 flex items-center justify-center shadow hover:bg-white">
+                    <button onClick={() => setActiveImage((activeImage + 1) % images.length)} aria-label={t('detail.nextImageAria')} className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 text-slate-800 flex items-center justify-center shadow hover:bg-white">
                       <ChevronRight className="w-5 h-5" />
                     </button>
                     <div className="absolute bottom-3 left-3 z-20 flex gap-1.5">
                       {images.map((image, index) => (
-                        <button key={image.id || image.image_url} onClick={() => setActiveImage(index)} aria-label={`Xem ảnh ${index + 1}`} className={`w-2 h-2 rounded-full transition ${index === activeImage ? 'bg-teal-400 w-5' : 'bg-white/60 hover:bg-white'}`} />
+                        <button key={image.id || image.image_url} onClick={() => setActiveImage(index)} aria-label={t('detail.selectImageAria', { index: index + 1 })} className={`w-2 h-2 rounded-full transition ${index === activeImage ? 'bg-teal-400 w-5' : 'bg-white/60 hover:bg-white'}`} />
                       ))}
                     </div>
                   </>
@@ -385,14 +394,14 @@ const FacilityDetailPage = () => {
             <div className="lg:col-span-4 flex flex-col justify-between gap-5 h-full">
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full text-xs font-semibold"><ShieldCheck className="w-3.5 h-3.5" /> Đã xác thực</span>
+                  <span className="inline-flex items-center gap-1 bg-teal-50 border border-teal-200 text-teal-700 px-2.5 py-1 rounded-full text-xs font-semibold"><ShieldCheck className="w-3.5 h-3.5" /> {t('detail.verifiedBadge')}</span>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">{facility.name}</h1>
                 <p className="text-sm text-slate-600 flex items-start gap-2"><MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" /> {facility.address}</p>
                 <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                  <span className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-amber-500 text-amber-500" /><strong className="text-slate-800 text-sm">{facility.avg_rating || '—'}</strong><span>({facility.total_reviews || 0} đánh giá)</span></span>
+                  <span className="flex items-center gap-1.5"><Star className="w-4 h-4 fill-amber-500 text-amber-500" /><strong className="text-slate-800 text-sm">{facility.avg_rating || '—'}</strong><span>{t('detail.reviewsSummary', { count: facility.total_reviews || 0 })}</span></span>
                   <span className="text-slate-300">•</span>
-                  <span className="flex items-center gap-1"><UserRound className="w-3.5 h-3.5 text-emerald-600" /> Chủ bãi: <strong className="text-slate-800">{providerName}</strong></span>
+                  <span className="flex items-center gap-1"><UserRound className="w-3.5 h-3.5 text-emerald-600" /> {t('detail.providerPrefix')} <strong className="text-slate-800">{providerName}</strong></span>
                 </div>
               </div>
               <div className="flex items-center justify-center pt-3 border-t border-slate-100">
@@ -404,7 +413,7 @@ const FacilityDetailPage = () => {
                     }`}
                 >
                   <Heart className={`w-5 h-5 transition-transform duration-200 ${isFavorite ? 'fill-rose-500 text-rose-500 scale-110' : 'text-slate-400'}`} />
-                  <span>{isFavorite ? 'Đã lưu bãi xe' : 'Lưu bãi xe yêu thích'}</span>
+                  <span>{isFavorite ? t('detail.savedFavorite') : t('detail.saveFavorite')}</span>
                 </button>
               </div>
             </div>
@@ -414,54 +423,58 @@ const FacilityDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           <section className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><Car className="w-5 h-5" /></div><h2 className="text-lg font-bold text-slate-900">Tình trạng chỗ trống</h2></div>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Cập nhật trực tiếp</span>
+              <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><Car className="w-5 h-5" /></div><h2 className="text-lg font-bold text-slate-900">{t('detail.availabilityTitle')}</h2></div>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> {t('detail.liveUpdate')}</span>
             </div>
             {availability ? (
               <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">Sức chứa</p><p className="text-2xl font-extrabold text-slate-900 mt-1">{availability.capacity}</p><p className="text-[11px] text-slate-400">khoang xe</p></div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">Đang gửi</p><p className="text-2xl font-extrabold text-indigo-600 mt-1">{availability.active_contracts}</p><p className="text-[11px] text-slate-400">xe đang đỗ</p></div>
-                <div className={`p-3 rounded-lg border ${effectiveAvailableSlots > 0 ? 'bg-teal-50 border-teal-200' : 'bg-red-50 border-red-200'}`}><p className="text-xs text-slate-600">Còn trống</p><p className={`text-2xl font-extrabold mt-1 ${effectiveAvailableSlots > 0 ? 'text-teal-600' : 'text-red-600'}`}>{effectiveAvailableSlots}</p><p className="text-[11px] text-slate-500">{effectiveAvailableSlots > 0 ? 'nhận xe ngay' : 'đã hết chỗ'}</p></div>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">{t('detail.capacityLabel')}</p><p className="text-2xl font-extrabold text-slate-900 mt-1">{availability.capacity}</p><p className="text-[11px] text-slate-400">{t('detail.capacityUnit')}</p></div>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200"><p className="text-xs text-slate-500">{t('detail.occupiedLabel')}</p><p className="text-2xl font-extrabold text-indigo-600 mt-1">{availability.active_contracts}</p><p className="text-[11px] text-slate-400">{t('detail.occupiedUnit')}</p></div>
+                <div className={`p-3 rounded-lg border ${effectiveAvailableSlots > 0 ? 'bg-teal-50 border-teal-200' : 'bg-red-50 border-red-200'}`}><p className="text-xs text-slate-600">{t('detail.vacantLabel')}</p><p className={`text-2xl font-extrabold mt-1 ${effectiveAvailableSlots > 0 ? 'text-teal-600' : 'text-red-600'}`}>{effectiveAvailableSlots}</p><p className="text-[11px] text-slate-500">{effectiveAvailableSlots > 0 ? t('detail.vacantReady') : t('detail.vacantFull')}</p></div>
               </div>
             ) : (
-              <div className="bg-slate-50 p-5 rounded-lg border border-slate-200 text-center text-sm text-slate-500"><LockKeyhole className="w-5 h-5 mx-auto mb-2 text-slate-400" />Chưa có thông tin tình trạng chỗ trống.</div>
+              <div className="bg-slate-50 p-5 rounded-lg border border-slate-200 text-center text-sm text-slate-500"><LockKeyhole className="w-5 h-5 mx-auto mb-2 text-slate-400" />{t('detail.noAvailabilityInfo')}</div>
             )}
             <div className="mt-5 pt-4 border-t border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3"><CheckCircle2 className="w-4 h-4 text-teal-600" /> Tiện ích bãi xe</h3>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3"><CheckCircle2 className="w-4 h-4 text-teal-600" /> {t('detail.amenitiesTitle')}</h3>
               <div className="flex flex-wrap gap-2">
-                {(facility.facility_amenities || []).map(fa => <span key={fa.amenity.id} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-teal-50 border border-teal-100 text-teal-800 text-xs font-medium"><CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />{fa.amenity.name}</span>)}
-                {(!facility.facility_amenities || facility.facility_amenities.length === 0) && <span className="text-sm text-slate-500">Chưa có thông tin tiện ích.</span>}
+                {(facility.facility_amenities || []).map(fa => (
+                  <span key={fa.amenity.id} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-teal-50 border border-teal-100 text-teal-800 text-xs font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />{translateAmenityName(fa.amenity.name, i18n.language)}
+                  </span>
+                ))}
+                {(!facility.facility_amenities || facility.facility_amenities.length === 0) && <span className="text-sm text-slate-500">{t('detail.noAmenities')}</span>}
               </div>
             </div>
           </section>
 
           <section className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex flex-col">
             <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><FileText className="w-5 h-5" /></div><h2 className="text-lg font-bold text-slate-900">Thông tin thuê bãi</h2></div>
-              <span className="text-[11px] text-slate-400">Thuê theo tháng</span>
+              <div className="flex items-center gap-2"><div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center"><FileText className="w-5 h-5" /></div><h2 className="text-lg font-bold text-slate-900">{t('detail.rentalInfoTitle')}</h2></div>
+              <span className="text-[11px] text-slate-400">{t('detail.monthlyOnlyTag')}</span>
             </div>
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-4 space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Giá thuê từ</span><strong className="text-xl text-teal-700">{formatPrice(facility.price_per_month)} đ<span className="text-xs font-medium text-slate-500">/tháng</span></strong></div>
+              <div className="flex items-center justify-between gap-3"><span className="text-slate-500">{t('detail.priceFrom')}</span><strong className="text-xl text-teal-700">{formatPrice(facility.price_per_month)} {t('detail.currencyPerMonth')}<span className="text-xs font-medium text-slate-500">{t('detail.perMonthUnit')}</span></strong></div>
               <div className="flex items-start justify-between gap-3">
-                <span className="text-slate-500 shrink-0">Loại xe phù hợp</span>
+                <span className="text-slate-500 shrink-0">{t('detail.vehicleTypesLabel')}</span>
                 <span className="flex flex-wrap justify-end gap-1.5 text-right">
                   {activeVehicleTypes.length > 0 ? activeVehicleTypes.map((vt, index) => (
                     <span key={`${vt.id || vt.type_code || index}`} className="px-2 py-1 rounded-md bg-teal-50 border border-teal-100 text-teal-800 text-xs font-semibold">
-                      {vt.name}
+                      {translateVehicleTypeName(vt, i18n.language)}
                     </span>
                   )) : (
-                    <span className="text-slate-500 text-xs italic">Chưa có loại xe phù hợp</span>
+                    <span className="text-slate-500 text-xs italic">{t('detail.noVehicleTypes')}</span>
                   )}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-3"><span className="text-slate-500">Chủ bãi</span><span className="font-semibold text-slate-800">{providerName}</span></div>
+              <div className="flex items-center justify-between gap-3"><span className="text-slate-500">{t('detail.providerLabel')}</span><span className="font-semibold text-slate-800">{providerName}</span></div>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed mt-4">Gửi yêu cầu kèm thông tin xe và ngày bắt đầu thuê. Chủ bãi sẽ phản hồi và xác nhận trực tiếp trên hệ thống.</p>
+            <p className="text-xs text-slate-500 leading-relaxed mt-4">{t('detail.reservationNote')}</p>
             <div className="flex flex-wrap gap-2 mt-auto pt-5">
               <button onClick={handleChatClick} disabled={isChatLoading} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed">
-                {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} Nhắn chủ bãi
+                {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />} {t('detail.messageProvider')}
               </button>
-              <button onClick={handleOpenReservation} disabled={effectiveAvailableSlots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> Yêu cầu đặt chỗ</button>
+              <button onClick={handleOpenReservation} disabled={effectiveAvailableSlots <= 0} className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white text-xs font-semibold transition disabled:cursor-not-allowed"><Send className="w-4 h-4" /> {t('detail.requestReservation')}</button>
             </div>
           </section>
         </div>
@@ -470,12 +483,12 @@ const FacilityDetailPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100">
             <div>
               <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Navigation className="w-5 h-5 text-teal-600" /> Vị trí & hướng dẫn đường đi
+                <Navigation className="w-5 h-5 text-teal-600" /> {t('detail.locationTitle')}
               </h2>
               <p className="text-xs text-slate-500 mt-1">{facility.address}</p>
               {preferredOriginAddress && (
                 <p className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2 py-0.5 rounded mt-1.5 inline-flex items-center gap-1 border border-teal-200">
-                  <MapPin className="w-3 h-3 text-teal-600" /> Xuất phát từ: <span className="underline">{preferredOriginAddress}</span>
+                  <MapPin className="w-3 h-3 text-teal-600" /> {t('detail.originLabel')} <span className="underline">{preferredOriginAddress}</span>
                 </p>
               )}
             </div>
@@ -483,9 +496,9 @@ const FacilityDetailPage = () => {
               type="button"
               onClick={handleGetDirections}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm transition active:scale-[0.98]"
-              title={preferredOriginAddress ? `Chỉ đường từ "${preferredOriginAddress}"` : 'Chỉ đường qua Google Maps'}
+              title={preferredOriginAddress ? t('detail.directionsTitleFrom', { address: preferredOriginAddress }) : t('detail.directionsTitleDefault')}
             >
-              <Navigation className="w-4 h-4" /> Chỉ đường qua Google Maps
+              <Navigation className="w-4 h-4" /> {t('detail.directionsButton')}
               <ExternalLink className="w-3.5 h-3.5 opacity-80" />
             </button>
           </div>
@@ -514,7 +527,7 @@ const FacilityDetailPage = () => {
               </MapContainer>
             ) : (
               <div className="h-full flex items-center justify-center px-6 text-center text-sm text-slate-500">
-                Cơ sở chưa có tọa độ GPS để hiển thị trên bản đồ.
+                {t('detail.noCoordinates')}
               </div>
             )}
           </div>

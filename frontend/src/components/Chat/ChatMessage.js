@@ -1,13 +1,14 @@
 import React, { useState, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Download } from 'lucide-react';
 
-const ImagePreview = ({ url }) => {
+const ImagePreview = ({ url, attachmentAlt, zoomAlt }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <>
             <img
                 src={url}
-                alt="Đính kèm"
+                alt={attachmentAlt}
                 onClick={() => setIsOpen(true)}
                 className="max-w-[240px] max-h-56 rounded-xl border border-slate-200 object-cover cursor-zoom-in hover:opacity-95 shadow-sm transition-opacity"
             />
@@ -18,7 +19,7 @@ const ImagePreview = ({ url }) => {
                 >
                     <img
                         src={url}
-                        alt="Phóng to"
+                        alt={zoomAlt}
                         className="max-w-full max-h-[95vh] object-contain rounded-md shadow-2xl"
                     />
                     <button
@@ -34,7 +35,7 @@ const ImagePreview = ({ url }) => {
 };
 
 // Hàm phân tích thông tin tệp (URL, loại file, tên file, đuôi file)
-const parseMediaItem = (rawUrl) => {
+const parseMediaItem = (rawUrl, defaultFileName) => {
     const uTrim = rawUrl.trim();
     if (!uTrim) return null;
 
@@ -52,7 +53,7 @@ const parseMediaItem = (rawUrl) => {
 
     let fileName = customName;
     if (!fileName) {
-        const rawFileName = cleanUrl.split('/').pop() || 'Tệp đính kèm';
+        const rawFileName = cleanUrl.split('/').pop() || defaultFileName;
         fileName = decodeURIComponent(rawFileName).replace(/^\d+_/, '');
     }
 
@@ -140,6 +141,8 @@ const getDocBadgeStyle = (ext) => {
 };
 
 const ChatMessage = ({ message, isMine }) => {
+    const { t, i18n } = useTranslation('chat');
+
     // Hàm xử lý hiển thị ảnh, video hoặc file 
     const renderMedia = (url) => {
         if (!url) return null;
@@ -150,11 +153,18 @@ const ChatMessage = ({ message, isMine }) => {
         return (
             <div className="flex flex-wrap gap-2.5 mt-2">
                 {urls.map((rawUrl, idx) => {
-                    const item = parseMediaItem(rawUrl);
+                    const item = parseMediaItem(rawUrl, t('message.defaultFileName'));
                     if (!item) return null;
 
                     if (item.type === 'image') {
-                        return <ImagePreview key={idx} url={item.url} />;
+                        return (
+                            <ImagePreview
+                                key={idx}
+                                url={item.url}
+                                attachmentAlt={t('message.attachmentAlt')}
+                                zoomAlt={t('message.zoomAlt')}
+                            />
+                        );
                     }
 
                     if (item.type === 'video') {
@@ -177,7 +187,7 @@ const ChatMessage = ({ message, isMine }) => {
                             target="_blank"
                             rel="noreferrer"
                             download={item.fileName}
-                            title={`Tải xuống ${item.fileName}`}
+                            title={t('message.downloadTitle', { name: item.fileName })}
                             className={`flex items-center gap-3.5 p-3 rounded-2xl shadow-sm border transition-all max-w-[320px] group ${isMine
                                 ? 'bg-white hover:bg-slate-50 border-blue-200'
                                 : 'bg-white hover:bg-slate-50 border-slate-200'
@@ -192,11 +202,11 @@ const ChatMessage = ({ message, isMine }) => {
                                 </p>
                                 <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
                                     {message.is_sending ? (
-                                        <span className="text-amber-500 animate-pulse">Đang tải lên...</span>
+                                        <span className="text-amber-500 animate-pulse">{t('message.uploading')}</span>
                                     ) : (
                                         <>
                                             <Download size={12} className="text-teal-500 shrink-0" />
-                                            <span>Nhấn để xem / tải về</span>
+                                            <span>{t('message.clickToDownload')}</span>
                                         </>
                                     )}
                                 </p>
@@ -224,12 +234,12 @@ const ChatMessage = ({ message, isMine }) => {
                 {renderMedia(message.media_url)}
 
                 <span className="text-[11px] text-slate-400 mt-1 flex items-center">
-                    {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(message.created_at).toLocaleTimeString(i18n.language?.startsWith('en') ? 'en-US' : [], { hour: '2-digit', minute: '2-digit' })}
                     {isMine && (
                         <span className="ml-1 flex items-center">
                             {message.is_sending
-                                ? ' • Đang gửi...'
-                                : (message.is_read ? ' • Đã xem' : ' • Đã gửi')}
+                                ? t('message.sending')
+                                : (message.is_read ? t('message.seen') : t('message.sent'))}
                         </span>
                     )}
                 </span>

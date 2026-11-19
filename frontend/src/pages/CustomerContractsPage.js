@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getMyConfirmationRecords } from '../services/confirmationRecordService';
 import timelineSettingService from '../services/timelineSettingService';
+import { translateDurationText } from '../utils/translations';
 import Toast from '../components/common/Toast';
 import {
   FileText,
@@ -17,6 +19,9 @@ import {
 } from 'lucide-react';
 
 const CustomerContractsPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +49,7 @@ const CustomerContractsPage = () => {
       const list = res.data?.confirmation_records || res.confirmation_records || [];
       setContracts(list);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách hợp đồng điện tử của bạn!');
+      setError(err.message || tRef.current('contracts.loadError'));
     } finally {
       setLoading(false);
     }
@@ -92,6 +97,8 @@ const CustomerContractsPage = () => {
   const pendingCount = contracts.filter((c) => c.status === 'PENDING_SIGNATURE').length;
   const activeCount = contracts.filter((c) => c.status === 'ACTIVE').length;
   const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED' || c.status === 'CANCELLED').length;
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
@@ -102,10 +109,10 @@ const CustomerContractsPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Hợp đồng điện tử của tôi
+              {t('contracts.title')}
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Quản lý, xem và xác nhận các hợp đồng thuê bãi đỗ xe theo tháng.
+              {t('contracts.subtitle')}
             </p>
           </div>
 
@@ -115,7 +122,7 @@ const CustomerContractsPage = () => {
             className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5 self-start sm:self-auto"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
+            {t('contracts.refresh')}
           </button>
         </div>
 
@@ -129,7 +136,7 @@ const CustomerContractsPage = () => {
                 : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
-              Tất cả ({totalCount})
+              {t('contracts.tabs.all', { count: totalCount })}
             </button>
             <button
               onClick={() => setActiveTab('PENDING_SIGNATURE')}
@@ -138,7 +145,7 @@ const CustomerContractsPage = () => {
                 : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
-              Chờ xác nhận ({pendingCount})
+              {t('contracts.tabs.pending', { count: pendingCount })}
             </button>
             <button
               onClick={() => setActiveTab('ACTIVE')}
@@ -147,7 +154,7 @@ const CustomerContractsPage = () => {
                 : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
-              Đang hiệu lực ({activeCount})
+              {t('contracts.tabs.active', { count: activeCount })}
             </button>
             <button
               onClick={() => setActiveTab('TERMINATED')}
@@ -156,7 +163,7 @@ const CustomerContractsPage = () => {
                 : 'text-slate-600 hover:bg-slate-100'
                 }`}
             >
-              Đã chấm dứt ({terminatedCount})
+              {t('contracts.tabs.terminated', { count: terminatedCount })}
             </button>
           </div>
 
@@ -164,7 +171,7 @@ const CustomerContractsPage = () => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Tìm mã hợp đồng, bãi đỗ xe..."
+              placeholder={t('contracts.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:bg-white focus:border-teal-600 transition"
@@ -177,29 +184,29 @@ const CustomerContractsPage = () => {
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
             <p className="text-slate-500 text-sm">
-              Đang tải danh sách hợp đồng...
+              {t('contracts.loading')}
             </p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-xl p-8 border border-slate-200 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">Không thể tải dữ liệu</h3>
+            <h3 className="text-base font-bold text-slate-900">{t('contracts.errorTitle')}</h3>
             <p className="text-sm text-slate-600">{error}</p>
             <button
               onClick={fetchContracts}
               className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử lại
+              {t('contracts.retry')}
             </button>
           </div>
         ) : filteredContracts.length === 0 ? (
           <div className="bg-white rounded-xl py-14 px-6 text-center border border-slate-200 space-y-2.5">
             <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-semibold text-slate-800">Chưa có hợp đồng nào</h3>
+            <h3 className="text-base font-semibold text-slate-800">{t('contracts.emptyTitle')}</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {searchTerm
-                ? 'Không tìm thấy hợp đồng phù hợp với từ khóa tìm kiếm.'
-                : 'Chưa có hợp đồng điện tử nào được tạo cho bạn.'}
+                ? t('contracts.emptySearch')
+                : t('contracts.emptyDefault')}
             </p>
           </div>
         ) : (
@@ -216,37 +223,37 @@ const CustomerContractsPage = () => {
                       {item.contract_code}
                     </span>
                     <span>•</span>
-                    <span>Ngày lập: {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
+                    <span>{t('contracts.card.createdDate')} {new Date(item.created_at).toLocaleDateString(dateLocale)}</span>
                     <span>•</span>
                     {item.status === 'ACTIVE' ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        Đang hiệu lực
+                        {t('contracts.card.statusActive')}
                       </span>
                     ) : item.status === 'TERMINATED' ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                        Đã chấm dứt
+                        {t('contracts.card.statusTerminated')}
                       </span>
                     ) : item.status === 'CANCELLED' ? (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                        Đã hủy (Hết chỗ)
+                        {t('contracts.card.statusCancelledSlot')}
                       </span>
                     ) : item.status === 'PENDING_SIGNATURE' ? (
                       <div className="flex items-center gap-1.5">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                           <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                          Chờ ký
+                          {t('contracts.card.statusPendingSignature')}
                         </span>
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100/80 text-amber-900 border border-amber-300">
-                          <Clock className="w-3 h-3 text-amber-700" /> Hạn ký: {timelineSettings?.contractSigningText || '5 phút'}
+                          <Clock className="w-3 h-3 text-amber-700" /> {t('contracts.card.signingDeadline', { duration: timelineSettings?.contractSigningText ? translateDurationText(timelineSettings.contractSigningText, i18n.language) : t('contracts.card.defaultSigningDuration') })}
                         </span>
                       </div>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        Chờ xác nhận
+                        {t('contracts.card.statusPending')}
                       </span>
                     )}
 
@@ -255,7 +262,7 @@ const CustomerContractsPage = () => {
                         <span>•</span>
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
                           <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
-                          Chờ duyệt gia hạn (+{item.contract_snapshot.extension_request.extension_months} thg)
+                          {t('contracts.card.extensionPending', { months: item.contract_snapshot.extension_request.extension_months })}
                         </span>
                       </>
                     )}
@@ -266,8 +273,8 @@ const CustomerContractsPage = () => {
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
                           <AlertCircle className="w-3 h-3 text-rose-600 animate-pulse" />
                           {item.contract_snapshot.termination_request.requested_by === 'PROVIDER'
-                            ? 'Chủ bãi yêu cầu chấm dứt'
-                            : 'Yêu cầu trả chỗ'}
+                            ? t('contracts.card.terminationByProvider')
+                            : t('contracts.card.terminationByCustomer')}
                         </span>
                       </>
                     )}
@@ -275,7 +282,7 @@ const CustomerContractsPage = () => {
 
                   <div>
                     <h3 className="text-base font-bold text-slate-900 truncate">
-                      {item.reservation?.facility?.name || 'Bãi đỗ xe'}
+                      {item.reservation?.facility?.name || t('contracts.card.facilityFallback')}
                     </h3>
                     <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -287,9 +294,9 @@ const CustomerContractsPage = () => {
                     <span className="inline-flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>
-                        Thời hạn:{' '}
+                        {t('contracts.card.termLabel')}{' '}
                         <strong className="font-medium text-slate-800">
-                          {new Date(item.start_date).toLocaleDateString('vi-VN')} – {new Date(item.end_date).toLocaleDateString('vi-VN')}
+                          {new Date(item.start_date).toLocaleDateString(dateLocale)} – {new Date(item.end_date).toLocaleDateString(dateLocale)}
                         </strong>
                       </span>
                     </span>
@@ -299,10 +306,10 @@ const CustomerContractsPage = () => {
 
                 <div className="flex sm:flex-row lg:flex-row items-center justify-between lg:justify-end gap-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
                   <div className="text-left lg:text-right lg:mr-2">
-                    <span className="text-[11px] text-slate-400 block">Giá thuê</span>
+                    <span className="text-[11px] text-slate-400 block">{t('contracts.card.priceLabel')}</span>
                     <span className="text-base font-bold text-teal-700">
-                      {Number(item.agreed_price || 0).toLocaleString('vi-VN')}{' '}
-                      <span className="text-xs font-normal text-slate-500">đ/tháng</span>
+                      {Number(item.agreed_price || 0).toLocaleString(numberLocale)}{' '}
+                      <span className="text-xs font-normal text-slate-500">{t('contracts.card.priceUnit')}</span>
                     </span>
                   </div>
 
@@ -317,7 +324,7 @@ const CustomerContractsPage = () => {
                         className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center gap-1.5"
                       >
                         <PenTool className="w-3.5 h-3.5" />
-                        Xem & xác nhận
+                        {t('contracts.card.viewAndConfirm')}
                       </button>
                     ) : item.status === 'ACTIVE' ? (
                       <>
@@ -328,7 +335,7 @@ const CustomerContractsPage = () => {
                             className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition inline-flex items-center gap-1.5"
                           >
                             <Clock className="w-3.5 h-3.5 text-amber-600" />
-                            Xem gia hạn
+                            {t('contracts.card.viewExtension')}
                           </button>
                         ) : (
                           <button
@@ -337,7 +344,7 @@ const CustomerContractsPage = () => {
                             className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-medium rounded-lg border border-teal-200 transition inline-flex items-center gap-1.5"
                           >
                             <Clock className="w-3.5 h-3.5 text-teal-600" />
-                            Gia hạn
+                            {t('contracts.card.extend')}
                           </button>
                         )}
 
@@ -352,8 +359,8 @@ const CustomerContractsPage = () => {
                           >
                             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
                             {item.contract_snapshot?.termination_request?.requested_by === 'PROVIDER'
-                              ? 'Xem chấm dứt'
-                              : 'Xem trả chỗ'}
+                              ? t('contracts.card.viewTerminationProvider')
+                              : t('contracts.card.viewTerminationCustomer')}
                           </button>
                         ) : (
                           <button
@@ -364,7 +371,7 @@ const CustomerContractsPage = () => {
                             }}
                             className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
                           >
-                            Trả chỗ
+                            {t('contracts.card.terminate')}
                           </button>
                         )}
                         <button
@@ -372,7 +379,7 @@ const CustomerContractsPage = () => {
                           onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
                           className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
                         >
-                          Khiếu nại
+                          {t('contracts.card.complaint')}
                         </button>
                         <button
                           type="button"
@@ -383,7 +390,7 @@ const CustomerContractsPage = () => {
                           className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          Chi tiết
+                          {t('contracts.card.details')}
                         </button>
                       </>
                     ) : (
@@ -394,7 +401,7 @@ const CustomerContractsPage = () => {
                             onClick={(e) => handleOpenComplaint(item.reservation_id, e)}
                             className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
                           >
-                            Khiếu nại
+                            {t('contracts.card.complaint')}
                           </button>
                         )}
                         <button
@@ -406,7 +413,7 @@ const CustomerContractsPage = () => {
                           className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                         >
                           <Eye className="w-3.5 h-3.5" />
-                          Chi tiết
+                          {t('contracts.card.details')}
                         </button>
                       </>
                     )}

@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { X, Star, MapPin, CarFront, Loader2, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react';
 import facilityService from '../../services/facilityService';
+import { translateAmenityName } from '../../utils/translations';
 
 /**
  * CompareModal – Modal so sánh 2–4 bãi đỗ xe theo bảng tiêu chí (Function 3.41)
@@ -13,6 +15,9 @@ import facilityService from '../../services/facilityService';
  *  - onRemove: (id) => void     – Callback xóa 1 bãi khỏi danh sách so sánh
  */
 const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocation }) => {
+  const { t, i18n } = useTranslation('facility');
+  const tRef = useRef(t);
+  tRef.current = t;
   const navigate = useNavigate();
 
   const [comparisonData, setComparisonData] = useState([]);
@@ -37,10 +42,10 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
         setComparisonData(ordered);
       } else {
         setComparisonData([]);
-        setError('Không thể tải dữ liệu so sánh.');
+        setError(tRef.current('compareModal.loadError'));
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Không thể tải dữ liệu so sánh.');
+      setError(err.response?.data?.message || err.message || tRef.current('compareModal.loadError'));
     } finally {
       setLoading(false);
     }
@@ -78,12 +83,14 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
 
 
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+
   return (
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="So sánh bãi đỗ xe"
+      aria-label={t('compareModal.dialogLabel')}
     >
       {/* Overlay */}
       <div
@@ -100,16 +107,16 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
             <div className="w-8 h-8 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center">
               <CarFront className="w-4 h-4 text-teal-300" />
             </div>
-            <h2 className="text-white font-extrabold text-lg tracking-tight">So Sánh Bãi Đỗ Xe</h2>
+            <h2 className="text-white font-extrabold text-lg tracking-tight">{t('compareModal.title')}</h2>
             <span className="text-xs font-semibold px-2 py-0.5 bg-teal-500/20 text-teal-300 border border-teal-500/30 rounded-full">
-              {selectedIds.length}/4 bãi
+              {t('compareModal.countBadge', { count: selectedIds.length })}
             </span>
           </div>
           <button
             id="compare-modal-close-btn"
             onClick={onClose}
             className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition"
-            aria-label="Đóng modal so sánh"
+            aria-label={t('compareModal.closeAria')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -120,7 +127,7 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
               <Loader2 className="w-10 h-10 text-teal-500 animate-spin" />
-              <p className="font-semibold">Đang tải dữ liệu so sánh...</p>
+              <p className="font-semibold">{t('compareModal.loading')}</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
@@ -130,13 +137,13 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                 onClick={fetchComparisonData}
                 className="mt-2 px-5 py-2 bg-teal-600 text-white text-sm font-bold rounded-xl hover:bg-teal-700 transition"
               >
-                Thử lại
+                {t('compareModal.retry')}
               </button>
             </div>
           ) : comparisonData.length < 2 ? (
             <div className="flex flex-col items-center justify-center py-24 text-slate-400 gap-2">
               <CarFront className="w-12 h-12 text-slate-300" />
-              <p className="font-semibold">Chọn ít nhất 2 bãi để bắt đầu so sánh</p>
+              <p className="font-semibold">{t('compareModal.minSelection')}</p>
             </div>
           ) : (
             <table className="w-full border-collapse table-fixed">
@@ -154,8 +161,8 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                 <tr>
                   {/* Ô tiêu chí header */}
                   <th className="p-4 text-left align-top border-b border-slate-100">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider leading-tight">Tiêu chí so sánh</p>
-                    <p className="text-[10px] text-slate-300 mt-0.5">Đánh giá theo dữ liệu thực tế tại bãi</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider leading-tight">{t('compareModal.criteriaHeader')}</p>
+                    <p className="text-[10px] text-slate-300 mt-0.5">{t('compareModal.criteriaSubheader')}</p>
                   </th>
 
                   {comparisonData.map((fac) => {
@@ -173,7 +180,7 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                           <button
                             id={`compare-remove-btn-${fac.id}`}
                             onClick={() => onRemove(fac.id)}
-                            title="Xóa khỏi so sánh"
+                            title={t('compareModal.removeTitle')}
                             className="w-6 h-6 rounded-full bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 flex items-center justify-center transition"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -183,17 +190,17 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                         <div className="min-h-6 flex flex-wrap items-center justify-center gap-1 mb-1">
                           {isCheapest && (
                             <span className="inline-block px-2 py-0.5 bg-teal-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
-                              Giá Thấp Nhất
+                              {t('compareModal.badges.lowestPrice')}
                             </span>
                           )}
                           {isNearest && (
                             <span className="inline-block px-2 py-0.5 bg-sky-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
-                              Gần Bạn Nhất
+                              {t('compareModal.badges.nearest')}
                             </span>
                           )}
                           {isHighestRated && (
                             <span className="inline-block px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
-                              Đánh Giá Cao Nhất
+                              {t('compareModal.badges.highestRated')}
                             </span>
                           )}
                         </div>
@@ -224,7 +231,7 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                         {/* Giá nổi bật */}
                         <p className={`mt-2 text-base font-extrabold ${isCheapest ? 'text-teal-600' : 'text-slate-800'}`}>
-                          {fac.price_per_month.toLocaleString('vi-VN')} đ/th
+                          {fac.price_per_month.toLocaleString(numberLocale)} {t('compareModal.priceShortSuffix')}
                         </p>
 
                         {/* Nút Xem Chi Tiết — tất cả cùng style tối */}
@@ -233,7 +240,7 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                           onClick={() => { onClose(); navigate(`/facility/${fac.id}`); }}
                           className="mt-3 w-full py-1.5 text-xs font-bold rounded-xl flex items-center justify-center gap-1 transition bg-slate-900 hover:bg-slate-700 text-white"
                         >
-                          Xem Chi Tiết <ArrowRight className="w-3 h-3" />
+                          {t('compareModal.viewDetails')} <ArrowRight className="w-3 h-3" />
                         </button>
                       </th>
                     );
@@ -245,21 +252,21 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
               <tbody>
                 {/* ── Hàng 1: Giá thuê hàng tháng ── */}
                 <CompareRow
-                  label="1. Giá thuê hàng tháng"
-                  sublabel="Monthly Rate"
+                  label={t('compareModal.rows.monthlyPrice')}
+                  sublabel={t('compareModal.rows.monthlyPriceSub')}
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
                     isBest: fac.id === lowestPriceId,
                     content: (
                       <div>
                         <p className="font-bold text-slate-800 text-sm">
-                          {fac.price_per_month.toLocaleString('vi-VN')} đ
+                          {fac.price_per_month.toLocaleString(numberLocale)} {t('search.results.currencySuffix')}
                         </p>
-                        <p className="text-xs text-slate-400">/ tháng</p>
+                        <p className="text-xs text-slate-400">{t('compareModal.rows.perMonth')}</p>
                         {/* Chỉ hiện "Rẻ nhất" khi duy nhất 1 bãi có giá thấp nhất */}
                         {lowestPriceId && fac.id === lowestPriceId && (
                           <span className="mt-1 inline-block text-[10px] text-teal-600 font-semibold bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-100">
-                            Rẻ nhất
+                            {t('compareModal.rows.cheapestTag')}
                           </span>
                         )}
                       </div>
@@ -269,14 +276,14 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                 {/* ── Hàng 2: Tổng sức chứa ── */}
                 <CompareRow
-                  label="2. Tổng sức chứa"
-                  sublabel="Total Capacity"
+                  label={t('compareModal.rows.totalCapacity')}
+                  sublabel={t('compareModal.rows.totalCapacitySub')}
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
                     isBest: false,
                     content: (
                       <p className="font-semibold text-slate-700 text-sm">
-                        {fac.capacity} xe ô tô
+                        {t('compareModal.rows.carsUnit', { count: fac.capacity })}
                       </p>
                     )
                   }))}
@@ -284,16 +291,16 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                 {/* ── Hàng 3: Số chỗ còn trống ── */}
                 <CompareRow
-                  label="3. Số chỗ còn trống"
-                  sublabel="Available Slots"
+                  label={t('compareModal.rows.availableSlots')}
+                  sublabel={t('compareModal.rows.availableSlotsSub')}
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
                     isBest: false,
                     content: (
                       <p className="font-semibold text-slate-700 text-sm">
                         {fac.available_slots !== null
-                          ? <span className="text-teal-600">Còn {fac.available_slots} chỗ trống</span>
-                          : <span className="text-slate-400 text-xs italic">Chưa cập nhật</span>
+                          ? <span className="text-teal-600">{t('compareModal.rows.slotsOpen', { count: fac.available_slots })}</span>
+                          : <span className="text-slate-400 text-xs italic">{t('compareModal.rows.notUpdated')}</span>
                         }
                       </p>
                     )
@@ -302,8 +309,8 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                 {/* ── Hàng 4: Khoảng cách ── */}
                 <CompareRow
-                  label="4. Cự ly / Khoảng cách"
-                  sublabel="Distance"
+                  label={t('compareModal.rows.distance')}
+                  sublabel={t('compareModal.rows.distanceSub')}
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
                     isBest: nearestId && fac.id === nearestId,
@@ -317,12 +324,12 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                             </div>
                             {nearestId && fac.id === nearestId && (
                               <span className="text-[10px] text-teal-600 font-semibold bg-teal-50 px-1.5 py-0.5 rounded-full border border-teal-100">
-                                Gần bạn nhất
+                                {t('compareModal.rows.nearestTag')}
                               </span>
                             )}
                           </>
                         ) : (
-                          <span className="text-slate-400 text-xs italic">Không xác định</span>
+                          <span className="text-slate-400 text-xs italic">{t('compareModal.rows.unknownDistance')}</span>
                         )}
                       </div>
                     )
@@ -331,8 +338,8 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                 {/* ── Hàng 5: Điểm đánh giá ── */}
                 <CompareRow
-                  label="5. Điểm đánh giá"
-                  sublabel="Rating Score"
+                  label={t('compareModal.rows.rating')}
+                  sublabel={t('compareModal.rows.ratingSub')}
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
                     isBest: highestRatingId && fac.id === highestRatingId,
@@ -345,15 +352,15 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                               <span className="font-extrabold text-slate-900">{fac.avg_rating}</span>
                               <span className="text-xs text-slate-400">/5.0</span>
                             </div>
-                            <p className="text-[10px] text-slate-400">{fac.total_reviews} đánh giá</p>
+                            <p className="text-[10px] text-slate-400">{t('compareModal.rows.reviewsCount', { count: fac.total_reviews })}</p>
                             {highestRatingId && fac.id === highestRatingId && (
                               <span className="mt-1 inline-block text-[10px] text-amber-700 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
-                                Đánh giá cao nhất
+                                {t('compareModal.rows.highestRatedTag')}
                               </span>
                             )}
                           </>
                         ) : (
-                          <span className="text-slate-400 text-xs italic">Chưa có đánh giá</span>
+                          <span className="text-slate-400 text-xs italic">{t('compareModal.rows.noReviews')}</span>
                         )}
                       </div>
                     )
@@ -362,8 +369,8 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
 
                 {/* ── Hàng 6: Tiện ích & An ninh ── */}
                 <CompareRow
-                  label="6. Tiện ích & An ninh"
-                  sublabel="Amenities"
+                  label={t('compareModal.rows.amenities')}
+                  sublabel={t('compareModal.rows.amenitiesSub')}
                   isLast
                   cells={comparisonData.map(fac => ({
                     id: fac.id,
@@ -374,11 +381,11 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
                           fac.amenities.map((amenity, i) => (
                             <div key={i} className="flex items-center gap-1.5 text-xs text-slate-600">
                               <CheckCircle className="w-3 h-3 text-teal-500 shrink-0" />
-                              <span>{amenity}</span>
+                              <span>{translateAmenityName(amenity, i18n.language)}</span>
                             </div>
                           ))
                         ) : (
-                          <span className="text-slate-400 text-xs italic">Không có tiện ích</span>
+                          <span className="text-slate-400 text-xs italic">{t('compareModal.rows.noAmenities')}</span>
                         )}
                       </div>
                     )
@@ -392,14 +399,14 @@ const CompareModal = ({ selectedIds, isOpen, onClose, onRemove, comparisonLocati
         {/* ═══ FOOTER ═══ */}
         <div className="shrink-0 px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
           <p className="text-xs text-slate-400 font-medium">
-            Đang so sánh {comparisonData.length} bãi xe
+            {t('compareModal.footerComparing', { count: comparisonData.length })}
           </p>
           <button
             id="compare-modal-close-footer-btn"
             onClick={onClose}
             className="px-5 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition"
           >
-            Đóng cửa sổ
+            {t('compareModal.closeWindow')}
           </button>
         </div>
       </div>

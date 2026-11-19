@@ -1,0 +1,165 @@
+{
+  "app": {
+    "loading": "Đang tải ứng dụng ParkLink...",
+    "tagline": "Thuê Bãi Đỗ Xe Theo Tháng"
+  },
+  "nav": {
+    "home": "Trang Chủ",
+    "search": "Tìm Bãi Đỗ",
+    "myReservations": "Yêu Cầu Thuê Của Tôi",
+    "myContracts": "Hợp Đồng Của Tôi",
+    "becomeProvider": "Cho Thuê Bãi Xe",
+    "becomeProviderMobile": "Cho Thuê Bãi Xe (Chủ Bãi Đỗ)",
+    "messages": "Tin nhắn",
+    "signedInWith": "Đăng nhập với email",
+    "myFavorites": "Bãi xe yêu thích",
+    "myComplaints": "Khiếu nại của tôi",
+    "logout": "Đăng xuất",
+    "login": "Đăng Nhập",
+    "register": "Đăng Ký",
+    "registerCustomer": "Đăng Ký Khách Hàng"
+  },
+  "roles": {
+    "ADMIN": "Admin",
+    "PROVIDER": "Chủ bãi đỗ",
+    "FIELD_INSPECTOR": "Khảo sát viên",
+    "CUSTOMER": "Khách hàng"
+  },
+  "dashboardLinks": {
+    "ADMIN": "Trang quản trị",
+    "PROVIDER": "Trang quản lý bãi xe",
+    "FIELD_INSPECTOR": "Trang khảo sát",
+    "DEFAULT": "Trang cá nhân"
+  },
+  "actions": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "close": "Đóng",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "back": "Quay lại",
+    "search": "Tìm kiếm",
+    "viewDetail": "Xem chi tiết"
+  },
+  "language": {
+    "switchToEn": "Chuyển sang Tiếng Anh",
+    "switchToVi": "Chuyển sang Tiếng Việt"
+  },
+  "footer": {
+    "copyright": "© 2026 ParkLink Project. Bản quyền thuộc về Đội ngũ SEP490-12-ParkLink.",
+    "providerTagline": "Nền tảng kết nối đối tác chủ bãi xe theo tháng uy tín, minh bạch và an toàn.",
+    "rulesAndPoliciesTitle": "Quy Định & Chính Sách",
+    "parklinkPolicies": "Chính sách ParkLink",
+    "partnerTechSupport": "Hỗ Trợ Kỹ Thuật Đối Tác",
+    "adminHotline": "Hotline Quản Trị: ",
+    "guestTagline": "Nền tảng kết nối người cần thuê bãi đỗ xe theo tháng uy tín, minh bạch và tiện lợi.",
+    "monthlyOnlyBadge": "Chỉ hỗ trợ thuê theo tháng - An tâm tuyệt đối",
+    "forCustomersTitle": "Dành Cho Khách Thuê",
+    "findParkingNearby": "Tìm bãi đỗ gần bạn",
+    "customerPolicyLink": "Chính sách thuê bãi xe",
+    "forProvidersTitle": "Chủ Bãi Đỗ",
+    "providerPolicyLink": "Quy chế hoạt động đối tác",
+    "supportAndContactTitle": "Hỗ Trợ & Liên Hệ",
+    "footerPolicyLink": "Chính sách & Điều khoản ParkLink"
+  },
+  "mapPicker": {
+    "popupTitle": "Vị trí bãi đỗ xe",
+    "popupMarked": "Đã đánh dấu trên bản đồ",
+    "popupDragHint": "Kéo thả ghim để tinh chỉnh vị trí chuẩn thực tế",
+    "addressPlaceholder": "Nhập địa chỉ rồi chọn một gợi ý...",
+    "locating": "Đang định vị...",
+    "centerMap": "Đưa bản đồ đến địa chỉ",
+    "updatingAddress": "Đang cập nhật địa chỉ...",
+    "helperHint": "Ghim sẽ tự động đánh dấu theo địa chỉ. Bạn có thể kéo thả ghim hoặc click trên bản đồ để tinh chỉnh vị trí chuẩn thực tế hơn.",
+    "selectedLabel": "Vị trí bãi đỗ xe đã chọn: ",
+    "selectedFallback": "Đã xác định vị trí trên bản đồ",
+    "selectedDragHint": "(Hệ thống đã tự động ghim vị trí. Bạn có thể kéo ghim trên bản đồ để vị trí chính xác nhất)."
+  },
+  "autocomplete": {
+    "facilitiesGroup": "Bãi đỗ xe ParkLink",
+    "resultsCount": "{{count}} kết quả",
+    "pricePerMonthSuffix": "đ/tháng",
+    "placesGroup": "Địa điểm / Tuyến đường (Vietmap)"
+  },
+  "policyModal": {
+    "fallbackTitle": "Chính Sách & Điều Khoản Dịch Vụ",
+    "lastUpdated": "Cập nhật lần cuối ngày:",
+    "currentStatus": "Hiện hành",
+    "loading": "Đang tải nội dung chính sách...",
+    "loadError": "Không thể tải nội dung chính sách!",
+    "noticeTitle": "Quy ước chung:",
+    "noticeBody": "ParkLink có quyền cập nhật, sửa đổi các điều khoản này để phù hợp với quy định vận hành. Việc người dùng tiếp tục truy cập và sử dụng dịch vụ sau khi điều khoản được cập nhật đồng nghĩa với việc chấp thuận toàn bộ nội dung chính sách mới nhất.",
+    "emptyContent": "Chưa có nội dung văn bản cho chính sách này.",
+    "closeButton": "Tôi Đã Hiểu & Đóng"
+  },
+  "policyPage": {
+    "badge": "Chính Sách & Quy Định Vận Hành ParkLink",
+    "title": "Điều Khoản Dịch Vụ Hệ Thống",
+    "subtitle": "Các chính sách và quy chuẩn minh bạch nhằm bảo vệ quyền lợi của Khách thuê, Chủ bãi đỗ xe và đảm bảo chất lượng dịch vụ trên nền tảng ParkLink.",
+    "noticeTitle": "Điều khoản quy chuẩn mặc định:",
+    "noticeBody": "\"ParkLink có quyền cập nhật, sửa đổi các điều khoản này để phù hợp với quy định vận hành thực tế. Việc người dùng tiếp tục truy cập và sử dụng dịch vụ sau khi điều khoản được cập nhật đồng nghĩa với việc người dùng chấp thuận toàn bộ nội dung chính sách mới nhất.\"",
+    "loading": "Đang tải nội dung văn bản...",
+    "loadError": "Không thể tải danh sách chính sách hệ thống. Vui lòng thử lại sau.",
+    "sidebarTitle": "Danh mục chính sách",
+    "tabCustomer": "Dành Cho Khách Hàng",
+    "tabProvider": "Dành Cho Chủ Bãi Xe",
+    "audienceCustomer": "Khách hàng cá nhân",
+    "audienceProvider": "Đối tác bãi đỗ xe",
+    "lastUpdated": "Cập nhật lần cuối:",
+    "currentStatus": "Hiện hành"
+  },
+  "notifications": {
+    "title": "Thông báo hệ thống",
+    "unreadBadge": "{{count}} chưa đọc",
+    "markAllRead": "Đã đọc tất cả",
+    "tabAll": "Tất cả ({{count}})",
+    "tabUnread": "Chưa đọc ({{count}})",
+    "loading": "Đang tải thông báo...",
+    "emptyTitle": "Không có thông báo mới",
+    "emptyUnread": "Bạn đã đọc hết các thông báo",
+    "emptyAll": "Hiện chưa có thông báo nào từ hệ thống",
+    "clickToMarkRead": "Nhấn để đánh dấu đã đọc",
+    "viewDetail": "Chi tiết",
+    "unreadDotTitle": "Chưa đọc",
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{{count}} phút trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "daysAgo": "{{count}} ngày trước"
+    },
+    "badges": {
+      "urgent": "[KHẨN CẤP]",
+      "important": "[QUAN TRỌNG]",
+      "system": "[HỆ THỐNG]",
+      "reservation": "[ĐẶT CHỖ]",
+      "contract": "[HỢP ĐỒNG]",
+      "complaint": "[KHIẾU NẠI]",
+      "general": "[THÔNG BÁO]"
+    },
+    "priorities": {
+      "urgent": "KHẨN CẤP",
+      "important": "QUAN TRỌNG",
+      "normal": "THÔNG THƯỜNG"
+    },
+    "errors": {
+      "loadFailed": "Không thể tải thông báo.",
+      "markReadFailed": "Không thể đánh dấu thông báo đã đọc.",
+      "markAllReadFailed": "Không thể đánh dấu tất cả thông báo đã đọc."
+    },
+    "modal": {
+      "markedRead": "Đã đánh dấu đã đọc",
+      "unread": "Chưa đánh dấu đã đọc",
+      "contentLabel": "Nội dung thông báo chi tiết:",
+      "viewPolicy": "Xem Chính Sách",
+      "close": "Đóng thông báo"
+    }
+  },
+  "addressSelector": {
+    "provinceLabel": "Tỉnh / Thành Phố",
+    "provincePlaceholder": "-- Chọn Tỉnh / Thành Phố --",
+    "wardLabel": "Phường / Xã",
+    "wardPlaceholder": "-- Chọn Phường / Xã --",
+    "selectedArea": "Khu vực đã chọn:"
+  }
+}

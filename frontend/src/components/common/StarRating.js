@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Star } from 'lucide-react';
 
-const RATING_LABELS = {
-  1: 'Rất tệ',
-  2: 'Chưa hài lòng',
-  3: 'Bình thường',
-  4: 'Hài lòng',
-  5: 'Tuyệt vời'
-};
-
 const StarRating = ({ value = 0, onChange, disabled, size = 22, showLabel = false }) => {
+  const { t } = useTranslation('facility');
   const [hoverRating, setHoverRating] = useState(0);
 
   const current = hoverRating || value;
@@ -47,7 +41,7 @@ const StarRating = ({ value = 0, onChange, disabled, size = 22, showLabel = fals
       {showLabel && !disabled && current > 0 && (
         <div className="transition-all duration-200">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80 shadow-xs">
-            {RATING_LABELS[current]} ({current}/5)
+            {t(`reviews.ratingLabels.${current}`)} ({current}/5)
           </span>
         </div>
       )}

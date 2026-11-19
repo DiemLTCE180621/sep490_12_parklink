@@ -1,38 +1,58 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import PolicyDetailModal from '../modals/PolicyDetailModal';
 
 const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signin_with', showDisclaimer = true }) => {
+  const { t, i18n } = useTranslation('login');
+  const buttonLocale = i18n.language?.startsWith('vi') ? 'vi' : 'en';
   const buttonContainerRef = useRef(null);
+  const initializedClientIdRef = useRef(null);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  const tRef = useRef(t);
   const [googleReady, setGoogleReady] = useState(false);
   const [googleFailed, setGoogleFailed] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPolicyType, setSelectedPolicyType] = useState('CUSTOMER');
+
+  //alway get lastest ref to avoid rerender 
+  onSuccessRef.current = onSuccess;
+  onErrorRef.current = onError;
+  tRef.current = t;
 
   const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '1029384756-parklink-google-oauth.apps.googleusercontent.com';
 
   useEffect(() => {
     let checkInterval = null;
     let timeout = null;
+    let observerTimeout = null;
+    let observer = null;
 
     const tryInitGoogle = () => {
       if (window.google?.accounts?.id && buttonContainerRef.current) {
         try {
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: (response) => {
-              if (response?.credential) {
-                onSuccess(response.credential);
-              } else if (onError) {
-                onError('Không nhận được mã xác thực từ Google!');
+          const isFirstInit = initializedClientIdRef.current !== clientId;
+          if (isFirstInit) {
+            window.google.accounts.id.initialize({
+              client_id: clientId,
+              callback: (response) => {
+                if (response?.credential) {
+                  onSuccessRef.current?.(response.credential);
+                } else if (onErrorRef.current) {
+                  onErrorRef.current(tRef.current('google.noCredential'));
+                }
               }
-            }
-          });
+            });
+            initializedClientIdRef.current = clientId;
+          }
 
           buttonContainerRef.current.innerHTML = '';
           const container = buttonContainerRef.current;
 
-          const observer = new MutationObserver(() => {
-            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          observer = new MutationObserver(() => {
+            if (isFirstInit) {
+              window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+            }
             const iframe = container.querySelector('iframe');
             if (iframe) {
               iframe.setAttribute('tabindex', '-1');
@@ -48,10 +68,11 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signi
             shape: 'rectangular',
             text: text,
             width: 380,
-            logo_alignment: 'left'
+            logo_alignment: 'left',
+            locale: buttonLocale
           });
 
-          setTimeout(() => observer.disconnect(), 3000);
+          observerTimeout = setTimeout(() => observer?.disconnect(), 3000);
           setGoogleReady(true);
           return true;
         } catch (err) {
@@ -79,8 +100,10 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signi
     return () => {
       if (checkInterval) clearInterval(checkInterval);
       if (timeout) clearTimeout(timeout);
+      if (observerTimeout) clearTimeout(observerTimeout);
+      if (observer) observer.disconnect();
     };
-  }, [clientId, onSuccess, onError, text]);
+  }, [clientId, text, buttonLocale]);
 
   const handleOpenPolicy = (e, type) => {
     e.preventDefault();
@@ -93,7 +116,7 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signi
       <div className="w-full flex justify-center">
         <div
           ref={buttonContainerRef}
-          className={`w-full flex justify-center ${!googleReady && !googleFailed ? 'min-h-[44px]' : ''}`}
+          className={`w-full flex justify-center ${!googleFailed ? 'min-h-[44px]' : ''}`}
         />
       </div>
 
@@ -132,21 +155,20 @@ const GoogleLoginButton = ({ onSuccess, onError, disabled = false, text = 'signi
               d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
             />
           </svg>
-          <span>Tiếp tục với Google</span>
+          <span>{t('google.continueButton')}</span>
         </button>
       )}
 
       {showDisclaimer && (
         <p className="text-[11px] text-slate-500 text-center leading-normal px-2">
-          Bằng việc tiếp tục với Google, bạn đồng ý với{' '}
+          {t('google.disclaimerPrefix')}
           <button
             type="button"
             onClick={(e) => handleOpenPolicy(e, 'CUSTOMER')}
             className="text-teal-600 hover:text-teal-700 font-semibold underline"
           >
-            Chính sách & Điều khoản dịch vụ
-          </button>{' '}
-          của ParkLink.
+            {t('google.disclaimerLink')}
+          </button>{t('google.disclaimerSuffix')}
         </p>
       )}
 

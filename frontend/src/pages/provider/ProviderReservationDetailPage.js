@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   getReservationDetail,
   acceptReservation,
@@ -24,6 +25,8 @@ import {
 } from 'lucide-react';
 
 const ProviderReservationDetailPage = () => {
+  const { t, i18n } = useTranslation('provider');
+  const isEnglish = i18n.language?.startsWith('en');
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -56,11 +59,11 @@ const ProviderReservationDetailPage = () => {
       const res = await getReservationDetail(id);
       const data = res.data?.reservation || res.reservation;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin yêu cầu thuê xe.');
+        throw new Error('__NOT_FOUND__');
       }
       setReservation(data);
     } catch (err) {
-      setError(err.message || 'Không thể tải chi tiết yêu cầu thuê của khách hàng!');
+      setError(err.message || '__LOAD_ERROR__');
     } finally {
       setLoading(false);
     }
@@ -80,20 +83,20 @@ const ProviderReservationDetailPage = () => {
       setProcessingAction(true);
       if (action === 'ACCEPT') {
         const res = await acceptReservation(id);
-        const successMsg = res.message || res.data?.message || `Đã chấp nhận yêu cầu thuê! Bạn có ${timelineSettings?.contractCreationText || 'thời hạn quy định'} để tạo hợp đồng điện tử trước khi yêu cầu tự động hủy.`;
+        const successMsg = res.message || res.data?.message || t('reservations.toasts.acceptSuccess', { deadline: timelineSettings?.contractCreationText || t('reservations.defaultDeadline') });
         setToastInfo({
           message: successMsg,
           type: 'success'
         });
       } else if (action === 'REJECT') {
         await rejectReservation(id);
-        setToastInfo({ message: 'Đã từ chối yêu cầu thuê xe!', type: 'success' });
+        setToastInfo({ message: t('reservations.toasts.rejectSuccess'), type: 'success' });
       }
       setConfirmModalState({ isOpen: false, action: null });
       fetchDetail();
     } catch (err) {
       setToastInfo({
-        message: err.message || `Thực hiện ${action === 'ACCEPT' ? 'duyệt' : 'từ chối'} thất bại!`,
+        message: err.message || (action === 'ACCEPT' ? t('reservations.toasts.acceptFailed') : t('reservations.toasts.rejectFailed')),
         type: 'error'
       });
     } finally {
@@ -107,28 +110,28 @@ const ProviderReservationDetailPage = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Chờ phê duyệt
+            {t('reservations.detail.statusPendingApproval')}
           </span>
         );
       case 'APPROVED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đã chấp nhận
+            {t('reservations.statuses.APPROVED')}
           </span>
         );
       case 'REJECTED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            Đã từ chối
+            {t('reservations.statuses.REJECTED')}
           </span>
         );
       case 'CANCELLED':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Khách đã hủy
+            {t('reservations.detail.statusCancelledByCustomer')}
           </span>
         );
       default:
@@ -158,25 +161,25 @@ const ProviderReservationDetailPage = () => {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            Quay lại danh sách yêu cầu
+            {t('reservations.detail.backToList')}
           </button>
         </div>
 
         {loading ? (
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-3" />
-            <p className="text-slate-600 text-sm">Đang tải thông tin yêu cầu thuê #{id}...</p>
+            <p className="text-slate-600 text-sm">{t('reservations.detail.loading', { id })}</p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-xl p-10 border border-slate-200 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">Không thể tải thông tin</h3>
-            <p className="text-sm text-slate-600 max-w-md mx-auto">{error}</p>
+            <h3 className="text-base font-bold text-slate-900">{t('reservations.detail.errorTitle')}</h3>
+            <p className="text-sm text-slate-600 max-w-md mx-auto">{error === '__NOT_FOUND__' ? t('reservations.detail.notFoundError') : error === '__LOAD_ERROR__' ? t('reservations.detail.loadError') : error}</p>
             <button
               onClick={fetchDetail}
               className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử lại
+              {t('reservations.retry')}
             </button>
           </div>
         ) : reservation ? (
@@ -185,13 +188,13 @@ const ProviderReservationDetailPage = () => {
               <div>
                 <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
                   <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
-                    Mã yêu cầu #{reservation.id}
+                    {t('reservations.card.requestCode', { id: reservation.id })}
                   </span>
                   <span>•</span>
-                  <span>Ngày gửi: {new Date(reservation.created_at).toLocaleDateString('vi-VN')}</span>
+                  <span>{t('reservations.detail.submittedAt', { date: new Date(reservation.created_at).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN') })}</span>
                 </div>
                 <h1 className="text-xl font-bold text-slate-900">
-                  Chi tiết yêu cầu thuê bãi xe của khách hàng
+                  {t('reservations.detail.title')}
                 </h1>
               </div>
 
@@ -202,34 +205,34 @@ const ProviderReservationDetailPage = () => {
               <div className="lg:col-span-8 divide-y divide-slate-200">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
-                    Thông tin khách hàng đăng ký
+                    {t('reservations.detail.customerTitle')}
                   </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     <div>
-                      <span className="text-xs text-slate-500 block">Họ và tên</span>
+                      <span className="text-xs text-slate-500 block">{t('reservations.detail.fullName')}</span>
                       <p className="font-semibold text-slate-900 flex items-center gap-1.5 mt-0.5">
                         <User className="w-4 h-4 text-slate-400 shrink-0" />
-                        {reservation.customer?.full_name || 'Khách hàng'}
+                        {reservation.customer?.full_name || t('reservations.card.defaultCustomer')}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-xs text-slate-500 block">Số điện thoại</span>
+                      <span className="text-xs text-slate-500 block">{t('reservations.detail.phone')}</span>
                       <a
                         href={`tel:${reservation.customer?.phone_number}`}
                         className="font-medium text-teal-700 hover:underline flex items-center gap-1.5 mt-0.5"
                       >
                         <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                        {reservation.customer?.phone_number || 'Chưa cập nhật'}
+                        {reservation.customer?.phone_number || t('reservations.card.notUpdated')}
                       </a>
                     </div>
 
                     <div>
-                      <span className="text-xs text-slate-500 block">Email</span>
+                      <span className="text-xs text-slate-500 block">{t('reservations.detail.emailLabel')}</span>
                       <p className="text-slate-700 flex items-center gap-1.5 mt-0.5 break-all">
                         <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                        {reservation.customer?.email || 'Chưa cập nhật'}
+                        {reservation.customer?.email || t('reservations.card.notUpdated')}
                       </p>
                     </div>
                   </div>
@@ -237,14 +240,14 @@ const ProviderReservationDetailPage = () => {
 
                 <div className="p-6 space-y-3">
                   <h2 className="text-base font-bold text-slate-900">
-                    Thông tin đăng ký gửi giữ
+                    {t('reservations.detail.rentalInfoTitle')}
                   </h2>
 
                   <div className="divide-y divide-slate-100 text-sm">
                     <div className="py-2.5 flex justify-between gap-4">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <Car className="w-4 h-4 text-slate-400" />
-                        Phương tiện đăng ký
+                        {t('reservations.detail.vehicleLabel')}
                       </span>
                       <span className="font-semibold text-slate-900 text-right">
                         {displayVehicle || reservation.vehicle_info}
@@ -254,23 +257,23 @@ const ProviderReservationDetailPage = () => {
                     <div className="py-2.5 flex justify-between gap-4">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <Calendar className="w-4 h-4 text-slate-400" />
-                        Ngày bắt đầu dự kiến
+                        {t('reservations.detail.desiredStartDate')}
                       </span>
                       <span className="font-semibold text-slate-900">
-                        {new Date(reservation.desired_start_date).toLocaleDateString('vi-VN')}
+                        {new Date(reservation.desired_start_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}
                       </span>
                     </div>
 
                     {displayCccd && (
                       <div className="py-2.5 flex justify-between gap-4">
-                        <span className="text-slate-500">Số CCCD / CMND</span>
+                        <span className="text-slate-500">{t('reservations.detail.idCardLabel')}</span>
                         <span className="font-medium text-slate-900">{displayCccd}</span>
                       </div>
                     )}
 
                     {displayAddress && (
                       <div className="py-2.5 flex justify-between gap-4">
-                        <span className="text-slate-500 shrink-0">Địa chỉ thường trú / liên hệ</span>
+                        <span className="text-slate-500 shrink-0">{t('reservations.detail.addressLabel')}</span>
                         <span className="font-medium text-slate-900 text-right">{displayAddress}</span>
                       </div>
                     )}
@@ -281,17 +284,17 @@ const ProviderReservationDetailPage = () => {
               <div className="lg:col-span-4 divide-y divide-slate-200 flex flex-col justify-between">
                 <div className="p-6 space-y-4">
                   <h2 className="text-base font-bold text-slate-900">
-                    Bãi đỗ xe đăng ký
+                    {t('reservations.detail.facilityTitle')}
                   </h2>
 
                   <div className="space-y-3 text-sm">
                     <div>
-                      <span className="text-xs text-slate-500 block">Tên bãi xe</span>
+                      <span className="text-xs text-slate-500 block">{t('reservations.detail.facilityName')}</span>
                       <p className="font-semibold text-slate-900 mt-0.5">{reservation.facility?.name}</p>
                     </div>
 
                     <div>
-                      <span className="text-xs text-slate-500 block">Địa chỉ</span>
+                      <span className="text-xs text-slate-500 block">{t('reservations.detail.facilityAddress')}</span>
                       <p className="text-slate-600 flex items-start gap-1.5 mt-0.5">
                         <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
                         <span>{reservation.facility?.address}</span>
@@ -299,9 +302,9 @@ const ProviderReservationDetailPage = () => {
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                      <span className="text-slate-500">Giá thuê niêm yết</span>
+                      <span className="text-slate-500">{t('reservations.detail.listedPrice')}</span>
                       <span className="text-base font-bold text-teal-700">
-                        {Number(reservation.facility?.price_per_month || 0).toLocaleString('vi-VN')} đ/tháng
+                        {Number(reservation.facility?.price_per_month || 0).toLocaleString('vi-VN')} {t('reservations.detail.priceUnit')}
                       </span>
                     </div>
                   </div>
@@ -310,13 +313,13 @@ const ProviderReservationDetailPage = () => {
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-3">
                       <div className="flex items-center justify-between gap-2">
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900">Hợp đồng điện tử</h3>
+                          <h3 className="text-sm font-bold text-slate-900">{t('reservations.detail.contractBoxTitle')}</h3>
                           <p className="text-xs text-slate-500 mt-0.5">
-                            Mã: <strong className="font-mono text-slate-800">{reservation.confirmation_record.contract_code}</strong>
+                            {t('reservations.detail.contractCode')} <strong className="font-mono text-slate-800">{reservation.confirmation_record.contract_code}</strong>
                           </p>
                         </div>
                         <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200">
-                          {reservation.confirmation_record.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Chờ khách xác nhận'}
+                          {reservation.confirmation_record.status === 'ACTIVE' ? t('reservations.detail.contractActive') : t('reservations.detail.contractPending')}
                         </span>
                       </div>
 
@@ -325,14 +328,14 @@ const ProviderReservationDetailPage = () => {
                         className="w-full py-2 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center justify-center gap-1.5"
                       >
                         <FileText className="w-4 h-4" />
-                        Xem chi tiết hợp đồng
+                        {t('reservations.detail.viewContractBtn')}
                       </Link>
                     </div>
                   ) : reservation.status === 'APPROVED' ? (
                     <div className="pt-4 mt-4 border-t border-slate-100 space-y-2.5">
-                      <h3 className="text-sm font-bold text-slate-900">Khởi tạo hợp đồng</h3>
+                      <h3 className="text-sm font-bold text-slate-900">{t('reservations.detail.createContractBoxTitle')}</h3>
                       <p className="text-xs text-slate-500">
-                        Yêu cầu đã được phê duyệt. Bạn có <strong>{timelineSettings?.contractCreationText || 'thời hạn quy định'}</strong> kể từ lúc chấp nhận để tạo hợp đồng điện tử gửi cho khách hàng (quá thời hạn này hệ thống sẽ tự động hủy).
+                        {t('reservations.detail.createContractHintFull', { deadline: timelineSettings?.contractCreationText || t('reservations.defaultDeadline') })}
                       </p>
                       <button
                         onClick={() =>
@@ -343,7 +346,7 @@ const ProviderReservationDetailPage = () => {
                         className="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center justify-center gap-1.5"
                       >
                         <FileText className="w-4 h-4" />
-                        Tạo hợp đồng điện tử
+                        {t('reservations.detail.createContractBtn')}
                       </button>
                     </div>
                   ) : null}
@@ -358,7 +361,7 @@ const ProviderReservationDetailPage = () => {
                         className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center justify-center gap-1.5"
                       >
                         <Check className="w-4 h-4" />
-                        Chấp nhận
+                        {t('reservations.actions.accept')}
                       </button>
 
                       <button
@@ -367,7 +370,7 @@ const ProviderReservationDetailPage = () => {
                         className="py-2.5 px-3 bg-white hover:bg-red-50 text-red-600 border border-red-200 font-medium text-xs rounded-lg transition inline-flex items-center justify-center gap-1.5"
                       >
                         <X className="w-4 h-4" />
-                        Từ chối
+                        {t('reservations.actions.reject')}
                       </button>
                     </div>
                   )}
@@ -376,7 +379,7 @@ const ProviderReservationDetailPage = () => {
                     onClick={() => navigate(-1)}
                     className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-lg transition text-center"
                   >
-                    Quay lại danh sách
+                    {t('reservations.detail.backToListButton')}
                   </button>
                 </div>
               </div>
@@ -391,16 +394,16 @@ const ProviderReservationDetailPage = () => {
         onConfirm={handleExecuteAction}
         title={
           confirmModalState.action === 'ACCEPT'
-            ? 'Xác nhận chấp nhận yêu cầu thuê'
-            : 'Xác nhận từ chối yêu cầu thuê'
+            ? t('reservations.confirmModal.acceptTitle')
+            : t('reservations.confirmModal.rejectTitle')
         }
         message={
           confirmModalState.action === 'ACCEPT'
-            ? `Bạn có chắc chắn muốn phê duyệt chấp nhận yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không? Lưu ý: Sau khi chấp nhận yêu cầu, bạn có ${timelineSettings?.contractCreationText || 'thời hạn quy định'} để khởi tạo hợp đồng điện tử. Nếu quá ${timelineSettings?.contractCreationText || 'thời hạn này'} chưa tạo hợp đồng, hệ thống sẽ tự động hủy yêu cầu này.`
-            : `Bạn có chắc chắn muốn từ chối yêu cầu đỗ xe của khách hàng "${reservation?.customer?.full_name || ''}" không?`
+            ? t('reservations.confirmModal.acceptMessage', { name: reservation?.customer?.full_name || '', deadline: timelineSettings?.contractCreationText || t('reservations.defaultDeadline') })
+            : t('reservations.confirmModal.rejectMessage', { name: reservation?.customer?.full_name || '' })
         }
-        confirmText={confirmModalState.action === 'ACCEPT' ? 'Đồng ý chấp nhận' : 'Đồng ý từ chối'}
-        cancelText="Hủy bỏ"
+        confirmText={confirmModalState.action === 'ACCEPT' ? t('reservations.confirmModal.confirmAccept') : t('reservations.confirmModal.confirmReject')}
+        cancelText={t('reservations.confirmModal.cancel')}
         type={confirmModalState.action === 'ACCEPT' ? 'primary' : 'danger'}
         loading={processingAction}
       />

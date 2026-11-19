@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, AlertCircle, Send, CheckCircle2 } from 'lucide-react';
 import complaintService from '../../services/complaintService';
 import { validateSubmitComplaint } from '../../validations/complaintValidation';
 
 const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
+  const { t } = useTranslation('customer');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
         title: title.trim(),
         description: description.trim()
       });
-      setSuccessMsg('Gửi khiếu nại thành công! Admin sẽ sớm xem xét và giải quyết.');
+      setSuccessMsg(t('submitComplaintModal.successMessage'));
       setTimeout(() => {
         onClose();
         setTitle('');
@@ -38,7 +40,7 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
         setSuccessMsg('');
       }, 2000);
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.');
+      setErrorMsg(error.response?.data?.message || t('submitComplaintModal.errorFallback'));
       if (error.response?.data?.errors) {
         setErrorMsg(error.response.data.errors.join(', '));
       }
@@ -55,7 +57,7 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
           <div className="flex items-center gap-2 text-red-600">
             <AlertCircle size={20} className="stroke-2" />
-            <h3 className="text-lg font-bold text-slate-800">Gửi khiếu nại</h3>
+            <h3 className="text-lg font-bold text-slate-800">{t('submitComplaintModal.title')}</h3>
           </div>
           <button
             onClick={onClose}
@@ -72,13 +74,13 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
               <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle2 size={32} />
               </div>
-              <h4 className="text-xl font-bold text-slate-800 mb-2">Thành công!</h4>
+              <h4 className="text-xl font-bold text-slate-800 mb-2">{t('submitComplaintModal.successTitle')}</h4>
               <p className="text-slate-600">{successMsg}</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <p className="text-sm text-slate-500 mb-4">
-                Nếu bạn gặp vấn đề với bãi đỗ xe (thái độ nhân viên, thu phí sai, làm hỏng tài sản...), hãy gửi khiếu nại để Admin can thiệp.
+                {t('submitComplaintModal.intro')}
               </p>
 
               {errorMsg && (
@@ -90,13 +92,13 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Tiêu đề vấn đề <span className="text-red-500">*</span>
+                  {t('submitComplaintModal.issueTitleLabel')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ví dụ: Bãi giữ xe thu lố tiền quy định"
+                  placeholder={t('submitComplaintModal.issueTitlePlaceholder')}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700"
                   required
                 />
@@ -104,19 +106,19 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Mô tả chi tiết sự việc <span className="text-red-500">*</span>
+                  {t('submitComplaintModal.descriptionLabel')} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Mô tả rõ ngày giờ, sự việc xảy ra như thế nào để Admin dễ dàng điều tra..."
+                  placeholder={t('submitComplaintModal.descriptionPlaceholder')}
                   rows={5}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 resize-none"
                   required
                 />
                 <div className="text-right mt-1">
                   <span className={`text-xs ${description.length < 20 ? 'text-red-500' : 'text-slate-400'}`}>
-                    {description.length}/2000 ký tự (Tối thiểu 20)
+                    {t('submitComplaintModal.charCountHint', { count: description.length })}
                   </span>
                 </div>
               </div>
@@ -128,7 +130,7 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
                   onClick={onClose}
                   className="flex-1 px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 font-medium rounded-xl transition-colors"
                 >
-                  Hủy bỏ
+                  {t('submitComplaintModal.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -140,7 +142,7 @@ const SubmitComplaintModal = ({ isOpen, onClose, facilityId }) => {
                   ) : (
                     <>
                       <Send size={18} />
-                      <span>Gửi khiếu nại</span>
+                      <span>{t('submitComplaintModal.submit')}</span>
                     </>
                   )}
                 </button>

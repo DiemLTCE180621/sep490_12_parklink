@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { getConfirmationRecordDetail, acceptConfirmationRecord } from '../services/confirmationRecordService';
 import timelineSettingService from '../services/timelineSettingService';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +18,9 @@ import {
 } from 'lucide-react';
 
 const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
+  const { t } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const { user } = useAuth();
   const isCustomer = user?.role?.name === 'CUSTOMER' || user?.role === 'CUSTOMER';
 
@@ -73,7 +77,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         setIsTermsAgreed(false);
       }
     } catch (err) {
-      setError(err.message || 'Không thể tải chi tiết hợp đồng điện tử!');
+      setError(err.message || tRef.current('contractModal.loadError'));
     } finally {
       setLoading(false);
     }
@@ -153,12 +157,12 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
       };
       const res = await acceptConfirmationRecord(contractId, payload);
       const updated = res.data?.confirmation_record || res.confirmation_record;
-      setSuccessMsg('Đã xác nhận ký hợp đồng điện tử thành công! Hợp đồng chính thức có hiệu lực.');
+      setSuccessMsg(t('contractModal.acceptSuccess'));
       setContract(updated);
       setConfirmModalOpen(false);
       if (onRefresh) onRefresh();
     } catch (err) {
-      setError(err.message || 'Chấp nhận hợp đồng thất bại!');
+      setError(err.message || t('contractModal.acceptError'));
     } finally {
       setAccepting(false);
     }
@@ -179,9 +183,9 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[11px] text-slate-400 font-semibold uppercase block">Hợp Đồng Điện Tử ParkLink</span>
+              <span className="text-[11px] text-slate-400 font-semibold uppercase block">{t('contractModal.brand')}</span>
               <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                Mã HĐ: {contract?.contract_code || contractInfo.contract_code || `HD-#${contractId}`}
+                {t('contractModal.codeLabel')} {contract?.contract_code || contractInfo.contract_code || `HD-#${contractId}`}
               </h2>
             </div>
           </div>
@@ -191,9 +195,9 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
               type="button"
               onClick={() => window.print()}
               className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
-              title="In hợp đồng hoặc xuất lưu dạng file PDF"
+              title={t('contractModal.printTitle')}
             >
-              <Printer className="w-3.5 h-3.5" /> In / Xuất PDF
+              <Printer className="w-3.5 h-3.5" /> {t('contractModal.printButton')}
             </button>
             <button
               type="button"
@@ -210,7 +214,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
           {loading ? (
             <div className="py-16 text-center space-y-3 bg-white rounded-xl shadow-sm border border-slate-200">
               <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
-              <p className="text-xs font-semibold text-slate-600">Đang tải văn bản hợp đồng điện tử...</p>
+              <p className="text-xs font-semibold text-slate-600">{t('contractModal.loading')}</p>
             </div>
           ) : error ? (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 font-medium flex items-center gap-2.5">
@@ -399,10 +403,10 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   <div className="border-b border-slate-100 pb-2.5">
                     <h5 className="text-xs font-bold text-slate-900 uppercase flex items-center gap-1.5 text-teal-800">
                       <ShieldCheck className="w-4 h-4 text-teal-600" />
-                      Ký Xác Nhận Hợp Đồng Điện Tử
+                      {t('contractModal.signTitle')}
                     </h5>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      Vui lòng kiểm tra kỹ nội dung và điều khoản hợp đồng phía trên trước khi thực hiện xác nhận ký điện tử.
+                      {t('contractModal.signDesc')}
                     </p>
                   </div>
 
@@ -419,7 +423,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                       )}
                     </button>
                     <span className="text-xs text-slate-700 leading-relaxed font-medium">
-                      Tôi là <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong>, xác nhận thông tin cá nhân trên là chính xác, đã đọc kỹ, hiểu rõ và hoàn toàn đồng ý với toàn bộ nội dung hợp đồng điện tử này.
+                      {t('contractModal.confirmBefore')} <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong>, {t('contractModal.confirmAfter')}
                     </span>
                   </label>
 
@@ -431,11 +435,11 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   >
                     {accepting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin text-white" /> Đang Ký Hợp Đồng...
+                        <Loader2 className="w-4 h-4 animate-spin text-white" /> {t('contractModal.signing')}
                       </>
                     ) : (
                       <>
-                        <ShieldCheck className="w-4 h-4" /> Xác Nhận Ký Hợp Đồng Điện Tử Ngay
+                        <ShieldCheck className="w-4 h-4" /> {t('contractModal.signNow')}
                       </>
                     )}
                   </button>
@@ -452,7 +456,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs rounded-lg transition"
           >
-            Đóng
+            {t('contractModal.close')}
           </button>
         </div>
       </div>
@@ -462,10 +466,10 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
         onConfirm={handleExecuteAccept}
-        title="Xác Nhận Ký Hợp Đồng Điện Tử"
-        message="Bạn có chắc chắn muốn chấp nhận ký hợp đồng đỗ xe theo tháng này không? Hợp đồng sau khi ký sẽ chính thức có hiệu lực pháp lý."
-        confirmText="Đồng Ý Ký Ngay"
-        cancelText="Bỏ Qua"
+        title={t('contractDetail.modals.acceptTitle')}
+        message={t('contractDetail.modals.acceptMsg')}
+        confirmText={t('contractDetail.modals.acceptBtn')}
+        cancelText={t('contractDetail.modals.acceptCancel')}
         type="primary"
         loading={accepting}
       />

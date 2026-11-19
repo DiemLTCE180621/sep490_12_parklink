@@ -1,0 +1,106 @@
+{
+  "header": {
+    "back": "Quay lại",
+    "title": "Hồ sơ cá nhân",
+    "fallbackName": "Hồ sơ người dùng",
+    "avatarTitle": "Thay đổi ảnh đại diện",
+    "avatarHint": "Nhấn vào biểu tượng máy ảnh để cập nhật ảnh đại diện"
+  },
+  "roles": {
+    "ADMIN": "Quản Trị Viên",
+    "PROVIDER": "Chủ Bãi Đỗ Xe",
+    "FIELD_INSPECTOR": "Nhân Viên Khảo Sát",
+    "CUSTOMER": "Khách Thuê"
+  },
+  "section": {
+    "title": "Thông Tin Cá Nhân",
+    "subtitle": "Quản lý và cập nhật thông tin liên hệ của bạn"
+  },
+  "warnings": {
+    "missingBoth": "Bạn chưa cập nhật số điện thoại và địa chỉ liên hệ. Vui lòng bổ sung đầy đủ thông tin bên dưới để Chủ bãi xe có thể liên lạc và lập hợp đồng khi bạn gửi yêu cầu đặt chỗ.",
+    "missingPhone": "Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.",
+    "missingAddress": "Bạn chưa cập nhật địa chỉ thường trú / liên hệ. Vui lòng bổ sung thông tin địa chỉ bên dưới để phục vụ việc lập hợp đồng pháp lý khi thuê bãi xe."
+  },
+  "fields": {
+    "email": {
+      "label": "Địa Chỉ Email (Không thể thay đổi)"
+    },
+    "fullName": {
+      "label": "Họ Và Tên",
+      "placeholder": "Nhập họ và tên"
+    },
+    "phone": {
+      "label": "Số Điện Thoại",
+      "placeholder": "Nhập số điện thoại",
+      "hint": "Gồm đúng 10 chữ số, bắt đầu bằng số 0."
+    },
+    "assignedAddress": {
+      "label": "ĐỊA CHỈ PHÂN CÔNG",
+      "empty": "Chưa cập nhật địa chỉ",
+      "note": "Do Quản trị viên phân công"
+    },
+    "address": {
+      "label": "Địa Chỉ Thường Trú / Liên Hệ",
+      "formatHint": "Chuẩn hành chính",
+      "areaLabel": "Khu vực hành chính",
+      "streetDetailLabel": "Số nhà, tên đường, hẻm / ngõ chi tiết",
+      "streetDetailPlaceholder": "Ví dụ: Số 123/45, Đường 30 Tháng 4",
+      "contractPreview": "Địa chỉ đầy đủ ghi trên hợp đồng: ",
+      "notSet": "Chưa thiết lập"
+    },
+    "accountRole": {
+      "label": "Vai Trò Hệ Thống:"
+    },
+    "authMethod": {
+      "label": "Phương Thức Đăng Nhập:",
+      "google": "Google",
+      "googleAndPassword": "Google & Mật khẩu",
+      "emailAndPassword": "Email & Mật khẩu"
+    }
+  },
+  "actions": {
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "changePassword": "Đổi mật khẩu",
+    "cancel": "Hủy",
+    "saveChanges": "Lưu Thay Đổi",
+    "saving": "Đang cập nhật..."
+  },
+  "messages": {
+    "avatarInvalidType": "Vui lòng chọn tệp hình ảnh hợp lệ (JPG, PNG, WebP, AVIF)!",
+    "avatarTooLarge": "Dung lượng hình ảnh đại diện không được vượt quá 5MB!",
+    "avatarNoUrl": "Không nhận được đường dẫn ảnh từ máy chủ!",
+    "avatarSuccess": "Cập nhật ảnh đại diện thành công!",
+    "avatarUploadError": "Lỗi khi tải ảnh lên!",
+    "fullNameMinLength": "Họ và tên phải chứa ít nhất 2 ký tự.",
+    "phoneInvalid": "Số điện thoại phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0912345678).",
+    "updateSuccess": "Cập nhật thông tin cá nhân thành công!",
+    "updateError": "Cập nhật thất bại! Vui lòng thử lại."
+  },
+  "changePasswordModal": {
+    "title": "Đổi Mật Khẩu Cá Nhân",
+    "subtitle": "Cập nhật mật khẩu bảo vệ tài khoản ParkLink của bạn",
+    "googleTitle": "Tài Khoản Đăng Nhập Qua Google",
+    "googleDescription": "Tài khoản này được xác thực và bảo mật trực tiếp thông qua Google Sign-In, do đó không sử dụng mật khẩu trên hệ thống ParkLink.",
+    "close": "Đóng",
+    "fields": {
+      "oldPasswordLabel": "Mật khẩu hiện tại",
+      "oldPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+      "newPasswordLabel": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Tối thiểu 8 ký tự, 1 hoa, 1 thường, 1 số",
+      "confirmPasswordLabel": "Xác nhận mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới"
+    },
+    "actions": {
+      "cancel": "Hủy",
+      "submitting": "Đang cập nhật...",
+      "submit": "Cập Nhật Mật Khẩu"
+    },
+    "messages": {
+      "oldPasswordRequired": "Vui lòng nhập mật khẩu hiện tại!",
+      "passwordInvalid": "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số!",
+      "confirmMismatch": "Xác nhận mật khẩu mới không trùng khớp!",
+      "successFallback": "Đổi mật khẩu thành công!",
+      "errorFallback": "Đổi mật khẩu thất bại! Vui lòng thử lại."
+    }
+  }
+}

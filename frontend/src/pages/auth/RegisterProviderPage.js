@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import platformFeeService from '../../services/platformFeeService';
@@ -8,8 +9,11 @@ import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Ca
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../../utils/validators';
 import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
+import { translateVehicleTypeName, translateAmenityName, translatePlatformFeeName } from '../../utils/translations';
 
 const RegisterProviderPage = () => {
+  const { t, i18n } = useTranslation('register');
+  const isEnglish = i18n.language?.startsWith('en');
   const { registerProvider } = useAuth();
 
   const [dbAmenities, setDbAmenities] = useState([]);
@@ -144,35 +148,35 @@ const RegisterProviderPage = () => {
     const cleanedFacilityName = cleanText(formData.facility_name);
 
     if (!isValidName(cleanedName)) {
-      errs.push('Họ và tên người đại diện chỉ được chứa chữ cái, tối thiểu 2 ký tự và không chứa số hay ký tự đặc biệt.');
+      errs.push(t('provider.errors.fullNameInvalid'));
     }
 
     if (!isValidEmail(cleanedEmail)) {
-      errs.push('Email nhận thông báo không đúng định dạng (Ví dụ: provider@example.com).');
+      errs.push(t('provider.errors.emailInvalid'));
     }
 
     if (!isValidPhone(cleanedPhone)) {
-      errs.push('Số điện thoại liên hệ phải bao gồm đúng 10 chữ số và bắt đầu bằng số 0 (Ví dụ: 0987654321).');
+      errs.push(t('provider.errors.phoneInvalid'));
     }
 
     if (!isValidFacilityName(cleanedFacilityName)) {
-      errs.push('Tên cơ sở bãi đỗ xe phải có ít nhất 3 ký tự, chỉ gồm chữ cái, số và khoảng trắng.');
+      errs.push(t('provider.errors.facilityNameInvalid'));
     }
 
     if (!formData.capacity || isNaN(formData.capacity) || Number(formData.capacity) <= 0) {
-      errs.push('Sức chứa bãi đỗ xe phải là số nguyên lớn hơn 0.');
+      errs.push(t('provider.errors.capacityInvalid'));
     }
 
     if (!formData.price_per_month || isNaN(formData.price_per_month) || Number(formData.price_per_month) <= 0) {
-      errs.push('Giá thuê theo tháng phải lớn hơn 0 VNĐ.');
+      errs.push(t('provider.errors.priceInvalid'));
     }
 
     if (!agreedPolicy) {
-      errs.push('Vui lòng đọc và tích chọn đồng ý với Chính sách & Quy định dành cho Chủ bãi đỗ xe của ParkLink.');
+      errs.push(t('provider.errors.policyRequired'));
     }
 
     if (!formData.vehicle_types || formData.vehicle_types.length === 0) {
-      errs.push('Vui lòng chọn ít nhất một loại phương tiện nhận gửi.');
+      errs.push(t('provider.errors.vehicleTypesRequired'));
     }
 
     return { isValid: errs.length === 0, errs, cleanedName, cleanedEmail, cleanedPhone, cleanedFacilityName };
@@ -209,7 +213,7 @@ const RegisterProviderPage = () => {
       if (err.errors && err.errors.length > 0) {
         setErrorList(err.errors);
       } else {
-        setErrorList([err.message || 'Khai báo bãi đỗ xe thất bại!']);
+        setErrorList([err.message || t('provider.errors.submitFailed')]);
       }
     } finally {
       setLoading(false);
@@ -224,7 +228,7 @@ const RegisterProviderPage = () => {
             <Building2 className="w-9 h-9" />
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Đăng Ký Khai Báo Bãi Đỗ Xe
+            {t('provider.title')}
           </h2>
         </div>
 
@@ -239,7 +243,7 @@ const RegisterProviderPage = () => {
                   </p>
                 ) : (
                   <div className="space-y-1.5">
-                    <p className="text-xs sm:text-sm font-bold text-red-800">Vui lòng kiểm tra lại thông tin khai báo:</p>
+                    <p className="text-xs sm:text-sm font-bold text-red-800">{t('provider.errorSummary')}</p>
                     <ul className="space-y-1 text-xs text-red-700">
                       {errorList.map((errItem, idx) => (
                         <li key={idx} className="flex items-start gap-1.5">
@@ -259,19 +263,19 @@ const RegisterProviderPage = () => {
               <div className="p-6 rounded-2xl bg-orange-50 border border-orange-200 text-orange-900 space-y-4">
                 <div className="flex items-center gap-3 text-orange-800 font-bold text-lg">
                   <CheckCircle2 className="w-7 h-7 text-orange-600 shrink-0" />
-                  <span>Đã Gửi Yêu Cầu Đăng Ký Thành Công!</span>
+                  <span>{t('provider.success.title')}</span>
                 </div>
 
                 <p className="text-sm leading-relaxed">
-                  Yêu cầu đăng ký tài khoản của <strong>{formData.full_name}</strong> và cơ sở bãi xe <strong>{formData.facility_name}</strong> ({formData.capacity} slots đỗ) đã được gửi đến hệ thống và đang chờ Ban quản trị phê duyệt.
+                  {t('provider.success.descriptionPart1')}<strong>{formData.full_name}</strong>{t('provider.success.descriptionPart2')}<strong>{formData.facility_name}</strong>{t('provider.success.descriptionPart3', { capacity: formData.capacity })}
                 </p>
 
                 <div className="p-4 bg-white rounded-xl border border-orange-100 space-y-2 text-xs">
                   <p className="font-bold text-orange-900 flex items-center gap-1.5 text-sm">
-                    <Calculator className="w-4 h-4 text-orange-600" /> Phí Nền Tảng Dự Kiến: {Number(successResult.system_fee).toLocaleString('vi-VN')} VNĐ
+                    <Calculator className="w-4 h-4 text-orange-600" /> {t('provider.success.estimatedFeeLabel')} {Number(successResult.system_fee).toLocaleString('vi-VN')} {isEnglish ? 'VND' : 'VNĐ'}
                   </p>
                   <p className="text-slate-600">
-                    📧 Mật khẩu đăng nhập sẽ được gửi tới email <strong>{formData.email}</strong> sau khi cơ sở của bạn được phê duyệt chính thức.
+                    {t('provider.success.emailNoticeBefore')}<strong>{formData.email}</strong>{t('provider.success.emailNoticeAfter')}
                   </p>
                 </div>
               </div>
@@ -280,7 +284,7 @@ const RegisterProviderPage = () => {
                 to="/"
                 className="w-full py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-md transition flex justify-center items-center gap-2"
               >
-                Trở Về Trang Chủ <ArrowRight className="w-5 h-5" />
+                {t('provider.success.backHome')} <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
           ) : (
@@ -289,20 +293,20 @@ const RegisterProviderPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <User className="w-5 h-5 text-teal-600" />
-                  <h3 className="text-lg font-bold text-slate-900">1. Thông Tin Người Đại Diện Cơ Sở</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{t('provider.sections.representative')}</h3>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1">
-                      Họ và tên đại diện <span className="text-red-500">*</span>
+                      {t('provider.fields.fullName.label')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="full_name"
                       value={formData.full_name}
                       onChange={handleChange}
-                      placeholder="Nhập họ và tên"
+                      placeholder={t('provider.fields.fullName.placeholder')}
                       className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                       required
                     />
@@ -310,7 +314,7 @@ const RegisterProviderPage = () => {
 
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1">
-                      Số điện thoại cơ sở / liên hệ <span className="text-red-500">*</span>
+                      {t('provider.fields.phone.label')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Phone className="w-5 h-5 absolute left-3 top-3.5 text-slate-400" />
@@ -319,7 +323,7 @@ const RegisterProviderPage = () => {
                         name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
-                        placeholder="Nhập số điện thoại"
+                        placeholder={t('provider.fields.phone.placeholder')}
                         className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
@@ -328,7 +332,7 @@ const RegisterProviderPage = () => {
 
                   <div className="sm:col-span-2">
                     <label className="block text-sm font-semibold text-slate-700 mb-1">
-                      Email nhận thông báo & Mật khẩu cấp <span className="text-red-500">*</span>
+                      {t('provider.fields.email.label')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="w-5 h-5 absolute left-3 top-3.5 text-slate-400" />
@@ -337,7 +341,7 @@ const RegisterProviderPage = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="Nhập địa chỉ email"
+                        placeholder={t('provider.fields.email.placeholder')}
                         className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
@@ -349,20 +353,20 @@ const RegisterProviderPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <Building2 className="w-5 h-5 text-teal-600" />
-                  <h3 className="text-lg font-bold text-slate-900">2. Chi Tiết Cơ Sở Bãi Đỗ Xe & Vị Trí Google Maps</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{t('provider.sections.facility')}</h3>
                 </div>
 
                 <div className="space-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1">
-                      Tên Cơ Sở Bãi Đỗ Xe <span className="text-red-500">*</span>
+                      {t('provider.fields.facilityName.label')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="facility_name"
                       value={formData.facility_name}
                       onChange={handleChange}
-                      placeholder="Nhập tên cơ sở bãi đỗ xe"
+                      placeholder={t('provider.fields.facilityName.placeholder')}
                       className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                       required
                     />
@@ -370,7 +374,7 @@ const RegisterProviderPage = () => {
 
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Địa chỉ chi tiết cơ sở & Tọa độ GPS <span className="text-red-500">*</span>
+                      {t('provider.fields.facilityAddress.label')} <span className="text-red-500">*</span>
                     </label>
 
                     <FacilityLocationPicker
@@ -386,7 +390,7 @@ const RegisterProviderPage = () => {
                     <div>
                       <div className="flex items-center justify-between min-h-[24px] mb-1">
                         <label className="block text-sm font-semibold text-slate-700">
-                          Sức chứa (Tổng số slot đỗ) <span className="text-red-500">*</span>
+                          {t('provider.fields.slotCapacity.label')} <span className="text-red-500">*</span>
                         </label>
                       </div>
                       <input
@@ -395,7 +399,7 @@ const RegisterProviderPage = () => {
                         name="capacity"
                         value={formData.capacity}
                         onChange={handleCapacityChange}
-                        placeholder="Nhập tổng số slot đỗ"
+                        placeholder={t('provider.fields.slotCapacity.placeholder')}
                         maxLength={4}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
@@ -405,11 +409,11 @@ const RegisterProviderPage = () => {
                     <div>
                       <div className="flex items-center justify-between min-h-[24px] mb-1">
                         <label className="block text-sm font-semibold text-slate-700">
-                          Giá thuê theo tháng <span className="text-red-500">*</span>
+                          {t('provider.fields.monthlyPrice.label')} <span className="text-red-500">*</span>
                         </label>
                         {formData.price_per_month && Number(formData.price_per_month) > 0 && (
                           <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-lg border border-teal-200">
-                            {Number(formData.price_per_month).toLocaleString('vi-VN')} VNĐ/tháng
+                            {Number(formData.price_per_month).toLocaleString('vi-VN')} {t('provider.fields.monthlyPrice.unitBadge')}
                           </span>
                         )}
                       </div>
@@ -419,7 +423,7 @@ const RegisterProviderPage = () => {
                         name="price_per_month"
                         value={formData.price_per_month}
                         onChange={handlePriceChange}
-                        placeholder="Nhập giá thuê theo tháng"
+                        placeholder={t('provider.fields.monthlyPrice.placeholder')}
                         maxLength={12}
                         className="block w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium text-slate-800"
                         required
@@ -431,32 +435,27 @@ const RegisterProviderPage = () => {
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <p className="text-xs text-teal-800 font-bold uppercase tracking-wider">
-                          Phí nền tảng thí điểm (Thu 1 lần khi duyệt bãi)
+                          {t('provider.feeBox.title')}
                         </p>
                         {matchedFee && (
                           <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-200/80 text-teal-900">
-                            {matchedFee.name}
+                            {translatePlatformFeeName(matchedFee.name, i18n.language)}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-teal-700 font-medium">
                         {matchedFee ? (
                           <>
-                            Quy mô khai báo: <strong>{capacitySlots} chỗ đỗ</strong>{' '}
-                            (Áp dụng khung{' '}
-                            {matchedFee.max_slots && matchedFee.max_slots < 900
-                              ? `${matchedFee.min_slots} - ${matchedFee.max_slots} chỗ`
-                              : `từ ${matchedFee.min_slots} chỗ trở lên`}
-                            )
+                            {t('provider.feeBox.scalePrefix')} <strong>{capacitySlots} {t('provider.feeBox.slotsUnit')}</strong>{' '}({matchedFee.max_slots && matchedFee.max_slots < 900 ? t('provider.feeBox.tierRange', { min: matchedFee.min_slots, max: matchedFee.max_slots }) : t('provider.feeBox.tierFrom', { min: matchedFee.min_slots })})
                           </>
                         ) : (
-                          'Vui lòng nhập số chỗ đỗ để xác định gói phí áp dụng'
+                          t('provider.feeBox.emptyHint')
                         )}
                       </p>
                     </div>
                     <div className="text-left sm:text-right shrink-0">
                       <span className="text-2xl font-extrabold text-teal-900">
-                        {systemFee > 0 ? `${systemFee.toLocaleString('vi-VN')} VNĐ` : '—'}
+                        {systemFee > 0 ? `${systemFee.toLocaleString('vi-VN')} ${isEnglish ? 'VND' : 'VNĐ'}` : '—'}
                       </span>
                     </div>
                   </div>
@@ -464,12 +463,12 @@ const RegisterProviderPage = () => {
                   {/* Loại phương tiện nhận gửi lấy động 100% từ Database */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Loại phương tiện nhận gửi <span className="text-red-500">*</span>
+                      {t('provider.fields.vehicleTypes.label')} <span className="text-red-500">*</span>
                     </label>
                     {loadingVehicleTypes ? (
-                      <p className="text-xs text-slate-500">Đang tải danh mục loại phương tiện từ cơ sở dữ liệu...</p>
+                      <p className="text-xs text-slate-500">{t('provider.fields.vehicleTypes.loading')}</p>
                     ) : dbVehicleTypes.length === 0 ? (
-                      <p className="text-xs text-amber-600">Chưa có loại phương tiện nào đang hoạt động trên hệ thống.</p>
+                      <p className="text-xs text-amber-600">{t('provider.fields.vehicleTypes.empty')}</p>
                     ) : (
                       <div className="flex flex-wrap gap-3">
                         {dbVehicleTypes.map(type => {
@@ -480,14 +479,14 @@ const RegisterProviderPage = () => {
                               type="button"
                               key={typeCode}
                               onClick={() => handleVehicleTypeToggle(typeCode)}
-                              title={type.description || type.name}
+                              title={translateVehicleTypeName(type, i18n.language)}
                               className={`px-4 py-2.5 rounded-xl border text-sm font-semibold flex items-center gap-2 transition ${isSelected
                                 ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                                 : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                                 }`}
                             >
                               <Car className="w-4 h-4" />
-                              <span>{type.name}</span>
+                              <span>{translateVehicleTypeName(type, i18n.language)}</span>
                             </button>
                           );
                         })}
@@ -500,11 +499,11 @@ const RegisterProviderPage = () => {
               <div>
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200">
                   <ShieldCheck className="w-5 h-5 text-teal-600" />
-                  <h3 className="text-lg font-bold text-slate-900">3. Danh Mục Tiện Ích Bãi Xe</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{t('provider.sections.amenities')}</h3>
                 </div>
 
                 {loadingAmenities ? (
-                  <p className="text-xs text-slate-500">Đang tải danh mục tiện ích từ cơ sở dữ liệu...</p>
+                  <p className="text-xs text-slate-500">{t('provider.fields.amenities.loading')}</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {dbAmenities.map((amenity) => {
@@ -521,7 +520,7 @@ const RegisterProviderPage = () => {
                         >
                           <span className="flex items-center gap-2 text-sm">
                             {isChecked ? <CheckSquare className="w-5 h-5 text-teal-600 shrink-0" /> : <Square className="w-5 h-5 text-slate-400 shrink-0" />}
-                            <span>{amenity.name}</span>
+                            <span>{translateAmenityName(amenity.name, i18n.language)}</span>
                           </span>
                         </button>
                       );
@@ -534,8 +533,8 @@ const RegisterProviderPage = () => {
               <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200 text-xs text-orange-900 flex items-start gap-3">
                 <ShieldCheck className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold mb-0.5">Quy trình đăng ký Chủ bãi đỗ xe:</p>
-                  <p>Sau khi gửi yêu cầu, Ban quản trị sẽ tiến hành phê duyệt. Khi cơ sở được duyệt, bạn sẽ nhận được Email chứa mật khẩu đăng nhập để hoàn tất thanh toán phí nền tảng.</p>
+                  <p className="font-bold mb-0.5">{t('provider.approvalNotice.title')}</p>
+                  <p>{t('provider.approvalNotice.description')}</p>
                 </div>
               </div>
 
@@ -551,15 +550,14 @@ const RegisterProviderPage = () => {
                   className="w-4 h-4 mt-0.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
                 />
                 <label htmlFor="agreePolicyProvider" className="text-xs text-slate-700 leading-relaxed cursor-pointer select-none">
-                  Tôi cam kết thông tin bãi xe là chính xác, đã đọc kỹ và đồng ý tuân thủ{' '}
+                  {t('provider.policy.agree')}
                   <button
                     type="button"
                     onClick={() => setPolicyModalOpen(true)}
                     className="text-teal-700 font-bold hover:underline"
                   >
-                    Chính Sách & Quy Định Dành Cho Chủ Bãi Đỗ Xe
-                  </button>{' '}
-                  của ParkLink. <span className="text-red-500">*</span>
+                    {t('provider.policy.linkText')}
+                  </button>{t('provider.policy.suffix')} <span className="text-red-500">*</span>
                 </label>
               </div>
 
@@ -568,9 +566,9 @@ const RegisterProviderPage = () => {
                 disabled={loading}
                 className="w-full py-4 px-6 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-lg rounded-2xl shadow-lg transition duration-200 flex justify-center items-center gap-2 disabled:opacity-50"
               >
-                {loading ? 'Đang gửi thông tin...' : (
+                {loading ? t('provider.submitting') : (
                   <>
-                    Hoàn Tất Đăng Ký Tài Khoản Chủ Bãi Xe <ArrowRight className="w-6 h-6" />
+                    {t('provider.submit')} <ArrowRight className="w-6 h-6" />
                   </>
                 )}
               </button>
@@ -578,9 +576,9 @@ const RegisterProviderPage = () => {
           )}
 
           <div className="mt-6 text-center text-sm text-slate-600">
-            Bạn đã có tài khoản Chủ bãi đỗ xe?{' '}
+            {t('provider.loginPrompt')}{' '}
             <Link to="/login" className="font-bold text-teal-600 hover:underline">
-              Đăng nhập tại đây
+              {t('provider.loginLink')}
             </Link>
           </div>
         </div>

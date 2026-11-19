@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Paperclip, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
 import { validateChatFiles } from '../../validations/chatValidation';
 
 const ChatInput = ({ onSendMessage }) => {
+    const { t } = useTranslation('chat');
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const imageInputRef = useRef(null);
@@ -24,7 +26,7 @@ const ChatInput = ({ onSendMessage }) => {
             await onSendMessage('', selectedFiles);
         } catch (error) {
             console.error('Lỗi gửi file', error);
-            alert('Có lỗi xảy ra khi gửi file đính kèm');
+            alert(t('input.sendFileError'));
         } finally {
             e.target.value = '';
             setLoading(false);
@@ -41,7 +43,7 @@ const ChatInput = ({ onSendMessage }) => {
             setText('');
         } catch (error) {
             console.error('Lỗi gửi tin nhắn', error);
-            alert('Có lỗi xảy ra khi gửi tin nhắn');
+            alert(t('input.sendTextError'));
         } finally {
             setLoading(false);
         }
@@ -56,7 +58,7 @@ const ChatInput = ({ onSendMessage }) => {
                     onClick={() => imageInputRef.current?.click()}
                     className="p-2.5 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-colors focus:outline-none"
                     disabled={loading}
-                    title="Gửi hình ảnh/video"
+                    title={t('input.uploadMediaTitle')}
                 >
                     <ImageIcon size={20} />
                 </button>
@@ -75,7 +77,7 @@ const ChatInput = ({ onSendMessage }) => {
                     onClick={() => docInputRef.current?.click()}
                     className="p-2.5 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-colors focus:outline-none"
                     disabled={loading}
-                    title="Gửi file, tài liệu (Word, Excel, PDF, Zip...)"
+                    title={t('input.uploadFileTitle')}
                 >
                     <Paperclip size={20} />
                 </button>
@@ -92,7 +94,7 @@ const ChatInput = ({ onSendMessage }) => {
                     type="text"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    placeholder="Nhập tin nhắn..."
+                    placeholder={t('input.placeholder')}
                     className="flex-1 bg-slate-100 border border-slate-200 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 rounded-full px-5 py-2.5 outline-none transition-all"
                     disabled={loading}
                 />

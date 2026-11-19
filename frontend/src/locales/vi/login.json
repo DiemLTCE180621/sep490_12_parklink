@@ -1,0 +1,38 @@
+{
+  "title": "Đăng Nhập Tài Khoản",
+  "subtitle": "Chào mừng bạn quay lại hệ thống dịch vụ bãi đỗ xe ParkLink.",
+  "fields": {
+    "email": {
+      "label": "Địa chỉ Email",
+      "placeholder": "Nhập địa chỉ email"
+    },
+    "password": {
+      "label": "Mật khẩu",
+      "placeholder": "Nhập mật khẩu"
+    }
+  },
+  "forgotPassword": "Quên mật khẩu?",
+  "submit": "Đăng Nhập",
+  "submitting": "Đang xác thực...",
+  "orContinueWith": "Hoặc tiếp tục với",
+  "policyNotice": {
+    "prefix": "Bằng việc đăng nhập vào hệ thống ParkLink, bạn đồng ý tuân thủ ",
+    "linkText": "Chính Sách & Điều Khoản Dịch Vụ",
+    "suffix": "."
+  },
+  "noAccount": "Chưa có tài khoản?",
+  "registerCustomer": "Đăng ký Khách thuê",
+  "registerProvider": "Đăng ký Chủ bãi",
+  "google": {
+    "continueButton": "Tiếp tục với Google",
+    "noCredential": "Không nhận được mã xác thực từ Google!",
+    "disclaimerPrefix": "Bằng việc tiếp tục với Google, bạn đồng ý với ",
+    "disclaimerLink": "Chính sách & Điều khoản dịch vụ",
+    "disclaimerSuffix": " của ParkLink."
+  },
+  "errors": {
+    "missingCredentials": "Vui lòng điền đầy đủ email và mật khẩu!",
+    "invalidCredentials": "Email hoặc mật khẩu không chính xác!",
+    "googleFailed": "Đăng nhập Google thất bại!"
+  }
+}

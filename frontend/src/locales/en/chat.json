@@ -1,0 +1,34 @@
+{
+  "list": {
+    "title": "Messages",
+    "empty": "No conversations yet.",
+    "attachmentPreview": "[Attachment]",
+    "noMessages": "No messages yet"
+  },
+  "window": {
+    "brand": "ParkLink Chat",
+    "selectPrompt": "Select a conversation to start messaging.",
+    "noMessagesYet": "No messages yet. Say hello! 👋"
+  },
+  "input": {
+    "placeholder": "Type a message...",
+    "uploadMediaTitle": "Send image/video",
+    "uploadFileTitle": "Send file or document (Word, Excel, PDF, Zip...)",
+    "sendFileError": "An error occurred while sending attachments",
+    "sendTextError": "An error occurred while sending the message"
+  },
+  "message": {
+    "attachmentAlt": "Attachment",
+    "zoomAlt": "Zoomed preview",
+    "defaultFileName": "Attachment",
+    "downloadTitle": "Download {{name}}",
+    "uploading": "Uploading...",
+    "clickToDownload": "Click to view / download",
+    "sending": " • Sending...",
+    "seen": " • Seen",
+    "sent": " • Sent"
+  },
+  "errors": {
+    "uploadFailed": "Unable to upload file. Please try again."
+  }
+}

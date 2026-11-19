@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   getConfirmationRecordDetail,
   acceptConfirmationRecord,
@@ -9,6 +10,7 @@ import {
   cancelEarlyTermination
 } from '../services/confirmationRecordService';
 import timelineSettingService from '../services/timelineSettingService';
+import { translateDurationText, translateVehicleTypeName } from '../utils/translations';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from '../components/modals/ConfirmModal';
 import Toast from '../components/common/Toast';
@@ -24,6 +26,9 @@ import {
 } from 'lucide-react';
 
 const ContractDetailPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -73,7 +78,7 @@ const ContractDetailPage = () => {
       const res = await getConfirmationRecordDetail(id);
       const data = res.data?.confirmation_record || res.confirmation_record;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin hợp đồng điện tử này.');
+        throw new Error(tRef.current('contractDetail.notFoundError'));
       }
       setContract(data);
       const custInfo = data?.contract_snapshot?.customer_info || {};
@@ -99,7 +104,7 @@ const ContractDetailPage = () => {
         setIsTermsAgreed(false);
       }
     } catch (err) {
-      setError(err.message || 'Không thể tải chi tiết hợp đồng điện tử!');
+      setError(err.message || tRef.current('contractDetail.loadError'));
     } finally {
       setLoading(false);
     }
@@ -133,33 +138,33 @@ const ContractDetailPage = () => {
       customerInfo.customer_id_card !== 'Chưa cập nhật' &&
       customerInfo.customer_id_card.trim() !== ''
       ? customerInfo.customer_id_card
-      : fallbackCccd || customerIdCard || localStorage.getItem('customer_id_card') || 'Chưa cập nhật';
+      : fallbackCccd || customerIdCard || localStorage.getItem('customer_id_card') || t('contractDetail.notUpdated');
 
   const displayAddress =
     customerInfo.customer_address &&
       customerInfo.customer_address !== 'Chưa cập nhật' &&
       customerInfo.customer_address.trim() !== ''
       ? customerInfo.customer_address
-      : fallbackAddress || customerAddress || localStorage.getItem('customer_address') || contract?.reservation?.customer?.address || 'Chưa cập nhật';
+      : fallbackAddress || customerAddress || localStorage.getItem('customer_address') || contract?.reservation?.customer?.address || t('contractDetail.notUpdated');
 
   const handleExecuteAccept = async () => {
     try {
       setAccepting(true);
       const payload = {
-        customer_address: (displayAddress && displayAddress !== 'Chưa cập nhật') ? displayAddress : (customerAddress?.trim() || ''),
-        customer_id_card: (displayIdCard && displayIdCard !== 'Chưa cập nhật') ? displayIdCard : (customerIdCard?.trim() || '')
+        customer_address: (displayAddress && displayAddress !== 'Chưa cập nhật' && displayAddress !== t('contractDetail.notUpdated')) ? displayAddress : (customerAddress?.trim() || ''),
+        customer_id_card: (displayIdCard && displayIdCard !== 'Chưa cập nhật' && displayIdCard !== t('contractDetail.notUpdated')) ? displayIdCard : (customerIdCard?.trim() || '')
       };
       const res = await acceptConfirmationRecord(id, payload);
       const updated = res.data?.confirmation_record || res.confirmation_record;
       setToastInfo({
-        message: 'Đã xác nhận ký hợp đồng điện tử thành công! Hợp đồng chính thức có hiệu lực.',
+        message: t('contractDetail.toasts.acceptSuccess'),
         type: 'success'
       });
       setContract(updated);
       setConfirmModalOpen(false);
     } catch (err) {
       setToastInfo({
-        message: err.message || 'Chấp nhận hợp đồng thất bại!',
+        message: err.message || t('contractDetail.toasts.acceptError'),
         type: 'error'
       });
     } finally {
@@ -173,14 +178,14 @@ const ContractDetailPage = () => {
       const res = await rejectConfirmationRecord(id);
       const updated = res.data?.confirmation_record || res.confirmation_record;
       setToastInfo({
-        message: 'Đã từ chối ký và hủy yêu cầu đặt chỗ thành công!',
+        message: t('contractDetail.toasts.rejectSuccess'),
         type: 'success'
       });
       setContract(updated);
       setRejectModalOpen(false);
     } catch (err) {
       setToastInfo({
-        message: err.message || 'Lỗi khi từ chối hợp đồng!',
+        message: err.message || t('contractDetail.toasts.rejectError'),
         type: 'error'
       });
     } finally {
@@ -209,8 +214,8 @@ const ContractDetailPage = () => {
 
       setToastInfo({
         message: isConfirmed
-          ? 'Đã xác nhận chấm dứt hợp đồng và thu hồi chỗ đỗ xe thành công!'
-          : 'Đã từ chối yêu cầu chấm dứt hợp đồng của khách hàng.',
+          ? t('contractDetail.toasts.terminateApproveSuccess')
+          : t('contractDetail.toasts.terminateRejectSuccess'),
         type: 'success'
       });
       setConfirmTerminationModalOpen(false);
@@ -218,7 +223,7 @@ const ContractDetailPage = () => {
       fetchDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Xử lý yêu cầu chấm dứt thất bại!',
+        message: err.response?.data?.message || err.message || t('contractDetail.toasts.terminateProcessError'),
         type: 'error'
       });
     } finally {
@@ -231,14 +236,14 @@ const ContractDetailPage = () => {
       setCancellingTermination(true);
       await cancelEarlyTermination(id);
       setToastInfo({
-        message: 'Đã hủy yêu cầu chấm dứt hợp đồng thành công! Hợp đồng tiếp tục có hiệu lực.',
+        message: t('contractDetail.toasts.cancelTerminateSuccess'),
         type: 'success'
       });
       setCancelTerminationModalOpen(false);
       fetchDetail();
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Hủy yêu cầu chấm dứt thất bại!',
+        message: err.response?.data?.message || err.message || t('contractDetail.toasts.cancelTerminateError'),
         type: 'error'
       });
     } finally {
@@ -261,15 +266,15 @@ const ContractDetailPage = () => {
 
       const res = await respondToLeaseExtension(id, {
         status,
-        provider_note: isApproved ? undefined : 'Chủ bãi không thể gia hạn thêm cho kỳ thuê này.'
+        provider_note: isApproved ? undefined : t('contractDetail.defaultExtensionRejectNote')
       });
 
       const newContract = res?.data?.new_confirmation_record || res?.new_confirmation_record;
 
       setToastInfo({
         message: isApproved
-          ? `Đã chấp thuận gia hạn và tạo hợp đồng mới ${newContract?.contract_code ? `(${newContract.contract_code})` : ''} theo giá hiện tại của bãi xe!`
-          : 'Đã từ chối yêu cầu gia hạn hợp đồng.',
+          ? (newContract?.contract_code ? t('contractDetail.toasts.extendApproveSuccessWithCode', { code: newContract.contract_code }) : t('contractDetail.toasts.extendApproveSuccess'))
+          : t('contractDetail.toasts.extendRejectSuccess'),
         type: 'success'
       });
       setRejectExtensionModalOpen(false);
@@ -283,7 +288,7 @@ const ContractDetailPage = () => {
       }
     } catch (err) {
       setToastInfo({
-        message: err.response?.data?.message || err.message || 'Phản hồi yêu cầu gia hạn thất bại!',
+        message: err.response?.data?.message || err.message || t('contractDetail.toasts.extendProcessError'),
         type: 'error'
       });
     } finally {
@@ -291,11 +296,19 @@ const ContractDetailPage = () => {
     }
   };
 
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+  const signingDurationDisplay = timelineSettings?.contractSigningText
+    ? translateDurationText(timelineSettings.contractSigningText, i18n.language)
+    : t('contractDetail.defaultSigningDuration');
   const contractIssueDate = contract?.created_at ? new Date(contract.created_at) : new Date();
-  const noticeText = timelineSettings?.terminationNoticeText || '15 ngày';
+  const noticeText = timelineSettings?.terminationNoticeText
+    ? translateDurationText(timelineSettings.terminationNoticeText, i18n.language)
+    : t('contractDetail.defaultNoticeDuration');
+  const rawNoticeTextVi = timelineSettings?.terminationNoticeText || '15 ngày';
   const formatNoticeInTerms = (content) => {
     if (!content) return '';
-    return content.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${noticeText}`);
+    return content.replace(/ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `ít nhất ${rawNoticeTextVi}`);
   };
 
   return (
@@ -316,29 +329,29 @@ const ContractDetailPage = () => {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition"
           >
             <ArrowLeft className="w-4 h-4" />
-            {isCustomer ? 'Quay lại danh sách hợp đồng' : 'Quay lại trang trước'}
+            {isCustomer ? t('contractDetail.topBar.backToContracts') : t('contractDetail.topBar.backToPrevious')}
           </button>
 
           <div className="flex items-center gap-2.5">
             {isActive ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Đang hiệu lực
+                {t('contractDetail.topBar.statusActive')}
               </span>
             ) : contract?.status === 'TERMINATED' ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                Đã chấm dứt
+                {t('contractDetail.topBar.statusTerminated')}
               </span>
             ) : contract?.status === 'CANCELLED' ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                Đã hủy (Hết chỗ)
+                {t('contractDetail.topBar.statusCancelled')}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                Chờ xác nhận
+                {t('contractDetail.topBar.statusPending')}
               </span>
             )}
 
@@ -350,10 +363,10 @@ const ContractDetailPage = () => {
                   if (resId) navigate(`/submit-complaint/${resId}`);
                 }}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg transition shadow-sm"
-                title="Gửi khiếu nại liên quan đến hợp đồng và bãi đỗ xe này"
+                title={t('contractDetail.topBar.complainTitle')}
               >
                 <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                Khiếu nại bãi xe
+                {t('contractDetail.topBar.complainButton')}
               </button>
             )}
 
@@ -366,7 +379,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition shadow-sm"
                   >
                     <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" />
-                    Xem gia hạn
+                    {t('contractDetail.topBar.viewExtension')}
                   </button>
                 ) : (
                   <button
@@ -375,7 +388,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition shadow-sm"
                   >
                     <Clock className="w-3.5 h-3.5" />
-                    Gia hạn
+                    {t('contractDetail.topBar.extend')}
                   </button>
                 )}
 
@@ -386,7 +399,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition shadow-sm"
                   >
                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
-                    Xem trả chỗ
+                    {t('contractDetail.topBar.viewTermination')}
                   </button>
                 ) : (
                   <button
@@ -395,7 +408,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition shadow-sm"
                   >
                     <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                    Chấm dứt trước hạn
+                    {t('contractDetail.topBar.earlyTerminate')}
                   </button>
                 )}
               </>
@@ -410,7 +423,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition shadow-sm"
                   >
                     <AlertCircle className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
-                    Xem chấm dứt
+                    {t('contractDetail.topBar.viewTerminationProvider')}
                   </button>
                 ) : (
                   <button
@@ -419,7 +432,7 @@ const ContractDetailPage = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition shadow-sm"
                   >
                     <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                    Chấm dứt trước hạn
+                    {t('contractDetail.topBar.earlyTerminate')}
                   </button>
                 )}
               </>
@@ -429,10 +442,10 @@ const ContractDetailPage = () => {
               type="button"
               onClick={() => window.print()}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg transition"
-              title="In văn bản hợp đồng hoặc lưu dưới dạng file PDF"
+              title={t('contractDetail.topBar.printTitle')}
             >
               <Printer className="w-3.5 h-3.5" />
-              In / Xuất PDF
+              {t('contractDetail.topBar.printButton')}
             </button>
           </div>
         </div>
@@ -440,18 +453,18 @@ const ContractDetailPage = () => {
         {loading ? (
           <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-3" />
-            <p className="text-slate-600 text-sm">Đang tải văn bản hợp đồng #{id}...</p>
+            <p className="text-slate-600 text-sm">{t('contractDetail.loading', { id })}</p>
           </div>
         ) : error ? (
           <div className="bg-white rounded-xl p-10 border border-slate-200 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">Không thể tải hợp đồng</h3>
+            <h3 className="text-base font-bold text-slate-900">{t('contractDetail.errorTitle')}</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">{error}</p>
             <button
               onClick={fetchDetail}
               className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử lại
+              {t('contractDetail.retry')}
             </button>
           </div>
         ) : contract ? (
@@ -461,14 +474,14 @@ const ContractDetailPage = () => {
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-start gap-3 shadow-xs">
                 <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="leading-relaxed text-xs sm:text-sm text-amber-900">
-                  <span className="font-bold text-amber-950">Thời hạn ký xác nhận hợp đồng: </span>
+                  <span className="font-bold text-amber-950">{t('contractDetail.banners.signingTitle')} </span>
                   {isCustomer ? (
                     <>
-                      Bạn có <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{timelineSettings?.contractSigningText || '5 phút'}</strong> kể từ lúc chủ bãi lập hợp đồng để đọc kỹ và ký xác nhận trực tuyến. Quá thời hạn này mà bạn chưa hoàn tất ký, hệ thống sẽ tự động hủy hợp đồng.
+                      {t('contractDetail.banners.signingCustomerBefore')} <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{signingDurationDisplay}</strong> {t('contractDetail.banners.signingCustomerAfter')}
                     </>
                   ) : (
                     <>
-                      Khách hàng có <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{timelineSettings?.contractSigningText || '5 phút'}</strong> kể từ lúc bạn tạo hợp đồng để kiểm tra và ký xác nhận. Quá thời hạn này, hệ thống sẽ tự động hủy hợp đồng.
+                      {t('contractDetail.banners.signingProviderBefore')} <strong className="text-amber-950 font-bold underline px-1.5 py-0.5 bg-amber-100 rounded">{signingDurationDisplay}</strong> {t('contractDetail.banners.signingProviderAfter')}
                     </>
                   )}
                 </div>
@@ -483,10 +496,10 @@ const ContractDetailPage = () => {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-amber-900">
-                      Yêu cầu gia hạn hợp đồng đang chờ chủ bãi phê duyệt (+{pendingExtension.extension_months} tháng)
+                      {t('contractDetail.banners.extensionPendingTitle', { months: pendingExtension.extension_months })}
                     </h4>
                     <p className="text-[11px] sm:text-xs text-amber-700 mt-0.5">
-                      Thời hạn mới đề xuất: <strong>{pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString('vi-VN') : '---'}</strong> • Chi phí dự kiến: <strong>{Number(pendingExtension.total_estimated_amount || 0).toLocaleString('vi-VN')} đ</strong>
+                      {t('contractDetail.banners.extensionProposedEnd')} <strong>{pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString(dateLocale) : '---'}</strong> • {t('contractDetail.banners.extensionEstCost')} <strong>{Number(pendingExtension.total_estimated_amount || 0).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}</strong>
                     </p>
                   </div>
                 </div>
@@ -495,7 +508,7 @@ const ContractDetailPage = () => {
                   onClick={() => navigate(`/contracts/${id}/extend`)}
                   className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
                 >
-                  Xem chi tiết / Hủy
+                  {t('contractDetail.banners.viewDetailOrCancel')}
                 </button>
               </div>
             )}
@@ -509,10 +522,10 @@ const ContractDetailPage = () => {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-teal-900">
-                      Đã khởi tạo hợp đồng gia hạn mới ({snapshot.extension_request.new_contract_code || `#${snapshot.extension_request.new_contract_id}`})
+                      {t('contractDetail.banners.extendedDoneTitle', { code: snapshot.extension_request.new_contract_code || `#${snapshot.extension_request.new_contract_id}` })}
                     </h4>
                     <p className="text-[11px] sm:text-xs text-teal-700 mt-0.5">
-                      Hợp đồng cũ này được giữ nguyên làm lịch sử đối soát. Vui lòng chuyển sang hợp đồng mới để xem và ký xác nhận!
+                      {t('contractDetail.banners.extendedDoneDesc')}
                     </p>
                   </div>
                 </div>
@@ -527,7 +540,7 @@ const ContractDetailPage = () => {
                   }
                   className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
                 >
-                  Xem hợp đồng mới
+                  {t('contractDetail.banners.viewNewContract')}
                 </button>
               </div>
             )}
@@ -542,45 +555,45 @@ const ContractDetailPage = () => {
                     </div>
                     <div>
                       <h4 className="text-sm sm:text-base font-bold text-slate-900">
-                        Khách hàng yêu cầu gia hạn hợp đồng
+                        {t('contractDetail.banners.providerExtensionTitle')}
                       </h4>
                       <p className="text-xs text-slate-500">
-                        Vui lòng kiểm tra thông tin thay đổi và phản hồi yêu cầu của khách hàng.
+                        {t('contractDetail.banners.providerExtensionDesc')}
                       </p>
                     </div>
                   </div>
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300 shrink-0">
-                    Chờ bạn duyệt
+                    {t('contractDetail.banners.awaitingApproval')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-amber-50/50 p-4 rounded-xl border border-amber-200">
                   <div>
-                    <span className="text-slate-500 block">Số tháng xin gia hạn:</span>
-                    <strong className="text-slate-900 text-sm">+{pendingExtension.extension_months} tháng</strong>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.extMonthsLabel')}</span>
+                    <strong className="text-slate-900 text-sm">{t('contractDetail.banners.extMonthsValue', { months: pendingExtension.extension_months })}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Ngày kết thúc mới đề xuất:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.extNewEndLabel')}</span>
                     <strong className="text-teal-700 text-sm">
-                      {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString('vi-VN') : '---'}
+                      {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString(dateLocale) : '---'}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Tổng doanh thu dự kiến (+{pendingExtension.extension_months} tháng):</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.extRevenueLabel', { months: pendingExtension.extension_months })}</span>
                     <strong className="text-emerald-700 text-sm font-bold">
-                      {Number(pendingExtension.total_estimated_amount || 0).toLocaleString('vi-VN')} đ
+                      {Number(pendingExtension.total_estimated_amount || 0).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.extSubmittedLabel')}</span>
                     <span className="text-slate-700 font-medium">
-                      {new Date(pendingExtension.requested_at).toLocaleDateString('vi-VN')}
+                      {new Date(pendingExtension.requested_at).toLocaleDateString(dateLocale)}
                     </span>
                   </div>
 
                   {pendingExtension.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
-                      <span className="text-slate-500 block font-medium">Lý do từ khách hàng:</span>
+                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.extCustomerReason')}</span>
                       <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-amber-200">
                         "{pendingExtension.reason}"
                       </p>
@@ -591,15 +604,15 @@ const ContractDetailPage = () => {
                   {pendingExtension.vehicle_info?.is_changed && (
                     <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
                       <span className="text-slate-700 font-bold block mb-1">
-                        Khách hàng có đăng ký thay đổi thông tin xe:
+                        {t('contractDetail.banners.extVehicleChangeTitle')}
                       </span>
                       <div className="p-2.5 bg-white rounded-lg border border-teal-200 grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Loại xe mới</span>
-                          <strong className="text-slate-900 font-semibold">{pendingExtension.vehicle_info.vehicle_type}</strong>
+                          <span className="text-slate-400 block text-[11px]">{t('contractDetail.banners.extNewVehicleType')}</span>
+                          <strong className="text-slate-900 font-semibold">{translateVehicleTypeName({ name: pendingExtension.vehicle_info.vehicle_type }, i18n.language)}</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[11px]">Biển số mới</span>
+                          <span className="text-slate-400 block text-[11px]">{t('contractDetail.banners.extNewPlate')}</span>
                           <strong className="text-teal-700 font-semibold">{pendingExtension.vehicle_info.license_plate}</strong>
                         </div>
                       </div>
@@ -614,7 +627,7 @@ const ContractDetailPage = () => {
                     onClick={() => handleRespondExtension('REJECTED')}
                     className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg text-xs font-semibold transition"
                   >
-                    Từ chối gia hạn
+                    {t('contractDetail.banners.extRejectButton')}
                   </button>
                   <button
                     type="button"
@@ -623,7 +636,7 @@ const ContractDetailPage = () => {
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
                   >
                     {processingExtension ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                    Chấp thuận & Tạo hợp đồng gia hạn mới
+                    {t('contractDetail.banners.extApproveButton')}
                   </button>
                 </div>
               </div>
@@ -634,9 +647,9 @@ const ContractDetailPage = () => {
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
                 <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">Hợp đồng này đã được thanh lý & chấm dứt hiệu lực</h4>
+                  <h4 className="text-sm font-bold text-slate-900">{t('contractDetail.banners.terminatedTitle')}</h4>
                   <p className="text-slate-600 mt-0.5">
-                    Vị trí đỗ xe đã được hoàn trả lại cho bãi xe. Văn bản hợp đồng dưới đây được lưu trữ phục vụ việc đối soát và tra cứu.
+                    {t('contractDetail.banners.terminatedDesc')}
                   </p>
                 </div>
               </div>
@@ -647,9 +660,9 @@ const ContractDetailPage = () => {
               <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
                 <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">Hợp đồng này đã tự động hủy do bãi xe hết chỗ trống</h4>
+                  <h4 className="text-sm font-bold text-slate-900">{t('contractDetail.banners.cancelledSlotTitle')}</h4>
                   <p className="text-slate-600 mt-0.5">
-                    Chỗ trống cuối cùng tại bãi xe đã được chủ bãi và khách hàng khác hoàn tất ký kết hợp đồng trước đó.
+                    {t('contractDetail.banners.cancelledSlotDesc')}
                   </p>
                 </div>
               </div>
@@ -660,11 +673,11 @@ const ContractDetailPage = () => {
                 <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-amber-900">
-                    Yêu cầu chấm dứt hợp đồng trước hạn đã tự động hủy (Quá {noticeText} chưa được xác nhận)
+                    {t('contractDetail.banners.expiredTermTitle', { notice: noticeText })}
                   </h4>
                   <p className="text-amber-700 mt-0.5">
-                    {snapshot.last_expired_termination.expired_reason ||
-                      `Sau ${noticeText} kể từ khi gửi yêu cầu nhưng chưa được hai bên xác nhận nên yêu cầu chấm dứt đã tự động hủy. Hợp đồng hiện vẫn tiếp tục có hiệu lực.`}
+                    {(i18n.language?.startsWith('en') ? null : snapshot.last_expired_termination.expired_reason) ||
+                      t('contractDetail.banners.expiredTermFallback', { notice: noticeText })}
                   </p>
                 </div>
               </div>
@@ -681,55 +694,55 @@ const ContractDetailPage = () => {
                     <div>
                       <h4 className="text-sm sm:text-base font-bold text-slate-900">
                         {pendingTermination.requested_by === 'PROVIDER'
-                          ? 'Chủ bãi xe đã gửi yêu cầu chấm dứt hợp đồng trước hạn'
-                          : 'Yêu cầu chấm dứt hợp đồng đang chờ chủ bãi xác nhận'}
+                          ? t('contractDetail.banners.custTermProviderTitle')
+                          : t('contractDetail.banners.custTermCustomerTitle')}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {pendingTermination.requested_by === 'PROVIDER'
-                          ? 'Chủ bãi đã thông báo dừng thuê trước hạn. Vui lòng kiểm tra lý do, tiền hoàn trả và bàn giao lại vị trí đỗ.'
-                          : 'Yêu cầu trả chỗ trước hạn của bạn đang chờ chủ bãi xe kiểm tra và xác nhận thu hồi.'}
+                          ? t('contractDetail.banners.custTermProviderDesc')
+                          : t('contractDetail.banners.custTermCustomerDesc')}
                       </p>
                     </div>
                   </div>
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 shrink-0">
-                    {pendingTermination.requested_by === 'PROVIDER' ? 'Bên A (Chủ bãi) gửi' : 'Đang chờ xử lý'}
+                    {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.sentByProviderBadge') : t('contractDetail.banners.pendingProcessBadge')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
                   <div>
                     <span className="text-slate-500 block">
-                      {pendingTermination.requested_by === 'PROVIDER' ? 'Ngày dừng gửi dự kiến:' : 'Ngày đề xuất trả chỗ:'}
+                      {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.proposedStopDate') : t('contractDetail.banners.proposedReturnDate')}
                     </span>
                     <strong className="text-rose-700 text-sm font-bold">
-                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString('vi-VN') : '---'}
+                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString(dateLocale) : '---'}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Hạn hợp đồng ban đầu:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.originalEndDate')}</span>
                     <strong className="text-slate-800 text-sm font-semibold">
-                      {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                      {new Date(contract.end_date).toLocaleDateString(dateLocale)}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.submittedAt')}</span>
                     <span className="text-slate-700 font-medium">
-                      {new Date(pendingTermination.requested_at).toLocaleDateString('vi-VN')} {new Date(pendingTermination.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(pendingTermination.requested_at).toLocaleDateString(dateLocale)} {new Date(pendingTermination.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
                     <div>
-                      <span className="text-slate-500 block">Số tiền chủ bãi hoàn lại (thỏa thuận):</span>
+                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAgreedLabel')}</span>
                       <strong className="text-emerald-700 font-mono text-sm font-bold">
-                        {Number(pendingTermination.refund_amount).toLocaleString('vi-VN')} đ
+                        {Number(pendingTermination.refund_amount).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                       </strong>
                     </div>
                   )}
 
                   {pendingTermination.bank_account_info && (
                     <div>
-                      <span className="text-slate-500 block">Tài khoản nhận tiền hoàn lại (thỏa thuận):</span>
+                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
                       <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
                     </div>
                   )}
@@ -737,7 +750,7 @@ const ContractDetailPage = () => {
                   {pendingTermination.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
                       <span className="text-slate-500 block font-medium">
-                        {pendingTermination.requested_by === 'PROVIDER' ? 'Lý do từ chủ bãi xe:' : 'Lý do từ bạn:'}
+                        {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.reasonFromProvider') : t('contractDetail.banners.reasonFromYou')}
                       </span>
                       <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.reason}"
@@ -747,7 +760,7 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">Ghi chú hướng dẫn từ chủ bãi:</span>
+                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.providerGuideNote')}</span>
                       <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.provider_note}"
                       </p>
@@ -764,7 +777,7 @@ const ContractDetailPage = () => {
                       className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
                     >
                       {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-                      Hủy yêu cầu chấm dứt
+                      {t('contractDetail.banners.cancelTermination')}
                     </button>
                   )}
                   <button
@@ -772,7 +785,7 @@ const ContractDetailPage = () => {
                     onClick={() => navigate(`/contracts/${id}/terminate`)}
                     className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
                   >
-                    {pendingTermination.requested_by === 'PROVIDER' ? 'Xem chi tiết & Bàn giao chỗ' : 'Xem chi tiết'}
+                    {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.viewHandoverDetail') : t('contractDetail.banners.viewDetail')}
                   </button>
                 </div>
               </div>
@@ -789,54 +802,54 @@ const ContractDetailPage = () => {
                     <div>
                       <h4 className="text-sm sm:text-base font-bold text-slate-900">
                         {pendingTermination.requested_by === 'PROVIDER'
-                          ? 'Yêu cầu chấm dứt hợp đồng do bạn khởi tạo'
-                          : 'Khách hàng yêu cầu chấm dứt hợp đồng & Trả chỗ trước hạn'}
+                          ? t('contractDetail.banners.provTermSelfTitle')
+                          : t('contractDetail.banners.provTermCustTitle')}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {pendingTermination.requested_by === 'PROVIDER'
-                          ? 'Yêu cầu đã gửi tới khách hàng. Khi khách hàng di chuyển xe và bàn giao vị trí, bạn hãy xác nhận đã thu hồi chỗ đỗ.'
-                          : 'Kiểm tra ngày bàn giao vị trí đỗ và thực hiện xác nhận để thanh lý hợp đồng & thu hồi lại chỗ đỗ xe.'}
+                          ? t('contractDetail.banners.provTermSelfDesc')
+                          : t('contractDetail.banners.provTermCustDesc')}
                       </p>
                     </div>
                   </div>
                   <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-300 shrink-0">
-                    {pendingTermination.requested_by === 'PROVIDER' ? 'Chờ thu hồi chỗ' : 'Chờ bạn xác nhận'}
+                    {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.awaitingReclaimBadge') : t('contractDetail.banners.awaitingConfirmBadge')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
                   <div>
                     <span className="text-slate-500 block">
-                      {pendingTermination.requested_by === 'PROVIDER' ? 'Ngày dừng gửi dự kiến:' : 'Ngày đề xuất trả chỗ:'}
+                      {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.proposedStopDate') : t('contractDetail.banners.proposedReturnDate')}
                     </span>
                     <strong className="text-rose-700 text-sm font-bold">
-                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString('vi-VN') : '---'}
+                      {pendingTermination.requested_termination_date ? new Date(pendingTermination.requested_termination_date).toLocaleDateString(dateLocale) : '---'}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Hạn hợp đồng ban đầu:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.originalEndDate')}</span>
                     <strong className="text-slate-800 text-sm font-semibold">
-                      {new Date(contract.end_date).toLocaleDateString('vi-VN')}
+                      {new Date(contract.end_date).toLocaleDateString(dateLocale)}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Ngày gửi yêu cầu:</span>
+                    <span className="text-slate-500 block">{t('contractDetail.banners.submittedAt')}</span>
                     <span className="text-slate-700 font-medium">
-                      {new Date(pendingTermination.requested_at).toLocaleDateString('vi-VN')} {new Date(pendingTermination.requested_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(pendingTermination.requested_at).toLocaleDateString(dateLocale)} {new Date(pendingTermination.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   {pendingTermination.bank_account_info && (
                     <div>
-                      <span className="text-slate-500 block">Tài khoản nhận tiền hoàn lại (thỏa thuận):</span>
+                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
                       <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
                     </div>
                   )}
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
                     <div>
-                      <span className="text-slate-500 block">Số tiền hoàn trả dự kiến cho khách:</span>
+                      <span className="text-slate-500 block">{t('contractDetail.banners.provRefundExpected')}</span>
                       <strong className="text-emerald-700 font-mono text-sm font-bold">
-                        {Number(pendingTermination.refund_amount).toLocaleString('vi-VN')} đ
+                        {Number(pendingTermination.refund_amount).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                       </strong>
                     </div>
                   )}
@@ -844,7 +857,7 @@ const ContractDetailPage = () => {
                   {pendingTermination.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
                       <span className="text-slate-500 block font-medium">
-                        {pendingTermination.requested_by === 'PROVIDER' ? 'Lý do từ chủ bãi xe (Bạn):' : 'Lý do từ khách hàng:'}
+                        {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.reasonFromProviderSelf') : t('contractDetail.banners.reasonFromCustomer')}
                       </span>
                       <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.reason}"
@@ -854,7 +867,7 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">Ghi chú hướng dẫn cho khách hàng:</span>
+                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.guideNoteForCustomer')}</span>
                       <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.provider_note}"
                       </p>
@@ -869,7 +882,7 @@ const ContractDetailPage = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div className="space-y-1">
                           <label className="text-xs font-semibold text-slate-700 block">
-                            Số tiền hoàn trả cho khách (nếu có thỏa thuận):
+                            {t('contractDetail.banners.provRefundInputLabel')}
                           </label>
                           <input
                             type="number"
@@ -877,21 +890,21 @@ const ContractDetailPage = () => {
                             step={1000}
                             value={terminationRefund}
                             onChange={(e) => setTerminationRefund(e.target.value)}
-                            placeholder="Ví dụ: 500000..."
+                            placeholder={t('contractDetail.banners.provRefundPlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 font-mono"
                           />
-                          <span className="text-[11px] text-slate-400 block">Hai bên tự chuyển khoản / thanh toán trực tiếp ngoài web.</span>
+                          <span className="text-[11px] text-slate-400 block">{t('contractDetail.banners.offPlatformTransferNote')}</span>
                         </div>
 
                         <div className="space-y-1">
                           <label className="text-xs font-semibold text-slate-700 block">
-                            Ghi chú xác nhận / Phản hồi của chủ bãi:
+                            {t('contractDetail.banners.provNoteInputLabel')}
                           </label>
                           <input
                             type="text"
                             value={terminationProviderNote}
                             onChange={(e) => setTerminationProviderNote(e.target.value)}
-                            placeholder="Nhập ghi chú hoặc lý do nếu từ chối..."
+                            placeholder={t('contractDetail.banners.provNotePlaceholder')}
                             className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
                           />
                         </div>
@@ -905,7 +918,7 @@ const ContractDetailPage = () => {
                         onClick={() => setRejectTerminationModalOpen(true)}
                         className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition"
                       >
-                        Từ chối chấm dứt
+                        {t('contractDetail.banners.rejectTerminationBtn')}
                       </button>
                       <button
                         type="button"
@@ -914,7 +927,7 @@ const ContractDetailPage = () => {
                         className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
                       >
                         {processingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                        Xác nhận chấm dứt & Thu hồi chỗ đỗ
+                        {t('contractDetail.banners.approveTerminationBtn')}
                       </button>
                     </div>
                   </>
@@ -932,7 +945,7 @@ const ContractDetailPage = () => {
                         className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
                       >
                         {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
-                        Hủy yêu cầu chấm dứt này
+                        {t('contractDetail.banners.cancelThisTerminationBtn')}
                       </button>
                       <button
                         type="button"
@@ -941,7 +954,7 @@ const ContractDetailPage = () => {
                         className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5 shadow-sm"
                       >
                         {processingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-                        Xác nhận đã thu hồi chỗ đỗ
+                        {t('contractDetail.banners.confirmReclaimedBtn')}
                       </button>
                     </div>
                   </div>
@@ -995,8 +1008,8 @@ const ContractDetailPage = () => {
                 <div className="space-y-1 pl-1">
                   <p className="font-bold uppercase text-black">2. BÊN B (BÊN GỬI XE Ô TÔ):</p>
                   <p className="pl-4">- Ông (Bà): <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong></p>
-                  <p className="pl-4">- Số CMND / Thẻ CCCD: <strong>{displayIdCard}</strong></p>
-                  <p className="pl-4">- Địa chỉ thường trú / liên hệ: {displayAddress}</p>
+                  <p className="pl-4">- Số CMND / Thẻ CCCD: <strong>{displayIdCard === t('contractDetail.notUpdated') ? 'Chưa cập nhật' : displayIdCard}</strong></p>
+                  <p className="pl-4">- Địa chỉ thường trú / liên hệ: {displayAddress === t('contractDetail.notUpdated') ? 'Chưa cập nhật' : displayAddress}</p>
                   <p className="pl-4">- Điện thoại liên hệ: {customerInfo.customer_phone || contract.reservation?.customer?.phone_number || 'Chưa cập nhật'}</p>
                   <p className="pl-4">- Email: {customerInfo.customer_email || contract.reservation?.customer?.email || 'Chưa cập nhật'}</p>
                 </div>
@@ -1123,15 +1136,15 @@ const ContractDetailPage = () => {
                 <div className="border-b border-slate-100 pb-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h4 className="text-base font-bold text-slate-900">
-                      Xác nhận hợp đồng điện tử
+                      {t('contractDetail.signingBox.title')}
                     </h4>
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
                       <Clock className="w-3.5 h-3.5 text-amber-700" />
-                      Hạn ký: {timelineSettings?.contractSigningText || '5 phút'}
+                      {t('contractDetail.signingBox.deadline', { duration: signingDurationDisplay })}
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">
-                    Vui lòng kiểm tra kỹ nội dung và điều khoản hợp đồng phía trên trước khi xác nhận. Hợp đồng sẽ tự động hủy nếu quá thời hạn {timelineSettings?.contractSigningText || '5 phút'}.
+                    {t('contractDetail.signingBox.desc', { duration: signingDurationDisplay })}
                   </p>
                 </div>
 
@@ -1148,8 +1161,8 @@ const ContractDetailPage = () => {
                     )}
                   </button>
                   <span className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                    Tôi là <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong>,
-                    xác nhận thông tin cá nhân trên là chính xác, đã đọc kỹ và đồng ý với toàn bộ nội dung, quyền và nghĩa vụ trong hợp đồng này.
+                    {t('contractDetail.signingBox.confirmTextBefore')} <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong>,
+                    {t('contractDetail.signingBox.confirmTextAfter')}
                   </span>
                 </label>
 
@@ -1160,7 +1173,7 @@ const ContractDetailPage = () => {
                     onClick={() => setRejectModalOpen(true)}
                     className="px-5 py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 hover:border-rose-200 font-semibold text-sm rounded-lg transition"
                   >
-                    Từ chối ký / Hủy yêu cầu
+                    {t('contractDetail.signingBox.rejectButton')}
                   </button>
 
                   <button
@@ -1172,10 +1185,10 @@ const ContractDetailPage = () => {
                     {accepting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-white" />
-                        Đang xác nhận...
+                        {t('contractDetail.signingBox.submitting')}
                       </>
                     ) : (
-                      'Xác nhận hợp đồng điện tử'
+                      t('contractDetail.signingBox.acceptButton')
                     )}
                   </button>
                 </div>
@@ -1190,10 +1203,10 @@ const ContractDetailPage = () => {
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
         onConfirm={handleExecuteAccept}
-        title="Xác Nhận Ký Hợp Đồng Điện Tử"
-        message="Bạn có chắc chắn muốn chấp nhận ký hợp đồng đỗ xe theo tháng này không? Hợp đồng sau khi ký sẽ chính thức có hiệu lực pháp lý."
-        confirmText="Đồng Ý Ký Ngay"
-        cancelText="Bỏ Qua"
+        title={t('contractDetail.modals.acceptTitle')}
+        message={t('contractDetail.modals.acceptMsg')}
+        confirmText={t('contractDetail.modals.acceptBtn')}
+        cancelText={t('contractDetail.modals.acceptCancel')}
         type="primary"
         loading={accepting}
       />
@@ -1202,10 +1215,10 @@ const ContractDetailPage = () => {
         isOpen={rejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
         onConfirm={handleExecuteReject}
-        title="Từ Chối Ký Hợp Đồng"
-        message="Bạn có chắc chắn muốn từ chối ký hợp đồng này không? Yêu cầu đặt chỗ sẽ được hủy bỏ và thao tác này không thể hoàn tác."
-        confirmText="Từ Chối Ký"
-        cancelText="Quay Lại"
+        title={t('contractDetail.modals.rejectTitle')}
+        message={t('contractDetail.modals.rejectMsg')}
+        confirmText={t('contractDetail.modals.rejectBtn')}
+        cancelText={t('contractDetail.modals.rejectCancel')}
         type="danger"
         loading={rejecting}
       />
@@ -1215,14 +1228,14 @@ const ContractDetailPage = () => {
         isOpen={confirmTerminationModalOpen}
         onClose={() => setConfirmTerminationModalOpen(false)}
         onConfirm={() => executeTermination('CONFIRMED')}
-        title={pendingTermination?.requested_by === 'PROVIDER' ? 'Xác Nhận Đã Thu Hồi Chỗ Đỗ' : 'Xác Nhận Chấm Dứt Hợp Đồng & Thu Hồi Chỗ Đỗ'}
+        title={pendingTermination?.requested_by === 'PROVIDER' ? t('contractDetail.modals.termProviderTitle') : t('contractDetail.modals.termCustomerTitle')}
         message={
           pendingTermination?.requested_by === 'PROVIDER'
-            ? 'Bạn có chắc chắn muốn xác nhận đã thu hồi lại chỗ đỗ xe? Sau khi xác nhận, hợp đồng sẽ chính thức được thanh lý và vị trí đỗ xe sẽ được mở lại cho khách hàng mới.'
-            : 'Bạn có chắc chắn muốn xác nhận chấm dứt hợp đồng này? Sau khi xác nhận, hợp đồng sẽ chính thức được thanh lý và hệ thống sẽ tự động thu hồi lại vị trí đỗ xe trống để đón khách mới.'
+            ? t('contractDetail.modals.termProviderMsg')
+            : t('contractDetail.modals.termCustomerMsg')
         }
-        confirmText={pendingTermination?.requested_by === 'PROVIDER' ? 'Xác Nhận Đã Thu Hồi' : 'Xác Nhận Chấm Dứt'}
-        cancelText="Bỏ Qua"
+        confirmText={pendingTermination?.requested_by === 'PROVIDER' ? t('contractDetail.modals.termProviderBtn') : t('contractDetail.modals.termCustomerBtn')}
+        cancelText={t('contractDetail.modals.dismissBtn')}
         type="danger"
         loading={processingTermination}
       />
@@ -1232,10 +1245,10 @@ const ContractDetailPage = () => {
         isOpen={cancelTerminationModalOpen}
         onClose={() => setCancelTerminationModalOpen(false)}
         onConfirm={handleExecuteCancelTermination}
-        title="Hủy Yêu Cầu Chấm Dứt Hợp Đồng"
-        message="Bạn có chắc chắn muốn hủy yêu cầu chấm dứt hợp đồng này không? Hợp đồng sẽ tiếp tục có hiệu lực theo thời hạn đã ký ban đầu."
-        confirmText="Đồng Ý Hủy"
-        cancelText="Bỏ Qua"
+        title={t('contractDetail.modals.cancelTermTitle')}
+        message={t('contractDetail.modals.cancelTermMsg')}
+        confirmText={t('contractDetail.modals.cancelTermBtn')}
+        cancelText={t('contractDetail.modals.dismissBtn')}
         type="warning"
         loading={cancellingTermination}
       />
@@ -1245,10 +1258,10 @@ const ContractDetailPage = () => {
         isOpen={rejectTerminationModalOpen}
         onClose={() => setRejectTerminationModalOpen(false)}
         onConfirm={() => executeTermination('REJECTED')}
-        title="Từ Chối Yêu Cầu Chấm Dứt Hợp Đồng"
-        message="Bạn có chắc chắn muốn từ chối yêu cầu chấm dứt trước hạn này của khách hàng? Hợp đồng sẽ tiếp tục có hiệu lực theo thời hạn đã ký ban đầu."
-        confirmText="Từ Chối Yêu Cầu"
-        cancelText="Bỏ Qua"
+        title={t('contractDetail.modals.rejectTermTitle')}
+        message={t('contractDetail.modals.rejectTermMsg')}
+        confirmText={t('contractDetail.modals.rejectTermBtn')}
+        cancelText={t('contractDetail.modals.dismissBtn')}
         type="warning"
         loading={processingTermination}
       />
@@ -1258,10 +1271,10 @@ const ContractDetailPage = () => {
         isOpen={rejectExtensionModalOpen}
         onClose={() => setRejectExtensionModalOpen(false)}
         onConfirm={() => executeExtensionResponse('REJECTED')}
-        title="Từ Chối Yêu Cầu Gia Hạn Hợp Đồng"
-        message="Bạn có chắc chắn muốn từ chối yêu cầu gia hạn thời gian thuê của khách hàng không?"
-        confirmText="Từ Chối Gia Hạn"
-        cancelText="Bỏ Qua"
+        title={t('contractDetail.modals.rejectExtTitle')}
+        message={t('contractDetail.modals.rejectExtMsg')}
+        confirmText={t('contractDetail.modals.rejectExtBtn')}
+        cancelText={t('contractDetail.modals.dismissBtn')}
         type="warning"
         loading={processingExtension}
       />

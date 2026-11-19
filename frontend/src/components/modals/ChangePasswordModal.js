@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Lock, KeyRound, AlertCircle, CheckCircle2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import authService from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import { isValidPassword } from '../../utils/validators';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const { t } = useTranslation('profile');
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     oldPassword: '',
@@ -33,17 +35,17 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     setSuccessMessage('');
 
     if (!formData.oldPassword) {
-      setError('Vui lòng nhập mật khẩu hiện tại!');
+      setError(t('changePasswordModal.messages.oldPasswordRequired'));
       return;
     }
 
     if (!isValidPassword(formData.newPassword)) {
-      setError('Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ cái viết hoa, 1 chữ cái viết thường và 1 chữ số!');
+      setError(t('changePasswordModal.messages.passwordInvalid'));
       return;
     }
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setError('Xác nhận mật khẩu mới không trùng khớp!');
+      setError(t('changePasswordModal.messages.confirmMismatch'));
       return;
     }
 
@@ -53,7 +55,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
         oldPassword: formData.oldPassword,
         newPassword: formData.newPassword
       });
-      setSuccessMessage(res.data?.message || 'Đổi mật khẩu thành công!');
+      setSuccessMessage(res.data?.message || t('changePasswordModal.messages.successFallback'));
       setTimeout(() => {
         handleClose();
       }, 1500);
@@ -66,7 +68,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       } else if (err.message) {
         setError([err.message]);
       } else {
-        setError(['Đổi mật khẩu thất bại! Vui lòng thử lại.']);
+        setError([t('changePasswordModal.messages.errorFallback')]);
       }
     } finally {
       setLoading(false);
@@ -101,9 +103,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               <KeyRound className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-extrabold text-xl">Đổi Mật Khẩu Cá Nhân</h3>
+              <h3 className="font-extrabold text-xl">{t('changePasswordModal.title')}</h3>
               <p className="text-teal-300 text-xs font-medium mt-0.5">
-                Cập nhật mật khẩu bảo vệ tài khoản ParkLink của bạn
+                {t('changePasswordModal.subtitle')}
               </p>
             </div>
           </div>
@@ -114,9 +116,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
             <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto">
               <KeyRound className="w-7 h-7 text-teal-600" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Tài Khoản Đăng Nhập Qua Google</h3>
+            <h3 className="text-lg font-bold text-slate-900">{t('changePasswordModal.googleTitle')}</h3>
             <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
-              Tài khoản này được xác thực và bảo mật trực tiếp thông qua Google Sign-In, do đó không sử dụng mật khẩu trên hệ thống ParkLink.
+              {t('changePasswordModal.googleDescription')}
             </p>
             <div className="pt-2">
               <button
@@ -124,7 +126,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 onClick={handleClose}
                 className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition"
               >
-                Đóng
+                {t('changePasswordModal.close')}
               </button>
             </div>
           </div>
@@ -151,7 +153,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
           <form onSubmit={handleSubmit} className="space-y-5 text-sm">
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Mật khẩu hiện tại <span className="text-red-500">*</span>
+                {t('changePasswordModal.fields.oldPasswordLabel')} <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-2xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -162,7 +164,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   name="oldPassword"
                   value={formData.oldPassword}
                   onChange={handleChange}
-                  placeholder="Nhập mật khẩu hiện tại"
+                  placeholder={t('changePasswordModal.fields.oldPasswordPlaceholder')}
                   className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
@@ -178,7 +180,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Mật khẩu mới <span className="text-red-500">*</span>
+                {t('changePasswordModal.fields.newPasswordLabel')} <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-2xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -189,7 +191,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   name="newPassword"
                   value={formData.newPassword}
                   onChange={handleChange}
-                  placeholder="Tối thiểu 8 ký tự, 1 hoa, 1 thường, 1 số"
+                  placeholder={t('changePasswordModal.fields.newPasswordPlaceholder')}
                   className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
@@ -205,7 +207,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Xác nhận mật khẩu mới <span className="text-red-500">*</span>
+                {t('changePasswordModal.fields.confirmPasswordLabel')} <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-2xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -216,7 +218,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Nhập lại mật khẩu mới"
+                  placeholder={t('changePasswordModal.fields.confirmPasswordPlaceholder')}
                   className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
                   required
                 />
@@ -236,7 +238,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                 onClick={handleClose}
                 className="px-6 py-3 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition"
               >
-                Hủy
+                {t('changePasswordModal.actions.cancel')}
               </button>
               <button
                 type="submit"
@@ -245,10 +247,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               >
                 {loading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" /> Đang cập nhật...
+                    <RefreshCw className="w-4 h-4 animate-spin" /> {t('changePasswordModal.actions.submitting')}
                   </>
                 ) : (
-                  'Cập Nhật Mật Khẩu'
+                  t('changePasswordModal.actions.submit')
                 )}
               </button>
             </div>

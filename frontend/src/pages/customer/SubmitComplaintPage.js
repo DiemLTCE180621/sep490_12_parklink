@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AlertCircle, Send, ArrowLeft, Car, Building2, CheckCircle2, ImagePlus, X, Info } from 'lucide-react';
 import complaintService from '../../services/complaintService';
 import uploadService from '../../services/uploadService';
 import { validateSubmitComplaint } from '../../validations/complaintValidation';
 import { getMyReservations } from '../../services/reservationService';
+import { translateVehicleInfoText } from '../../utils/translations';
 
 const SubmitComplaintPage = () => {
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
   const { reservationId } = useParams();
   const navigate = useNavigate();
 
@@ -19,6 +24,7 @@ const SubmitComplaintPage = () => {
   const [descError, setDescError] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isIneligible, setIsIneligible] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -32,15 +38,17 @@ const SubmitComplaintPage = () => {
         if (found) {
           const contractStatus = found.confirmation_record?.status;
           if (!found.confirmation_record || !['ACTIVE', 'COMPLETED'].includes(contractStatus)) {
-            setErrorMsg('Chỉ những lượt thuê xe đã có Hợp đồng chính thức có hiệu lực (ACTIVE) hoặc vừa hoàn tất (COMPLETED) mới đủ điều kiện gửi khiếu nại.');
+            setIsIneligible(true);
+            setErrorMsg(tRef.current('submitComplaint.ineligibleError'));
           } else {
+            setIsIneligible(false);
             setReservation(found);
           }
         } else {
-          setErrorMsg('Không tìm thấy yêu cầu thuê này.');
+          setErrorMsg(tRef.current('submitComplaint.notFoundError'));
         }
       } catch (err) {
-        setErrorMsg('Lỗi tải dữ liệu yêu cầu thuê.');
+        setErrorMsg(tRef.current('submitComplaint.loadError'));
       } finally {
         setLoadingRes(false);
       }
@@ -55,7 +63,7 @@ const SubmitComplaintPage = () => {
       .slice(0, 5 - imageFiles.length);
 
     if (validFiles.length !== selectedFiles.length) {
-      setErrorMsg('Chỉ nhận ảnh, tối đa 5 ảnh và mỗi ảnh không quá 50MB.');
+      setErrorMsg(t('submitComplaint.fileValidationError'));
     }
 
     setImageFiles(prev => [...prev, ...validFiles]);
@@ -99,12 +107,12 @@ const SubmitComplaintPage = () => {
         description: description.trim(),
         image_urls
       });
-      setSuccessMsg('Gửi khiếu nại thành công! Ban Quản Trị ParkLink sẽ sớm tiếp nhận và xem xét.');
+      setSuccessMsg(t('submitComplaint.submitSuccess'));
       setTimeout(() => {
         navigate('/my-complaints');
       }, 2000);
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || error.message || 'Có lỗi xảy ra, vui lòng thử lại sau.');
+      setErrorMsg(error.response?.data?.message || error.message || t('submitComplaint.submitError'));
     } finally {
       setLoading(false);
     }
@@ -129,9 +137,9 @@ const SubmitComplaintPage = () => {
                 <AlertCircle className="h-4 w-4 text-white" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-base font-extrabold leading-tight sm:text-lg">Gửi Khiếu Nại</h1>
+                <h1 className="text-base font-extrabold leading-tight sm:text-lg">{t('submitComplaint.title')}</h1>
                 <p className="truncate text-xs text-teal-300">
-                  Báo cáo vấn đề liên quan đến bãi đỗ xe hoặc dịch vụ
+                  {t('submitComplaint.subtitle')}
                 </p>
               </div>
             </div>
@@ -142,7 +150,7 @@ const SubmitComplaintPage = () => {
               className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-teal-500/30 px-2.5 py-1 text-xs font-semibold text-teal-300 transition-all hover:border-teal-400 hover:bg-white/5 hover:text-teal-200"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Quay lại</span>
+              <span className="hidden sm:inline">{t('submitComplaint.back')}</span>
             </button>
           </div>
         </div>
@@ -154,13 +162,13 @@ const SubmitComplaintPage = () => {
               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">Thành Công!</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">{t('submitComplaint.successTitle')}</h3>
               <p className="text-sm text-slate-600 mb-5">{successMsg}</p>
               <Link
                 to="/my-complaints"
                 className="inline-flex px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition shadow-sm"
               >
-                Xem Danh Sách Khiếu Nại
+                {t('submitComplaint.viewList')}
               </Link>
             </div>
           ) : (
@@ -178,12 +186,12 @@ const SubmitComplaintPage = () => {
                   {/* Hàng 1: Bãi xe & Mã đơn */}
                   <div className="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-1.5">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">Bãi xe:</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">{t('submitComplaint.facilityLabel')}</span>
                       <Building2 className="h-3.5 w-3.5 shrink-0 text-teal-600" />
                       <span className="font-bold text-slate-900 truncate">{reservation.facility?.name}</span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0 text-slate-600">
-                      <span className="text-slate-400 text-xs">Mã thuê:</span>
+                      <span className="text-slate-400 text-xs">{t('submitComplaint.reservationCodeLabel')}</span>
                       <span className="font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200 text-xs">
                         #{reservation.id}
                       </span>
@@ -194,8 +202,8 @@ const SubmitComplaintPage = () => {
                   <div className="flex items-start gap-1.5 text-slate-700 pt-0.5">
                     <Car className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1 leading-relaxed break-words text-xs sm:text-sm">
-                      <span className="text-slate-500 font-medium">Xe: </span>
-                      <span className="font-semibold text-slate-800">{reservation.vehicle_info}</span>
+                      <span className="text-slate-500 font-medium">{t('submitComplaint.vehicleLabel')} </span>
+                      <span className="font-semibold text-slate-800">{translateVehicleInfoText(reservation.vehicle_info, i18n.language)}</span>
                     </div>
                   </div>
                 </div>
@@ -204,7 +212,7 @@ const SubmitComplaintPage = () => {
               {/* 1. Tiêu đề vấn đề */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Tiêu đề vấn đề <span className="text-red-500">*</span>
+                  {t('submitComplaint.issueTitleLabel')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -213,7 +221,7 @@ const SubmitComplaintPage = () => {
                     setTitle(e.target.value);
                     if (titleError) setTitleError('');
                   }}
-                  placeholder="Ví dụ: Thu phí sai quy định..."
+                  placeholder={t('submitComplaint.issueTitlePlaceholder')}
                   className={`w-full px-3.5 py-2 text-sm rounded-xl border ${titleError
                       ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50/20'
                       : 'border-slate-300 focus:ring-teal-500/20 focus:border-teal-500'
@@ -232,7 +240,7 @@ const SubmitComplaintPage = () => {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-bold text-slate-800">
-                    Mô tả chi tiết <span className="text-red-500">*</span>
+                    {t('submitComplaint.descriptionLabel')} <span className="text-red-500">*</span>
                   </label>
                   <span
                     className={`text-[11px] font-medium ${descError
@@ -242,7 +250,7 @@ const SubmitComplaintPage = () => {
                           : 'text-slate-400'
                       }`}
                   >
-                    {description.length}/20 ký tự tối thiểu
+                    {t('submitComplaint.minCharsCount', { count: description.length })}
                   </span>
                 </div>
                 <textarea
@@ -251,7 +259,7 @@ const SubmitComplaintPage = () => {
                     setDescription(e.target.value);
                     if (descError) setDescError('');
                   }}
-                  placeholder="Mô tả rõ sự việc xảy ra..."
+                  placeholder={t('submitComplaint.descriptionPlaceholder')}
                   rows={5}
                   className={`w-full px-3.5 py-2 text-sm rounded-xl border ${descError
                       ? 'border-red-500 focus:ring-red-500/20 focus:border-red-500 bg-red-50/20'
@@ -270,14 +278,14 @@ const SubmitComplaintPage = () => {
               {/* 3. Ảnh minh chứng */}
               <div>
                 <label className="block text-xs font-bold text-slate-800 mb-1">
-                  Ảnh minh chứng <span className="text-slate-400 font-normal">(tối đa 5 ảnh)</span>
+                  {t('submitComplaint.evidenceLabel')} <span className="text-slate-400 font-normal">{t('submitComplaint.evidenceMaxHint')}</span>
                 </label>
                 <label className="flex h-16 sm:h-18 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-teal-500 hover:bg-teal-50/40 hover:text-teal-700 transition">
                   <div className="flex items-center gap-1.5">
                     <ImagePlus className="h-4 w-4 text-slate-500" />
-                    <span>Nhấn để chọn ảnh ({imageFiles.length}/5)</span>
+                    <span>{t('submitComplaint.pickImages', { count: imageFiles.length })}</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-normal">Hỗ trợ JPG, PNG, WEBP (tối đa 50MB mỗi ảnh)</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{t('submitComplaint.imageFormatsHint')}</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/gif,image/webp"
@@ -292,12 +300,12 @@ const SubmitComplaintPage = () => {
                   <div className="mt-2 grid grid-cols-5 gap-1.5">
                     {imagePreviews.map((preview, index) => (
                       <div key={preview} className="relative aspect-square overflow-hidden rounded-lg border border-slate-200">
-                        <img src={preview} alt={`Ảnh ${index + 1}`} className="h-full w-full object-cover" />
+                        <img src={preview} alt={t('submitComplaint.imageAlt', { index: index + 1 })} className="h-full w-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
                           className="absolute right-0.5 top-0.5 rounded-full bg-slate-900/80 p-0.5 text-white hover:bg-red-600 transition"
-                          aria-label="Xóa ảnh"
+                          aria-label={t('submitComplaint.removeImageAria')}
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -310,7 +318,7 @@ const SubmitComplaintPage = () => {
               {/* 4. Ghi chú tiếp nhận khiếu nại */}
               <div className="p-2 rounded-xl bg-teal-50/80 border border-teal-100 flex items-start gap-2 text-xs text-teal-800 leading-snug">
                 <Info className="h-3.5 w-3.5 text-teal-600 shrink-0 mt-0.5" />
-                <span>Ban quản trị sẽ xem xét khiếu nại và phản hồi lại bạn qua danh sách khiếu nại trong 24-48h làm việc.</span>
+                <span>{t('submitComplaint.reviewNotice')}</span>
               </div>
 
               {/* 5. Nút Hủy và Gửi Khiếu Nại */}
@@ -320,18 +328,18 @@ const SubmitComplaintPage = () => {
                   onClick={() => navigate(-1)}
                   className="flex-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-xl transition"
                 >
-                  Hủy
+                  {t('submitComplaint.cancel')}
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || !reservation || errorMsg.includes('không đủ điều kiện')}
+                  disabled={loading || !reservation || isIneligible}
                   className="flex-[2] px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" /> Gửi Khiếu Nại
+                      <Send className="w-4 h-4" /> {t('submitComplaint.submitButton')}
                     </>
                   )}
                 </button>

@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "badge": "Trusted Monthly Parking Rental Platform",
+    "titleBefore": "Find ",
+    "titleHighlight": "Monthly",
+    "titleAfter": " Parking Near You",
+    "subtitle": "ParkLink directly connects Parking Providers and long-term customers. Reserve secure parking spaces, protect your vehicle, and enjoy 100% transparent payments."
+  },
+  "customerCard": {
+    "imageAlt": "Parking Customer",
+    "badge": "Customer",
+    "title": "Looking for Long-Term Parking?",
+    "description": "Find safe parking near your home or workplace, sign clear monthly rental contracts, and enjoy 100% protected rights.",
+    "cta": "Register as Customer"
+  },
+  "searchCard": {
+    "imageAlt": "ParkLink monthly parking contract signing",
+    "cta": "Search Now"
+  },
+  "audience": {
+    "eyebrow": "WHO WE SERVE",
+    "title": "Flexible Solutions for Both Sides"
+  },
+  "providerCard": {
+    "imageAlt": "Parking Provider",
+    "badge": "Parking Provider",
+    "title": "Are You a Parking Provider?",
+    "description": "List your parking facility on ParkLink to reach long-term customers, optimize slot capacity, and earn steady revenue.",
+    "cta": "Register as Parking Provider"
+  },
+  "benefits": {
+    "title": "Why Choose ParkLink?",
+    "subtitle": "A direct connection platform with no middlemen, focused exclusively on monthly parking rentals",
+    "items": {
+      "monthly": {
+        "title": "Long-Term Monthly Rentals",
+        "description": "Secure a stable monthly parking space without worrying about running out of spots or sudden peak-season price hikes."
+      },
+      "verification": {
+        "title": "Fast Verification",
+        "description": "Every parking facility and Provider account undergoes a strict on-site field inspection by our administration team."
+      },
+      "transparency": {
+        "title": "Transparent Operations",
+        "description": "Track your contracts, slot availability, and invoices online on the ParkLink web platform anytime, anywhere."
+      }
+    }
+  }
+}

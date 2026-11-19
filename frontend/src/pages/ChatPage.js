@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import chatService from '../services/chatService';
@@ -8,6 +9,7 @@ import ChatList from '../components/Chat/ChatList';
 import ChatWindow from '../components/Chat/ChatWindow';
 
 const ChatPage = () => {
+    const { t } = useTranslation('chat');
     const { token, user } = useAuth();
     const socket = useSocket();
     const [rooms, setRooms] = useState([]);
@@ -241,7 +243,7 @@ const ChatPage = () => {
         } catch (error) {
             console.error("Lỗi gửi tin nhắn:", error);
             setMessages(prev => prev.filter(m => m.id !== tempId));
-            alert(error.message || 'Không thể tải file lên. Vui lòng thử lại.');
+            alert(error.message || t('errors.uploadFailed'));
         }
     };
 

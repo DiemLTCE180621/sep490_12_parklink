@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getProviderConfirmationRecords } from '../../services/confirmationRecordService';
 import Toast from '../common/Toast';
 import {
@@ -20,6 +21,8 @@ import {
 } from 'lucide-react';
 
 const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
+  const { t, i18n } = useTranslation('provider');
+  const isEnglish = i18n.language?.startsWith('en');
   const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +40,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
       const list = res.data?.confirmation_records || res.confirmation_records || [];
       setContracts(list);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách hợp đồng điện tử!');
+      setError(err.message || '__LOAD_ERROR__');
     } finally {
       setLoading(false);
     }
@@ -52,7 +55,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   };
 
   const cleanVehicleDisplay = (rawVehicle = '') => {
-    return rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim() || 'Chưa cập nhật';
+    return rawVehicle.replace(/\s*\[CCCD:[^\]]+\]/i, '').trim() || t('contracts.card.notUpdated');
   };
 
   const getSnapshot = (contract) => {
@@ -118,28 +121,28 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Chờ khách xác nhận
+            {t('contracts.statuses.PENDING_SIGNATURE')}
           </span>
         );
       case 'ACTIVE':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Đang hiệu lực
+            {t('contracts.statuses.ACTIVE')}
           </span>
         );
       case 'TERMINATED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            Đã chấm dứt
+            {t('contracts.statuses.TERMINATED')}
           </span>
         );
       case 'CANCELLED':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
             <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            Đã hủy (Hết chỗ)
+            {t('contracts.statuses.CANCELLED')}
           </span>
         );
       default:
@@ -160,10 +163,10 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
-              Quản lý hợp đồng cho thuê bãi xe
+              {t('contracts.title')}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Danh sách các hợp đồng điện tử đã khởi tạo với khách thuê.
+              {t('contracts.subtitle')}
             </p>
           </div>
 
@@ -177,7 +180,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
               className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-medium rounded-lg border border-teal-200 transition flex items-center gap-1.5"
             >
               <Users className="w-3.5 h-3.5 text-teal-600" />
-              Khách đang thuê
+              {t('contracts.activeCustomersBtn')}
             </button>
 
             <button
@@ -186,7 +189,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
               className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
-              Làm mới
+              {t('contracts.refresh')}
             </button>
           </div>
         </div>
@@ -202,7 +205,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   : 'text-slate-600 hover:bg-slate-200/70'
               }`}
             >
-              Tất cả ({totalCount})
+              {t('contracts.tabs.all', { count: totalCount })}
             </button>
 
             <button
@@ -213,7 +216,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   : 'text-slate-600 hover:bg-slate-200/70'
               }`}
             >
-              Chờ khách xác nhận ({pendingCount})
+              {t('contracts.tabs.pending', { count: pendingCount })}
             </button>
 
             <button
@@ -224,7 +227,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   : 'text-slate-600 hover:bg-slate-200/70'
               }`}
             >
-              Đang hiệu lực ({activeCount})
+              {t('contracts.tabs.active', { count: activeCount })}
             </button>
 
             <button
@@ -238,7 +241,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
-              Chờ duyệt gia hạn ({extensionPendingCount})
+              {t('contracts.tabs.extensionPending', { count: extensionPendingCount })}
             </button>
 
             <button
@@ -252,7 +255,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
               }`}
             >
               <AlertCircle className="w-3.5 h-3.5" />
-              Yêu cầu trả chỗ ({terminationPendingCount})
+              {t('contracts.tabs.terminationPending', { count: terminationPendingCount })}
             </button>
 
             <button
@@ -263,7 +266,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   : 'text-slate-600 hover:bg-slate-200/70'
               }`}
             >
-              Đã chấm dứt ({terminatedCount})
+              {t('contracts.tabs.terminated', { count: terminatedCount })}
             </button>
           </div>
 
@@ -271,7 +274,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Tìm mã HĐ, tên khách hàng..."
+              placeholder={t('contracts.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-teal-600 transition"
@@ -283,28 +286,28 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
         {loading ? (
           <div className="p-16 text-center">
             <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
-            <p className="text-slate-500 text-sm">Đang tải danh sách hợp đồng...</p>
+            <p className="text-slate-500 text-sm">{t('contracts.loading')}</p>
           </div>
         ) : error ? (
           <div className="p-10 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">Không thể tải dữ liệu</h3>
-            <p className="text-sm text-slate-600">{error}</p>
+            <h3 className="text-base font-bold text-slate-900">{t('contracts.errorTitle')}</h3>
+            <p className="text-sm text-slate-600">{error === '__LOAD_ERROR__' ? t('contracts.loadError') : error}</p>
             <button
               onClick={fetchContracts}
               className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
             >
-              Thử lại
+              {t('contracts.retry')}
             </button>
           </div>
         ) : filteredContracts.length === 0 ? (
           <div className="py-14 px-6 text-center space-y-2">
             <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-semibold text-slate-800">Không tìm thấy hợp đồng nào</h3>
+            <h3 className="text-base font-semibold text-slate-800">{t('contracts.empty.title')}</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {searchTerm
-                ? 'Không có hợp đồng nào khớp với từ khóa tìm kiếm.'
-                : 'Bạn chưa tạo hợp đồng điện tử nào cho các yêu cầu thuê được duyệt.'}
+                ? t('contracts.empty.searchEmpty')
+                : t('contracts.empty.defaultEmpty')}
             </p>
           </div>
         ) : (
@@ -329,7 +332,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         {item.contract_code}
                       </span>
                       <span>•</span>
-                      <span>Lập ngày {new Date(item.created_at).toLocaleDateString('vi-VN')}</span>
+                      <span>{t('contracts.card.createdAt', { date: new Date(item.created_at).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN') })}</span>
                       <span>•</span>
                       {getStatusBadge(item.status)}
 
@@ -338,7 +341,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                           <span>•</span>
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
                             <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
-                            Chờ duyệt gia hạn (+{pendingExt.extension_months} thg)
+                            {t('contracts.card.extensionBadge', { months: pendingExt.extension_months })}
                           </span>
                         </>
                       )}
@@ -348,7 +351,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                           <span>•</span>
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-300">
                             <AlertCircle className="w-3 h-3 text-rose-600 animate-pulse" />
-                            Yêu cầu trả chỗ ({pendingTerm.requested_termination_date ? new Date(pendingTerm.requested_termination_date).toLocaleDateString('vi-VN') : ''})
+                            {t('contracts.card.terminationBadge', { date: pendingTerm.requested_termination_date ? new Date(pendingTerm.requested_termination_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN') : '' })}
                           </span>
                         </>
                       )}
@@ -357,15 +360,15 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">Khách thuê (Bên B)</span>
+                        <span className="text-xs text-slate-500 block">{t('contracts.card.customerSection')}</span>
                         <p className="font-semibold text-slate-900 flex items-center gap-1.5">
                           <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>{customer?.full_name || 'Khách hàng'}</span>
+                          <span>{customer?.full_name || t('contracts.card.defaultCustomer')}</span>
                         </p>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
                           <span className="inline-flex items-center gap-1">
                             <Phone className="w-3 h-3 text-slate-400" />
-                            {customer?.phone_number || 'Chưa cập nhật'}
+                            {customer?.phone_number || t('contracts.card.notUpdated')}
                           </span>
                           {customer?.email && (
                             <span className="inline-flex items-center gap-1 truncate">
@@ -378,25 +381,25 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">Chi phí & thời hạn</span>
+                        <span className="text-xs text-slate-500 block">{t('contracts.card.costSection')}</span>
                         <p className="font-bold text-teal-700">
                           {Number(item.agreed_price).toLocaleString('vi-VN')}{' '}
-                          <span className="text-xs font-normal text-slate-500">đ/tháng</span>
+                          <span className="text-xs font-normal text-slate-500">{t('contracts.card.priceUnit')}</span>
                         </p>
                         <p className="text-xs text-slate-600 flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>
-                            {new Date(item.start_date).toLocaleDateString('vi-VN')} – {new Date(item.end_date).toLocaleDateString('vi-VN')}
+                            {new Date(item.start_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')} – {new Date(item.end_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}
                           </span>
                         </p>
                         <p className="text-xs text-slate-500">
-                          Hạn thanh toán: Ngày {item.payment_deadline_day || 5} hàng tháng
+                          {t('contracts.card.paymentDeadline', { day: item.payment_deadline_day || 5 })}
                         </p>
                       </div>
 
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">Bãi đỗ & phương tiện</span>
+                        <span className="text-xs text-slate-500 block">{t('contracts.card.facilitySection')}</span>
                         <p className="font-semibold text-slate-900 truncate">
                           {facility?.name}
                         </p>
@@ -424,7 +427,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5"
                       >
                         <AlertCircle className="w-3.5 h-3.5" />
-                        Xác nhận trả chỗ
+                        {t('contracts.actions.confirmTermination')}
                       </button>
                     )}
 
@@ -438,7 +441,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow-sm transition inline-flex items-center gap-1.5"
                       >
                         <Clock className="w-3.5 h-3.5" />
-                        Duyệt gia hạn (+{pendingExt.extension_months} thg)
+                        {t('contracts.actions.approveExtension', { months: pendingExt.extension_months })}
                       </button>
                     )}
 
@@ -451,7 +454,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         }}
                         className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
                       >
-                        Chấm dứt
+                        {t('contracts.actions.terminate')}
                       </button>
                     )}
 
@@ -464,7 +467,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                       className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      Xem hợp đồng
+                      {t('contracts.actions.viewContract')}
                     </button>
                   </div>
                 </div>
