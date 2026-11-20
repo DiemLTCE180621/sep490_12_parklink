@@ -93,7 +93,7 @@ class AuthService {
 
     return {
       user: this.sanitizeUser(newUser),
-      tempPasswordMessage: 'Mật khẩu ngẫu nhiên đã được gửi về email của bạn!',
+      tempPasswordMessage: 'Mật khẩu tạm thời đã được gửi về email của bạn.',
       simulatedTempPassword: emailResult.simulated ? tempPassword : undefined
     };
   }
@@ -149,7 +149,7 @@ class AuthService {
       phone_number,
       password_hash,
       role_id: providerRole.id,
-      status: 'PENDING', // Chờ Admin duyệt
+      status: 'PENDING',
       requires_password_change: true
     };
 
@@ -169,9 +169,9 @@ class AuthService {
       price_per_month: parseFloat(price_per_month),
       system_fee: system_fee,
       vehicle_types: targetVehicleTypes,
-      verification_status: 'PENDING_REVIEW', // Chờ Admin duyệt
+      verification_status: 'PENDING_REVIEW',
       payment_status: 'UNPAID',
-      visibility_status: 'HIDDEN' // Ẩn cho đến khi được duyệt
+      visibility_status: 'HIDDEN'
     };
 
     const newProvider = await userRepository.createProviderWithFacility(
@@ -191,7 +191,7 @@ class AuthService {
     return {
       user: this.sanitizeUser(newProvider),
       system_fee,
-      message: 'Yêu cầu đăng ký đã được tiếp nhận! Vui lòng chờ Ban quản trị phê duyệt.'
+      message: 'Đăng ký thành công! Vui lòng chờ Quản trị viên xét duyệt.'
     };
   }
 
@@ -267,7 +267,6 @@ class AuthService {
         throw error;
       }
 
-      // Cập nhật bổ sung avatar_url nếu người dùng chưa có avatar
       if (!user.avatar_url && picture) {
         user = await userRepository.updateUser(user.id, { avatar_url: picture });
       }
@@ -366,7 +365,7 @@ class AuthService {
     }
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 phút
+    const expiresAt = Date.now() + 15 * 60 * 1000;
 
     otpStore.set(user.email, {
       code: otpCode,
@@ -381,7 +380,7 @@ class AuthService {
     });
 
     return {
-      message: 'Mã OTP xác thực đặt lại mật khẩu đã được gửi đến email của bạn!',
+      message: 'Mã OTP đã được gửi đến email của bạn.',
       simulatedOtp: emailResult.simulated ? otpCode : undefined
     };
   }
@@ -404,7 +403,7 @@ class AuthService {
     const otpRecord = otpStore.get(user.email);
 
     if (!otpRecord) {
-      const error = new Error('Không tìm thấy mã OTP đặt lại mật khẩu hoặc mã đã bị hủy! Vui lòng bấm gửi yêu cầu mã OTP mới.');
+      const error = new Error('Mã OTP không hợp lệ hoặc đã hết hạn.');
       error.status = 400;
       throw error;
     }
@@ -418,7 +417,7 @@ class AuthService {
 
     if (otpRecord.attempts >= MAX_ATTEMPTS) {
       otpStore.delete(user.email);
-      const error = new Error('Bạn đã nhập sai OTP quá 5 lần! Mã OTP cũ đã bị hủy. Vui lòng bấm yêu cầu mã OTP mới.');
+      const error = new Error('Bạn đã nhập sai OTP quá số lần quy định. Vui lòng yêu cầu mã OTP mới.');
       error.status = 400;
       throw error;
     }
@@ -428,13 +427,13 @@ class AuthService {
 
       if (otpRecord.attempts >= MAX_ATTEMPTS) {
         otpStore.delete(user.email);
-        const error = new Error('Bạn đã nhập sai OTP quá 5 lần! Mã OTP đã bị hủy để bảo mật. Vui lòng bấm yêu cầu mã OTP mới.');
+        const error = new Error('Bạn đã nhập sai OTP quá số lần quy định. Vui lòng yêu cầu mã OTP mới.');
         error.status = 400;
         throw error;
       }
 
       const remaining = MAX_ATTEMPTS - otpRecord.attempts;
-      const error = new Error(`Mã OTP không chính xác! Bạn còn ${remaining} lần thử trước khi mã bị hủy.`);
+      const error = new Error(`Mã OTP không chính xác. Bạn còn ${remaining} lần thử.`);
       error.status = 400;
       throw error;
     }
@@ -446,7 +445,7 @@ class AuthService {
     otpStore.delete(user.email);
 
     return {
-      message: 'Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.'
+      message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.'
     };
   }
 

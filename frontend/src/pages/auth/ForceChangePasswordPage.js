@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { Key, ShieldAlert, CheckCircle2, AlertCircle, Eye, EyeOff, LogOut, ArrowRight, ShieldCheck } from 'lucide-react';
 import { isValidPassword } from '../../utils/validators';
 
-// Trang Đổi mật khẩu lần đầu (bắt buộc khi login bằng mật khẩu ngẫu nhiên)
 const ForceChangePasswordPage = () => {
   const { user, changePassword, logout } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ const ForceChangePasswordPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Kiểm tra từng tiêu chí độ mạnh mật khẩu theo thời gian thực
   const hasMinLength = formData.newPassword.length >= 8;
   const hasUpperCase = /[A-Z]/.test(formData.newPassword);
   const hasLowerCase = /[a-z]/.test(formData.newPassword);
@@ -49,13 +47,11 @@ const ForceChangePasswordPage = () => {
 
     try {
       setLoading(true);
-      // Gọi qua context -> services/authService.js -> API POST /auth/change-password
       await changePassword({
         newPassword: formData.newPassword
       });
 
       setSuccess(true);
-      // Chuyển hướng người dùng vào hệ thống dựa trên vai trò sau khi đổi mật khẩu thành công
       setTimeout(() => {
         const role = user?.role?.name;
         const targetPath = role === 'CUSTOMER' ? '/' : '/dashboard';
@@ -64,7 +60,7 @@ const ForceChangePasswordPage = () => {
     } catch (err) {
       const errMessage = (err.errors && err.errors.length > 0)
         ? err.errors[0]
-        : (err.message || 'Đổi mật khẩu thất bại! Vui lòng thử lại.');
+        : (err.message || 'Đổi mật khẩu không thành công. Vui lòng thử lại.');
       setError(errMessage);
     } finally {
       setLoading(false);
@@ -86,13 +82,12 @@ const ForceChangePasswordPage = () => {
           Thiết Lập Mật Khẩu Lần Đầu
         </h2>
         <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto">
-          Tài khoản <span className="font-semibold text-slate-800">{user?.email || 'của bạn'}</span> đang sử dụng mật khẩu ngẫu nhiên tạm thời. Hãy tạo mật khẩu mới để bảo vệ an toàn cho tài khoản.
+          Tài khoản <span className="font-semibold text-slate-800">{user?.email || 'của bạn'}</span> đang sử dụng mật khẩu tạm thời. Vui lòng thiết lập mật khẩu mới để tiếp tục.
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
         <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
-          {/* Cảnh báo bảo mật nghiệp vụ */}
           <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3">
             <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
@@ -103,7 +98,6 @@ const ForceChangePasswordPage = () => {
             </div>
           </div>
 
-          {/* Thông báo lỗi */}
           {error && (
             <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
@@ -111,7 +105,6 @@ const ForceChangePasswordPage = () => {
             </div>
           )}
 
-          {/* Thông báo thành công */}
           {success && (
             <div className="mb-6 p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 text-sm flex items-center gap-3 animate-fadeIn">
               <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" />
@@ -120,7 +113,6 @@ const ForceChangePasswordPage = () => {
           )}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
-            {/* Mật khẩu mới */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Mật khẩu mới <span className="text-red-500">*</span>
@@ -148,7 +140,6 @@ const ForceChangePasswordPage = () => {
               </div>
             </div>
 
-            {/* Checklist tiêu chuẩn mật khẩu */}
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5">
               <p className="font-semibold text-slate-700 mb-1">Mật khẩu cần đáp ứng:</p>
               <div className="grid grid-cols-2 gap-1.5 text-slate-600">
@@ -171,7 +162,6 @@ const ForceChangePasswordPage = () => {
               </div>
             </div>
 
-            {/* Xác nhận mật khẩu mới */}
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">
                 Xác nhận mật khẩu mới <span className="text-red-500">*</span>
@@ -204,7 +194,6 @@ const ForceChangePasswordPage = () => {
               )}
             </div>
 
-            {/* Nút Submit */}
             <button
               type="submit"
               disabled={loading || success}
@@ -220,7 +209,6 @@ const ForceChangePasswordPage = () => {
             </button>
           </form>
 
-          {/* Lựa chọn Đăng xuất nếu muốn dùng tài khoản khác */}
           <div className="mt-6 pt-5 border-t border-slate-100 flex justify-center">
             <button
               type="button"

@@ -25,7 +25,6 @@ import {
 import userService from '../../services/userService';
 import EditUserModal from '../../components/admin/EditUserModal';
 
-// Trang Chi tiết tài khoản người dùng Admin (UC12, UC10, UC13, UC14, UC15)
 const AdminUserDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,13 +34,11 @@ const AdminUserDetailPage = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // UC13: Edit User Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // State cho Confirm Dialog (UC10: Reset mật khẩu, UC14/15: Khóa/Mở khóa)
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
-    type: '' // 'LOCK' | 'UNLOCK' | 'RESET_PASSWORD'
+    type: ''
   });
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -103,11 +100,11 @@ const AdminUserDetailPage = () => {
             ? { facility: { ...prev.facility, visibility_status: 'HIDDEN' } }
             : {})
         }));
-        setSuccessMessage(res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!'));
+        setSuccessMessage(res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.'));
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(user.id);
         setUser((prev) => ({ ...prev, requires_password_change: true }));
-        const msg = res.message || 'Đặt lại mật khẩu thành công! Mật khẩu mới đã được gửi tới email.';
+        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi tới email.';
         setSuccessMessage(msg);
       }
 
@@ -197,7 +194,6 @@ const AdminUserDetailPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Nút quay lại */}
         <button
           onClick={() => navigate('/dashboard', { state: { adminTab: 'users' } })}
           className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-teal-600 transition"
@@ -218,7 +214,6 @@ const AdminUserDetailPage = () => {
           </div>
         )}
 
-        {/* Thông báo lỗi nếu có */}
         {error && (
           <div className="p-4 bg-red-50 text-red-700 text-xs rounded-2xl border border-red-200 flex justify-between items-center">
             <span>{error}</span>
@@ -228,7 +223,6 @@ const AdminUserDetailPage = () => {
           </div>
         )}
 
-        {/* Card Header Profile */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
@@ -247,9 +241,7 @@ const AdminUserDetailPage = () => {
             </div>
           </div>
 
-          {/* Action Bar (UC10, UC13, UC14, UC15) */}
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-700/60">
-            {/* UC13: Sửa thông tin */}
             <button
               onClick={() => setIsEditModalOpen(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5"
@@ -257,7 +249,6 @@ const AdminUserDetailPage = () => {
               <Edit2 className="w-3.5 h-3.5" /> Sửa Thông Tin
             </button>
 
-            {/* UC10: Đặt lại mật khẩu */}
             {!isAdmin && (
               <button
                 onClick={() => setConfirmDialog({ isOpen: true, type: 'RESET_PASSWORD' })}
@@ -267,7 +258,6 @@ const AdminUserDetailPage = () => {
               </button>
             )}
 
-            {/* UC14 & UC15: Khóa / Mở khóa tài khoản */}
             {!isAdmin && (
               <button
                 onClick={() => setConfirmDialog({ isOpen: true, type: isBlocked ? 'UNLOCK' : 'LOCK' })}
@@ -284,9 +274,7 @@ const AdminUserDetailPage = () => {
           </div>
         </div>
 
-        {/* Thông tin chi tiết */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card Thông tin cơ bản */}
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
             <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <Shield className="w-4 h-4 text-teal-600" /> Thông Tin Cơ Bản
@@ -329,7 +317,6 @@ const AdminUserDetailPage = () => {
             </div>
           </div>
 
-          {/* Card Thời gian & Hoạt động */}
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
             <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-teal-600" /> Nhật Ký & Hoạt Động
@@ -391,8 +378,6 @@ const AdminUserDetailPage = () => {
           </div>
         </div>
 
-        {/* PHẦN THỰC THỂ LIÊN KẾT (CHỈ HIỂN THỊ KHI CÓ THỰC THỂ CỤ THỂ) */}
-        {/* 1. Dành cho Chủ bãi xe (PROVIDER) */}
         {user.role?.name === 'PROVIDER' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
@@ -469,7 +454,6 @@ const AdminUserDetailPage = () => {
           </div>
         )}
 
-        {/* 2. Dành cho Nhân viên khảo sát (FIELD_INSPECTOR) */}
         {user.role?.name === 'FIELD_INSPECTOR' && (
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -509,7 +493,6 @@ const AdminUserDetailPage = () => {
         )}
       </div>
 
-      {/* UC13: MODAL SỬA THÔNG TIN */}
       <EditUserModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -517,7 +500,6 @@ const AdminUserDetailPage = () => {
         onSuccess={handleEditSuccess}
       />
 
-      {/* CONFIRMATION DIALOG (CHO UC10, UC14, UC15) */}
       {confirmDialog.isOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
@@ -559,17 +541,17 @@ const AdminUserDetailPage = () => {
                   </p>
                   {user.role?.name === 'PROVIDER' && user.facility && (
                     <p className="text-rose-600 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Cơ sở bãi đỗ xe "{user.facility.name}" của đối tác này cũng sẽ tự động chuyển sang trạng thái ẨN để đảm bảo an toàn giao dịch.
+                      Lưu ý: Cơ sở bãi xe "{user.facility.name}" sẽ bị ẩn và các yêu cầu đặt chỗ đang chờ sẽ bị hủy.
                     </p>
                   )}
                   {user.role?.name === 'CUSTOMER' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Các yêu cầu đặt chỗ đang chờ duyệt của khách hàng này sẽ tự động được hủy.
+                      Lưu ý: Các yêu cầu đặt chỗ đang chờ của khách hàng này sẽ bị hủy.
                     </p>
                   )}
                   {user.role?.name === 'FIELD_INSPECTOR' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                      Lưu ý: Các cơ sở đang phân công cho nhân viên này sẽ được chuyển về chờ duyệt lại.
                     </p>
                   )}
                 </div>
@@ -581,7 +563,7 @@ const AdminUserDetailPage = () => {
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  Hệ thống sẽ tự động tạo một mật khẩu ngẫu nhiên mới và gửi thông báo qua email tới <strong>{user.email}</strong>. Người dùng sẽ bị bắt buộc đổi mật khẩu mới ở lần đăng nhập tiếp theo.
+                  Hệ thống sẽ tạo mật khẩu tạm thời mới và gửi qua email tới <strong>{user.email}</strong>. Người dùng sẽ đổi mật khẩu ở lần đăng nhập tiếp theo.
                 </p>
               )}
             </div>
