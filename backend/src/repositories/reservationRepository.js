@@ -35,17 +35,6 @@ class ReservationRepository {
     });
   }
 
-  async findFacilityById(facilityId) {
-    return await prisma.facility.findUnique({
-      where: { id: parseInt(facilityId, 10) },
-      include: {
-        provider: {
-          select: USER_BASIC_SELECT
-        }
-      }
-    });
-  }
-
   async findActiveReservationByCustomer(customerId) {
     return await prisma.reservation_Request.findFirst({
       where: {
@@ -58,23 +47,6 @@ class ReservationRepository {
       },
       include: {
         facility: true,
-        confirmation_record: true
-      }
-    });
-  }
-
-  async findPendingReservation(customerId, facilityId) {
-    return await prisma.reservation_Request.findFirst({
-      where: {
-        customer_id: parseInt(customerId, 10),
-        facility_id: parseInt(facilityId, 10),
-        status: { in: ['PENDING', 'APPROVED'] },
-        OR: [
-          { confirmation_record: null },
-          { confirmation_record: { status: 'PENDING_SIGNATURE' } }
-        ]
-      },
-      include: {
         confirmation_record: true
       }
     });

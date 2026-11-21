@@ -3,7 +3,7 @@ import { X, Car, Loader2, AlertCircle } from 'lucide-react';
 import vehicleTypeService from '../../services/vehicleTypeService';
 
 /**
- * Modal Tạo Mới (M2-UC98) & Cập Nhật (M2-UC100) Loại Phương Tiện
+ * Form tạo và cập nhật loại phương tiện
  */
 const VehicleTypeModal = ({
   isOpen,
@@ -105,11 +105,11 @@ const VehicleTypeModal = ({
     try {
       setSubmitting(true);
       if (isEdit) {
-        // M2-UC100: Cập nhật
+        // Cập nhật
         await vehicleTypeService.updateVehicleType(vehicleType.id, payload);
         onSuccess(`Cập nhật loại phương tiện "${cleanName}" thành công!`);
       } else {
-        // M2-UC98: Tạo mới
+        // Tạo mới
         await vehicleTypeService.createVehicleType(payload);
         onSuccess(`Tạo mới loại phương tiện "${cleanName}" thành công!`);
       }

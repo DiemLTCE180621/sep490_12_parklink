@@ -1,14 +1,11 @@
 const vehicleTypeService = require('../services/vehicleTypeService');
 
 /**
- * Controller chỉ làm nhiệm vụ "lễ tân":
- * Nhận request, gọi hàm tương ứng từ Service, và trả response cho client
- * Tuyệt đối không chứa logic nghiệp vụ hoặc truy vấn DB tại đây.
+ * Xử lý yêu cầu API loại phương tiện
  */
 class VehicleTypeController {
   /**
-   * M2-UC99: Lấy danh sách loại phương tiện
-   * GET /api/vehicle-types
+   * Lấy danh sách loại phương tiện
    */
   async getAllVehicleTypes(req, res, next) {
     try {
@@ -29,8 +26,7 @@ class VehicleTypeController {
   }
 
   /**
-   * Lấy danh sách các loại phương tiện đang hoạt động (Public / Authenticated)
-   * GET /api/vehicle-types/active
+   * Lấy loại phương tiện đang hoạt động
    */
   async getActiveVehicleTypes(req, res, next) {
     try {
@@ -51,8 +47,7 @@ class VehicleTypeController {
   }
 
   /**
-   * M2-UC99: Lấy chi tiết thông tin loại phương tiện theo ID
-   * GET /api/vehicle-types/:id
+   * Lấy chi tiết loại phương tiện
    */
   async getVehicleTypeById(req, res, next) {
     try {
@@ -73,8 +68,7 @@ class VehicleTypeController {
   }
 
   /**
-   * M2-UC98: Tạo mới loại phương tiện (Admin)
-   * POST /api/vehicle-types
+   * Tạo loại phương tiện
    */
   async createVehicleType(req, res, next) {
     try {
@@ -96,8 +90,7 @@ class VehicleTypeController {
   }
 
   /**
-   * M2-UC100: Cập nhật thông tin loại phương tiện (Admin)
-   * PUT /api/vehicle-types/:id
+   * Cập nhật loại phương tiện
    */
   async updateVehicleType(req, res, next) {
     try {
@@ -119,8 +112,7 @@ class VehicleTypeController {
   }
 
   /**
-   * M2-UC101: Vô hiệu hóa loại phương tiện (Admin)
-   * PATCH /api/vehicle-types/:id/deactivate
+   * Vô hiệu hóa loại phương tiện
    */
   async deactivateVehicleType(req, res, next) {
     try {
@@ -142,8 +134,7 @@ class VehicleTypeController {
   }
 
   /**
-   * Bật / Tắt trạng thái hoạt động (Kích hoạt lại / Vô hiệu hóa)
-   * PATCH /api/vehicle-types/:id/toggle-status
+   * Bật hoặc tắt loại phương tiện
    */
   async toggleVehicleTypeStatus(req, res, next) {
     try {

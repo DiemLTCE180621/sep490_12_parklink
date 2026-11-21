@@ -1,7 +1,7 @@
 const { body, validationResult } = require('express-validator');
 
 /**
- * Middleware kiểm tra dữ liệu đầu vào khi tạo mới Loại phương tiện (M2-UC98)
+ * Kiểm tra dữ liệu tạo loại phương tiện
  */
 const validateCreateVehicleType = [
   body('type_code')
@@ -38,7 +38,7 @@ const validateCreateVehicleType = [
 ];
 
 /**
- * Middleware kiểm tra dữ liệu đầu vào khi cập nhật Loại phương tiện (M2-UC100)
+ * Kiểm tra dữ liệu cập nhật loại phương tiện
  */
 const validateUpdateVehicleType = [
   body('type_code')

@@ -19,8 +19,7 @@ class AdminService {
   }
 
   /**
-   * M2-UC20: View pending owner registrations
-   * Lấy danh sách bãi đỗ xe đang PENDING_REVIEW hoặc PREPARING
+   * Lấy cơ sở chờ duyệt và đang chuẩn bị
    */
   async getPendingRegistrations() {
     return await facilityRepository.findPendingFacilities();
@@ -44,9 +43,8 @@ class AdminService {
   }
 
   /**
-   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING & Phân công Nhân viên khảo sát thực địa
-   * Admin chấp thuận đến thực địa chuẩn bị và chỉ định 1 Nhân viên khảo sát cụ thể.
-   * Gửi mail thông báo kèm thông tin nhân viên cho Provider.
+   * Duyệt sơ bộ và phân công khảo sát
+   * Thông báo nhân viên được phân công cho Provider.
    * @param {number} facilityId
    * @param {number} inspectorId - ID của nhân viên khảo sát được giao nhiệm vụ
    */
@@ -91,7 +89,7 @@ class AdminService {
       inspectorId,
     );
 
-    // Gửi mail thông báo "đang chuẩn bị & khảo sát" kèm thông tin nhân viên cho Provider
+    // Gửi email chuẩn bị cơ sở kèm thông tin nhân viên khảo sát
     await emailService.sendFacilityPreparingEmail({
       toEmail: facility.provider.email,
       fullName: facility.provider.full_name,
@@ -166,15 +164,7 @@ class AdminService {
   }
 
   /**
-   * Lấy danh sách Nhân viên khảo sát đang hoạt động (ACTIVE)
-   */
-  async getActiveInspectors() {
-    return await fieldInspectorRepository.findActiveInspectors();
-  }
-
-  /**
-   * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED
-   * Admin xem xét kết quả khảo sát, duyệt chính thức, gửi mail kèm QR VietQR thanh toán cho Provider.
+   * Phê duyệt cơ sở và gửi mã QR thanh toán
    * @param {number} facilityId
    */
   async finalizeRegistration(facilityId) {
@@ -219,7 +209,7 @@ class AdminService {
   }
 
   /**
-   * M2-UC22: Từ chối đăng ký bãi đỗ xe
+   * Từ chối đăng ký bãi đỗ xe
    * @param {number} facilityId
    * @param {string} reason - Lý do từ chối
    */
@@ -258,7 +248,7 @@ class AdminService {
   }
 
   /**
-   * Provider xác nhận đã thanh toán → VISIBLE
+   * Hiển thị cơ sở sau khi thanh toán
    * @param {number} facilityId
    * @param {number} providerId - ID của Provider đang đăng nhập
    */
@@ -296,7 +286,7 @@ class AdminService {
   }
 
   /**
-   * Khóa / Mở khóa bãi đỗ xe
+   * Khóa hoặc mở khóa cơ sở
    * @param {number} facilityId
    */
   async toggleLockFacility(facilityId) {

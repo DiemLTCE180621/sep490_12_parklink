@@ -2,7 +2,7 @@ import api from './api';
 
 const platformFeeService = {
   /**
-   * UC: View Platform Fee (Administrator, Parking Provider)
+   * Lấy danh sách phí nền tảng
    */
   getPlatformFees: async () => {
     return await api.get('/platform-fees');
@@ -16,14 +16,14 @@ const platformFeeService = {
   },
 
   /**
-   * UC: View Platform Fee Detail (Administrator, Parking Provider)
+   * Lấy chi tiết phí nền tảng
    */
   getPlatformFeeById: async (id) => {
     return await api.get(`/platform-fees/${id}`);
   },
 
   /**
-   * UC: Create Platform Fee (Administrator)
+   * Tạo phí nền tảng
    * @param {object} data - { name, min_slots, max_slots, fee_amount, description, is_active }
    */
   createPlatformFee: async (data) => {
@@ -31,7 +31,7 @@ const platformFeeService = {
   },
 
   /**
-   * UC: Update Platform Fee (Administrator)
+   * Cập nhật phí nền tảng
    * @param {number} id - ID của gói biểu phí
    * @param {object} data - Dữ liệu cần cập nhật
    */
@@ -40,7 +40,7 @@ const platformFeeService = {
   },
 
   /**
-   * UC: Activate/Deactivate Platform Fee (Administrator)
+   * Bật hoặc tắt phí nền tảng
    * @param {number} id - ID của gói biểu phí
    */
   togglePlatformFeeStatus: async (id) => {
@@ -48,7 +48,7 @@ const platformFeeService = {
   },
 
   /**
-   * UC-10: Tính phí nền tảng theo số slot (Administrator, Parking Provider)
+   * Tính phí nền tảng theo số chỗ đỗ
    * @param {number} slots 
    */
   calculatePlatformFee: async (slots) => {

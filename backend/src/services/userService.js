@@ -27,20 +27,6 @@ class UserService {
     return user;
   }
 
-  async getUserProfile(userId) {
-    const user = await userRepository.findById(userId);
-    if (!user) {
-      throw Object.assign(new Error("Không tìm thấy thông tin tài khoản người dùng!"), {
-        status: 404,
-      });
-    }
-    const { password_hash, ...sanitized } = user;
-    return {
-      ...sanitized,
-      has_password: Boolean(password_hash)
-    };
-  }
-
   async updateUserProfile(userId, { full_name, phone_number, address, avatar_url }) {
     const existingUser = await userRepository.findById(userId);
     if (!existingUser) {

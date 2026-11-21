@@ -225,23 +225,6 @@ export const translateDurationText = (durationText, language = 'vi') => {
 };
 
 /**
- * Dịch tên vị trí đỗ mặc định trong hợp đồng / thẻ xe khi xem bản Tiếng Anh.
- */
-export const translateParkingSpot = (spot, language = 'vi') => {
-  if (!spot) return '';
-  if (!language?.startsWith('en')) return spot;
-
-  const norm = normalizeKey(spot);
-  if (norm === 'vị trí đỗ tự do trong bãi' || norm === 'chỗ đỗ tự do trong bãi') {
-    return 'Unassigned spot inside the facility';
-  }
-  if (norm === 'vị trí đỗ tự do' || norm === 'chỗ đỗ tự do' || norm === 'tự do') {
-    return 'Unassigned spot';
-  }
-  return spot;
-};
-
-/**
  * Dịch chuỗi thông tin xe (vd: "Ô tô 4 - 5 chỗ (...) - Biển số: 65A-123.45") sang Tiếng Anh.
  */
 export const translateVehicleInfoText = (rawVehicleInfo, language = 'vi') => {
@@ -260,77 +243,4 @@ export const translateVehicleInfoText = (rawVehicleInfo, language = 'vi') => {
   result = result.replace(/^ô tô$/i, 'Car');
   result = result.replace(/Biển số\s*:/gi, 'License Plate:');
   return result;
-};
-
-/**
- * Dịch nội dung các điều khoản mặc định của Biên bản xác nhận thuê xe (Điều 3–6) sang Tiếng Anh.
- * Giữ nguyên nội dung tùy chỉnh nếu Chủ bãi đã sửa đổi khác với mẫu hệ thống.
- */
-export const translateContractDefaultTerm = (termKey, rawText, noticeText, language = 'vi', endDateStr = '') => {
-  if (!rawText) return '';
-  if (!language?.startsWith('en')) return rawText;
-
-  const normalized = normalizeBlock(rawText).replace(
-    /ít nhất \d+(?:[.,]\d+)?\s*(?:ngày|phút|giờ|giây)/gi,
-    'ít nhất {{notice}}'
-  );
-
-  const enNotice = translateDurationText(noticeText || '15 days', 'en');
-
-  if (
-    termKey === 'owner_obligations' &&
-    normalized.includes('yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận') &&
-    normalized.includes('phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ')
-  ) {
-    return [
-      '- Require the Customer (Party B) to pay the monthly parking service fee as agreed.',
-      `- Entitled to terminate the agreement early, provided written notice is given to Party B at least ${enNotice} in advance.`,
-      '- Safeguard the vehicle as agreed and return the vehicle to Party B in the same condition as when received.',
-      '- May only alter storage arrangements if strictly necessary to better protect the vehicle, and must promptly notify Party B of such changes.',
-      '- Promptly notify Party B of any risk of damage or deterioration due to the vehicle\'s inherent condition and request instructions within a reasonable timeframe; if Party B fails to respond within that timeframe, Party A may take necessary protective measures and require reimbursement of reasonable costs.',
-      '- If payment is overdue past the agreed deadline, Party A is entitled to reclaim the parking spot and require settlement of accrued parking fees.',
-      '- Compensate for loss or damage to the stored vehicle caused by Party A\'s fault, except in force majeure events.',
-      '- Care for the parked vehicle diligently and refrain from operating or using the vehicle during the custody period.'
-    ].join('\n');
-  }
-
-  if (
-    termKey === 'customer_obligations' &&
-    normalized.includes('được chấm dứt hợp đồng trước thời hạn') &&
-    normalized.includes('bên b tự bảo quản chìa khoá xe')
-  ) {
-    return [
-      `- Entitled to terminate the agreement early, provided written notice is given to Party A at least ${enNotice} in advance.`,
-      '- Claim compensation if Party A loses or damages the stored vehicle, except in force majeure events.',
-      '- Pay the full parking service fee on time and through the agreed payment method. If payment is late more than 3 times/year, the contract is subject to default early termination and Party B must settle any outstanding balance.',
-      '- Pay applicable holding fees if the vehicle is not retrieved promptly upon expiration of the agreement.',
-      '- Party B is responsible for safeguarding vehicle keys, access cards, personal belongings, and valuables inside the vehicle.',
-      '- Strictly comply with all operating rules and safety regulations of the parking facility.'
-    ].join('\n');
-  }
-
-  if (
-    termKey === 'dispute_resolution' &&
-    normalized.includes('hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng')
-  ) {
-    return [
-      '- Both parties shall proactively inform each other of contract execution progress. Should any adverse issue arise, the parties shall promptly notify one another and actively resolve it through good-faith, equal, and mutually beneficial negotiation (with written minutes).',
-      '- If the parties cannot reach an amicable resolution, the dispute shall be referred to a competent People\'s Court for settlement.'
-    ].join('\n');
-  }
-
-  if (
-    termKey === 'termination_conditions' &&
-    normalized.includes('mỗi bên có quyền chấm dứt hợp đồng trước thời hạn') &&
-    normalized.includes('hợp đồng này được lập dưới dạng hợp đồng điện tử')
-  ) {
-    const validEnd = endDateStr || 'the agreed end date';
-    return [
-      `- This E-Confirmation Record takes effect from the date both parties complete electronic confirmation until ${validEnd}. It is automatically settled once both parties fulfill all obligations herein and do not request an extension.`,
-      `- Either party may request early termination provided prior notice is given to the other party at least ${enNotice} in advance.`,
-      '- This document is executed electronically with validity in accordance with the Law on Electronic Transactions and the 2015 Civil Code of the Socialist Republic of Vietnam; each party retains an equally valid electronic copy.'
-    ].join('\n');
-  }
-
-  return rawText;
 };

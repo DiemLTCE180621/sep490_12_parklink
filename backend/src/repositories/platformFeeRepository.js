@@ -30,20 +30,6 @@ class PlatformFeeRepository {
   }
 
   /**
-   * Lấy cấu hình đơn giá biểu phí đang áp dụng (Active)
-   */
-  async findActiveFee() {
-    return await prisma.platform_Fee.findFirst({
-      where: {
-        is_active: true
-      },
-      orderBy: {
-        updated_at: 'desc'
-      }
-    });
-  }
-
-  /**
    * Tìm biểu phí theo ID
    */
   async findById(id) {
