@@ -14,8 +14,7 @@ router.get('/dashboard/platform-fees/:month', adminController.getDashboardPlatfo
 router.get('/dashboard/export-revenue', adminController.exportRevenueReport);
 
 /**
- * M2-UC20: View pending owner registrations
- * Lấy danh sách các đăng ký bãi đỗ xe đang chờ phê duyệt
+ * Lấy đăng ký cơ sở chờ duyệt
  */
 router.get('/registrations/pending', adminController.getPendingRegistrations);
 
@@ -26,8 +25,7 @@ router.get('/registrations/:id', adminController.getRegistrationDetails);
 router.get('/facilities/:id', adminController.getRegistrationDetails);
 
 /**
- * M2-UC21: Approve facility registration
- * Phê duyệt sơ bộ yêu cầu đăng ký bãi đỗ xe & phân công nhân viên khảo sát
+ * Duyệt sơ bộ và phân công khảo sát
  */
 router.put('/registrations/:id/approve', adminController.approveRegistration);
 
@@ -38,18 +36,17 @@ router.put('/registrations/:id/assign-inspector', adminController.assignInspecto
 router.put('/facilities/:id/assign-inspector', adminController.assignInspector);
 
 /**
- * M2-UC22: Reject facility registration
- * Từ chối yêu cầu đăng ký bãi đỗ xe
+ * Từ chối đăng ký cơ sở
  */
 router.put('/registrations/:id/reject', adminController.rejectRegistration);
 
 /**
- * M2-UC21b: Finalize facility (Admin hoàn tất chuẩn bị dữ liệu) → APPROVED + gửi QR mail
+ * Phê duyệt cơ sở và gửi mã QR
  */
 router.put('/registrations/:id/finalize', adminController.finalizeRegistration);
 
 /**
- * Provider xác nhận thanh toán (cập nhật payment_status → PAID → tự động VISIBLE)
+ * Hiển thị cơ sở sau khi thanh toán
  */
 router.put('/registrations/:id/payment-confirm', adminController.confirmPayment);
 
@@ -59,7 +56,7 @@ router.put('/registrations/:id/payment-confirm', adminController.confirmPayment)
 router.get('/facilities', adminController.getAllFacilities);
 
 /**
- * Khóa / Mở khóa bãi đỗ xe (Chuyển đổi visibility_status VISIBLE <-> HIDDEN)
+ * Khóa hoặc mở khóa cơ sở
  */
 router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
 
@@ -69,7 +66,7 @@ router.put('/facilities/:id/toggle-lock', adminController.toggleLockFacility);
 router.put('/facilities/:id', adminController.updateFacility);
 
 /**
- *  [ADMIN] Xem toàn bộ Hợp đồng / Biên bản xác nhận trên hệ thống
+ * Xem hợp đồng và biên bản xác nhận
  */
 const confirmationRecordController = require('../controllers/confirmationRecordController');
 const { validateAdminQueryConfirmationRecords } = require('../validations/confirmationRecordValidation');

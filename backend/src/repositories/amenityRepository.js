@@ -108,13 +108,6 @@ class AmenityRepository {
     });
   }
 
-  async countFacilitiesUsingAmenity(id) {
-    return await prisma.facility_Amenity.count({
-      where: {
-        amenity_id: Number(id)
-      }
-    });
-  }
 }
 
 module.exports = new AmenityRepository();

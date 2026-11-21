@@ -3,12 +3,11 @@ import api from './api';
 let _cachedActiveTypes = [];
 
 /**
- * Service giao tiếp với các API Quản lý Loại phương tiện (Vehicle Types) phía Backend
- * Tuân thủ quy tắc kiến trúc Frontend: Nơi DUY NHẤT chứa code gọi API cho Vehicle Types
+ * Gọi API loại phương tiện
  */
 const vehicleTypeService = {
   /**
-   * M2-UC99: Lấy danh sách loại phương tiện (dành cho Admin)
+   * Lấy danh sách loại phương tiện
    * @param {Object} params - { keyword, is_active }
    */
   getVehicleTypes: async (params = {}) => {
@@ -28,7 +27,7 @@ const vehicleTypeService = {
   },
 
   /**
-   * M2-UC99: Lấy chi tiết một loại phương tiện theo ID
+   * Lấy chi tiết loại phương tiện
    * @param {number} id - ID loại phương tiện
    */
   getVehicleTypeById: async (id) => {
@@ -36,7 +35,7 @@ const vehicleTypeService = {
   },
 
   /**
-   * M2-UC98: Tạo mới loại phương tiện (Admin)
+   * Tạo loại phương tiện
    * @param {Object} data - { type_code, name, description, is_active }
    */
   createVehicleType: async (data) => {
@@ -44,7 +43,7 @@ const vehicleTypeService = {
   },
 
   /**
-   * M2-UC100: Cập nhật thông tin loại phương tiện (Admin)
+   * Cập nhật loại phương tiện
    * @param {number} id - ID loại phương tiện
    * @param {Object} data - { type_code, name, description, is_active }
    */
@@ -53,7 +52,7 @@ const vehicleTypeService = {
   },
 
   /**
-   * M2-UC101: Vô hiệu hóa loại phương tiện (Admin)
+   * Vô hiệu hóa loại phương tiện
    * @param {number} id - ID loại phương tiện
    */
   deactivateVehicleType: async (id) => {
@@ -61,7 +60,7 @@ const vehicleTypeService = {
   },
 
   /**
-   * Bật / Tắt kích hoạt loại phương tiện (Admin)
+   * Bật hoặc tắt loại phương tiện
    * @param {number} id - ID loại phương tiện
    */
   toggleVehicleTypeStatus: async (id) => {

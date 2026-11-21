@@ -16,17 +16,6 @@ class RoleRepository {
   }
 
   /**
-   * Tìm kiếm Role theo ID
-   * @param {number} id 
-   * @returns {Promise<Object|null>}
-   */
-  async findById(id) {
-    return await prisma.role.findUnique({
-      where: { id }
-    });
-  }
-
-  /**
    * Tạo role mới (nếu chưa có)
    * @param {Object} data 
    * @returns {Promise<Object>}

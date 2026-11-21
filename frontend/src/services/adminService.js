@@ -1,8 +1,7 @@
 import api from './api';
 
 /**
- * Service gọi các API Admin trên Frontend
- * Tuân theo kiến trúc: Component → Service → API → Backend
+ * Gọi API quản trị
  */
 const adminService = {
   getDashboardOverview: async () => {
@@ -13,7 +12,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt hoặc đang chuẩn bị
+   * Lấy cơ sở chờ duyệt và đang chuẩn bị
    */
   getPendingRegistrations: async () => {
     return await api.get('/admin/registrations/pending');
@@ -28,7 +27,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC21 Bước 1: Duyệt sơ bộ → PREPARING & Giao việc cho Nhân viên khảo sát
+   * Duyệt sơ bộ và phân công khảo sát
    * @param {number} id - ID của bãi đỗ xe
    * @param {number|object} data - ID nhân viên hoặc object { inspector_id }
    */
@@ -49,7 +48,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC21 Bước 2: Xác nhận hoàn tất → APPROVED (gửi QR thanh toán)
+   * Phê duyệt cơ sở và gửi mã QR thanh toán
    * @param {number} id - ID của bãi đỗ xe
    * @param {object} data - Dữ liệu kèm theo (VD: images)
    */
@@ -58,7 +57,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC22: Từ chối đăng ký bãi đỗ xe
+   * Từ chối đăng ký cơ sở
    * @param {number} id - ID của bãi đỗ xe cần từ chối
    * @param {string} reason - Lý do từ chối
    */
@@ -67,7 +66,7 @@ const adminService = {
   },
 
   /**
-   * Provider xác nhận đã thanh toán → Cơ sở tự động VISIBLE
+   * Hiển thị cơ sở sau khi thanh toán
    * @param {number} id - ID của bãi đỗ xe
    */
   confirmPayment: async (id) => {
@@ -82,7 +81,7 @@ const adminService = {
   },
 
   /**
-   * Khóa / Mở khóa bãi đỗ xe
+   * Khóa hoặc mở khóa cơ sở
    * @param {number} id - ID của bãi đỗ xe
    */
   toggleLockFacility: async (id) => {
@@ -99,7 +98,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC99: Lấy danh sách loại phương tiện
+   * Lấy danh sách loại phương tiện
    * @param {object} params - { keyword, is_active }
    */
   getVehicleTypes: async (params = {}) => {
@@ -107,7 +106,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC98: Tạo mới loại phương tiện
+   * Tạo loại phương tiện
    * @param {object} data - { type_code, name, description, is_active }
    */
   createVehicleType: async (data) => {
@@ -115,7 +114,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC100: Cập nhật thông tin loại phương tiện
+   * Cập nhật loại phương tiện
    * @param {number} id
    * @param {object} data
    */
@@ -124,7 +123,7 @@ const adminService = {
   },
 
   /**
-   * M2-UC101: Vô hiệu hóa loại phương tiện
+   * Vô hiệu hóa loại phương tiện
    * @param {number} id
    */
   deactivateVehicleType: async (id) => {
@@ -132,7 +131,7 @@ const adminService = {
   },
 
   /**
-   * Bật / Tắt trạng thái hoạt động của loại phương tiện
+   * Bật hoặc tắt loại phương tiện
    * @param {number} id
    */
   toggleVehicleTypeStatus: async (id) => {

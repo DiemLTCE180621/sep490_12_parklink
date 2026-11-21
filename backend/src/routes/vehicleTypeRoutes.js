@@ -17,7 +17,7 @@ router.get(
 );
 
 /**
- * M2-UC99: Xem danh sách loại phương tiện (Admin)
+ * Lấy danh sách loại phương tiện
  * Hỗ trợ tìm kiếm theo từ khóa và lọc theo trạng thái
  */
 router.get(
@@ -28,7 +28,7 @@ router.get(
 );
 
 /**
- * M2-UC99: Xem chi tiết thông tin một loại phương tiện theo ID (Admin)
+ * Lấy chi tiết loại phương tiện
  */
 router.get(
   '/:id',
@@ -38,7 +38,7 @@ router.get(
 );
 
 /**
- * M2-UC98: Tạo mới loại phương tiện (Admin)
+ * Tạo loại phương tiện
  */
 router.post(
   '/',
@@ -49,7 +49,7 @@ router.post(
 );
 
 /**
- * M2-UC100: Cập nhật thông tin loại phương tiện (Admin)
+ * Cập nhật loại phương tiện
  */
 router.put(
   '/:id',
@@ -60,7 +60,7 @@ router.put(
 );
 
 /**
- * M2-UC101: Vô hiệu hóa loại phương tiện (Admin)
+ * Vô hiệu hóa loại phương tiện
  */
 router.patch(
   '/:id/deactivate',
@@ -70,7 +70,7 @@ router.patch(
 );
 
 /**
- * Bật / Tắt kích hoạt loại phương tiện (Admin)
+ * Bật hoặc tắt loại phương tiện
  */
 router.patch(
   '/:id/toggle-status',
