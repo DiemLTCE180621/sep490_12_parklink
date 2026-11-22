@@ -91,24 +91,24 @@ const UpdateComplaintStatusModal = memo(({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/60 backdrop-blur-sm animate-fadeIn"
       onClick={loading ? undefined : onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden transform transition-all duration-200 animate-scaleUp flex flex-col max-h-[92vh]"
+        className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-xl overflow-hidden transform transition-all duration-200 animate-scaleUp flex flex-col max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER MODAL */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-purple-50/80 via-slate-50 to-white">
+        {}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-purple-50/80 via-gray-50 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-600/20">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
+              <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
                 Cập Nhật Trạng Thái Khiếu Nại
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-500">
                 Mã khiếu nại #{complaint.id} • Quyền hạn: <span className="font-semibold text-purple-700">Admin ParkLink</span>
               </p>
             </div>
@@ -116,15 +116,15 @@ const UpdateComplaintStatusModal = memo(({
           <button
             onClick={onClose}
             disabled={loading}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
+            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition disabled:opacity-50"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* BODY */}
+        {}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 flex-1">
-          {/* Thông báo lỗi nếu có */}
+          {}
           {errorMsg && (
             <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-xs text-red-700 animate-shake">
               <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -132,10 +132,10 @@ const UpdateComplaintStatusModal = memo(({
             </div>
           )}
 
-          {/* THÔNG TIN TÓM TẮT KHIẾU NẠI */}
-          <div className="bg-slate-50/80 rounded-2xl p-4 border border-slate-200/80 space-y-2.5 text-xs">
+          {}
+          <div className="bg-gray-50/80 rounded-2xl p-4 border border-gray-200/80 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
-              <span className="font-extrabold text-slate-900 text-sm">
+              <span className="font-extrabold text-gray-900 text-sm">
                 #{complaint.id} - {complaint.title}
               </span>
               <span className="px-2.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 border border-purple-200 text-[11px]">
@@ -143,21 +143,21 @@ const UpdateComplaintStatusModal = memo(({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-slate-600">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-gray-600">
               <div className="flex items-center gap-1.5 truncate">
-                <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate">Khách hàng: <strong className="text-slate-800">{complaint.customer?.full_name || 'Khách hàng'}</strong></span>
+                <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                <span className="truncate">Khách hàng: <strong className="text-gray-800">{complaint.customer?.full_name || 'Khách hàng'}</strong></span>
               </div>
               <div className="flex items-center gap-1.5 truncate">
                 <Building2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                <span className="truncate">Bãi xe: <strong className="text-slate-800">{complaint.facility?.name}</strong></span>
+                <span className="truncate">Bãi xe: <strong className="text-gray-800">{complaint.facility?.name}</strong></span>
               </div>
             </div>
           </div>
 
-          {/* CHỌN TRẠNG THÁI MỤC TIÊU */}
+          {}
           <div className="space-y-2.5">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
               Chọn trạng thái cập nhật <span className="text-red-500">*</span>
             </label>
 
@@ -169,7 +169,7 @@ const UpdateComplaintStatusModal = memo(({
                     key={opt.value}
                     className={`flex items-start gap-3 p-3.5 rounded-2xl border cursor-pointer transition select-none ${isSelected
                         ? 'border-purple-500 bg-purple-50/50 shadow-sm ring-1 ring-purple-500/20'
-                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
                       }`}
                   >
                     <input
@@ -178,16 +178,16 @@ const UpdateComplaintStatusModal = memo(({
                       value={opt.value}
                       checked={isSelected}
                       onChange={(e) => setSelectedStatus(e.target.value)}
-                      className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500 border-slate-300"
+                      className="mt-1 w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300"
                     />
                     <div className="flex-1 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-slate-900">{opt.label}</span>
+                        <span className="font-extrabold text-sm text-gray-900">{opt.label}</span>
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${opt.badgeClass}`}>
                           {opt.value}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">{opt.description}</p>
+                      <p className="text-xs text-gray-500 leading-relaxed">{opt.description}</p>
                     </div>
                   </label>
                 );
@@ -195,13 +195,13 @@ const UpdateComplaintStatusModal = memo(({
             </div>
           </div>
 
-          {/* GHI CHÚ KẾT LUẬN / PHÁN QUYẾT */}
+          {}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Ghi chú phán quyết của Admin (Tùy chọn)
               </label>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-gray-400">
                 {note.length}/2000 ký tự
               </span>
             </div>
@@ -211,17 +211,17 @@ const UpdateComplaintStatusModal = memo(({
               onChange={(e) => setNote(e.target.value)}
               maxLength={2000}
               placeholder="Nhập kết luận thẩm tra, hướng giải quyết hoặc căn cứ xử lý để thông báo đến Khách hàng và Chủ bãi xe..."
-              className="w-full px-3.5 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition resize-none"
+              className="w-full px-3.5 py-2.5 rounded-2xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition resize-none"
             />
           </div>
 
-          {/* FOOTER ACTIONS */}
-          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100">
+          {}
+          <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition disabled:opacity-50"
             >
               Hủy Bỏ
             </button>

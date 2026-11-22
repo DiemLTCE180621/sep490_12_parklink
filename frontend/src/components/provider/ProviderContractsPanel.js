@@ -1,3 +1,4 @@
+import StatusBadge from '../common/StatusBadge';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -118,39 +119,15 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'PENDING_SIGNATURE':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            {t('contracts.statuses.PENDING_SIGNATURE')}
-          </span>
-        );
+        return <StatusBadge status="PENDING" label={t('contracts.statuses.PENDING_SIGNATURE')} size="sm" />;
       case 'ACTIVE':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            {t('contracts.statuses.ACTIVE')}
-          </span>
-        );
+        return <StatusBadge status="ACTIVE" label={t('contracts.statuses.ACTIVE')} size="sm" />;
       case 'TERMINATED':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            {t('contracts.statuses.TERMINATED')}
-          </span>
-        );
+        return <StatusBadge status="TERMINATED" label={t('contracts.statuses.TERMINATED')} size="sm" />;
       case 'CANCELLED':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-            {t('contracts.statuses.CANCELLED')}
-          </span>
-        );
+        return <StatusBadge status="CANCELLED" label={t('contracts.statuses.CANCELLED')} size="sm" />;
       default:
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-            {status}
-          </span>
-        );
+        return <StatusBadge status={status} size="sm" />;
     }
   };
 
@@ -158,14 +135,14 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
     <div className="space-y-4">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
         
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-gray-900">
               {t('contracts.title')}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               {t('contracts.subtitle')}
             </p>
           </div>
@@ -177,32 +154,32 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   ? onNavigateToActiveCustomers
                   : () => navigate('/provider/active-customers')
               }
-              className="px-3.5 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-medium rounded-lg border border-teal-200 transition flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-700 text-xs font-medium rounded-lg border border-neighbor-200 transition flex items-center gap-1.5"
             >
-              <Users className="w-3.5 h-3.5 text-teal-600" />
+              <Users className="w-3.5 h-3.5 text-neighbor-600" />
               {t('contracts.activeCustomersBtn')}
             </button>
 
             <button
               onClick={fetchContracts}
               disabled={loading}
-              className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-300 transition flex items-center gap-1.5"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
               {t('contracts.refresh')}
             </button>
           </div>
         </div>
 
         
-        <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="px-6 py-2.5 bg-gray-50/70 border-b border-gray-100">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             <button
               onClick={() => setActiveTab('ALL')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'ALL'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('contracts.tabs.all', { count: totalCount })}
@@ -210,10 +187,10 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
             <button
               onClick={() => setActiveTab('PENDING_SIGNATURE')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'PENDING_SIGNATURE'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('contracts.tabs.pending', { count: pendingCount })}
@@ -221,10 +198,10 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
             <button
               onClick={() => setActiveTab('ACTIVE')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'ACTIVE'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('contracts.tabs.active', { count: activeCount })}
@@ -232,12 +209,12 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
             <button
               onClick={() => setActiveTab('EXTENSION_PENDING')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'EXTENSION_PENDING'
-                  ? 'bg-amber-600 text-white font-semibold'
+                  ? 'bg-amber-600 text-white shadow-xs'
                   : extensionPendingCount > 0
                   ? 'text-amber-800 bg-amber-50 hover:bg-amber-100/80 border border-amber-200'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               <Clock className="w-3.5 h-3.5" />
@@ -246,12 +223,12 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
             <button
               onClick={() => setActiveTab('TERMINATION_PENDING')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'TERMINATION_PENDING'
-                  ? 'bg-rose-600 text-white font-semibold'
+                  ? 'bg-rose-600 text-white shadow-xs'
                   : terminationPendingCount > 0
                   ? 'text-rose-800 bg-rose-50 hover:bg-rose-100/80 border border-rose-200'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               <AlertCircle className="w-3.5 h-3.5" />
@@ -260,24 +237,26 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
             <button
               onClick={() => setActiveTab('TERMINATED')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'TERMINATED'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('contracts.tabs.terminated', { count: terminatedCount })}
             </button>
           </div>
+        </div>
 
-          <div className="relative w-full md:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="px-6 py-3 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-100">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder={t('contracts.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-teal-600 transition"
+              className="w-full pl-9 pr-3.5 py-1.5 bg-gray-50/70 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-neighbor-600 transition"
             />
           </div>
         </div>
@@ -285,33 +264,33 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
         
         {loading ? (
           <div className="p-16 text-center">
-            <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
-            <p className="text-slate-500 text-sm">{t('contracts.loading')}</p>
+            <Loader2 className="w-7 h-7 animate-spin text-neighbor-600 mx-auto mb-2.5" />
+            <p className="text-gray-500 text-sm">{t('contracts.loading')}</p>
           </div>
         ) : error ? (
           <div className="p-10 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">{t('contracts.errorTitle')}</h3>
-            <p className="text-sm text-slate-600">{error === '__LOAD_ERROR__' ? t('contracts.loadError') : error}</p>
+            <h3 className="text-base font-bold text-gray-900">{t('contracts.errorTitle')}</h3>
+            <p className="text-sm text-gray-600">{error === '__LOAD_ERROR__' ? t('contracts.loadError') : error}</p>
             <button
               onClick={fetchContracts}
-              className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
+              className="px-4 py-2 bg-neighbor-600 text-white font-medium text-xs rounded-lg hover:bg-neighbor-700 transition"
             >
               {t('contracts.retry')}
             </button>
           </div>
         ) : filteredContracts.length === 0 ? (
           <div className="py-14 px-6 text-center space-y-2">
-            <FileText className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-semibold text-slate-800">{t('contracts.empty.title')}</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <FileText className="w-10 h-10 text-gray-300 mx-auto" />
+            <h3 className="text-base font-semibold text-gray-800">{t('contracts.empty.title')}</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
               {searchTerm
                 ? t('contracts.empty.searchEmpty')
                 : t('contracts.empty.defaultEmpty')}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-gray-200">
             {filteredContracts.map((item) => {
               const customer = item.reservation?.customer;
               const facility = item.reservation?.facility;
@@ -324,11 +303,11 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                 <div
                   key={item.id}
                   onClick={() => handleOpenDetail(item.id)}
-                  className="p-6 hover:bg-slate-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+                  className="p-6 hover:bg-gray-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
                 >
                   <div className="space-y-3 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
-                      <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-gray-500">
+                      <span className="font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
                         {item.contract_code}
                       </span>
                       <span>•</span>
@@ -360,19 +339,19 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('contracts.card.customerSection')}</span>
-                        <p className="font-semibold text-slate-900 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-xs text-gray-500 block">{t('contracts.card.customerSection')}</span>
+                        <p className="font-semibold text-gray-900 flex items-center gap-1.5">
+                          <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span>{customer?.full_name || t('contracts.card.defaultCustomer')}</span>
                         </p>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-slate-400" />
+                            <Phone className="w-3 h-3 text-gray-400" />
                             {customer?.phone_number || t('contracts.card.notUpdated')}
                           </span>
                           {customer?.email && (
                             <span className="inline-flex items-center gap-1 truncate">
-                              <Mail className="w-3 h-3 text-slate-400" />
+                              <Mail className="w-3 h-3 text-gray-400" />
                               {customer.email}
                             </span>
                           )}
@@ -381,34 +360,34 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
 
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('contracts.card.costSection')}</span>
-                        <p className="font-bold text-teal-700">
+                        <span className="text-xs text-gray-500 block">{t('contracts.card.costSection')}</span>
+                        <p className="font-bold text-neighbor-700">
                           {Number(item.agreed_price).toLocaleString('vi-VN')}{' '}
-                          <span className="text-xs font-normal text-slate-500">{t('contracts.card.priceUnit')}</span>
+                          <span className="text-xs font-normal text-gray-500">{t('contracts.card.priceUnit')}</span>
                         </p>
-                        <p className="text-xs text-slate-600 flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <p className="text-xs text-gray-600 flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span>
                             {new Date(item.start_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')} – {new Date(item.end_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}
                           </span>
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-gray-500">
                           {t('contracts.card.paymentDeadline', { day: item.payment_deadline_day || 5 })}
                         </p>
                       </div>
 
                       
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('contracts.card.facilitySection')}</span>
-                        <p className="font-semibold text-slate-900 truncate">
+                        <span className="text-xs text-gray-500 block">{t('contracts.card.facilitySection')}</span>
+                        <p className="font-semibold text-gray-900 truncate">
                           {facility?.name}
                         </p>
-                        <p className="text-xs text-slate-600 flex items-center gap-1.5 truncate">
-                          <Car className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <p className="text-xs text-gray-600 flex items-center gap-1.5 truncate">
+                          <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span className="truncate">{displayVehicle}</span>
                         </p>
-                        <p className="text-xs text-slate-500 flex items-start gap-1 truncate">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-gray-500 flex items-start gap-1 truncate">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
                           <span className="truncate">{facility?.address}</span>
                         </p>
                       </div>
@@ -416,7 +395,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                   </div>
 
                   
-                  <div className="flex items-center justify-end shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 gap-2">
+                  <div className="flex items-center justify-end shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-gray-200 gap-2">
                     {pendingTerm && (
                       <button
                         type="button"
@@ -464,7 +443,7 @@ const ProviderContractsPanel = ({ onNavigateToActiveCustomers }) => {
                         e.stopPropagation();
                         handleOpenDetail(item.id);
                       }}
-                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       {t('contracts.actions.viewContract')}

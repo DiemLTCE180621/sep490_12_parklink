@@ -47,21 +47,22 @@
     "switchToVi": "Switch to Vietnamese"
   },
   "footer": {
-    "copyright": "© 2026 ParkLink Project. All rights reserved by SEP490-12-ParkLink Team.",
+    "copyright": "© 2026 ParkLink.",
     "providerTagline": "A trusted, transparent, and secure platform connecting monthly parking facility providers.",
     "rulesAndPoliciesTitle": "Rules & Policies",
     "parklinkPolicies": "ParkLink Policies",
     "partnerTechSupport": "Provider Technical Support",
-    "adminHotline": "Admin Hotline: ",
-    "guestTagline": "A trusted, transparent, and convenient platform connecting monthly parking renters.",
-    "monthlyOnlyBadge": "Monthly rentals only — Complete peace of mind",
-    "forCustomersTitle": "For Customers",
-    "findParkingNearby": "Find parking near you",
-    "customerPolicyLink": "Monthly Parking Rental Policies",
-    "forProvidersTitle": "Parking Providers",
-    "providerPolicyLink": "Provider Operating Policies",
+    "adminHotline": "Support Hotline: ",
+    "guestTagline": "Connecting monthly parking seekers with property owners having available yard space. Safe, transparent, and convenient.",
+    "monthlyOnlyBadge": "Monthly parking rental platform",
+    "forCustomersTitle": "For Renters",
+    "findParkingNearby": "Find parking",
+    "customerPolicyLink": "Renter Policy",
+    "forProvidersTitle": "For Space Owners",
+    "providerPolicyLink": "Partner Policy",
+    "registerYard": "List your parking space",
     "supportAndContactTitle": "Support & Contact",
-    "footerPolicyLink": "ParkLink Policies & Terms of Service"
+    "footerPolicyLink": "ParkLink Policies & Terms"
   },
   "mapPicker": {
     "popupTitle": "Parking Facility Location",

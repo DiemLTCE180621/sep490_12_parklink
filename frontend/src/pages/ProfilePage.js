@@ -170,20 +170,23 @@ const ProfilePage = () => {
   const hasAddress = Boolean(user?.address && user.address.trim());
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-teal-600 transition"
-        >
-          <ArrowLeft className="w-4 h-4" /> {t('header.back')}
-        </button>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-neighbor-700 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> {t('header.back')}
+          </button>
+          <span className="text-xs text-gray-400 font-medium">ParkLink Account Management</span>
+        </div>
 
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-xs flex flex-col items-center text-center space-y-4">
               <div className="relative group">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-teal-500 text-slate-900 font-black flex items-center justify-center text-3xl shadow-md border-2 border-teal-400/50">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-neighbor-50 text-neighbor-700 font-bold flex items-center justify-center text-3xl border-2 border-neighbor-100 shadow-xs">
                   {avatarUrl && !avatarLoadFailed ? (
                     <img
                       src={avatarUrl}
@@ -202,7 +205,7 @@ const ProfilePage = () => {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingAvatar}
                   title={t('header.avatarTitle')}
-                  className="absolute -bottom-2 -right-2 p-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl shadow-lg border-2 border-slate-900 transition flex items-center justify-center disabled:opacity-50"
+                  className="absolute -bottom-1 -right-1 p-2 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl shadow-xs border-2 border-white transition-colors flex items-center justify-center disabled:opacity-50 cursor-pointer"
                 >
                   {uploadingAvatar ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -220,194 +223,207 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">{user?.full_name || t('header.fallbackName')}</h1>
-                <p className="text-teal-300 text-xs font-medium mt-1">{user?.email}</p>
-                <p className="text-slate-400 text-[11px] mt-0.5">{t('header.avatarHint')}</p>
+                <h2 className="text-lg font-bold text-gray-900 tracking-tight">{user?.full_name || t('header.fallbackName')}</h2>
+                <p className="text-gray-500 text-xs font-medium mt-0.5">{user?.email}</p>
+                <p className="text-gray-400 text-[11px] mt-1">{t('header.avatarHint')}</p>
+              </div>
+
+              <div className="pt-2 w-full border-t border-gray-100 space-y-2.5 text-left text-xs">
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-gray-500 font-medium">{t('fields.accountRole.label')}</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
+                    {getRoleLabel(roleName)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-gray-500 font-medium">{t('fields.authMethod.label')}</span>
+                  <span className="text-gray-700 font-semibold text-right">
+                    {user?.has_password === false
+                      ? t('fields.authMethod.google')
+                      : localStorage.getItem('parklink_login_method') === 'google'
+                        ? t('fields.authMethod.googleAndPassword')
+                        : t('fields.authMethod.emailAndPassword')}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between py-1">
+                  <span className="text-gray-500 font-medium">Trạng thái tài khoản</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Hoạt động
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-teal-500/20 text-teal-300 border border-teal-400/30">
-                {getRoleLabel(roleName)}
-              </span>
+            <div className="bg-neighbor-50/60 rounded-2xl p-5 border border-neighbor-100 text-xs text-neighbor-900 space-y-2">
+              <div className="flex items-center gap-2 font-bold text-neighbor-800">
+                <Shield className="w-4 h-4 text-neighbor-600" /> Bảo mật thông tin ParkLink
+              </div>
+              <p className="text-neighbor-700 leading-relaxed text-[11px]">
+                Thông tin cá nhân và số điện thoại của bạn được dùng để xác thực hợp đồng điện tử và kết nối an toàn với đối tác bãi xe.
+              </p>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-md space-y-6">
-          <div className="border-b border-slate-100 pb-4">
-            <h2 className="text-lg font-bold text-slate-900">{t('section.title')}</h2>
-            <p className="text-slate-500 text-xs mt-0.5">{t('section.subtitle')}</p>
-          </div>
-
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3 text-red-700 text-sm">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="p-4 bg-teal-50 border border-teal-200 rounded-2xl flex items-start gap-3 text-teal-800 text-sm">
-              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-teal-600" />
-              <span>{successMessage}</span>
-            </div>
-          )}
-
-          {roleName === 'CUSTOMER' && (!hasPhone || !hasAddress) && (
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3 text-amber-900 text-xs sm:text-sm">
-              <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
-              <span>
-                {!hasPhone && !hasAddress
-                  ? t('warnings.missingBoth')
-                  : !hasPhone
-                    ? t('warnings.missingPhone')
-                    : t('warnings.missingAddress')}
-              </span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center gap-1.5">
-                <Mail className="w-4 h-4 text-slate-400" /> {t('fields.email.label')}
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-2xl text-slate-500 font-semibold text-sm cursor-not-allowed"
-                />
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200 shadow-xs space-y-6">
+              <div className="border-b border-gray-100 pb-4">
+                <h2 className="text-lg font-bold text-gray-900">{t('section.title')}</h2>
+                <p className="text-gray-500 text-xs mt-0.5">{t('section.subtitle')}</p>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-4 h-4 text-teal-600" /> {t('fields.fullName.label')} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder={t('fields.fullName.placeholder')}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                required
-              />
-            </div>
+              {error && (
+                <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5 text-red-700 text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+                  <span>{error}</span>
+                </div>
+              )}
 
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Phone className="w-4 h-4 text-teal-600" /> {t('fields.phone.label')} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder={t('fields.phone.placeholder')}
-                maxLength={10}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-2xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                required
-              />
-              <p className="text-[11px] text-slate-500">{t('fields.phone.hint')}</p>
-            </div>
+              {successMessage && (
+                <div className="p-3.5 bg-neighbor-50 border border-neighbor-200 rounded-xl flex items-start gap-2.5 text-neighbor-800 text-xs">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-neighbor-600" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
 
-            {roleName === 'FIELD_INSPECTOR' ? (
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-teal-600" /> {t('fields.assignedAddress.label')}
-                </label>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <span className="font-semibold text-slate-900 text-sm">
-                    {user?.address || t('fields.assignedAddress.empty')}
-                  </span>
-                  <span className="text-[11px] font-bold text-slate-500 bg-white px-2.5 py-1 rounded-lg border border-slate-200 w-max shrink-0">
-                    {t('fields.assignedAddress.note')}
+              {roleName === 'CUSTOMER' && (!hasPhone || !hasAddress) && (
+                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5 text-amber-900 text-xs">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
+                  <span>
+                    {!hasPhone && !hasAddress
+                      ? t('warnings.missingBoth')
+                      : !hasPhone
+                        ? t('warnings.missingPhone')
+                        : t('warnings.missingAddress')}
                   </span>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4 p-5 bg-slate-50/70 rounded-2xl border border-slate-200">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-teal-600" /> {t('fields.address.label')}
-                  </label>
-                  <span className="text-[11px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
-                    {t('fields.address.formatHint')}
-                  </span>
-                </div>
+              )}
 
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold text-slate-500 uppercase">{t('fields.address.areaLabel')}</span>
-                  <AddressSelector
-                    value={administrativeAddress}
-                    onChange={(selectedAdmin) => setAdministrativeAddress(selectedAdmin)}
-                  />
-                </div>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                      <User className="w-4 h-4 text-neighbor-600" /> {t('fields.fullName.label')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder={t('fields.fullName.placeholder')}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1">
-                    <Home className="w-3.5 h-3.5 text-slate-400" /> {t('fields.address.streetDetailLabel')}
-                  </label>
-                  <input
-                    type="text"
-                    value={streetDetail}
-                    onChange={(e) => setStreetDetail(e.target.value)}
-                    placeholder={t('fields.address.streetDetailPlaceholder')}
-                    maxLength={150}
-                    className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  />
-                </div>
-
-                <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
-                  <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold text-slate-700">
-                      {roleName === 'CUSTOMER' ? 'Địa chỉ ghi trên thông tin thuê bãi: ' : 'Địa chỉ liên hệ: '}
-                    </span>
-                    <span className="text-teal-800 font-semibold">
-                      {computeFullAddress(streetDetail, administrativeAddress) || t('fields.address.notSet')}
-                    </span>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                      <Phone className="w-4 h-4 text-neighbor-600" /> {t('fields.phone.label')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      placeholder={t('fields.phone.placeholder')}
+                      maxLength={10}
+                      className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                      required
+                    />
                   </div>
                 </div>
-              </div>
-            )}
 
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-teal-600" />
-                <span className="font-bold text-slate-600">{t('fields.accountRole.label')}</span>
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-teal-100 text-teal-800">
-                {getRoleLabel(roleName)}
-              </span>
-            </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
+                      <Mail className="w-4 h-4 text-gray-400" /> {t('fields.email.label')}
+                    </label>
+                    <span className="text-[11px] text-gray-400 font-medium">Không thể thay đổi</span>
+                  </div>
+                  <input
+                    type="email"
+                    value={user?.email || ''}
+                    disabled
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 text-sm cursor-not-allowed"
+                  />
+                </div>
 
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-teal-600" />
-                <span className="font-bold text-slate-600">{t('fields.authMethod.label')}</span>
-              </div>
-              <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
-                {user?.has_password === false
-                  ? t('fields.authMethod.google')
-                  : localStorage.getItem('parklink_login_method') === 'google'
-                    ? t('fields.authMethod.googleAndPassword')
-                    : t('fields.authMethod.emailAndPassword')}
-              </span>
-            </div>
+                {roleName === 'PROVIDER' ? (
+                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-neighbor-600" /> {t('fields.assignedAddress.label')}
+                      </label>
+                      <span className="text-[11px] text-neighbor-700 font-semibold bg-neighbor-50 px-2 py-0.5 rounded-md border border-neighbor-200">
+                        {t('fields.assignedAddress.badge')}
+                      </span>
+                    </div>
+                    <div className="p-3 bg-white rounded-lg border border-gray-200 text-xs text-gray-700 font-medium flex items-center justify-between gap-2">
+                      <span className="truncate">
+                        {user?.address || t('fields.assignedAddress.emptyFallback')}
+                      </span>
+                      <span className="text-[11px] font-semibold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md shrink-0">
+                        {t('fields.assignedAddress.note')}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3.5 p-4 bg-gray-50/70 rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                        <MapPin className="w-4 h-4 text-neighbor-600" /> {t('fields.address.label')}
+                      </label>
+                      <span className="text-[11px] text-neighbor-700 font-semibold bg-neighbor-50 px-2 py-0.5 rounded-md border border-neighbor-200">
+                        {t('fields.address.formatHint')}
+                      </span>
+                    </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-100">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                {loading ? t('actions.saving') : t('actions.saveChanges')}
-              </button>
+                    <div className="space-y-1">
+                      <span className="text-[11px] font-semibold text-gray-500">{t('fields.address.areaLabel')}</span>
+                      <AddressSelector
+                        value={administrativeAddress}
+                        onChange={(selectedAdmin) => setAdministrativeAddress(selectedAdmin)}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-semibold text-gray-500 flex items-center gap-1">
+                        <Home className="w-3.5 h-3.5 text-gray-400" /> {t('fields.address.streetDetailLabel')}
+                      </label>
+                      <input
+                        type="text"
+                        value={streetDetail}
+                        onChange={(e) => setStreetDetail(e.target.value)}
+                        placeholder={t('fields.address.streetDetailPlaceholder')}
+                        maxLength={150}
+                        className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-xs focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                      />
+                    </div>
+
+                    <div className="p-2.5 bg-white rounded-lg border border-gray-200 text-xs text-gray-600 flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-neighbor-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-semibold text-gray-700">
+                          {roleName === 'CUSTOMER' ? 'Địa chỉ ghi trên thông tin thuê bãi: ' : 'Địa chỉ liên hệ: '}
+                        </span>
+                        <span className="text-neighbor-800 font-semibold">
+                          {computeFullAddress(streetDetail, administrativeAddress) || t('fields.address.notSet')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-4 border-t border-gray-100">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white text-sm font-semibold rounded-lg shadow-xs transition-colors disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    {loading ? t('actions.saving') : t('actions.saveChanges')}
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

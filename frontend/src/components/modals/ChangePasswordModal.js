@@ -88,174 +88,173 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
   const errorList = Array.isArray(error) ? error : error ? [error] : [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden relative transform transition-all">
-        
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white px-8 py-6 relative">
-          <button
-            onClick={handleClose}
-            className="absolute top-5 right-5 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-teal-500 text-slate-950 font-black flex items-center justify-center text-xl shadow-md">
-              <KeyRound className="w-6 h-6" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xs animate-fadeIn overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-lg overflow-hidden relative">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center border border-neighbor-100 shadow-xs">
+              <KeyRound className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-xl">{t('changePasswordModal.title')}</h3>
-              <p className="text-teal-300 text-xs font-medium mt-0.5">
+              <h3 className="font-bold text-lg text-gray-900 leading-snug">{t('changePasswordModal.title')}</h3>
+              <p className="text-gray-500 text-xs font-medium mt-0.5">
                 {t('changePasswordModal.subtitle')}
               </p>
             </div>
           </div>
+          <button
+            onClick={handleClose}
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {user?.has_password === false ? (
-          <div className="p-8 text-center space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mx-auto">
-              <KeyRound className="w-7 h-7 text-teal-600" />
+          <div className="p-6 text-center space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center mx-auto border border-neighbor-100">
+              <KeyRound className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">{t('changePasswordModal.googleTitle')}</h3>
-            <p className="text-sm text-slate-600 max-w-sm mx-auto leading-relaxed">
+            <h3 className="text-base font-bold text-gray-900">{t('changePasswordModal.googleTitle')}</h3>
+            <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
               {t('changePasswordModal.googleDescription')}
             </p>
             <div className="pt-2">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition"
+                className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
               >
-                {t('changePasswordModal.close')}
+                {t('changePasswordModal.actions.close')}
               </button>
             </div>
           </div>
         ) : (
-        <div className="p-8 space-y-6">
-          {errorList.length > 0 && (
-            <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 animate-shake">
-              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <div className="space-y-1 font-medium">
-                {errorList.map((errText, idx) => (
-                  <p key={idx}>{errText}</p>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 text-sm flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0" />
-              <span className="font-semibold">{successMessage}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5 text-sm">
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                {t('changePasswordModal.fields.oldPasswordLabel')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-2xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4 text-teal-600" />
+          <div className="p-6">
+            {errorList.length > 0 && (
+              <div className="mb-4 p-3.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  {errorList.map((err, idx) => (
+                    <div key={idx}>{err}</div>
+                  ))}
                 </div>
-                <input
-                  type={showOldPassword ? 'text' : 'password'}
-                  name="oldPassword"
-                  value={formData.oldPassword}
-                  onChange={handleChange}
-                  placeholder={t('changePasswordModal.fields.oldPasswordPlaceholder')}
-                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                />
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{successMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {t('changePasswordModal.fields.oldPasswordLabel')} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showOldPassword ? 'text' : 'password'}
+                    name="oldPassword"
+                    value={formData.oldPassword}
+                    onChange={handleChange}
+                    placeholder={t('changePasswordModal.fields.oldPasswordPlaceholder')}
+                    className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {t('changePasswordModal.fields.newPasswordLabel')} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    name="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleChange}
+                    placeholder={t('changePasswordModal.fields.newPasswordPlaceholder')}
+                    className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {t('changePasswordModal.fields.confirmPasswordLabel')} <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <Lock className="w-4 h-4" />
+                  </div>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder={t('changePasswordModal.fields.confirmPasswordPlaceholder')}
+                    className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setShowOldPassword(!showOldPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  onClick={handleClose}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-semibold rounded-lg transition-colors cursor-pointer"
                 >
-                  {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {t('changePasswordModal.actions.cancel')}
                 </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                {t('changePasswordModal.fields.newPasswordLabel')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-2xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4 text-teal-600" />
-                </div>
-                <input
-                  type={showNewPassword ? 'text' : 'password'}
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
-                  placeholder={t('changePasswordModal.fields.newPasswordPlaceholder')}
-                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                />
                 <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+                  type="submit"
+                  disabled={loading}
+                  className="px-5 py-2 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white text-sm font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" /> {t('changePasswordModal.actions.submitting')}
+                    </>
+                  ) : (
+                    t('changePasswordModal.actions.submit')
+                  )}
                 </button>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                {t('changePasswordModal.fields.confirmPasswordLabel')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-2xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4 text-teal-600" />
-                </div>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder={t('changePasswordModal.fields.confirmPasswordPlaceholder')}
-                  className="block w-full pl-11 pr-11 py-3.5 text-sm border border-slate-300 rounded-2xl text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-6 py-3 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition"
-              >
-                {t('changePasswordModal.actions.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 rounded-xl shadow-md text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none transition disabled:opacity-50 flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" /> {t('changePasswordModal.actions.submitting')}
-                  </>
-                ) : (
-                  t('changePasswordModal.actions.submit')
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+            </form>
+          </div>
         )}
       </div>
     </div>

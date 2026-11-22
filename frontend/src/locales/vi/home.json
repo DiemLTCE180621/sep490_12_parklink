@@ -1,48 +1,92 @@
 {
   "hero": {
-    "badge": "Mô Hình Thuê Bãi Đỗ Theo Tháng Uy Tín",
-    "titleBefore": "Tìm Bãi Đỗ Xe Cho Thuê ",
+    "badge": "Nền Tảng Thuê Bãi Đỗ Xe Dài Hạn",
+    "titleBefore": "Tìm Bãi Đỗ Xe ",
     "titleHighlight": "Theo Tháng",
     "titleAfter": " Gần Bạn",
-    "subtitle": "ParkLink kết nối trực tiếp chủ bãi đỗ xe và khách thuê dài hạn. Đặt chỗ giữ xe an toàn, bảo vệ tài sản, thanh toán minh bạch 100%."
+    "subtitle": "ParkLink kết nối trực tiếp chủ bãi đỗ xe và khách thuê dài hạn. Đặt chỗ giữ xe thuận tiện, hợp đồng điện tử minh bạch, tối ưu chi phí mỗi tháng."
+  },
+  "searchBar": {
+    "vehicleLabel": "Phương tiện",
+    "allVehicles": "Tất cả loại xe",
+    "locationLabel": "Khu vực",
+    "locationPlaceholder": "Nhập địa chỉ, quận, tên bãi...",
+    "rentalTermLabel": "Hình thức",
+    "monthlyRental": "Thuê theo tháng",
+    "submit": "Tìm kiếm"
+  },
+  "featured": {
+    "badge": "Điểm đỗ tiêu biểu",
+    "title": "Bãi Đỗ Xe Dài Hạn Được Đánh Giá Cao",
+    "subtitle": "Danh sách điểm đỗ xe uy tín, được khảo sát thực địa và đảm bảo an ninh bởi ParkLink",
+    "viewAll": "Xem tất cả trên bản đồ"
+  },
+  "quickActions": {
+    "guestTitle": "Giải Pháp Đỗ Xe Thông Minh",
+    "guestSubtitle": "Kết nối trực tiếp giữa chủ bãi có sân trống và khách thuê dài hạn",
+    "customerTitle": "Không Gian Quản Lý Của Bạn",
+    "customerSubtitle": "Xin chào {{name}}, theo dõi nhanh các yêu cầu đặt chỗ và hợp đồng đỗ xe",
+    "providerTitle": "Cổng Quản Trị Dành Cho Đối Tác",
+    "providerSubtitle": "Xin chào {{name}}, quản lý tình trạng cơ sở bãi xe và danh sách xe gửi",
+    "myReservationsBadge": "Đang xử lý",
+    "myReservationsTitle": "Yêu Cầu Thuê Của Tôi",
+    "myReservationsDesc": "Theo dõi tiến độ xét duyệt yêu cầu đặt chỗ và nhận thông báo từ chủ bãi.",
+    "myReservationsCta": "Xem yêu cầu thuê",
+    "myContractsBadge": "Hợp đồng điện tử",
+    "myContractsTitle": "Hợp Đồng Thuê Tháng",
+    "myContractsDesc": "Quản lý hợp đồng có hiệu lực, theo dõi thời hạn đỗ xe và gia hạn trực tuyến.",
+    "myContractsCta": "Xem danh sách hợp đồng",
+    "myFavoritesBadge": "Đã đánh dấu",
+    "myFavoritesTitle": "Bãi Xe Đã Lưu",
+    "myFavoritesDesc": "Danh sách các cơ sở đỗ xe thuận tiện bạn đã lưu để liên hệ khi cần.",
+    "myFavoritesCta": "Xem bãi xe đã lưu",
+    "manageFacilitiesTitle": "Quản Lý Cơ Sở Bãi Xe",
+    "manageFacilitiesDesc": "Cập nhật tình trạng số lượng chỗ đỗ còn trống, hình ảnh và tiện ích bãi xe.",
+    "manageFacilitiesCta": "Quản lý cơ sở",
+    "manageContractsTitle": "Hợp Đồng & Khách Thuê",
+    "manageContractsDesc": "Duyệt yêu cầu đăng ký thuê bãi, tạo hợp đồng điện tử và danh sách xe gửi tháng.",
+    "manageContractsCta": "Quản lý hợp đồng",
+    "exploreMapTitle": "Khảo Sát Bản Đồ",
+    "exploreMapDesc": "Khảo sát mức giá và mật độ bãi đỗ xe của các khu vực xung quanh trên hệ thống.",
+    "exploreMapCta": "Mở bản đồ tìm kiếm"
   },
   "customerCard": {
     "imageAlt": "Khách thuê xe",
     "badge": "Khách Thuê Xe",
-    "title": "Bạn Cần Thuê Bãi Dài Hạn?",
-    "description": "Tìm bãi đỗ xe an toàn gần nhà hoặc công ty, ký hợp đồng thuê theo tháng rõ ràng, bảo vệ quyền lợi 100%.",
-    "cta": "Đăng Ký Khách Thuê"
+    "title": "Bạn Cần Thuê Chỗ Đỗ Dài Hạn?",
+    "description": "Tìm bãi đỗ xe an toàn gần nhà hoặc nơi làm việc, ký hợp đồng thuê theo tháng rõ ràng, bảo vệ quyền lợi 100%.",
+    "cta": "Khám phá bãi xe"
   },
   "searchCard": {
     "imageAlt": "Ký kết hợp đồng thuê bãi ParkLink",
     "cta": "Tìm kiếm ngay"
   },
   "audience": {
-    "eyebrow": "ĐỐI TƯỢNG PHỤC VỤ",
+    "eyebrow": "MẠNG LƯỚI KẾT NỐI",
     "title": "Giải Pháp Linh Hoạt Cho Cả Hai Bên"
   },
   "providerCard": {
     "imageAlt": "Chủ bãi đỗ xe",
-    "badge": "Chủ Bãi Đỗ Xe",
-    "title": "Bạn Là Chủ Bãi Xe?",
-    "description": "Đăng bãi đỗ xe lên ParkLink để tiếp cận khách thuê dài hạn, tối ưu công suất và nhận doanh thu ổn định.",
-    "cta": "Đăng Ký Chủ Bãi Xe"
+    "badge": "Đối Tác Cho Thuê",
+    "title": "Bạn Có Khoảng Sân Trống?",
+    "description": "Tận dụng mặt bằng sân trống để đón khách gửi xe theo tháng, tối ưu không gian và tạo nguồn thu nhập ổn định.",
+    "cta": "Đăng ký trở thành chủ bãi"
   },
   "benefits": {
-    "title": "Tại Sao Lựa Chọn ParkLink?",
-    "subtitle": "Giải pháp kết nối trực tiếp không qua trung gian, tập trung duy nhất vào nhu cầu thuê bãi xe theo tháng",
+    "title": "Tại Sao Nên Chọn ParkLink?",
+    "subtitle": "Giải pháp kết nối trực tiếp không qua trung gian, tập trung chuyên sâu vào mô hình thuê bãi xe dài hạn",
     "items": {
       "monthly": {
-        "title": "Thuê Theo Tháng Dài Hạn",
-        "description": "Giữ chỗ đỗ xe ổn định hàng tháng mà không lo hết chỗ hay tăng giá đột ngột trong dịp cao điểm."
+        "title": "Thuê Theo Tháng Ổn Định",
+        "description": "Cố định chỗ đỗ xe hàng tháng, không lo hết chỗ hay tăng giá đột ngột trong dịp lễ Tết."
       },
       "verification": {
-        "title": "Xác Thực Nhanh Chóng",
-        "description": "Bãi xe và thông tin tài khoản Provider đều trải qua quy trình duyệt thực địa nghiêm ngặt từ ban quản trị."
+        "title": "Kiểm Định Thực Địa Khắt Khe",
+        "description": "Mọi bãi xe và đối tác đều được nhân viên ParkLink khảo sát thực tế về vị trí, an ninh và điều kiện đỗ xe an toàn."
       },
       "transparency": {
-        "title": "Vận Hành Minh Bạch",
-        "description": "Theo dõi hợp đồng, tình trạng chỗ đỗ và hóa đơn trực tuyến trên hệ thống web ParkLink mọi lúc mọi nơi."
+        "title": "Vận Hành Minh Bạch & Tiện Lợi",
+        "description": "Theo dõi hợp đồng điện tử, tiến độ thanh toán và trao đổi trực tiếp với chủ bãi ngay trên hệ thống."
       }
     }
   }

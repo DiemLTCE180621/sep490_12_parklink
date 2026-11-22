@@ -19,14 +19,14 @@ import facilityVi from '../locales/vi/facility.json';
 import facilityEn from '../locales/en/facility.json';
 import chatVi from '../locales/vi/chat.json';
 import chatEn from '../locales/en/chat.json';
+import adminVi from '../locales/vi/admin.json';
+import adminEn from '../locales/en/admin.json';
+import inspectorVi from '../locales/vi/inspector.json';
+import inspectorEn from '../locales/en/inspector.json';
 
 export const LANGUAGE_STORAGE_KEY = 'parklink_language';
 export const SUPPORTED_LANGUAGES = ['vi', 'en'];
 
-/**
- * Lấy ngôn ngữ đã lưu trong localStorage; mặc định trả về Tiếng Việt ('vi')
- * để giữ nguyên trải nghiệm ban đầu khi người dùng chưa bật chuyển ngôn ngữ.
- */
 const getInitialLanguage = () => {
   try {
     const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
@@ -34,14 +34,10 @@ const getInitialLanguage = () => {
       return saved;
     }
   } catch (error) {
-    // Bỏ qua nếu trình duyệt chặn truy cập localStorage
   }
   return 'vi';
 };
 
-/**
- * Cập nhật thuộc tính lang trên thẻ <html> và lưu lựa chọn ngôn ngữ của người dùng.
- */
 const syncDocumentLanguage = (lng) => {
   if (typeof document !== 'undefined') {
     document.documentElement.lang = lng;
@@ -49,7 +45,6 @@ const syncDocumentLanguage = (lng) => {
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, lng);
   } catch (error) {
-    // Bỏ qua nếu trình duyệt chặn truy cập localStorage
   }
 };
 
@@ -69,6 +64,8 @@ i18n
         customer: customerVi,
         facility: facilityVi,
         chat: chatVi,
+        admin: adminVi,
+        inspector: inspectorVi,
       },
       en: {
         common: commonEn,
@@ -80,18 +77,19 @@ i18n
         customer: customerEn,
         facility: facilityEn,
         chat: chatEn,
+        admin: adminEn,
+        inspector: inspectorEn,
       },
     },
     lng: initialLanguage,
     fallbackLng: 'vi',
     defaultNS: 'common',
-    ns: ['common', 'home', 'profile', 'register', 'login', 'provider', 'customer', 'facility', 'chat'],
+    ns: ['common', 'home', 'profile', 'register', 'login', 'provider', 'customer', 'facility', 'chat', 'admin', 'inspector'],
     interpolation: {
-      escapeValue: false, // React đã tự escape XSS
+      escapeValue: false,
     },
   });
 
-// Đồng bộ lang ban đầu và mỗi khi người dùng đổi ngôn ngữ
 syncDocumentLanguage(initialLanguage);
 i18n.on('languageChanged', syncDocumentLanguage);
 

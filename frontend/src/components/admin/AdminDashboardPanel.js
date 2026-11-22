@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AlertCircle,
   Building2,
@@ -20,11 +21,11 @@ const STAT_CARDS = [
   { key: 'totalReservations', label: 'Tổng yêu cầu thuê', icon: CalendarDays, color: 'text-violet-600 bg-violet-50' },
   { key: 'totalContracts', label: 'Tổng hợp đồng thuê', icon: FileText, color: 'text-indigo-600 bg-indigo-50' },
   { key: 'pendingComplaints', label: 'Khiếu nại chờ tiếp nhận', icon: MessageCircle, color: 'text-rose-600 bg-rose-50' },
-  { key: 'paidPlatformFees', label: 'Phí nền tảng đã thu', icon: DollarSign, color: 'text-teal-600 bg-teal-50', currency: true }
+  { key: 'paidPlatformFees', label: 'Phí nền tảng đã thu', icon: DollarSign, color: 'text-neighbor-600 bg-neighbor-50', currency: true }
 ];
 
 const ACTIVITY_SERIES = [
-  { key: 'facilities', label: 'Bãi xe đăng ký', color: 'bg-teal-500', chartColor: '#14b8a6' },
+  { key: 'facilities', label: 'Bãi xe đăng ký', color: 'bg-neighbor-500', chartColor: '#14b8a6' },
   { key: 'reservations', label: 'Yêu cầu thuê', color: 'bg-indigo-500', chartColor: '#6366f1' },
   { key: 'contracts', label: 'Hợp đồng thuê', color: 'bg-blue-500', chartColor: '#3b82f6' },
   { key: 'complaints', label: 'Khiếu nại', color: 'bg-amber-500', chartColor: '#f59e0b' }
@@ -54,6 +55,7 @@ const formatDateTime = (value) => {
 const formatMonthLabel = (month) => `T${Number(month.slice(5, 7))}`;
 
 const AdminDashboardPanel = () => {
+  const { t } = useTranslation(['admin', 'common']);
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -180,24 +182,24 @@ const AdminDashboardPanel = () => {
     <section className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Tổng quan hệ thống</h2>
-          <p className="mt-1 text-sm text-slate-500">Tình hình hoạt động hiện tại của ParkLink</p>
+          <h2 className="text-xl font-bold text-gray-900">{t('admin:dashboard.title', 'Tổng quan hệ thống')}</h2>
+          <p className="mt-1 text-sm text-gray-500">{t('admin:dashboard.subtitle', 'Tình hình hoạt động hiện tại của ParkLink')}</p>
         </div>
         <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={handleExport}
             disabled={exportLoading}
-            className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-neighbor-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neighbor-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <FileSpreadsheet className={`h-4 w-4 ${exportLoading ? 'animate-bounce' : ''}`} />
-            {exportLoading ? 'Đang xuất file...' : 'Xuất báo cáo tổng quan'}
+            {exportLoading ? t('admin:dashboard.exporting', 'Đang xuất file...') : t('admin:dashboard.exportBtn', 'Xuất báo cáo tổng quan')}
           </button>
           <button
             type="button"
             onClick={loadOverview}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Làm mới
@@ -229,13 +231,13 @@ const AdminDashboardPanel = () => {
         </div>
       )}
 
-      <div className="order-1 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
+      <div className="order-1 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
         {STAT_CARDS.map(({ key, label, icon: Icon, color, currency }) => (
-          <article key={key} className={`p-4 sm:p-5 ${currency ? 'bg-teal-50/70' : 'bg-white'}`}>
+          <article key={key} className={`p-4 sm:p-5 ${currency ? 'bg-neighbor-50/70' : 'bg-white'}`}>
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="min-h-9 text-xs font-medium leading-4 text-slate-500">{label}</p>
-                <p className={`mt-2 font-bold text-slate-900 ${currency ? 'text-xl' : 'text-2xl'}`}>
+                <p className="min-h-9 text-xs font-medium leading-4 text-gray-500">{t(`admin:dashboard.statCards.${key}`, label)}</p>
+                <p className={`mt-2 font-bold text-gray-900 ${currency ? 'text-xl' : 'text-2xl'}`}>
                   {overview ? (currency ? formatCurrency(overview[key]) : formatNumber(overview[key])) : '—'}
                 </p>
               </div>
@@ -247,11 +249,11 @@ const AdminDashboardPanel = () => {
         ))}
       </div>
 
-      <section className="order-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm sm:p-5">
-        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="order-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Hoạt động hệ thống</h3>
-            <p className="mt-1 text-sm text-slate-500">Tỷ trọng 6 tháng gần nhất · Chọn loại để xem số liệu ở giữa</p>
+            <h3 className="text-base font-bold text-gray-900">Hoạt động hệ thống</h3>
+            <p className="mt-1 text-sm text-gray-500">Tỷ trọng 6 tháng gần nhất · Chọn loại để xem số liệu ở giữa</p>
           </div>
         </div>
 
@@ -268,18 +270,18 @@ const AdminDashboardPanel = () => {
               <div className="absolute inset-5 flex flex-col items-center justify-center rounded-full border border-white/70 bg-white text-center shadow-sm transition-all">
                 {selectedActivity ? (
                   <>
-                    <span className="text-2xl font-extrabold text-slate-900">
+                    <span className="text-2xl font-extrabold text-gray-900">
                       {totalActivity ? `${Math.round((selectedActivity.value / totalActivity) * 100)}%` : '0%'}
                     </span>
-                    <span className="mt-1 px-2 text-xs font-semibold text-slate-700">{selectedActivity.label}</span>
-                    <span className="mt-0.5 text-[11px] text-slate-500">
+                    <span className="mt-1 px-2 text-xs font-semibold text-gray-700">{selectedActivity.label}</span>
+                    <span className="mt-0.5 text-[11px] text-gray-500">
                       {formatNumber(selectedActivity.value)} phát sinh
                     </span>
                   </>
                 ) : (
                   <>
-                    <span className="text-2xl font-extrabold text-slate-900">{formatNumber(totalActivity)}</span>
-                    <span className="mt-1 text-xs font-medium text-slate-500">Tổng hoạt động</span>
+                    <span className="text-2xl font-extrabold text-gray-900">{formatNumber(totalActivity)}</span>
+                    <span className="mt-1 text-xs font-medium text-gray-500">Tổng hoạt động</span>
                   </>
                 )}
               </div>
@@ -295,16 +297,16 @@ const AdminDashboardPanel = () => {
                     type="button"
                     onClick={() => setSelectedActivityKey(isSelected ? null : series.key)}
                     aria-pressed={isSelected}
-                    className={`flex items-center justify-between gap-4 rounded-xl border-2 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${isSelected ? 'bg-slate-50 shadow-sm' : 'border-transparent bg-white hover:bg-slate-50'}`}
+                    className={`flex items-center justify-between gap-4 rounded-xl border-2 px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neighbor-600 focus-visible:ring-offset-2 ${isSelected ? 'bg-gray-50 shadow-sm' : 'border-transparent bg-white hover:bg-gray-50'}`}
                     style={{ borderColor: isSelected ? series.chartColor : undefined }}
                   >
-                    <span className="flex min-w-0 items-center gap-2.5 text-sm font-medium text-slate-700">
+                    <span className="flex min-w-0 items-center gap-2.5 text-sm font-medium text-gray-700">
                       <span className={`h-3 w-3 shrink-0 rounded-sm ${series.color}`} />
                       <span className="truncate">{series.label}</span>
                     </span>
                     <span className="shrink-0 text-right">
-                      <strong className="text-sm text-slate-900">{formatNumber(series.value)}</strong>
-                      <span className="ml-2 text-xs text-slate-500">{percentage}%</span>
+                      <strong className="text-sm text-gray-900">{formatNumber(series.value)}</strong>
+                      <span className="ml-2 text-xs text-gray-500">{percentage}%</span>
                     </span>
                   </button>
                 );
@@ -312,30 +314,30 @@ const AdminDashboardPanel = () => {
             </div>
           </div>
         ) : (
-          <div className="flex h-48 items-center justify-center text-sm text-slate-500">
+          <div className="flex h-48 items-center justify-center text-sm text-gray-500">
             {loading ? 'Đang tải biểu đồ...' : 'Chưa có dữ liệu hoạt động trong giai đoạn này.'}
           </div>
         )}
       </section>
 
-      <section className="order-2 rounded-2xl border-2 border-teal-200 bg-gradient-to-br from-white via-white to-teal-50/60 p-5 shadow-lg shadow-teal-100/70 sm:p-6">
-        <div className="flex flex-col gap-4 border-b border-teal-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
+      <section className="order-2 rounded-xl border-2 border-neighbor-200 bg-gradient-to-br from-white via-white to-neighbor-50/60 p-5 shadow-lg shadow-neighbor-100/70 sm:p-6">
+        <div className="flex flex-col gap-4 border-b border-neighbor-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700 ring-1 ring-teal-200">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neighbor-100 text-neighbor-700 ring-1 ring-neighbor-200">
               <DollarSign className="h-5 w-5" />
             </span>
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900">
+              <h3 className="text-lg font-extrabold text-gray-900">
                 Phí nền tảng đã thu
               </h3>
-              <p className="mt-1 max-w-3xl text-sm leading-5 text-slate-600">
+              <p className="mt-1 max-w-3xl text-sm leading-5 text-gray-600">
                 Tổng giao dịch phí thành công, phân theo tháng thanh toán. Bấm vào cột để xem chi tiết.
               </p>
             </div>
           </div>
-          <div className="rounded-xl border border-teal-200 bg-white/90 px-4 py-2.5 shadow-sm sm:min-w-[13rem] sm:text-right">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-teal-700">Tổng giao dịch thành công</p>
-            <p className="mt-0.5 text-base font-extrabold text-teal-950 sm:text-lg">
+          <div className="rounded-xl border border-neighbor-200 bg-white/90 px-4 py-2.5 shadow-sm sm:min-w-[13rem] sm:text-right">
+            <p className="text-[11px] font-bold uppercase tracking-wide text-neighbor-700">Tổng giao dịch thành công</p>
+            <p className="mt-0.5 text-base font-extrabold text-neighbor-950 sm:text-lg">
               {overview ? formatCurrency(overview.paidPlatformFees) : '—'}
             </p>
           </div>
@@ -354,7 +356,7 @@ const AdminDashboardPanel = () => {
             return (
               <div className="mt-4">
                 <div className="mb-2 flex flex-wrap items-center justify-end gap-3 text-[11px]">
-                  <label className="flex items-center gap-2 font-semibold text-slate-600">
+                  <label className="flex items-center gap-2 font-semibold text-gray-600">
                     Năm
                     <select
                       value={displayedFeeYear}
@@ -366,7 +368,7 @@ const AdminDashboardPanel = () => {
                         setFeeDetailError('');
                         setFeeDetailLoading(false);
                       }}
-                      className="rounded-lg border border-teal-200 bg-white px-2.5 py-1.5 text-xs font-bold text-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="rounded-lg border border-neighbor-200 bg-white px-2.5 py-1.5 text-xs font-bold text-neighbor-800 focus:outline-none focus:ring-2 focus:ring-neighbor-500"
                     >
                       {feeYears.map((year) => <option key={year} value={year}>{year}</option>)}
                     </select>
@@ -376,7 +378,7 @@ const AdminDashboardPanel = () => {
                   <div className="relative h-48 min-w-[36rem] sm:min-w-0">
                     <div className="absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between" aria-hidden="true">
                       {[0, 1, 2, 3, 4].map((line) => (
-                        <div key={line} className="border-t border-dashed border-teal-100" />
+                        <div key={line} className="border-t border-dashed border-neighbor-100" />
                       ))}
                     </div>
                     <div className="relative grid h-full grid-cols-12 gap-1 sm:gap-2">
@@ -392,17 +394,17 @@ const AdminDashboardPanel = () => {
                               aria-pressed={selectedFeeMonth === month.month}
                               aria-label={`Tháng ${Number(month.month.slice(5, 7))} năm ${displayedFeeYear}: ${formatCurrency(value)}. Xem giao dịch`}
                               title={`Xem giao dịch tháng ${formatMonthLabel(month.month)} năm ${displayedFeeYear}`}
-                              className={`flex h-full w-full flex-col items-center rounded-lg px-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${selectedFeeMonth === month.month ? 'bg-teal-50 ring-1 ring-teal-200' : 'hover:bg-teal-50/60'}`}
+                              className={`flex h-full w-full flex-col items-center rounded-lg px-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neighbor-600 ${selectedFeeMonth === month.month ? 'bg-neighbor-50 ring-1 ring-neighbor-200' : 'hover:bg-neighbor-50/60'}`}
                             >
                               <div className="flex h-[calc(100%-1.5rem)] w-full items-end justify-center">
-                                <div className={`flex h-full w-9 items-end justify-center rounded-t-lg sm:w-12 ${selectedFeeMonth === month.month ? 'bg-teal-100' : 'bg-teal-50/80'}`}>
+                                <div className={`flex h-full w-9 items-end justify-center rounded-t-lg sm:w-12 ${selectedFeeMonth === month.month ? 'bg-neighbor-100' : 'bg-neighbor-50/80'}`}>
                                   <div
-                                    className={`w-6 rounded-t-md bg-gradient-to-t from-teal-600 to-teal-400 shadow-sm transition-all hover:brightness-95 sm:w-8 ${value ? '' : 'min-h-1 bg-teal-200 from-teal-200 to-teal-200 shadow-none'}`}
+                                    className={`w-6 rounded-t-md bg-gradient-to-t from-neighbor-600 to-neighbor-400 shadow-sm transition-all hover:brightness-95 sm:w-8 ${value ? '' : 'min-h-1 bg-neighbor-200 from-neighbor-200 to-neighbor-200 shadow-none'}`}
                                     style={{ height: `${barHeight}%` }}
                                   />
                                 </div>
                               </div>
-                              <span className="mt-2 text-[11px] font-semibold text-slate-600">{formatMonthLabel(month.month)}</span>
+                              <span className="mt-2 text-[11px] font-semibold text-gray-600">{formatMonthLabel(month.month)}</span>
                             </button>
                           </div>
                         );
@@ -414,48 +416,48 @@ const AdminDashboardPanel = () => {
             );
           })()
         ) : (
-          <div className="flex h-48 items-center justify-center text-sm text-slate-500">
+          <div className="flex h-48 items-center justify-center text-sm text-gray-500">
             {loading ? 'Đang tải biểu đồ phí...' : 'Chưa có dữ liệu phí nền tảng.'}
           </div>
         )}
 
-        <div className="mt-4 flex h-36 flex-col rounded-xl border border-teal-100 bg-white p-3 sm:p-4" aria-live="polite">
+        <div className="mt-4 flex h-36 flex-col rounded-xl border border-neighbor-100 bg-white p-3 sm:p-4" aria-live="polite">
           {selectedFeeMonth ? (
             <>
-              <div className="flex shrink-0 flex-wrap items-start justify-between gap-2 border-b border-slate-100 pb-2">
+              <div className="flex shrink-0 flex-wrap items-start justify-between gap-2 border-b border-gray-200 pb-2">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-800">
+                  <h4 className="text-sm font-bold text-gray-800">
                     Giao dịch phí nền tảng tháng {Number(selectedFeeMonth.slice(5, 7))}
                   </h4>
                   {!feeDetailLoading && !feeDetailError && (
-                    <p className="mt-0.5 text-xs text-slate-500">{feeTransactions.length} giao dịch thành công</p>
+                    <p className="mt-0.5 text-xs text-gray-500">{feeTransactions.length} giao dịch thành công</p>
                   )}
                 </div>
                 {!feeDetailLoading && !feeDetailError && (
-                  <p className="text-sm font-extrabold text-teal-800">{formatCurrency(selectedFeeTotal)}</p>
+                  <p className="text-sm font-extrabold text-neighbor-800">{formatCurrency(selectedFeeTotal)}</p>
                 )}
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {feeDetailLoading ? (
-                  <p className="flex h-full items-center justify-center text-sm text-slate-500">Đang tải giao dịch...</p>
+                  <p className="flex h-full items-center justify-center text-sm text-gray-500">Đang tải giao dịch...</p>
                 ) : feeDetailError ? (
                   <p role="alert" className="py-3 text-sm text-red-600">{feeDetailError}</p>
                 ) : feeTransactions.length === 0 ? (
-                  <p className="flex h-full items-center justify-center text-center text-sm text-slate-500">
+                  <p className="flex h-full items-center justify-center text-center text-sm text-gray-500">
                     Tháng này chưa có giao dịch phí nền tảng thành công.
                   </p>
                 ) : (
-                  <div className="divide-y divide-slate-100">
+                  <div className="divide-y divide-gray-100">
                     {feeTransactions.map((transaction) => (
                       <div key={transaction.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-800">{transaction.facility_name}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="truncate text-sm font-semibold text-gray-800">{transaction.facility_name}</p>
+                          <p className="text-xs text-gray-500">
                             {transaction.provider_name} · {formatDateTime(transaction.created_at)}
                           </p>
                         </div>
-                        <p className="shrink-0 text-sm font-bold text-teal-800">+{formatCurrency(transaction.amount)}</p>
+                        <p className="shrink-0 text-sm font-bold text-neighbor-800">+{formatCurrency(transaction.amount)}</p>
                       </div>
                     ))}
                   </div>
@@ -463,7 +465,7 @@ const AdminDashboardPanel = () => {
               </div>
             </>
           ) : (
-            <p className="flex h-full items-center justify-center text-center text-sm text-slate-400">
+            <p className="flex h-full items-center justify-center text-center text-sm text-gray-400">
               Bấm vào một tháng trên biểu đồ để xem giao dịch.
             </p>
           )}

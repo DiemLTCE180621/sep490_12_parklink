@@ -30,7 +30,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  //capacity, contract, request fetch
+  
   const fetchFacilityData = useCallback(async () => {
     try {
       setLoading(true);
@@ -166,7 +166,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
         } catch (error) {
           console.error("Lỗi khi kiểm tra trạng thái thanh toán:", error);
         }
-      }, 5000); //polling every 5 sec
+      }, 5000); 
     }
     return () => {
       if (intervalId) clearInterval(intervalId);
@@ -199,10 +199,10 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
   if (!user?.facility) {
     return (
-      <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-md text-center py-16">
-        <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-        <h3 className="text-lg font-bold text-slate-700">{t('dashboard.empty.title')}</h3>
-        <p className="text-sm text-slate-500 mt-1">{t('dashboard.empty.subtitle')}</p>
+      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-md text-center py-16">
+        <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <h3 className="text-lg font-bold text-gray-700">{t('dashboard.empty.title')}</h3>
+        <p className="text-sm text-gray-500 mt-1">{t('dashboard.empty.subtitle')}</p>
       </div>
     );
   }
@@ -222,13 +222,13 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
       <div className="space-y-6">
         <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
           <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-teal-600" /> {t('dashboard.title')}
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-neighbor-600" /> {t('dashboard.title')}
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 {t('dashboard.subtitle')}
               </p>
             </div>
@@ -245,7 +245,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
               <button
                 onClick={handleOpenEdit}
-                className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+                className="px-4 py-2 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
               >
                 <Edit3 className="w-3.5 h-3.5" /> {t('dashboard.actions.updateSlotsAndPrice')}
               </button>
@@ -253,7 +253,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
               <button
                 onClick={fetchFacilityData}
                 disabled={loading}
-                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-slate-200"
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-gray-200"
                 title={t('dashboard.actions.refreshTitle')}
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> {t('dashboard.actions.refresh')}
@@ -261,9 +261,9 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
             <div className="p-5">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase tracking-wider">
                 <span>{t('dashboard.kpis.availableSlots.label')}</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4" />
@@ -273,17 +273,17 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                 <span className="text-2xl font-black text-emerald-950">{currentAvailableSlots}</span>
                 <span className="text-xs font-bold text-emerald-700">/ {totalCapacity} {t('dashboard.kpis.availableSlots.unit')}</span>
               </div>
-              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
                   className="bg-emerald-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${slotPercent}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">{t('dashboard.kpis.availableSlots.hint', { percent: slotPercent })}</p>
+              <p className="text-[11px] text-gray-400 mt-1.5 font-medium">{t('dashboard.kpis.availableSlots.hint', { percent: slotPercent })}</p>
             </div>
 
             <div className="p-5">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase tracking-wider">
                 <span>{t('dashboard.kpis.occupied.label')}</span>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                   <Car className="w-4 h-4" />
@@ -296,77 +296,77 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   {occupancyRate}%
                 </span>
               </div>
-              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
                   className="bg-blue-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, occupancyRate)}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium">{t('dashboard.kpis.occupied.hint')}</p>
+              <p className="text-[11px] text-gray-400 mt-1.5 font-medium">{t('dashboard.kpis.occupied.hint')}</p>
             </div>
 
             <div
               onClick={() => onNavigateToTab && onNavigateToTab('reservations')}
-              className={`p-5 transition ${onNavigateToTab ? 'cursor-pointer hover:bg-slate-50' : ''} ${pendingReservationsCount > 0 ? 'bg-amber-50/30' : ''}`}
+              className={`p-5 transition ${onNavigateToTab ? 'cursor-pointer hover:bg-gray-50' : ''} ${pendingReservationsCount > 0 ? 'bg-amber-50/30' : ''}`}
               title={onNavigateToTab ? t('dashboard.kpis.pendingRequests.tooltip') : undefined}
             >
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase tracking-wider">
                 <span>{t('dashboard.kpis.pendingRequests.label')}</span>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingReservationsCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${pendingReservationsCount > 0 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'
                   }`}>
                   <Clock className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2 mt-2">
-                <span className={`text-2xl font-black ${pendingReservationsCount > 0 ? 'text-amber-950' : 'text-slate-900'
+                <span className={`text-2xl font-black ${pendingReservationsCount > 0 ? 'text-amber-950' : 'text-gray-900'
                   }`}>
                   {pendingReservationsCount}
                 </span>
-                <span className="text-xs font-semibold text-slate-500">{t('dashboard.kpis.pendingRequests.unit')}</span>
+                <span className="text-xs font-semibold text-gray-500">{t('dashboard.kpis.pendingRequests.unit')}</span>
                 {pendingReservationsCount > 0 && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-white ml-auto animate-pulse">
                     {t('dashboard.kpis.pendingRequests.actionRequired')}
                   </span>
                 )}
               </div>
-              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
                   className="bg-amber-500 h-full rounded-full transition-all duration-300"
                   style={{ width: `${pendingReservationsCount > 0 ? 100 : 0}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium flex items-center justify-between">
+              <p className="text-[11px] text-gray-400 mt-1.5 font-medium flex items-center justify-between">
                 <span>{t('dashboard.kpis.pendingRequests.hint')}</span>
-                {onNavigateToTab && <span className="text-teal-700 font-bold hover:underline">{t('dashboard.kpis.pendingRequests.viewDetails')} &rarr;</span>}
+                {onNavigateToTab && <span className="text-neighbor-700 font-bold hover:underline">{t('dashboard.kpis.pendingRequests.viewDetails')} &rarr;</span>}
               </p>
             </div>
 
             <div className="p-5">
-              <div className="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <div className="flex items-center justify-between text-gray-500 text-xs font-bold uppercase tracking-wider">
                 <span>{t('dashboard.kpis.projectedRevenue.label')}</span>
-                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-neighbor-50 text-neighbor-600 flex items-center justify-center">
                   <CircleDollarSign className="w-4 h-4" />
                 </div>
               </div>
-              <div className="text-xl font-black text-teal-950 mt-2 truncate">
-                {estimatedMonthlyRevenue.toLocaleString('vi-VN')} <span className="text-xs font-semibold text-teal-700">{t('dashboard.kpis.projectedRevenue.currency')}</span>
+              <div className="text-xl font-black text-neighbor-950 mt-2 truncate">
+                {estimatedMonthlyRevenue.toLocaleString('vi-VN')} <span className="text-xs font-semibold text-neighbor-700">{t('dashboard.kpis.projectedRevenue.currency')}</span>
               </div>
-              <div className="w-full bg-slate-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
+              <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div
-                  className="bg-teal-600 h-full rounded-full transition-all duration-300"
+                  className="bg-neighbor-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, occupancyRate)}%` }}
                 />
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5 font-medium truncate">
+              <p className="text-[11px] text-gray-400 mt-1.5 font-medium truncate">
                 {t('dashboard.kpis.projectedRevenue.formula', { count: activeContracts, price: monthlyPrice.toLocaleString('vi-VN') })}
               </p>
             </div>
           </div>
 
           <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal-600" /> {t('dashboard.facilityDetails.title')}
+            <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-neighbor-600" /> {t('dashboard.facilityDetails.title')}
               </h3>
               <div className="flex items-center gap-2">
                 {currentFacility.visibility_status === 'VISIBLE' ? (
@@ -383,25 +383,25 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <span className="text-slate-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.nameLabel')}</span>
-                <p className="text-base font-bold text-slate-900">{currentFacility.name}</p>
+                <span className="text-gray-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.nameLabel')}</span>
+                <p className="text-base font-bold text-gray-900">{currentFacility.name}</p>
               </div>
               <div className="space-y-1">
-                <span className="text-slate-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.addressLabel')}</span>
-                <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" /> {currentFacility.address}
+                <span className="text-gray-400 font-semibold uppercase tracking-wider">{t('dashboard.facilityDetails.addressLabel')}</span>
+                <p className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-neighbor-600 shrink-0" /> {currentFacility.address}
                 </p>
               </div>
             </div>
 
-            <div className="border-t border-slate-100 pt-5 space-y-3">
+            <div className="border-t border-gray-200 pt-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-slate-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-teal-600" />
+                <span className="text-gray-700 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="w-4 h-4 text-neighbor-600" />
                   {t('dashboard.facilityDetails.photosTitle')} {facilityImages.length > 0 ? `(${facilityImages.length})` : ''}
                 </span>
                 {facilityImages.length > 0 && (
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-gray-400">
                     {t('dashboard.facilityDetails.zoomHint')}
                   </span>
                 )}
@@ -413,20 +413,20 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     <div
                       key={img.id || idx}
                       onClick={() => setSelectedImagePreview(img.image_url)}
-                      className="group relative aspect-video rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shadow-xs hover:shadow-md transition duration-200"
+                      className="group relative aspect-video rounded-xl overflow-hidden border border-gray-200 bg-gray-100 cursor-pointer shadow-xs hover:shadow-md transition duration-200"
                     >
                       <img
                         src={img.image_url}
                         alt={t('dashboard.facilityDetails.photoAlt', { index: idx + 1 })}
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                       />
-                      <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                        <span className="p-1.5 bg-white/90 rounded-lg text-slate-800 shadow-sm">
+                      <div className="absolute inset-0 bg-gray-950/25 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <span className="p-1.5 bg-white/90 rounded-lg text-gray-800 shadow-sm">
                           <Eye className="w-3.5 h-3.5" />
                         </span>
                       </div>
                       {img.is_primary && (
-                        <span className="absolute top-2 left-2 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+                        <span className="absolute top-2 left-2 bg-neighbor-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm">
                           {t('dashboard.facilityDetails.primaryBadge')}
                         </span>
                       )}
@@ -434,17 +434,17 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   ))}
                 </div>
               ) : (
-                <div className="p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
-                  <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
-                  <p className="text-xs text-slate-500 font-medium">{t('dashboard.facilityDetails.noPhotos')}</p>
+                <div className="p-6 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
+                  <Building2 className="w-8 h-8 text-gray-300 mx-auto mb-1.5" />
+                  <p className="text-xs text-gray-500 font-medium">{t('dashboard.facilityDetails.noPhotos')}</p>
                 </div>
               )}
             </div>
 
             {currentFacility.verification_status === 'APPROVED' && currentFacility.payment_status === 'UNPAID' && (
-              <div className="mt-4 p-6 border-2 border-dashed border-teal-200 rounded-2xl bg-teal-50 text-center space-y-4">
-                <h4 className="font-bold text-teal-900 text-base">{t('dashboard.payment.title')}</h4>
-                <p className="text-xs text-teal-800 max-w-lg mx-auto">
+              <div className="mt-4 p-6 border-2 border-dashed border-neighbor-200 rounded-xl bg-neighbor-50 text-center space-y-4">
+                <h4 className="font-bold text-neighbor-900 text-base">{t('dashboard.payment.title')}</h4>
+                <p className="text-xs text-neighbor-800 max-w-lg mx-auto">
                   {t('dashboard.payment.description')}
                 </p>
 
@@ -452,7 +452,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   <img
                     src={`https://img.vietqr.io/image/MB-881666787988-compact2.png?amount=${currentFacility.system_fee / 100}&addInfo=${encodeURIComponent('PARKLINK F' + currentFacility.id)}&accountName=PARKLINK`}
                     alt={t('dashboard.payment.qrAlt')}
-                    className="w-44 h-44 rounded-2xl shadow-md border-2 border-white"
+                    className="w-44 h-44 rounded-xl shadow-md border-2 border-white"
                   />
                 </div>
 
@@ -460,7 +460,7 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   <button
                     disabled={isPaying}
                     onClick={handleCheckPayment}
-                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50"
+                    className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50"
                   >
                     {isPaying ? t('dashboard.payment.checking') : t('dashboard.payment.checkButton')}
                   </button>
@@ -471,19 +471,19 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
         </div>
       </div>
 
-      {/* ── MODAL PHÓNG TO HÌNH ẢNH (LIGHTBOX) ── */}
+      {}
       {selectedImagePreview && (
         <div
-          className="fixed inset-0 !m-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
+          className="fixed inset-0 !m-0 z-[120] bg-gray-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
           onClick={() => setSelectedImagePreview(null)}
         >
           <div
-            className="relative max-w-4xl max-h-[90vh] bg-white rounded-3xl p-3 shadow-2xl overflow-hidden animate-scaleUp"
+            className="relative max-w-4xl max-h-[90vh] bg-white rounded-xl p-3 shadow-2xl overflow-hidden animate-scaleUp"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedImagePreview(null)}
-              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white flex items-center justify-center transition z-10"
+              className="absolute top-4 right-4 w-9 h-9 rounded-full bg-gray-900/70 hover:bg-gray-900 text-white flex items-center justify-center transition z-10"
               title={t('dashboard.facilityDetails.closePhoto')}
             >
               <X className="w-5 h-5" />
@@ -491,43 +491,43 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
             <img
               src={selectedImagePreview}
               alt={t('dashboard.facilityDetails.lightboxAlt')}
-              className="max-h-[82vh] w-auto max-w-full rounded-2xl object-contain mx-auto"
+              className="max-h-[82vh] w-auto max-w-full rounded-xl object-contain mx-auto"
             />
           </div>
         </div>
       )}
 
-      {/* POPUP THANH TOÁN THÀNH CÔNG */}
+      {}
       {paymentSuccess && (
-        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4 transition-opacity">
-          <div className="bg-white p-8 max-w-md w-full text-center shadow-2xl rounded-3xl border border-slate-100">
-            <div className="w-20 h-20 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-teal-200">
-              <CheckCircle2 className="w-10 h-10 text-teal-600 animate-bounce" />
+        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm px-4 transition-opacity">
+          <div className="bg-white p-8 max-w-md w-full text-center shadow-2xl rounded-xl border border-gray-200">
+            <div className="w-20 h-20 bg-neighbor-50 rounded-xl flex items-center justify-center mx-auto mb-4 border border-neighbor-200">
+              <CheckCircle2 className="w-10 h-10 text-neighbor-600 animate-bounce" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">{t('dashboard.payment.successTitle')}</h3>
-            <p className="text-slate-600 text-xs mb-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('dashboard.payment.successTitle')}</h3>
+            <p className="text-gray-600 text-xs mb-6">
               {t('dashboard.payment.successBody')}
             </p>
-            <div className="w-full bg-slate-100 h-1.5 overflow-hidden rounded-full">
-              <div className="bg-teal-500 h-full rounded-full w-full transition-all duration-1000"></div>
+            <div className="w-full bg-gray-100 h-1.5 overflow-hidden rounded-full">
+              <div className="bg-neighbor-500 h-full rounded-full w-full transition-all duration-1000"></div>
             </div>
           </div>
         </div>
       )}
 
       {isEditing && (
-        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-100 p-6 sm:p-8 space-y-6 animate-scaleUp">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="fixed inset-0 !m-0 z-[100] flex items-center justify-center bg-gray-950/60 backdrop-blur-sm p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-white rounded-xl max-w-3xl w-full shadow-2xl border border-gray-200 p-6 sm:p-8 space-y-6 animate-scaleUp">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-neighbor-50 text-neighbor-600 border border-neighbor-100 flex items-center justify-center shrink-0">
                   <Edit3 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">
+                  <h3 className="text-lg font-bold text-gray-900">
                     {t('dashboard.editModal.title')}
                   </h3>
-                  <p className="text-slate-500 text-xs mt-0.5">
+                  <p className="text-gray-500 text-xs mt-0.5">
                     {t('dashboard.editModal.subtitle')}
                   </p>
                 </div>
@@ -535,28 +535,28 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
 
               <button
                 onClick={() => setIsEditing(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition shrink-0"
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition shrink-0"
                 title={t('dashboard.editModal.closeTitle')}
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Form chia 2 cột ngang rộng rãi */}
+            {}
             <form onSubmit={handleUpdateFacility} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
-                {/* ── CỘT TRÁI: ĐIỀU KHIỂN CHỖ TRỐNG KHẢ DỤNG ── */}
+                {}
                 <div className="space-y-4">
-                  {/* 2 Card mini tóm tắt */}
+                  {}
                   <div className="grid grid-cols-2 gap-2.5">
-                    <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs">
-                      <div className="flex items-center justify-between text-slate-500 font-bold mb-1">
+                    <div className="p-3 bg-gray-50 border border-gray-200/80 rounded-xl text-xs">
+                      <div className="flex items-center justify-between text-gray-500 font-bold mb-1">
                         <span className="flex items-center gap-1">
-                          <Lock className="w-3 h-3 text-slate-400" /> {t('dashboard.editModal.capacityLabel')}
+                          <Lock className="w-3 h-3 text-gray-400" /> {t('dashboard.editModal.capacityLabel')}
                         </span>
-                        <span className="bg-slate-200/70 text-slate-600 px-1.5 py-0.5 rounded text-[10px]">{t('dashboard.editModal.fixedBadge')}</span>
+                        <span className="bg-gray-200/70 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">{t('dashboard.editModal.fixedBadge')}</span>
                       </div>
-                      <p className="text-lg font-black text-slate-900">{totalCapacity} <span className="text-xs font-semibold text-slate-500">{t('dashboard.editModal.slotsUnit')}</span></p>
+                      <p className="text-lg font-black text-gray-900">{totalCapacity} <span className="text-xs font-semibold text-gray-500">{t('dashboard.editModal.slotsUnit')}</span></p>
                     </div>
 
                     <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs">
@@ -570,23 +570,23 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                     </div>
                   </div>
 
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                      <label className="text-xs font-bold text-gray-800 flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5 text-neighbor-600" />
                         {t('dashboard.editModal.availableSlotsLabel')} <span className="text-red-500">*</span>
                       </label>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-teal-100 text-teal-800 border border-teal-200">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-neighbor-100 text-neighbor-800 border border-neighbor-200">
                         {t('dashboard.editModal.percentVacant', { percent: editSlotPercent })}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-slate-200">
+                    <div className="flex items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-gray-200">
                       <button
                         type="button"
                         onClick={() => handleSlotStep(-1)}
                         disabled={Number(editData.available_slots) <= 0}
-                        className="w-11 h-11 rounded-lg bg-slate-100 hover:bg-slate-200 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-slate-800 font-bold flex items-center justify-center transition shrink-0"
+                        className="w-11 h-11 rounded-lg bg-gray-100 hover:bg-gray-200 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-gray-800 font-bold flex items-center justify-center transition shrink-0"
                         title={t('dashboard.editModal.decreaseTitle')}
                       >
                         <Minus className="w-4 h-4" />
@@ -599,14 +599,14 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           min="0"
                           max={totalCapacity}
                           step="1"
-                          className="w-24 text-3xl font-black text-teal-900 text-center bg-transparent focus:outline-none p-0"
+                          className="w-24 text-3xl font-black text-neighbor-900 text-center bg-transparent focus:outline-none p-0"
                           value={editData.available_slots}
                           onChange={(e) => {
                             const val = e.target.value === '' ? '' : Number(e.target.value);
                             setEditData({ ...editData, available_slots: val });
                           }}
                         />
-                        <span className="text-[11px] font-semibold text-slate-400 block mt-0.5">
+                        <span className="text-[11px] font-semibold text-gray-400 block mt-0.5">
                           {t('dashboard.editModal.maxSlotsHint', { total: totalCapacity })}
                         </span>
                       </div>
@@ -615,28 +615,28 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         type="button"
                         onClick={() => handleSlotStep(1)}
                         disabled={Number(editData.available_slots) >= totalCapacity}
-                        className="w-11 h-11 rounded-lg bg-teal-600 hover:bg-teal-700 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white font-bold flex items-center justify-center transition shrink-0 shadow-sm"
+                        className="w-11 h-11 rounded-lg bg-neighbor-600 hover:bg-neighbor-700 active:scale-95 disabled:opacity-30 disabled:pointer-events-none text-white font-bold flex items-center justify-center transition shrink-0 shadow-sm"
                         title={t('dashboard.editModal.increaseTitle')}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
 
-                    <div className="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-gray-200/70 h-2 rounded-full overflow-hidden">
                       <div
-                        className="bg-teal-600 h-full rounded-full transition-all duration-300"
+                        className="bg-neighbor-600 h-full rounded-full transition-all duration-300"
                         style={{ width: `${Math.min(100, Math.max(0, editSlotPercent))}%` }}
                       />
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                      <span className="text-[11px] text-slate-400 font-medium">{t('dashboard.editModal.quickSelect')}</span>
+                      <span className="text-[11px] text-gray-400 font-medium">{t('dashboard.editModal.quickSelect')}</span>
                       <button
                         type="button"
                         onClick={() => handleQuickPreset(0)}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === 0
                           ? 'bg-rose-50 text-rose-700 border-rose-300 font-bold'
-                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                          : 'bg-white hover:bg-gray-100 text-gray-700 border-gray-200'
                           }`}
                       >
                         {t('dashboard.editModal.presetEmpty')}
@@ -646,8 +646,8 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           type="button"
                           onClick={() => handleQuickPreset(Math.floor(totalCapacity / 2))}
                           className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === Math.floor(totalCapacity / 2)
-                            ? 'bg-teal-50 text-teal-800 border-teal-300 font-bold'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                            ? 'bg-neighbor-50 text-neighbor-800 border-neighbor-300 font-bold'
+                            : 'bg-white hover:bg-gray-100 text-gray-700 border-gray-200'
                             }`}
                         >
                           {t('dashboard.editModal.presetHalf', { count: Math.floor(totalCapacity / 2) })}
@@ -658,29 +658,29 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         onClick={() => handleQuickPreset(totalCapacity)}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${Number(editData.available_slots) === totalCapacity
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold'
-                          : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                          : 'bg-white hover:bg-gray-100 text-gray-700 border-gray-200'
                           }`}
                       >
                         {t('dashboard.editModal.presetFull', { count: totalCapacity })}
                       </button>
                     </div>
 
-                    <p className="text-[11px] text-slate-500 flex items-start gap-1 font-medium pt-1 border-t border-slate-200/60">
-                      <AlertCircle className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-gray-500 flex items-start gap-1 font-medium pt-1 border-t border-gray-200/60">
+                      <AlertCircle className="w-3.5 h-3.5 text-neighbor-600 shrink-0 mt-0.5" />
                       <span>{t('dashboard.editModal.stepperNotePrefix')} <strong>(-)</strong> {t('dashboard.editModal.stepperNoteMinusAction')} <strong>(+)</strong> {t('dashboard.editModal.stepperNotePlusAction')}</span>
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <div className="flex justify-between items-center text-xs">
-                      <label className="font-bold text-slate-800 flex items-center gap-1">
-                        <CircleDollarSign className="w-3.5 h-3.5 text-teal-600" />
+                      <label className="font-bold text-gray-800 flex items-center gap-1">
+                        <CircleDollarSign className="w-3.5 h-3.5 text-neighbor-600" />
                         {t('dashboard.editModal.monthlyPriceLabel')} <span className="text-red-500">*</span>
                       </label>
                       {editData.price_per_month !== '' && !isNaN(Number(editData.price_per_month)) && (
-                        <span className="font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-100">
+                        <span className="font-bold text-neighbor-700 bg-neighbor-50 px-2 py-0.5 rounded border border-neighbor-100">
                           {Number(editData.price_per_month).toLocaleString('vi-VN')} {t('dashboard.editModal.priceBadgeUnit')}
                         </span>
                       )}
@@ -692,36 +692,36 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                         required
                         min="0"
                         step="50000"
-                        className="w-full px-3.5 py-2.5 text-sm font-bold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                        className="w-full px-3.5 py-2.5 text-sm font-bold border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white"
                         placeholder={t('dashboard.editModal.pricePlaceholder')}
                         value={editData.price_per_month}
                         onChange={(e) => setEditData({ ...editData, price_per_month: e.target.value })}
                       />
-                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] pointer-events-none">
+                      <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-[10px] pointer-events-none">
                         {t('dashboard.editModal.priceInputSuffix')}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 pt-0.5">
-                      <span className="text-[11px] text-slate-400 font-medium">{t('dashboard.editModal.quickAdjust')}</span>
+                      <span className="text-[11px] text-gray-400 font-medium">{t('dashboard.editModal.quickAdjust')}</span>
                       <button
                         type="button"
                         onClick={() => handlePriceQuickAdjust(-100000)}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200"
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition border border-gray-200"
                       >
                         -100k
                       </button>
                       <button
                         type="button"
                         onClick={() => handlePriceQuickAdjust(100000)}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition border border-teal-200"
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-800 transition border border-neighbor-200"
                       >
                         +100k
                       </button>
                       <button
                         type="button"
                         onClick={() => handlePriceQuickAdjust(500000)}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 transition border border-teal-200"
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-800 transition border border-neighbor-200"
                       >
                         +500k
                       </button>
@@ -729,8 +729,8 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                   </div>
 
                   {currentFacility.payment_status === 'PAID' && (
-                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
-                      <label className="text-xs font-bold text-slate-800 block">
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2.5">
+                      <label className="text-xs font-bold text-gray-800 block">
                         {t('dashboard.editModal.visibilityLabel')}
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -738,16 +738,16 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           onClick={() => setEditData({ ...editData, visibility_status: 'VISIBLE' })}
                           className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${editData.visibility_status === 'VISIBLE'
                             ? 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-xs'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
                             }`}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'VISIBLE' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'VISIBLE' ? 'bg-emerald-600 text-white' : 'bg-gray-200 text-gray-500'
                             }`}>
                             <Eye className="w-4 h-4" />
                           </div>
                           <div>
                             <p className="text-xs font-bold">{t('dashboard.editModal.visibilityVisibleTitle')}</p>
-                            <p className="text-[10px] text-slate-500">{t('dashboard.editModal.visibilityVisibleSub')}</p>
+                            <p className="text-[10px] text-gray-500">{t('dashboard.editModal.visibilityVisibleSub')}</p>
                           </div>
                         </div>
 
@@ -755,16 +755,16 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                           onClick={() => setEditData({ ...editData, visibility_status: 'HIDDEN' })}
                           className={`cursor-pointer p-3 rounded-xl border-2 transition flex items-center gap-2.5 ${editData.visibility_status === 'HIDDEN'
                             ? 'bg-amber-50 border-amber-500 text-amber-950 shadow-xs'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'
                             }`}
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'HIDDEN' ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-500'
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${editData.visibility_status === 'HIDDEN' ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-500'
                             }`}>
                             <EyeOff className="w-4 h-4" />
                           </div>
                           <div>
                             <p className="text-xs font-bold">{t('dashboard.editModal.visibilityHiddenTitle')}</p>
-                            <p className="text-[10px] text-slate-500">{t('dashboard.editModal.visibilityHiddenSub')}</p>
+                            <p className="text-[10px] text-gray-500">{t('dashboard.editModal.visibilityHiddenSub')}</p>
                           </div>
                         </div>
                       </div>
@@ -773,19 +773,19 @@ const ProviderDashboardPanel = ({ onNavigateToTab }) => {
                 </div>
               </div>
 
-              {/* ── FOOTER ACTIONS ── */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              {}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition text-xs"
+                  className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-xl transition text-xs"
                 >
                   {t('dashboard.editModal.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50 text-xs flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold rounded-xl shadow-md transition disabled:opacity-50 text-xs flex items-center gap-1.5"
                 >
                   {isSubmitting ? (
                     <>

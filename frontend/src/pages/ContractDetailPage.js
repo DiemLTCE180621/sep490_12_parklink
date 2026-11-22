@@ -312,7 +312,7 @@ const ContractDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 py-6 px-3 sm:px-6 lg:px-8 print:bg-white print:p-0 print:m-0">
+    <div className="min-h-screen bg-gray-50 py-6 px-3 sm:px-6 lg:px-8 print:bg-white print:p-0 print:m-0">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
       <div className="w-full max-w-[1400px] mx-auto space-y-6 print:m-0 print:p-0 print:max-w-none">
@@ -326,7 +326,7 @@ const ContractDetailPage = () => {
                 navigate(-1);
               }
             }}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition"
           >
             <ArrowLeft className="w-4 h-4" />
             {isCustomer ? t('contractDetail.topBar.backToContracts') : t('contractDetail.topBar.backToPrevious')}
@@ -344,8 +344,8 @@ const ContractDetailPage = () => {
                 {t('contractDetail.topBar.statusTerminated')}
               </span>
             ) : contract?.status === 'CANCELLED' ? (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                 {t('contractDetail.topBar.statusCancelled')}
               </span>
             ) : (
@@ -385,7 +385,7 @@ const ContractDetailPage = () => {
                   <button
                     type="button"
                     onClick={() => navigate(`/contracts/${id}/extend`)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition shadow-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-medium rounded-lg transition shadow-sm"
                   >
                     <Clock className="w-3.5 h-3.5" />
                     {t('contractDetail.topBar.extend')}
@@ -441,7 +441,7 @@ const ContractDetailPage = () => {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium rounded-lg transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-medium rounded-lg transition"
               title={t('contractDetail.topBar.printTitle')}
             >
               <Printer className="w-3.5 h-3.5" />
@@ -451,18 +451,18 @@ const ContractDetailPage = () => {
         </div>
 
         {loading ? (
-          <div className="bg-white rounded-xl p-16 text-center border border-slate-200">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-3" />
-            <p className="text-slate-600 text-sm">{t('contractDetail.loading', { id })}</p>
+          <div className="bg-white rounded-xl p-16 text-center border border-gray-200">
+            <Loader2 className="w-8 h-8 animate-spin text-neighbor-600 mx-auto mb-3" />
+            <p className="text-gray-600 text-sm">{t('contractDetail.loading', { id })}</p>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-xl p-10 border border-slate-200 text-center space-y-3">
+          <div className="bg-white rounded-xl p-10 border border-gray-200 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">{t('contractDetail.errorTitle')}</h3>
-            <p className="text-sm text-slate-600 max-w-md mx-auto">{error}</p>
+            <h3 className="text-base font-bold text-gray-900">{t('contractDetail.errorTitle')}</h3>
+            <p className="text-sm text-gray-600 max-w-md mx-auto">{error}</p>
             <button
               onClick={fetchDetail}
-              className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
+              className="px-4 py-2 bg-neighbor-600 text-white font-medium text-xs rounded-lg hover:bg-neighbor-700 transition"
             >
               {t('contractDetail.retry')}
             </button>
@@ -515,16 +515,16 @@ const ContractDetailPage = () => {
 
 
             {snapshot.extension_request?.status === 'APPROVED' && snapshot.extension_request?.new_contract_id && (
-              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-teal-50 border border-teal-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-neighbor-50 border border-neighbor-300 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckSquare className="w-4 h-4 text-teal-700" />
+                  <div className="w-8 h-8 rounded-lg bg-neighbor-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckSquare className="w-4 h-4 text-neighbor-700" />
                   </div>
                   <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-teal-900">
+                    <h4 className="text-xs sm:text-sm font-bold text-neighbor-900">
                       {t('contractDetail.banners.extendedDoneTitle', { code: snapshot.extension_request.new_contract_code || `#${snapshot.extension_request.new_contract_id}` })}
                     </h4>
-                    <p className="text-[11px] sm:text-xs text-teal-700 mt-0.5">
+                    <p className="text-[11px] sm:text-xs text-neighbor-700 mt-0.5">
                       {t('contractDetail.banners.extendedDoneDesc')}
                     </p>
                   </div>
@@ -538,7 +538,7 @@ const ContractDetailPage = () => {
                         : `/contracts/${snapshot.extension_request.new_contract_id}`
                     )
                   }
-                  className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
+                  className="px-3.5 py-1.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-semibold text-xs rounded-lg transition shrink-0 self-end sm:self-auto"
                 >
                   {t('contractDetail.banners.viewNewContract')}
                 </button>
@@ -554,10 +554,10 @@ const ContractDetailPage = () => {
                       <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                      <h4 className="text-sm sm:text-base font-bold text-gray-900">
                         {t('contractDetail.banners.providerExtensionTitle')}
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-gray-500">
                         {t('contractDetail.banners.providerExtensionDesc')}
                       </p>
                     </div>
@@ -569,32 +569,32 @@ const ContractDetailPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-amber-50/50 p-4 rounded-xl border border-amber-200">
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.extMonthsLabel')}</span>
-                    <strong className="text-slate-900 text-sm">{t('contractDetail.banners.extMonthsValue', { months: pendingExtension.extension_months })}</strong>
+                    <span className="text-gray-500 block">{t('contractDetail.banners.extMonthsLabel')}</span>
+                    <strong className="text-gray-900 text-sm">{t('contractDetail.banners.extMonthsValue', { months: pendingExtension.extension_months })}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.extNewEndLabel')}</span>
-                    <strong className="text-teal-700 text-sm">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.extNewEndLabel')}</span>
+                    <strong className="text-neighbor-700 text-sm">
                       {pendingExtension.requested_end_date ? new Date(pendingExtension.requested_end_date).toLocaleDateString(dateLocale) : '---'}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.extRevenueLabel', { months: pendingExtension.extension_months })}</span>
+                    <span className="text-gray-500 block">{t('contractDetail.banners.extRevenueLabel', { months: pendingExtension.extension_months })}</span>
                     <strong className="text-emerald-700 text-sm font-bold">
                       {Number(pendingExtension.total_estimated_amount || 0).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.extSubmittedLabel')}</span>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.extSubmittedLabel')}</span>
+                    <span className="text-gray-700 font-medium">
                       {new Date(pendingExtension.requested_at).toLocaleDateString(dateLocale)}
                     </span>
                   </div>
 
                   {pendingExtension.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
-                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.extCustomerReason')}</span>
-                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-amber-200">
+                      <span className="text-gray-500 block font-medium">{t('contractDetail.banners.extCustomerReason')}</span>
+                      <p className="text-gray-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-amber-200">
                         "{pendingExtension.reason}"
                       </p>
                     </div>
@@ -603,17 +603,17 @@ const ContractDetailPage = () => {
 
                   {pendingExtension.vehicle_info?.is_changed && (
                     <div className="sm:col-span-2 pt-2 border-t border-amber-200/60">
-                      <span className="text-slate-700 font-bold block mb-1">
+                      <span className="text-gray-700 font-bold block mb-1">
                         {t('contractDetail.banners.extVehicleChangeTitle')}
                       </span>
-                      <div className="p-2.5 bg-white rounded-lg border border-teal-200 grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2.5 bg-white rounded-lg border border-neighbor-200 grid grid-cols-2 gap-2 text-xs">
                         <div>
-                          <span className="text-slate-400 block text-[11px]">{t('contractDetail.banners.extNewVehicleType')}</span>
-                          <strong className="text-slate-900 font-semibold">{translateVehicleTypeName({ name: pendingExtension.vehicle_info.vehicle_type }, i18n.language)}</strong>
+                          <span className="text-gray-400 block text-[11px]">{t('contractDetail.banners.extNewVehicleType')}</span>
+                          <strong className="text-gray-900 font-semibold">{translateVehicleTypeName({ name: pendingExtension.vehicle_info.vehicle_type }, i18n.language)}</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[11px]">{t('contractDetail.banners.extNewPlate')}</span>
-                          <strong className="text-teal-700 font-semibold">{pendingExtension.vehicle_info.license_plate}</strong>
+                          <span className="text-gray-400 block text-[11px]">{t('contractDetail.banners.extNewPlate')}</span>
+                          <strong className="text-neighbor-700 font-semibold">{pendingExtension.vehicle_info.license_plate}</strong>
                         </div>
                       </div>
                     </div>
@@ -644,11 +644,11 @@ const ContractDetailPage = () => {
 
 
             {contract.status === 'TERMINATED' && (
-              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
-                <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-gray-50 border border-gray-300 rounded-xl flex items-center gap-3 text-xs text-gray-700 shadow-sm">
+                <AlertCircle className="w-5 h-5 text-gray-500 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">{t('contractDetail.banners.terminatedTitle')}</h4>
-                  <p className="text-slate-600 mt-0.5">
+                  <h4 className="text-sm font-bold text-gray-900">{t('contractDetail.banners.terminatedTitle')}</h4>
+                  <p className="text-gray-600 mt-0.5">
                     {t('contractDetail.banners.terminatedDesc')}
                   </p>
                 </div>
@@ -657,11 +657,11 @@ const ContractDetailPage = () => {
 
 
             {contract.status === 'CANCELLED' && (
-              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-slate-100 border border-slate-300 rounded-xl flex items-center gap-3 text-xs text-slate-700 shadow-sm">
-                <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" />
+              <div className="print:hidden sm:max-w-[900px] mx-auto p-4 bg-gray-50 border border-gray-300 rounded-xl flex items-center gap-3 text-xs text-gray-700 shadow-sm">
+                <AlertCircle className="w-5 h-5 text-gray-500 shrink-0" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900">{t('contractDetail.banners.cancelledSlotTitle')}</h4>
-                  <p className="text-slate-600 mt-0.5">
+                  <h4 className="text-sm font-bold text-gray-900">{t('contractDetail.banners.cancelledSlotTitle')}</h4>
+                  <p className="text-gray-600 mt-0.5">
                     {t('contractDetail.banners.cancelledSlotDesc')}
                   </p>
                 </div>
@@ -692,12 +692,12 @@ const ContractDetailPage = () => {
                       <Clock className="w-4 h-4 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                      <h4 className="text-sm sm:text-base font-bold text-gray-900">
                         {pendingTermination.requested_by === 'PROVIDER'
                           ? t('contractDetail.banners.custTermProviderTitle')
                           : t('contractDetail.banners.custTermCustomerTitle')}
                       </h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {pendingTermination.requested_by === 'PROVIDER'
                           ? t('contractDetail.banners.custTermProviderDesc')
                           : t('contractDetail.banners.custTermCustomerDesc')}
@@ -711,7 +711,7 @@ const ContractDetailPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
                   <div>
-                    <span className="text-slate-500 block">
+                    <span className="text-gray-500 block">
                       {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.proposedStopDate') : t('contractDetail.banners.proposedReturnDate')}
                     </span>
                     <strong className="text-rose-700 text-sm font-bold">
@@ -719,21 +719,21 @@ const ContractDetailPage = () => {
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.originalEndDate')}</span>
-                    <strong className="text-slate-800 text-sm font-semibold">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.originalEndDate')}</span>
+                    <strong className="text-gray-800 text-sm font-semibold">
                       {new Date(contract.end_date).toLocaleDateString(dateLocale)}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.submittedAt')}</span>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.submittedAt')}</span>
+                    <span className="text-gray-700 font-medium">
                       {new Date(pendingTermination.requested_at).toLocaleDateString(dateLocale)} {new Date(pendingTermination.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
                     <div>
-                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAgreedLabel')}</span>
+                      <span className="text-gray-500 block">{t('contractDetail.banners.refundAgreedLabel')}</span>
                       <strong className="text-emerald-700 font-mono text-sm font-bold">
                         {Number(pendingTermination.refund_amount).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                       </strong>
@@ -742,17 +742,17 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.bank_account_info && (
                     <div>
-                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
-                      <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
+                      <span className="text-gray-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
+                      <strong className="text-gray-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
                     </div>
                   )}
 
                   {pendingTermination.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">
+                      <span className="text-gray-500 block font-medium">
                         {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.reasonFromProvider') : t('contractDetail.banners.reasonFromYou')}
                       </span>
-                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                      <p className="text-gray-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.reason}"
                       </p>
                     </div>
@@ -760,8 +760,8 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.providerGuideNote')}</span>
-                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                      <span className="text-gray-500 block font-medium">{t('contractDetail.banners.providerGuideNote')}</span>
+                      <p className="text-gray-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.provider_note}"
                       </p>
                     </div>
@@ -774,7 +774,7 @@ const ContractDetailPage = () => {
                       type="button"
                       disabled={cancellingTermination}
                       onClick={() => setCancelTerminationModalOpen(true)}
-                      className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
+                      className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
                     >
                       {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
                       {t('contractDetail.banners.cancelTermination')}
@@ -800,12 +800,12 @@ const ContractDetailPage = () => {
                       <Clock className="w-4 h-4 animate-pulse" />
                     </div>
                     <div>
-                      <h4 className="text-sm sm:text-base font-bold text-slate-900">
+                      <h4 className="text-sm sm:text-base font-bold text-gray-900">
                         {pendingTermination.requested_by === 'PROVIDER'
                           ? t('contractDetail.banners.provTermSelfTitle')
                           : t('contractDetail.banners.provTermCustTitle')}
                       </h4>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {pendingTermination.requested_by === 'PROVIDER'
                           ? t('contractDetail.banners.provTermSelfDesc')
                           : t('contractDetail.banners.provTermCustDesc')}
@@ -819,7 +819,7 @@ const ContractDetailPage = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-rose-50/50 p-4 rounded-xl border border-rose-200">
                   <div>
-                    <span className="text-slate-500 block">
+                    <span className="text-gray-500 block">
                       {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.proposedStopDate') : t('contractDetail.banners.proposedReturnDate')}
                     </span>
                     <strong className="text-rose-700 text-sm font-bold">
@@ -827,27 +827,27 @@ const ContractDetailPage = () => {
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.originalEndDate')}</span>
-                    <strong className="text-slate-800 text-sm font-semibold">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.originalEndDate')}</span>
+                    <strong className="text-gray-800 text-sm font-semibold">
                       {new Date(contract.end_date).toLocaleDateString(dateLocale)}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">{t('contractDetail.banners.submittedAt')}</span>
-                    <span className="text-slate-700 font-medium">
+                    <span className="text-gray-500 block">{t('contractDetail.banners.submittedAt')}</span>
+                    <span className="text-gray-700 font-medium">
                       {new Date(pendingTermination.requested_at).toLocaleDateString(dateLocale)} {new Date(pendingTermination.requested_at).toLocaleTimeString(dateLocale, { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   {pendingTermination.bank_account_info && (
                     <div>
-                      <span className="text-slate-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
-                      <strong className="text-slate-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
+                      <span className="text-gray-500 block">{t('contractDetail.banners.refundAccountLabel')}</span>
+                      <strong className="text-gray-900 font-mono text-xs">{pendingTermination.bank_account_info}</strong>
                     </div>
                   )}
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.refund_amount !== null && pendingTermination.refund_amount !== undefined && (
                     <div>
-                      <span className="text-slate-500 block">{t('contractDetail.banners.provRefundExpected')}</span>
+                      <span className="text-gray-500 block">{t('contractDetail.banners.provRefundExpected')}</span>
                       <strong className="text-emerald-700 font-mono text-sm font-bold">
                         {Number(pendingTermination.refund_amount).toLocaleString(numberLocale)} {t('contracts.card.priceUnit').split('/')[0]}
                       </strong>
@@ -856,10 +856,10 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.reason && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">
+                      <span className="text-gray-500 block font-medium">
                         {pendingTermination.requested_by === 'PROVIDER' ? t('contractDetail.banners.reasonFromProviderSelf') : t('contractDetail.banners.reasonFromCustomer')}
                       </span>
-                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                      <p className="text-gray-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.reason}"
                       </p>
                     </div>
@@ -867,8 +867,8 @@ const ContractDetailPage = () => {
 
                   {pendingTermination.requested_by === 'PROVIDER' && pendingTermination.provider_note && (
                     <div className="sm:col-span-2 pt-2 border-t border-rose-200/60">
-                      <span className="text-slate-500 block font-medium">{t('contractDetail.banners.guideNoteForCustomer')}</span>
-                      <p className="text-slate-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
+                      <span className="text-gray-500 block font-medium">{t('contractDetail.banners.guideNoteForCustomer')}</span>
+                      <p className="text-gray-800 italic mt-0.5 bg-white p-2.5 rounded-lg border border-rose-200">
                         "{pendingTermination.provider_note}"
                       </p>
                     </div>
@@ -881,7 +881,7 @@ const ContractDetailPage = () => {
                     <div className="space-y-3 pt-1">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-700 block">
+                          <label className="text-xs font-semibold text-gray-700 block">
                             {t('contractDetail.banners.provRefundInputLabel')}
                           </label>
                           <input
@@ -891,13 +891,13 @@ const ContractDetailPage = () => {
                             value={terminationRefund}
                             onChange={(e) => setTerminationRefund(e.target.value)}
                             placeholder={t('contractDetail.banners.provRefundPlaceholder')}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600 font-mono"
+                            className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-neighbor-600 focus:ring-neighbor-500 font-mono"
                           />
-                          <span className="text-[11px] text-slate-400 block">{t('contractDetail.banners.offPlatformTransferNote')}</span>
+                          <span className="text-[11px] text-gray-400 block">{t('contractDetail.banners.offPlatformTransferNote')}</span>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-slate-700 block">
+                          <label className="text-xs font-semibold text-gray-700 block">
                             {t('contractDetail.banners.provNoteInputLabel')}
                           </label>
                           <input
@@ -905,7 +905,7 @@ const ContractDetailPage = () => {
                             value={terminationProviderNote}
                             onChange={(e) => setTerminationProviderNote(e.target.value)}
                             placeholder={t('contractDetail.banners.provNotePlaceholder')}
-                            className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-teal-600"
+                            className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-neighbor-600 focus:ring-neighbor-500"
                           />
                         </div>
                       </div>
@@ -916,7 +916,7 @@ const ContractDetailPage = () => {
                         type="button"
                         disabled={processingTermination}
                         onClick={() => setRejectTerminationModalOpen(true)}
-                        className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition"
+                        className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-xs font-semibold transition"
                       >
                         {t('contractDetail.banners.rejectTerminationBtn')}
                       </button>
@@ -934,7 +934,7 @@ const ContractDetailPage = () => {
                 ) : (
 
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-rose-100">
-                    <p className="text-[11px] text-slate-500 italic">
+                    <p className="text-[11px] text-gray-500 italic">
                       * Bạn có thể hủy yêu cầu nếu muốn tiếp tục duy trì hợp đồng với khách hàng.
                     </p>
                     <div className="flex items-center gap-3">
@@ -942,7 +942,7 @@ const ContractDetailPage = () => {
                         type="button"
                         disabled={cancellingTermination || processingTermination}
                         onClick={() => setCancelTerminationModalOpen(true)}
-                        className="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
+                        className="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-xs font-semibold transition inline-flex items-center gap-1.5"
                       >
                         {cancellingTermination ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
                         {t('contractDetail.banners.cancelThisTerminationBtn')}
@@ -964,7 +964,7 @@ const ContractDetailPage = () => {
 
 
             <div
-              className="contract-paper-canvas bg-white border border-slate-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
+              className="contract-paper-canvas bg-white border border-gray-300 shadow-md sm:rounded-lg p-6 sm:p-14 sm:max-w-[900px] mx-auto text-black print:p-0 print:border-none print:shadow-none print:max-w-none print:m-0"
               style={{ fontFamily: "'Times New Roman', Times, serif" }}
             >
 
@@ -1132,10 +1132,10 @@ const ContractDetailPage = () => {
 
 
             {isCustomer && isPendingSignature && (
-              <div className="print:hidden bg-white rounded-xl p-6 border border-slate-200 sm:max-w-[900px] mx-auto space-y-4">
-                <div className="border-b border-slate-100 pb-3">
+              <div className="print:hidden bg-white rounded-xl p-6 border border-gray-200 sm:max-w-[900px] mx-auto space-y-4">
+                <div className="border-b border-gray-100 pb-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4 className="text-base font-bold text-slate-900">
+                    <h4 className="text-base font-bold text-gray-900">
                       {t('contractDetail.signingBox.title')}
                     </h4>
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300">
@@ -1143,7 +1143,7 @@ const ContractDetailPage = () => {
                       {t('contractDetail.signingBox.deadline', { duration: signingDurationDisplay })}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     {t('contractDetail.signingBox.desc', { duration: signingDurationDisplay })}
                   </p>
                 </div>
@@ -1152,15 +1152,15 @@ const ContractDetailPage = () => {
                   <button
                     type="button"
                     onClick={() => setIsTermsAgreed(!isTermsAgreed)}
-                    className="mt-0.5 text-teal-600 focus:outline-none shrink-0"
+                    className="mt-0.5 text-neighbor-600 focus:outline-none shrink-0"
                   >
                     {isTermsAgreed ? (
-                      <CheckSquare className="w-5 h-5 text-teal-600" />
+                      <CheckSquare className="w-5 h-5 text-neighbor-600" />
                     ) : (
-                      <Square className="w-5 h-5 text-slate-400" />
+                      <Square className="w-5 h-5 text-gray-400" />
                     )}
                   </button>
-                  <span className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                  <span className="text-xs sm:text-sm text-gray-700 leading-relaxed">
                     {t('contractDetail.signingBox.confirmTextBefore')} <strong>{customerInfo.customer_name || contract.reservation?.customer?.full_name}</strong>,
                     {t('contractDetail.signingBox.confirmTextAfter')}
                   </span>
@@ -1171,7 +1171,7 @@ const ContractDetailPage = () => {
                     type="button"
                     disabled={accepting || rejecting}
                     onClick={() => setRejectModalOpen(true)}
-                    className="px-5 py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 hover:border-rose-200 font-semibold text-sm rounded-lg transition"
+                    className="px-5 py-2.5 bg-white hover:bg-rose-50 text-rose-600 border border-gray-200 hover:border-rose-200 font-semibold text-sm rounded-lg transition"
                   >
                     {t('contractDetail.signingBox.rejectButton')}
                   </button>
@@ -1180,7 +1180,7 @@ const ContractDetailPage = () => {
                     type="button"
                     disabled={!isTermsAgreed || accepting || rejecting}
                     onClick={() => setConfirmModalOpen(true)}
-                    className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg transition inline-flex items-center justify-center gap-2"
+                    className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg transition inline-flex items-center justify-center gap-2"
                   >
                     {accepting ? (
                       <>

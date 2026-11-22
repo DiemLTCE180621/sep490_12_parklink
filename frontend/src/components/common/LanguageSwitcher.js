@@ -17,9 +17,9 @@ const LanguageSwitcher = ({ className = '' }) => {
       onClick={handleToggleLanguage}
       title={isVietnamese ? t('language.switchToEn') : t('language.switchToVi')}
       aria-label={isVietnamese ? t('language.switchToEn') : t('language.switchToVi')}
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-teal-500 hover:text-teal-700 text-xs font-semibold transition duration-150 ${className}`}
+      className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-neighbor-500 hover:text-neighbor-700 text-sm font-semibold transition-colors duration-150 ${className}`}
     >
-      <Globe className="w-4 h-4 text-teal-600 shrink-0" />
+      <Globe className="w-4 h-4 text-neighbor-600 shrink-0" />
       <span className="inline-block w-[18px] text-center">{isVietnamese ? 'VI' : 'EN'}</span>
     </button>
   );
