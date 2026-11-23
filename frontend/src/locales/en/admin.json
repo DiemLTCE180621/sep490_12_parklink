@@ -154,7 +154,111 @@
     "title": "Platform Complaints Management",
     "subtitle": "Monitor and resolve service complaints from customers and providers",
     "totalCount": "Total: {{count}} complaints",
-    "searchPlaceholder": "Search by title, ID or customer..."
+    "searchPlaceholder": "Search by title, ID, customer, or facility...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "close": "Close",
+    "errors": {
+      "loadTitle": "Unable to load data",
+      "load": "Unable to load complaints. Please try again.",
+      "forward": "Unable to forward the complaint to the parking provider.",
+      "updateStatus": "Unable to update the complaint status."
+    },
+    "toast": {
+      "forwardSuccess": "Complaint #{{id}} was forwarded to the parking provider.",
+      "statusSuccess": "Complaint #{{id}} status updated to \"{{status}}\"."
+    },
+    "statuses": {
+      "PENDING_ADMIN": "Pending admin review",
+      "PENDING": "Pending admin review",
+      "OPEN": "Pending admin review",
+      "WAITING_PROVIDER": "Awaiting provider response",
+      "PROVIDER_REPLIED": "Provider responded",
+      "PROCESSING": "Under review",
+      "ESCALATED": "Admin intervention required",
+      "RESOLVED": "Resolved",
+      "REJECTED": "Rejected",
+      "CLOSED": "Closed",
+      "overdue": "Provider response overdue"
+    },
+    "empty": {
+      "title": "No complaints yet",
+      "description": "There are no complaints yet. New complaints will appear here.",
+      "noMatchTitle": "No matching complaints found",
+      "noMatchDescription": "Try changing your search term or status filter."
+    },
+    "card": {
+      "submittedAt": "Submitted:",
+      "contentLabel": "Complaint details:",
+      "imageAlt": "Complaint photo {{index}}",
+      "customerLabel": "Customer:",
+      "facilityLabel": "Reported facility:",
+      "facilityShortLabel": "Facility:",
+      "providerLabel": "Provider:"
+    },
+    "history": {
+      "escalated": "[Customer requested admin intervention]: {{reason}}"
+    },
+    "statusInfo": {
+      "overdueTitle": "PROVIDER RESPONSE IS 3 DAYS OVERDUE",
+      "overdueDescription": "Deadline: {{date}}. The parking provider has not responded. The system has marked the complaint overdue; administrators may follow up or issue a decision.",
+      "overdueFallback": "Past due",
+      "waitingDescription": "Administrators have sent instructions. Response due: {{deadline}}.",
+      "deadlineBefore": "before {{date}}",
+      "deadlineDefault": "within 3 days",
+      "providerRepliedDescription": "Please review the response and make a final decision.",
+      "latestReplyTitle": "Latest response:"
+    },
+    "actions": {
+      "forward": "Forward to provider",
+      "forwardTitle": "Forward the complaint to the parking provider with instructions",
+      "reject": "Reject / Decide",
+      "rejectTitle": "Reject the complaint or update its status",
+      "verdict": "Review & decide",
+      "verdictTitle": "Review the provider's response and make a final decision",
+      "overdueVerdict": "Decide (Overdue)",
+      "overdueVerdictTitle": "The provider is 3 days overdue. An administrator may issue a decision.",
+      "updateStatus": "Update status",
+      "updateStatusTitle": "Update the complaint status",
+      "changeStatus": "Change status",
+      "changeStatusTitle": "Change or reopen the complaint"
+    },
+    "statusOptions": {
+      "RESOLVED": {
+        "description": "The complaint has been fully addressed and the parties have agreed on a resolution, refund, or compensation."
+      },
+      "REJECTED": {
+        "description": "The complaint is invalid, contains inaccurate information, or falls outside the parties' responsibility."
+      },
+      "PROCESSING": {
+        "description": "The administrator is verifying the details, requesting evidence, or reconciling information between the parties."
+      },
+      "CLOSED": {
+        "description": "Close the complaint after the parties have completed their discussions."
+      }
+    },
+    "forwardModal": {
+      "title": "Forward complaint to the parking provider",
+      "subtitle": "Complaint #{{id}} • Request an investigation and response",
+      "facilityLabel": "Facility:",
+      "deadline": "Response deadline: 3 days",
+      "instructionLabel": "Instructions / response request for the provider",
+      "instructionPlaceholder": "Enter what the provider should check, such as reviewing camera footage, verifying staff records, or clarifying the customer's report...",
+      "validation": "Enter instructions or a response request (at least 5 characters).",
+      "submitting": "Forwarding...",
+      "submit": "Forward to provider"
+    },
+    "statusModal": {
+      "title": "Update complaint status",
+      "subtitle": "Complaint #{{id}} • Role:",
+      "chooseStatus": "Select a status",
+      "noteLabel": "Administrator's decision note (optional)",
+      "notePlaceholder": "Enter the investigation conclusion, resolution, or reason to share with the customer and parking provider...",
+      "characterCount": "{{count}}/2000 characters",
+      "invalidData": "Invalid data. Please check the status and note.",
+      "submitting": "Updating...",
+      "submit": "Save status"
+    }
   },
   "inspectors": {
     "title": "Field Inspector Management",

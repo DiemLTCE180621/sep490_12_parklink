@@ -2,7 +2,7 @@ export const validateChatFiles = (files) => {
     if (!files || files.length === 0) return { valid: true };
 
     if (files.length > 5) {
-        return { valid: false, error: 'Chỉ được tải lên tối đa 5 file cùng lúc.' };
+        return { valid: false, errorKey: 'input.maxFilesError' };
     }
 
     const MAX_SIZE = 50 * 1024 * 1024; // 50MB mỗi file 

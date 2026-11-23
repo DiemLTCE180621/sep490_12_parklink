@@ -465,7 +465,7 @@
     "providerRepliesTitle": "Parking Provider Response:",
     "providerFallbackName": "Parking Provider",
     "progress": {
-      "pending": "ParkLink Administrators have received your complaint and are reviewing the associated contract records.",
+      "pending": "Your complaint has been sent to ParkLink administrators. After review, it will be forwarded to the parking provider for a response.",
       "waitingProviderDeadline": "(Response deadline: before {{date}})",
       "waitingProviderDefault": "(within 3 days)",
       "waitingProvider": "Administrators have requested the Parking Provider to investigate and respond {{deadline}}. Please await their reply.",
@@ -501,7 +501,7 @@
     "imageFormatsHint": "Supports JPG, PNG, WEBP (max 50MB each)",
     "imageAlt": "Photo {{index}}",
     "removeImageAria": "Remove photo",
-    "reviewNotice": "Administrators will review your complaint and update you in My Complaints within 24-48 business hours.",
+    "reviewNotice": "ParkLink administrators will receive your complaint and forward it to the parking provider for review and response. You can track its progress in My Complaints.",
     "cancel": "Cancel",
     "submitButton": "Submit Complaint"
   },

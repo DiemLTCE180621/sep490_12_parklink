@@ -2,11 +2,13 @@ import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Paperclip, Image as ImageIcon, Send, Loader2 } from 'lucide-react';
 import { validateChatFiles } from '../../validations/chatValidation';
+import Toast from '../common/Toast';
 
 const ChatInput = ({ onSendMessage }) => {
     const { t } = useTranslation('chat');
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const imageInputRef = useRef(null);
     const docInputRef = useRef(null);
 
@@ -16,7 +18,7 @@ const ChatInput = ({ onSendMessage }) => {
 
         const validation = validateChatFiles(selectedFiles);
         if (!validation.valid) {
-            alert(validation.error);
+            setToastMessage(validation.errorKey ? t(validation.errorKey) : validation.error);
             e.target.value = '';
             return;
         }
@@ -51,6 +53,11 @@ const ChatInput = ({ onSendMessage }) => {
 
     return (
         <form onSubmit={handleSendText} className="p-4 border-t border-slate-200 bg-white">
+            <Toast
+                message={toastMessage}
+                type="error"
+                onClose={() => setToastMessage('')}
+            />
             <div className="flex items-center gap-2">
                 {/* Nút gửi ảnh & video */}
                 <button

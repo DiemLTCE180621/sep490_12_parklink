@@ -14,6 +14,7 @@
     "placeholder": "Nhập tin nhắn...",
     "uploadMediaTitle": "Gửi hình ảnh/video",
     "uploadFileTitle": "Gửi file, tài liệu (Word, Excel, PDF, Zip...)",
+    "maxFilesError": "Chỉ được tải lên tối đa 5 tệp cùng lúc.",
     "sendFileError": "Có lỗi xảy ra khi gửi file đính kèm",
     "sendTextError": "Có lỗi xảy ra khi gửi tin nhắn"
   },

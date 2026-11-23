@@ -449,7 +449,6 @@
     "tabs": {
       "ALL": "All",
       "WAITING_PROVIDER": "Pending Response",
-      "PROVIDER_REPLIED": "Responded",
       "RESOLVED": "Resolved"
     },
     "statuses": {
@@ -486,7 +485,19 @@
     },
     "actions": {
       "updateReply": "Update Response",
-      "submitReply": "Submit Response"
+      "submitReply": "Send Response"
+    },
+    "replyModal": {
+      "title": "Reply to Complaint",
+      "subtitle": "Sent directly to the customer · Complaint #{{id}}",
+      "notice": "Your response and proposed support will be sent directly to the customer.",
+      "responseLabel": "Your response",
+      "responsePlaceholder": "Enter your response or proposed support for the customer...",
+      "errors": {
+        "required": "Please enter a response.",
+        "tooShort": "Your response must be at least 5 characters.",
+        "tooLong": "Your response cannot exceed 3,000 characters."
+      }
     }
   },
   "reviews": {

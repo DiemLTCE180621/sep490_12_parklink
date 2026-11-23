@@ -449,7 +449,6 @@
     "tabs": {
       "ALL": "Tất cả",
       "WAITING_PROVIDER": "Cần giải trình",
-      "PROVIDER_REPLIED": "Đã giải trình",
       "RESOLVED": "Đã giải quyết"
     },
     "statuses": {
@@ -486,7 +485,19 @@
     },
     "actions": {
       "updateReply": "Cập nhật phản hồi",
-      "submitReply": "Gửi bản giải trình"
+      "submitReply": "Gửi phản hồi"
+    },
+    "replyModal": {
+      "title": "Phản hồi khiếu nại",
+      "subtitle": "Gửi trực tiếp cho khách hàng · Khiếu nại #{{id}}",
+      "notice": "Phản hồi và phương án hỗ trợ của bạn sẽ được gửi trực tiếp cho khách hàng.",
+      "responseLabel": "Nội dung phản hồi",
+      "responsePlaceholder": "Nhập phản hồi hoặc phương án hỗ trợ cho khách hàng...",
+      "errors": {
+        "required": "Vui lòng nhập nội dung phản hồi.",
+        "tooShort": "Phản hồi cần ít nhất 5 ký tự.",
+        "tooLong": "Phản hồi không được vượt quá 3000 ký tự."
+      }
     }
   },
   "reviews": {

@@ -465,7 +465,7 @@
     "providerRepliesTitle": "Phản hồi từ Chủ bãi xe:",
     "providerFallbackName": "Chủ bãi xe",
     "progress": {
-      "pending": "Ban Quản Trị ParkLink đã tiếp nhận khiếu nại và đang tiến hành thẩm tra hồ sơ hợp đồng.",
+      "pending": "Khiếu nại đã được gửi đến Ban Quản trị. Sau khi xem xét, khiếu nại sẽ được chuyển cho Chủ bãi xe để phản hồi.",
       "waitingProviderDeadline": "(Thời hạn phản hồi: trước {{date}})",
       "waitingProviderDefault": "(trong vòng 3 ngày)",
       "waitingProvider": "Ban Quản Trị đã yêu cầu Chủ bãi xe kiểm tra giải quyết {{deadline}}. Vui lòng chờ phản hồi.",
@@ -501,7 +501,7 @@
     "imageFormatsHint": "Hỗ trợ JPG, PNG, WEBP (tối đa 50MB mỗi ảnh)",
     "imageAlt": "Ảnh {{index}}",
     "removeImageAria": "Xóa ảnh",
-    "reviewNotice": "Ban quản trị sẽ xem xét khiếu nại và phản hồi lại bạn qua danh sách khiếu nại trong 24-48h làm việc.",
+    "reviewNotice": "Khiếu nại sẽ được Ban Quản trị tiếp nhận và chuyển đến Chủ bãi xe để xem xét, phản hồi. Bạn có thể theo dõi tiến trình trong Danh sách khiếu nại.",
     "cancel": "Hủy",
     "submitButton": "Gửi Khiếu Nại"
   },
