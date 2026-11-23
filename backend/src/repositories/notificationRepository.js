@@ -32,16 +32,6 @@ class NotificationRepository {
   }
 
   /**
-   * Tạo hàng loạt thông báo cho danh sách user (hỗ trợ tương thích ngược nếu cần)
-   */
-  async createManyNotifications(dataArray) {
-    if (!dataArray || dataArray.length === 0) return { count: 0 };
-    return await prisma.notification.createManyAndReturn({
-      data: dataArray
-    });
-  }
-
-  /**
    * Lấy danh sách thông báo của người dùng (kết hợp thông báo cá nhân và broadcast)
    * Loại trừ type = 'EMAIL_LOG' để không hiển thị email lên quả chuông web
    */
@@ -140,31 +130,6 @@ class NotificationRepository {
     ]);
 
     return unreadPersonal + unreadBroadcast;
-  }
-
-  /**
-   * Lấy danh sách lịch sử phát sóng Email (dành cho Admin tra cứu nếu cần)
-   */
-  async getEmailLogs({ limit = 20, offset = 0 } = {}) {
-    return await prisma.notification.findMany({
-      where: {
-        type: 'EMAIL_LOG'
-      },
-      orderBy: {
-        created_at: 'desc'
-      },
-      take: Number(limit) || 20,
-      skip: Number(offset) || 0,
-      include: {
-        user: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true
-          }
-        }
-      }
-    });
   }
 
   /**

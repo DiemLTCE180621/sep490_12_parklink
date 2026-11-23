@@ -84,7 +84,7 @@ class AdminController {
   }
 
   /**
-   * M2-UC20: Lấy danh sách bãi đỗ xe đang chờ duyệt / đang chuẩn bị
+   * Lấy cơ sở chờ duyệt và đang chuẩn bị
    */
   async getPendingRegistrations(req, res, next) {
     try {
@@ -118,7 +118,7 @@ class AdminController {
   }
 
   /**
-   * Admin duyệt sơ bộ & Phân công Nhân viên khảo sát
+   * Duyệt sơ bộ và phân công khảo sát
    */
   async approveRegistration(req, res, next) {
     try {
@@ -188,7 +188,7 @@ class AdminController {
   }
 
   /**
-   * M2-UC21 Bước 2: Admin xác nhận hoàn tất chuẩn bị → APPROVED + gửi QR
+   * Phê duyệt cơ sở và gửi mã QR
    */
   async finalizeRegistration(req, res, next) {
     try {
@@ -215,7 +215,7 @@ class AdminController {
   }
 
   /**
-   * M2-UC22: Từ chối yêu cầu đăng ký bãi đỗ xe
+   * Từ chối đăng ký cơ sở
    */
   async rejectRegistration(req, res, next) {
     try {
@@ -238,7 +238,7 @@ class AdminController {
   }
 
   /**
-   * Provider xác nhận đã thanh toán phí nền tảng → Cơ sở VISIBLE
+   * Hiển thị cơ sở sau khi thanh toán
    */
   async confirmPayment(req, res, next) {
     try {
@@ -276,7 +276,7 @@ class AdminController {
     }
   }
   /**
-   * Khóa / Mở khóa bãi đỗ xe
+   * Khóa hoặc mở khóa cơ sở
    */
   async toggleLockFacility(req, res, next) {
     try {

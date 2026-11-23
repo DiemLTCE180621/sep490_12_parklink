@@ -79,20 +79,6 @@ class PolicyRepository {
     });
   }
 
-  async createPolicy(policyData) {
-    return await prisma.system_Policy.create({
-      data: policyData,
-      include: {
-        admin: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true
-          }
-        }
-      }
-    });
-  }
 }
 
 module.exports = new PolicyRepository();

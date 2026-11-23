@@ -2,7 +2,7 @@ const platformFeeService = require('../services/platformFeeService');
 
 class PlatformFeeController {
   /**
-   * GET /api/platform-fees
+   * Lấy danh sách phí nền tảng
    */
   async getAllFees(req, res, next) {
     try {
@@ -42,7 +42,7 @@ class PlatformFeeController {
   }
 
   /**
-   * UC: View Platform Fee Detail (Administrator, Parking Provider)
+   * Xem chi tiết phí nền tảng
    */
   async getFeeById(req, res, next) {
     try {
@@ -72,7 +72,7 @@ class PlatformFeeController {
   }
 
   /**
-   * Create Platform Fee (Administrator)
+   * Tạo phí nền tảng
    */
   async createFee(req, res, next) {
     try {
@@ -94,7 +94,7 @@ class PlatformFeeController {
   }
 
   /**
-   * UC: Update Platform Fee (Administrator)
+   * Cập nhật phí nền tảng
    */
   async updateFee(req, res, next) {
     try {
@@ -124,7 +124,7 @@ class PlatformFeeController {
   }
 
   /**
-   * UC: Activate/Deactivate Platform Fee (Administrator)
+   * Bật hoặc tắt phí nền tảng
    */
   async toggleFeeStatus(req, res, next) {
     try {
@@ -154,8 +154,7 @@ class PlatformFeeController {
   }
 
   /**
-   * UC-10: Tính phí nền tảng theo số slot (Administrator, Parking Provider)
-   * GET /api/platform-fees/calculate?slots=5
+   * Tính phí nền tảng theo số chỗ đỗ
    */
   async calculateFee(req, res, next) {
     try {

@@ -143,7 +143,7 @@ class EmailService {
   }
 
   /**
-   * M2-UC21 Bước 1: Gửi email thông báo cơ sở đang được CHUẨN BỊ cho Provider
+   * Báo Provider về cơ sở đang chuẩn bị
    */
   async sendFacilityPreparingEmail({ toEmail, fullName, facilityName, inspectorName, inspectorPhone }) {
     const subject = '[ParkLink] 🔧 CƠ SỞ BÃI ĐỖ XE ĐANG ĐƯỢC CHUẨN BỊ & KHẢO SÁT';
@@ -185,7 +185,7 @@ class EmailService {
   }
 
   /**
-   * M2-UC21 Bước 2: Gửi email PHÊ DUYỆT CHÍNH THỨC
+   * Báo Provider cơ sở đã được duyệt
    */
   async sendFacilityApprovedWithQREmail({ toEmail, fullName, facilityName, systemFee, facilityId, tempPassword }) {
     const formattedFee = Number(systemFee).toLocaleString('vi-VN');
@@ -233,46 +233,7 @@ class EmailService {
   }
 
   /**
-   * M2-UC21: Gửi email thông báo PHÊ DUYỆT bãi đỗ xe cho Provider (legacy)
-   */
-  async sendFacilityApprovedEmail({ toEmail, fullName, facilityName }) {
-
-    const subject = '[ParkLink] 🎉 BÃI ĐỖ XE ĐÃ ĐƯỢC PHÊ DUYỆT';
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px;">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; background-color: #d1fae5; border-radius: 50%; width: 64px; height: 64px; line-height: 64px; font-size: 32px;">✅</div>
-          <h2 style="color: #0d9488; margin-top: 12px;">Xin Chúc Mừng! Bãi Đỗ Xe Đã Được Duyệt</h2>
-        </div>
-
-        <p>Xin chào <strong>${fullName}</strong>,</p>
-        <p>Ban quản trị ParkLink đã xem xét và <strong style="color: #059669;">PHÊ DUYỆT</strong> cơ sở bãi đỗ xe của bạn:</p>
-
-        <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; border-left: 4px solid #16a34a; margin: 20px 0;">
-          <p style="margin: 0; font-size: 18px; font-weight: bold; color: #15803d;">🏢 ${facilityName}</p>
-        </div>
-
-        <p>Cơ sở của bạn hiện đã <strong>hiển thị công khai</strong> trên nền tảng ParkLink và sẵn sàng đón nhận các yêu cầu thuê bãi từ khách hàng.</p>
-
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; margin: 20px 0; font-size: 14px; color: #475569;">
-          <p style="margin: 0 0 8px 0;"><strong>Bước tiếp theo:</strong></p>
-          <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-            <li>Đăng nhập vào tài khoản Provider của bạn</li>
-            <li>Hoàn tất thanh toán phí nền tảng (nếu chưa thực hiện)</li>
-            <li>Theo dõi và xử lý các yêu cầu thuê bãi từ khách hàng</li>
-          </ul>
-        </div>
-
-        <hr style="border: none; border-top: 1px solid #cbd5e1; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #64748b; text-align: center;">Đội ngũ Ban quản trị ParkLink Cần Thơ.</p>
-      </div>
-    `;
-
-    return await this.sendEmail(toEmail, subject, htmlContent, null, 'FACILITY_APPROVED');
-  }
-
-  /**
-   * M2-UC22: Gửi email thông báo TỪ CHỐI bãi đỗ xe kèm lý do cho Provider
+   * Gửi email từ chối kèm lý do
    * @param {object} params
    * @param {string} params.toEmail - Email của Provider
    * @param {string} params.fullName - Họ tên chủ bãi

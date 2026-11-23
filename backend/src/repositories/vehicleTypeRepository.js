@@ -1,12 +1,11 @@
 const prisma = require('../config/prisma');
 
 /**
- * Repository giao tiếp với bảng vehicle_types trong PostgreSQL qua Prisma Client
- * Tuân thủ quy tắc: Nơi DUY NHẤT được phép gọi Prisma Client cho Vehicle Type
+ * Truy vấn dữ liệu loại phương tiện
  */
 class VehicleTypeRepository {
   /**
-   * M2-UC99: Lấy danh sách tất cả loại phương tiện (có hỗ trợ tìm kiếm và lọc trạng thái)
+   * Tìm và lọc loại phương tiện
    * @param {Object} filter - { keyword, is_active }
    * @returns {Promise<Array>} Danh sách các loại phương tiện
    */
@@ -43,7 +42,7 @@ class VehicleTypeRepository {
 
   /**
    * Lấy danh sách các loại phương tiện đang hoạt động (Active)
-   * Dùng cho việc hiển thị danh mục chọn cho Chủ bãi xe & Khách hàng
+   * Dùng trong danh mục chọn loại phương tiện
    * @returns {Promise<Array>}
    */
   async findActive() {
@@ -58,7 +57,7 @@ class VehicleTypeRepository {
   }
 
   /**
-   * M2-UC99: Lấy chi tiết thông tin một loại phương tiện theo ID
+   * Lấy loại phương tiện theo ID
    * @param {number} id - ID của loại phương tiện
    * @returns {Promise<Object|null>}
    */
@@ -110,7 +109,7 @@ class VehicleTypeRepository {
   }
 
   /**
-   * M2-UC98: Tạo mới loại phương tiện
+   * Tạo loại phương tiện
    * @param {Object} data - Dữ liệu cần tạo { type_code, name, description, is_active }
    * @returns {Promise<Object>} Bản ghi vừa tạo
    */
@@ -121,7 +120,7 @@ class VehicleTypeRepository {
   }
 
   /**
-   * M2-UC100: Cập nhật thông tin loại phương tiện
+   * Cập nhật loại phương tiện
    * @param {number} id - ID loại phương tiện cần sửa
    * @param {Object} data - Dữ liệu cập nhật
    * @returns {Promise<Object>} Bản ghi đã cập nhật
@@ -135,18 +134,6 @@ class VehicleTypeRepository {
     });
   }
 
-  /**
-   * Đếm số lượng bãi đỗ xe đang áp dụng loại phương tiện này
-   * @param {number} id - ID loại phương tiện
-   * @returns {Promise<number>}
-   */
-  async countFacilityUsage(id) {
-    return await prisma.facility_Vehicle_Type.count({
-      where: {
-        vehicle_type_id: Number(id)
-      }
-    });
-  }
 }
 
 module.exports = new VehicleTypeRepository();

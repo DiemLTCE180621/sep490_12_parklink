@@ -30,13 +30,6 @@ export const VEHICLE_TYPES = [
   }
 ];
 
-export const getVehicleTypeLabel = (typeId) => {
-  const cached = vehicleTypeService.getLabelByCode(typeId);
-  if (cached && cached !== typeId) return cached;
-  const found = VEHICLE_TYPES.find(v => v.id === typeId);
-  return found ? found.label : typeId;
-};
-
 /**
  * Trích xuất danh sách loại xe hỗ trợ thực tế của Bãi đỗ xe từ Database (facility.vehicle_types)
  */

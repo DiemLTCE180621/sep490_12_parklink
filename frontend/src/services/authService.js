@@ -56,9 +56,6 @@ const authService = {
     return await api.get('/auth/me');
   },
 
-  async getProfile() {
-    return await api.get('/auth/profile');
-  },
 
   async updateProfile(profileData) {
     return await api.put('/auth/profile', profileData);

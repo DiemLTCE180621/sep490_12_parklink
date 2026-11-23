@@ -1,13 +1,11 @@
 const vehicleTypeRepository = require('../repositories/vehicleTypeRepository');
 
 /**
- * Service xử lý toàn bộ Nghiệp Vụ (Business Logic) cho Danh Mục Loại Phương Tiện (Vehicle Type)
- * Tuân thủ quy tắc 3-Tier: Service chịu trách nhiệm xử lý logic, kiểm tra điều kiện nghiệp vụ
+ * Xử lý nghiệp vụ loại phương tiện
  */
 class VehicleTypeService {
   /**
-   * M2-UC99: Lấy toàn bộ danh sách loại phương tiện (cho Admin)
-   * Có hỗ trợ tìm kiếm theo từ khóa và lọc trạng thái hoạt động
+   * Tìm và lọc loại phương tiện
    * @param {Object} query - { keyword, is_active }
    * @returns {Promise<Array>} Danh sách loại phương tiện
    */
@@ -38,7 +36,7 @@ class VehicleTypeService {
   }
 
   /**
-   * M2-UC99: Xem chi tiết một loại phương tiện theo ID
+   * Lấy loại phương tiện theo ID
    * @param {number} id - ID loại phương tiện
    * @returns {Promise<Object>}
    */
@@ -61,8 +59,8 @@ class VehicleTypeService {
   }
 
   /**
-   * M2-UC98: Tạo mới loại phương tiện (Admin)
-   * Nghiệp vụ: Mã loại xe chuẩn hóa viết hoa, kiểm tra không được trùng mã hoặc tên đã có
+   * Tạo loại phương tiện
+   * Chuẩn hóa mã và kiểm tra trùng mã, tên.
    * @param {Object} data - { type_code, name, description, is_active }
    * @returns {Promise<Object>} Loại phương tiện vừa tạo
    */
@@ -73,7 +71,7 @@ class VehicleTypeService {
     const normalizedCode = type_code.trim().toUpperCase();
     const normalizedName = name.trim();
 
-    // 1. Kiểm tra tính duy nhất của mã loại phương tiện (type_code)
+    // Kiểm tra trùng mã loại phương tiện
     const existingByCode = await vehicleTypeRepository.findByCode(normalizedCode);
     if (existingByCode) {
       const error = new Error(`Mã loại phương tiện "${normalizedCode}" đã tồn tại trên hệ thống!`);
@@ -81,7 +79,7 @@ class VehicleTypeService {
       throw error;
     }
 
-    // 2. Kiểm tra tính duy nhất của tên loại phương tiện (name)
+    // Kiểm tra trùng tên loại phương tiện
     const existingByName = await vehicleTypeRepository.findByName(normalizedName);
     if (existingByName) {
       const error = new Error(`Tên loại phương tiện "${normalizedName}" đã tồn tại trên hệ thống!`);
@@ -100,8 +98,8 @@ class VehicleTypeService {
   }
 
   /**
-   * M2-UC100: Cập nhật thông tin loại phương tiện (Admin)
-   * Nghiệp vụ: Kiểm tra tồn tại, kiểm tra trùng lặp mã và tên với các bản ghi khác
+   * Cập nhật loại phương tiện
+   * Kiểm tra trùng mã và tên với loại khác.
    * @param {number} id - ID loại phương tiện cần cập nhật
    * @param {Object} data - Dữ liệu cần cập nhật { type_code, name, description, is_active }
    * @returns {Promise<Object>} Bản ghi đã cập nhật
@@ -123,7 +121,7 @@ class VehicleTypeService {
 
     const updatePayload = {};
 
-    // 1. Cập nhật mã phương tiện nếu có thay đổi
+    // Cập nhật mã nếu thay đổi
     if (data.type_code !== undefined) {
       const normalizedCode = data.type_code.trim().toUpperCase();
       if (normalizedCode !== existing.type_code) {
@@ -137,7 +135,7 @@ class VehicleTypeService {
       updatePayload.type_code = normalizedCode;
     }
 
-    // 2. Cập nhật tên nếu có thay đổi
+    // Cập nhật tên nếu thay đổi
     if (data.name !== undefined) {
       const normalizedName = data.name.trim();
       if (normalizedName.toLowerCase() !== existing.name.toLowerCase()) {
@@ -151,12 +149,12 @@ class VehicleTypeService {
       updatePayload.name = normalizedName;
     }
 
-    // 3. Cập nhật mô tả nếu có
+    // Cập nhật mô tả nếu có
     if (data.description !== undefined) {
       updatePayload.description = data.description ? data.description.trim() : null;
     }
 
-    // 4. Cập nhật trạng thái hoạt động nếu có
+    // Cập nhật trạng thái nếu có
     if (data.is_active !== undefined) {
       updatePayload.is_active = Boolean(data.is_active);
     }
@@ -165,8 +163,8 @@ class VehicleTypeService {
   }
 
   /**
-   * M2-UC101: Vô hiệu hóa (Deactivate) loại phương tiện (Admin)
-   * Khi vô hiệu hóa, loại phương tiện này sẽ không xuất hiện trong danh sách lựa chọn của bãi xe mới
+   * Vô hiệu hóa loại phương tiện
+   * Loại đã tắt không xuất hiện khi tạo bãi xe mới.
    * @param {number} id - ID loại phương tiện cần vô hiệu hóa
    * @returns {Promise<Object>} Kết quả xử lý
    */
@@ -200,7 +198,7 @@ class VehicleTypeService {
   }
 
   /**
-   * Bật / Tắt trạng thái hoạt động của loại phương tiện (Kích hoạt lại hoặc vô hiệu hóa)
+   * Bật hoặc tắt loại phương tiện
    * @param {number} id - ID loại phương tiện
    * @returns {Promise<Object>}
    */

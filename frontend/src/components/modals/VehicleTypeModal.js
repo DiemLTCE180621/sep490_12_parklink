@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Car, Loader2, AlertCircle } from 'lucide-react';
 import vehicleTypeService from '../../services/vehicleTypeService';
 
+/**
+ * Form tạo và cập nhật loại phương tiện
+ */
 
 const VehicleTypeModal = ({
   isOpen,
@@ -103,11 +106,11 @@ const VehicleTypeModal = ({
     try {
       setSubmitting(true);
       if (isEdit) {
-        
+        // Cập nhật
         await vehicleTypeService.updateVehicleType(vehicleType.id, payload);
         onSuccess(`Cập nhật loại phương tiện "${cleanName}" thành công!`);
       } else {
-        
+        // Tạo mới
         await vehicleTypeService.createVehicleType(payload);
         onSuccess(`Tạo mới loại phương tiện "${cleanName}" thành công!`);
       }

@@ -69,25 +69,6 @@ class ComplaintRepository {
     });
   }
 
-  async getFacilityById(facility_id) {
-    return await prisma.facility.findUnique({
-      where: { id: parseInt(facility_id) }
-    });
-  }
-
-  // Kiểm tra khách đã từng có hợp đồng ở bãi đỗ xe này chưa
-  async checkCustomerContract(customer_id, facility_id) {
-    return await prisma.reservation_Request.findFirst({
-      where: {
-        customer_id: parseInt(customer_id),
-        facility_id: parseInt(facility_id),
-        confirmation_record: {
-          isNot: null
-        }
-      }
-    });
-  }
-
   async getComplaintById(complaint_id) {
     return await prisma.complaint.findUnique({
       where: { id: parseInt(complaint_id) },
@@ -153,29 +134,6 @@ class ComplaintRepository {
                 email: true
               }
             }
-          }
-        }
-      }
-    });
-  }
-
-  async updateStatus(complaint_id, status) {
-    return await prisma.complaint.update({
-      where: { id: parseInt(complaint_id) },
-      data: { status },
-      include: {
-        customer: {
-          select: {
-            id: true,
-            full_name: true,
-            email: true
-          }
-        },
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            provider_id: true
           }
         }
       }
