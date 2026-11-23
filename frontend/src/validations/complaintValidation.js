@@ -21,11 +21,11 @@ export const validateReplyComplaint = (data) => {
   const errors = {};
 
   if (!response || !response.trim()) {
-    errors.response = 'Vui lòng nhập nội dung phản hồi khiếu nại.';
+    errors.response = 'required';
   } else if (response.trim().length < 5) {
-    errors.response = 'Nội dung phản hồi phải có ít nhất 5 ký tự.';
+    errors.response = 'tooShort';
   } else if (response.trim().length > 3000) {
-    errors.response = 'Nội dung phản hồi không được vượt quá 3000 ký tự.';
+    errors.response = 'tooLong';
   }
 
   const validStatuses = ['OPEN', 'PENDING', 'PENDING_ADMIN', 'WAITING_PROVIDER', 'PROVIDER_REPLIED', 'PROCESSING', 'ESCALATED', 'RESOLVED', 'REJECTED', 'CLOSED'];

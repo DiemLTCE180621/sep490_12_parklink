@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   Share2,
@@ -15,6 +16,7 @@ const ForwardComplaintModal = memo(({
   complaint,
   onSuccess
 }) => {
+  const { t } = useTranslation('admin');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -41,7 +43,7 @@ const ForwardComplaintModal = memo(({
     setErrorMsg(null);
 
     if (!note || note.trim().length < 5) {
-      setErrorMsg('Vui lòng nhập chỉ đạo hoặc yêu cầu giải trình (tối thiểu 5 ký tự).');
+      setErrorMsg(t('complaints.forwardModal.validation'));
       return;
     }
 
@@ -64,12 +66,12 @@ const ForwardComplaintModal = memo(({
       setErrorMsg(
         err.response?.data?.message ||
         err.message ||
-        'Có lỗi khi chuyển tiếp khiếu nại tới chủ bãi xe!'
+        t('complaints.errors.forward')
       );
     } finally {
       setLoading(false);
     }
-  }, [complaint, note, onSuccess, onClose]);
+  }, [complaint, note, onSuccess, onClose, t]);
 
   if (!isOpen || !complaint) return null;
 
@@ -90,10 +92,10 @@ const ForwardComplaintModal = memo(({
             </div>
             <div>
               <h3 className="text-base font-extrabold text-gray-900">
-                Chuyển tiếp cho Chủ Bãi xe
+                {t('complaints.forwardModal.title')}
               </h3>
               <p className="text-xs text-gray-500">
-                Khiếu nại #{complaint.id} • Yêu cầu kiểm tra & giải trình
+                {t('complaints.forwardModal.subtitle', { id: complaint.id })}
               </p>
             </div>
           </div>
@@ -101,7 +103,7 @@ const ForwardComplaintModal = memo(({
             onClick={onClose}
             disabled={loading}
             className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition disabled:opacity-50"
-            title="Đóng"
+            title={t('complaints.close')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -119,12 +121,12 @@ const ForwardComplaintModal = memo(({
           {}
           <div className="bg-gray-50 border border-gray-200/80 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
             <div className="truncate">
-              <span className="text-gray-500">Bãi xe tiếp nhận:</span>{' '}
-              <strong className="text-gray-800">{complaint.facility?.name || 'Chủ cơ sở'}</strong>
+              <span className="text-gray-500">{t('complaints.forwardModal.facilityLabel')}</span>{' '}
+              <strong className="text-gray-800">{complaint.facility?.name || t('roles.provider')}</strong>
             </div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-100/70 text-blue-800 font-semibold text-[11px] shrink-0 self-start sm:self-auto">
               <Clock className="w-3.5 h-3.5 text-blue-600" />
-              Hạn giải trình: 3 ngày
+              {t('complaints.forwardModal.deadline')}
             </div>
           </div>
 
@@ -132,7 +134,7 @@ const ForwardComplaintModal = memo(({
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-xs">
               <label className="font-bold text-gray-700">
-                Chỉ đạo / Yêu cầu giải trình gửi Chủ bãi xe <span className="text-red-500">*</span>
+                {t('complaints.forwardModal.instructionLabel')} <span className="text-red-500">*</span>
               </label>
               <span className={`text-[11px] font-mono ${note.length > 2000 ? 'text-red-500 font-bold' : 'text-gray-400'}`}>
                 {note.length}/2000
@@ -142,7 +144,7 @@ const ForwardComplaintModal = memo(({
               rows={4}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Nhập yêu cầu giải trình (kiểm tra camera, đối soát nhân viên, làm rõ phản ánh của khách và gửi phương án xử lý)..."
+              placeholder={t('complaints.forwardModal.instructionPlaceholder')}
               className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 text-gray-800 text-sm leading-relaxed transition resize-none"
               disabled={loading}
               autoFocus
@@ -157,7 +159,7 @@ const ForwardComplaintModal = memo(({
               disabled={loading}
               className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 text-xs sm:text-sm font-bold transition disabled:opacity-50"
             >
-              Hủy bỏ
+              {t('complaints.cancel')}
             </button>
             <button
               type="submit"
@@ -167,12 +169,12 @@ const ForwardComplaintModal = memo(({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Đang chuyển...
+                  {t('complaints.forwardModal.submitting')}
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Chuyển tiếp cho Chủ bãi xe
+                  {t('complaints.forwardModal.submit')}
                 </>
               )}
             </button>

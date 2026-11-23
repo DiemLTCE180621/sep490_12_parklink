@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import complaintService from '../../services/complaintService';
 import { useSocket } from '../../context/SocketContext';
 import Toast from '../common/Toast';
@@ -25,28 +26,30 @@ import {
 } from 'lucide-react';
 
 const STATUS_BADGE_CONFIG = {
-  PENDING_ADMIN: { label: 'Chờ BQT Tiếp Nhận', bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
-  PENDING: { label: 'Chờ BQT Tiếp Nhận', bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
-  OPEN: { label: 'Chờ BQT Tiếp Nhận', bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
-  WAITING_PROVIDER: { label: 'Chờ Bãi Xe Giải Trình', bg: 'bg-blue-100 text-blue-800 border-blue-300', icon: Clock },
-  PROVIDER_REPLIED: { label: 'Bãi Xe Đã Giải Trình', bg: 'bg-indigo-100 text-indigo-800 border-indigo-300', icon: MessageSquareReply },
-  PROCESSING: { label: 'Đang Đối Soát', bg: 'bg-sky-100 text-sky-800 border-sky-300', icon: Loader2, spin: true },
-  ESCALATED: { label: 'Cần Admin Can Thiệp', bg: 'bg-purple-100 text-purple-800 border-purple-300', icon: ShieldAlert },
-  RESOLVED: { label: 'Đã Giải Quyết', bg: 'bg-emerald-100 text-emerald-800 border-emerald-300', icon: CheckCircle2 },
-  REJECTED: { label: 'Bác Bỏ', bg: 'bg-rose-100 text-rose-800 border-rose-300', icon: XCircle },
-  CLOSED: { label: 'Đã Đóng', bg: 'bg-gray-200 text-gray-800 border-gray-300', icon: CheckCircle2 }
+  PENDING_ADMIN: { bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
+  PENDING: { bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
+  OPEN: { bg: 'bg-amber-100 text-amber-800 border-amber-300', icon: Clock },
+  WAITING_PROVIDER: { bg: 'bg-blue-100 text-blue-800 border-blue-300', icon: Clock },
+  PROVIDER_REPLIED: { bg: 'bg-indigo-100 text-indigo-800 border-indigo-300', icon: MessageSquareReply },
+  PROCESSING: { bg: 'bg-sky-100 text-sky-800 border-sky-300', icon: Loader2, spin: true },
+  ESCALATED: { bg: 'bg-purple-100 text-purple-800 border-purple-300', icon: ShieldAlert },
+  RESOLVED: { bg: 'bg-emerald-100 text-emerald-800 border-emerald-300', icon: CheckCircle2 },
+  REJECTED: { bg: 'bg-rose-100 text-rose-800 border-rose-300', icon: XCircle },
+  CLOSED: { bg: 'bg-gray-200 text-gray-800 border-gray-300', icon: CheckCircle2 }
 };
 
 const FILTER_TABS = [
-  { id: 'ALL', label: 'Tất cả' },
-  { id: 'PENDING_ADMIN', label: 'Chờ BQT tiếp nhận' },
-  { id: 'WAITING_PROVIDER', label: 'Chờ bãi xe giải trình' },
-  { id: 'PROVIDER_REPLIED', label: 'Bãi xe đã giải trình' },
-  { id: 'RESOLVED', label: 'Đã giải quyết' },
-  { id: 'REJECTED', label: 'Bác bỏ' }
+  { id: 'ALL' },
+  { id: 'PENDING_ADMIN' },
+  { id: 'WAITING_PROVIDER' },
+  { id: 'PROVIDER_REPLIED' },
+  { id: 'RESOLVED' },
+  { id: 'REJECTED' }
 ];
 
 const AdminComplaintsPanel = () => {
+  const { t, i18n } = useTranslation('admin');
+  const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
   const socket = useSocket();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,10 +74,10 @@ const AdminComplaintsPanel = () => {
       prev.map((c) => (c.id === updatedComplaint.id ? { ...c, ...updatedComplaint } : c))
     );
     setToast({
-      message: `Đã chuyển tiếp khiếu nại #${updatedComplaint.id} cho Chủ bãi xe kèm chỉ đạo thành công!`,
+      message: t('complaints.toast.forwardSuccess', { id: updatedComplaint.id }),
       type: 'success'
     });
-  }, []);
+  }, [t]);
 
   
   const handleOpenStatusModal = useCallback((complaintItem) => {
@@ -87,10 +90,13 @@ const AdminComplaintsPanel = () => {
       prev.map((c) => (c.id === updatedComplaint.id ? { ...c, ...updatedComplaint } : c))
     );
     setToast({
-      message: `Đã cập nhật trạng thái khiếu nại #${updatedComplaint.id} sang ${updatedComplaint.status}!`,
+      message: t('complaints.toast.statusSuccess', {
+        id: updatedComplaint.id,
+        status: t(`complaints.statuses.${updatedComplaint.status}`, { defaultValue: updatedComplaint.status })
+      }),
       type: 'success'
     });
-  }, []);
+  }, [t]);
 
   const fetchComplaints = useCallback(async (showLoading = true) => {
     try {
@@ -100,11 +106,12 @@ const AdminComplaintsPanel = () => {
       const list = res.data?.complaints || res.complaints || [];
       setComplaints(list);
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách khiếu nại!');
+      console.error('Failed to load complaints:', err);
+      setError(t('complaints.errors.load'));
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchComplaints(true);
@@ -135,22 +142,21 @@ const AdminComplaintsPanel = () => {
     if (status === 'WAITING_PROVIDER' && isOverdue) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300 animate-pulse">
-          <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> Quá Hạn Giải Trình
+          <AlertCircle className="w-3.5 h-3.5 text-rose-600" /> {t('complaints.statuses.overdue')}
         </span>
       );
     }
     const conf = STATUS_BADGE_CONFIG[status] || {
-      label: status,
       bg: 'bg-gray-100 text-gray-800 border-gray-200',
       icon: Clock
     };
     const Icon = conf.icon;
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${conf.bg}`}>
-        <Icon className={`w-3.5 h-3.5 ${conf.spin ? 'animate-spin' : ''}`} /> {conf.label}
+        <Icon className={`w-3.5 h-3.5 ${conf.spin ? 'animate-spin' : ''}`} /> {t(`complaints.statuses.${status}`, { defaultValue: status })}
       </span>
     );
-  }, []);
+  }, [t]);
 
   
   const filteredComplaints = useMemo(() => {
@@ -188,10 +194,14 @@ const AdminComplaintsPanel = () => {
             <div className="space-y-0.5">
               <span className="font-extrabold text-rose-950 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                ĐÃ QUÁ HẠN 3 NGÀY CHƯA GIẢI TRÌNH
+                {t('complaints.statusInfo.overdueTitle')}
               </span>
               <p className="text-rose-900 leading-relaxed">
-                Hạn chót: <strong>{item.deadline ? new Date(item.deadline).toLocaleDateString('vi-VN') : 'Đã quá hạn'}</strong>. Chủ bãi xe chưa nộp giải trình. Hệ thống tự động ghi nhận chậm trễ. BQT có thể ra phán quyết ngay hoặc tiếp tục đôn đốc.
+                {t('complaints.statusInfo.overdueDescription', {
+                  date: item.deadline
+                    ? new Date(item.deadline).toLocaleDateString(dateLocale)
+                    : t('complaints.statusInfo.overdueFallback')
+                })}
               </p>
             </div>
           </div>
@@ -201,9 +211,13 @@ const AdminComplaintsPanel = () => {
         <div className="flex items-center gap-2 text-xs text-blue-900 bg-blue-50 p-3 rounded-xl border border-blue-200 flex-1">
           <Clock className="w-4 h-4 text-blue-600 shrink-0" />
           <div className="space-y-0.5">
-            <span className="font-extrabold text-blue-950">Đang chờ chủ bãi xe giải trình:</span>
+            <span className="font-extrabold text-blue-950">{t('complaints.statuses.WAITING_PROVIDER')}:</span>
             <p className="text-blue-900">
-              BQT đã gửi chỉ đạo. Thời hạn phản hồi: {item.deadline ? <strong>trước {new Date(item.deadline).toLocaleDateString('vi-VN')}</strong> : '3 ngày'}.
+              {t('complaints.statusInfo.waitingDescription', {
+                deadline: item.deadline
+                  ? t('complaints.statusInfo.deadlineBefore', { date: new Date(item.deadline).toLocaleDateString(dateLocale) })
+                  : t('complaints.statusInfo.deadlineDefault')
+              })}
             </p>
           </div>
         </div>
@@ -215,28 +229,25 @@ const AdminComplaintsPanel = () => {
         <div className="flex items-center gap-2 text-xs text-indigo-900 bg-indigo-50 p-3 rounded-xl border border-indigo-200 flex-1">
           <MessageSquareReply className="w-4 h-4 text-indigo-600 shrink-0" />
           <div className="space-y-0.5">
-            <span className="font-extrabold text-indigo-950">Chủ bãi xe đã nộp bản giải trình:</span>
+            <span className="font-extrabold text-indigo-950">{t('complaints.statuses.PROVIDER_REPLIED')}:</span>
             <p className="text-indigo-900">
-              BQT vui lòng kiểm tra nội dung giải trình trong tiến trình và đưa ra phán quyết cuối cùng.
+              {t('complaints.statusInfo.providerRepliedDescription')}
             </p>
           </div>
         </div>
       );
     }
 
+    if (item.status === 'RESOLVED') return null;
+
     const responseText = item.latest_reply || item.admin_response;
-    if (['RESOLVED', 'REJECTED'].includes(item.status) || item.admin_response) {
-      const isResolved = item.status === 'RESOLVED';
+    if (item.status === 'REJECTED' || item.admin_response) {
       const isRejected = item.status === 'REJECTED';
-      const label = isResolved
-        ? 'Khiếu nại đã giải quyết (RESOLVED):'
-        : isRejected
-        ? 'Khiếu nại đã bị bác bỏ (REJECTED):'
-        : 'Phản hồi gần nhất:';
+      const label = isRejected
+        ? `${t('complaints.statuses.REJECTED')}:`
+        : t('complaints.statusInfo.latestReplyTitle');
       const Icon = isRejected ? XCircle : CheckCircle2;
-      const theme = isResolved
-        ? { box: 'text-emerald-800 bg-emerald-50/60 border-emerald-100', icon: 'text-emerald-600', text: 'text-emerald-950' }
-        : isRejected
+      const theme = isRejected
         ? { box: 'text-rose-800 bg-rose-50/60 border-rose-100', icon: 'text-rose-600', text: 'text-rose-950' }
         : { box: 'text-neighbor-800 bg-neighbor-50/60 border-neighbor-100', icon: 'text-neighbor-600', text: 'text-neighbor-900' };
 
@@ -254,7 +265,7 @@ const AdminComplaintsPanel = () => {
     return (
       <div className="flex items-center gap-2 text-xs text-gray-700 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 flex-1">
         <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-        <span className="font-medium">Hồ sơ khiếu nại đang được xử lý.</span>
+        <span className="font-medium">{t('complaints.statuses.PROCESSING')}</span>
       </div>
     );
   };
@@ -269,18 +280,18 @@ const AdminComplaintsPanel = () => {
           <button
             onClick={() => handleOpenForwardModal(item)}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition"
-            title="Chuyển tiếp cho Chủ bãi xe kèm chỉ đạo yêu cầu giải trình"
+            title={t('complaints.actions.forwardTitle')}
           >
             <Share2 className="w-3.5 h-3.5" />
-            Chuyển bãi xe
+            {t('complaints.actions.forward')}
           </button>
           <button
             onClick={() => handleOpenStatusModal(item)}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition"
-            title="Bác bỏ hoặc cập nhật trạng thái khiếu nại"
+            title={t('complaints.actions.rejectTitle')}
           >
             <XCircle className="w-3.5 h-3.5" />
-            Bác bỏ / Phán quyết
+            {t('complaints.actions.reject')}
           </button>
         </>
       );
@@ -291,10 +302,10 @@ const AdminComplaintsPanel = () => {
         <button
           onClick={() => handleOpenStatusModal(item)}
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition"
-          title="Ra phán quyết kết luận giải quyết khiếu nại"
+          title={t('complaints.actions.verdictTitle')}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
-          Kết luận & Phán quyết
+          {t('complaints.actions.verdict')}
         </button>
       );
     }
@@ -306,18 +317,18 @@ const AdminComplaintsPanel = () => {
           className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition ${
             item.is_overdue ? 'bg-rose-600 hover:bg-rose-700' : 'bg-gray-800 hover:bg-gray-900'
           }`}
-          title={item.is_overdue ? 'Chủ bãi xe đã quá hạn 3 ngày. Admin có thể ra phán quyết ngay' : 'Cập nhật trạng thái'}
+          title={item.is_overdue ? t('complaints.actions.overdueVerdictTitle') : t('complaints.actions.updateStatusTitle')}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
-          {item.is_overdue ? 'Phán quyết (Quá hạn)' : 'Cập nhật trạng thái'}
+          {item.is_overdue ? t('complaints.actions.overdueVerdict') : t('complaints.actions.updateStatus')}
         </button>
       );
     }
 
     const statusMap = {
-      RESOLVED: { text: 'Đã giải quyết xong', style: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-      REJECTED: { text: 'Đã bác bỏ', style: 'text-rose-700 bg-rose-50 border-rose-200' },
-      CLOSED: { text: 'Đã đóng', style: 'text-gray-700 bg-gray-100 border-gray-300' }
+      RESOLVED: { text: t('complaints.statuses.RESOLVED'), style: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+      REJECTED: { text: t('complaints.statuses.REJECTED'), style: 'text-rose-700 bg-rose-50 border-rose-200' },
+      CLOSED: { text: t('complaints.statuses.CLOSED'), style: 'text-gray-700 bg-gray-100 border-gray-300' }
     };
     const currentStatus = statusMap[item.status];
 
@@ -331,9 +342,9 @@ const AdminComplaintsPanel = () => {
         <button
           onClick={() => handleOpenStatusModal(item)}
           className="text-xs font-bold text-gray-600 hover:text-purple-600 hover:bg-purple-50 px-2.5 py-1.5 rounded-xl border border-gray-200 transition"
-          title="Điều chỉnh hoặc mở lại khiếu nại"
+          title={t('complaints.actions.changeStatusTitle')}
         >
-          Đổi trạng thái
+          {t('complaints.actions.changeStatus')}
         </button>
       </div>
     );
@@ -343,7 +354,7 @@ const AdminComplaintsPanel = () => {
     return (
       <div className="bg-white rounded-xl p-12 text-center border border-gray-200 shadow-sm space-y-4">
         <Loader2 className="w-10 h-10 animate-spin text-neighbor-600 mx-auto" />
-        <p className="text-gray-600 font-semibold text-sm">Đang tải danh sách khiếu nại...</p>
+        <p className="text-gray-600 font-semibold text-sm">{t('common.loading')}</p>
       </div>
     );
   }
@@ -352,13 +363,13 @@ const AdminComplaintsPanel = () => {
     return (
       <div className="bg-white rounded-xl p-8 border border-red-200 shadow-sm text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-        <h3 className="text-lg font-bold text-gray-900">Không thể tải dữ liệu</h3>
+        <h3 className="text-lg font-bold text-gray-900">{t('complaints.errors.loadTitle')}</h3>
         <p className="text-sm text-gray-600">{error}</p>
         <button
           onClick={() => fetchComplaints(true)}
           className="px-5 py-2.5 bg-neighbor-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-neighbor-700 transition"
         >
-          Thử Lại
+          {t('complaints.retry')}
         </button>
       </div>
     );
@@ -397,19 +408,19 @@ const AdminComplaintsPanel = () => {
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-gray-900 sm:text-lg">Quản lý khiếu nại hệ thống</h3>
+              <h3 className="text-base font-extrabold text-gray-900 sm:text-lg">{t('complaints.title')}</h3>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => fetchComplaints(true)}
               className="p-2 text-gray-500 hover:text-neighbor-600 hover:bg-neighbor-50 rounded-xl transition"
-              title="Tải lại danh sách"
+              title={t('common.refresh')}
             >
               <RefreshCw className="w-4 h-4" />
             </button>
             <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-bold text-gray-700 shadow-sm">
-              Tổng cộng: <span className="ml-1 text-neighbor-700">{complaints.length}</span>
+              {t('complaints.totalCount', { count: complaints.length })}
             </span>
           </div>
         </div>
@@ -422,7 +433,7 @@ const AdminComplaintsPanel = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm theo tiêu đề, ID, khách hàng, bãi xe..."
+              placeholder={t('complaints.searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition"
             />
           </div>
@@ -439,7 +450,7 @@ const AdminComplaintsPanel = () => {
                     : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
                 }`}
               >
-                {btn.label}
+                {btn.id === 'ALL' ? t('common.all') : t(`complaints.statuses.${btn.id}`)}
               </button>
             ))}
           </div>
@@ -455,12 +466,12 @@ const AdminComplaintsPanel = () => {
               </div>
             </div>
             <h3 className="text-base font-extrabold text-gray-800 sm:text-lg">
-              {complaints.length === 0 ? 'Không có khiếu nại nào' : 'Không tìm thấy khiếu nại phù hợp'}
+              {complaints.length === 0 ? t('complaints.empty.title') : t('complaints.empty.noMatchTitle')}
             </h3>
             <p className="mt-2 max-w-sm text-sm leading-6 text-gray-500">
               {complaints.length === 0
-                ? 'Hệ thống hiện chưa ghi nhận khiếu nại nào. Các yêu cầu mới sẽ xuất hiện tại đây.'
-                : 'Thử điều chỉnh lại từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc trạng thái.'}
+                ? t('complaints.empty.description')
+                : t('complaints.empty.noMatchDescription')}
             </p>
           </div>
         ) : (
@@ -480,7 +491,7 @@ const AdminComplaintsPanel = () => {
                     <span className="text-gray-300">•</span>
                     <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
                       <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                      Gửi ngày: {new Date(item.created_at).toLocaleDateString('vi-VN')}
+                      {t('complaints.card.submittedAt')} {new Date(item.created_at).toLocaleDateString(dateLocale)}
                     </span>
                   </div>
                   <div>{getStatusBadge(item.status, item.is_overdue)}</div>
@@ -489,7 +500,7 @@ const AdminComplaintsPanel = () => {
                 {}
                 <div className="text-sm text-gray-700 space-y-2">
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-gray-900 shrink-0">Nội dung khiếu nại:</span>
+                    <span className="font-bold text-gray-900 shrink-0">{t('complaints.card.contentLabel')}</span>
                     <p className="text-gray-800 whitespace-pre-wrap flex-1 leading-relaxed">{item.description}</p>
                   </div>
                   {Array.isArray(item.image_urls) && item.image_urls.length > 0 && (
@@ -504,7 +515,7 @@ const AdminComplaintsPanel = () => {
                         >
                           <img
                             src={url}
-                            alt={`Ảnh khiếu nại ${index + 1}`}
+                            alt={t('complaints.card.imageAlt', { index: index + 1 })}
                             className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
                           />
                         </a>
@@ -518,8 +529,8 @@ const AdminComplaintsPanel = () => {
                   <div className="flex items-start gap-2.5 text-gray-600">
                     <User className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
-                      <span className="block text-gray-400 font-medium">Khách hàng:</span>
-                      <p className="font-bold text-gray-900 text-sm leading-snug">{item.customer?.full_name || 'Khách hàng'}</p>
+                      <span className="block text-gray-400 font-medium">{t('complaints.card.customerLabel')}</span>
+                      <p className="font-bold text-gray-900 text-sm leading-snug">{item.customer?.full_name || t('roles.customer')}</p>
                       {(item.customer?.phone_number || item.customer?.email) && (
                         <p className="text-gray-500 text-xs">
                           {item.customer?.phone_number || item.customer?.email}
@@ -531,11 +542,11 @@ const AdminComplaintsPanel = () => {
                   <div className="flex items-start gap-2.5 text-gray-600">
                     <Building2 className="w-4 h-4 text-neighbor-600 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
-                      <span className="block text-gray-400 font-medium">Bãi xe bị khiếu nại:</span>
+                      <span className="block text-gray-400 font-medium">{t('complaints.card.facilityLabel')}</span>
                       <p className="font-bold text-gray-900 text-sm leading-snug">{item.facility?.name}</p>
                       {item.facility?.provider?.full_name && (
                         <p className="text-gray-500 text-xs">
-                          Chủ bãi: <span className="font-semibold text-gray-700">{item.facility.provider.full_name}</span>
+                          {t('complaints.card.providerLabel')} <span className="font-semibold text-gray-700">{item.facility.provider.full_name}</span>
                         </p>
                       )}
                     </div>
@@ -546,7 +557,7 @@ const AdminComplaintsPanel = () => {
                 {Array.isArray(item.response_history) && item.response_history.length > 0 && (
                   <div className="pt-2 space-y-2">
                     <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
-                      Tiến trình giải quyết khiếu nại & chuyển cấp:
+                      {t('complaints.history.title')}
                     </span>
                     <div className="space-y-2">
                       {item.response_history.map((hist, idx) => (
@@ -561,13 +572,15 @@ const AdminComplaintsPanel = () => {
                           }`}
                         >
                           <div className="flex items-center justify-between font-bold">
-                            <span>{hist.sender_name || (hist.sender_role === 'ADMIN' ? 'Ban Quản Trị' : 'Chủ bãi xe')}</span>
+                            <span>{hist.sender_name || t(hist.sender_role === 'ADMIN' ? 'roles.admin' : hist.sender_role === 'CUSTOMER' ? 'roles.customer' : 'roles.provider')}</span>
                             <span className="text-gray-400 font-normal">
-                              {hist.created_at ? new Date(hist.created_at).toLocaleString('vi-VN') : ''}
+                              {hist.created_at ? new Date(hist.created_at).toLocaleString(dateLocale) : ''}
                             </span>
                           </div>
                           <p className="whitespace-pre-wrap leading-relaxed">
-                            {hist.action === 'ESCALATED' ? `[Khách yêu cầu Admin can thiệp]: ${hist.reason}` : hist.message}
+                            {hist.action === 'ESCALATED'
+                              ? t('complaints.history.escalated', { reason: hist.reason })
+                              : hist.message}
                           </p>
                         </div>
                       ))}

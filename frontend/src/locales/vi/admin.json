@@ -154,7 +154,111 @@
     "title": "Quản Lý Khiếu Nại Hệ Thống",
     "subtitle": "Theo dõi và xử lý các phản ánh dịch vụ từ khách hàng và chủ bãi xe",
     "totalCount": "Tổng cộng: {{count}} khiếu nại",
-    "searchPlaceholder": "Tìm theo tiêu đề, ID hoặc khách hàng..."
+    "searchPlaceholder": "Tìm theo tiêu đề, ID, khách hàng hoặc bãi xe...",
+    "retry": "Thử lại",
+    "cancel": "Hủy bỏ",
+    "close": "Đóng",
+    "errors": {
+      "loadTitle": "Không thể tải dữ liệu",
+      "load": "Không thể tải danh sách khiếu nại. Vui lòng thử lại.",
+      "forward": "Không thể chuyển tiếp khiếu nại đến Chủ bãi xe.",
+      "updateStatus": "Không thể cập nhật trạng thái khiếu nại."
+    },
+    "toast": {
+      "forwardSuccess": "Đã chuyển khiếu nại #{{id}} đến Chủ bãi xe.",
+      "statusSuccess": "Đã cập nhật trạng thái khiếu nại #{{id}} thành \"{{status}}\"."
+    },
+    "statuses": {
+      "PENDING_ADMIN": "Chờ BQT tiếp nhận",
+      "PENDING": "Chờ BQT tiếp nhận",
+      "OPEN": "Chờ BQT tiếp nhận",
+      "WAITING_PROVIDER": "Chờ bãi xe giải trình",
+      "PROVIDER_REPLIED": "Bãi xe đã giải trình",
+      "PROCESSING": "Đang đối soát",
+      "ESCALATED": "Cần Admin can thiệp",
+      "RESOLVED": "Đã giải quyết",
+      "REJECTED": "Bác bỏ",
+      "CLOSED": "Đã đóng",
+      "overdue": "Quá hạn giải trình"
+    },
+    "empty": {
+      "title": "Chưa có khiếu nại nào",
+      "description": "Hệ thống chưa ghi nhận khiếu nại nào. Khi có khiếu nại mới, chúng sẽ hiển thị tại đây.",
+      "noMatchTitle": "Không tìm thấy khiếu nại phù hợp",
+      "noMatchDescription": "Thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái."
+    },
+    "card": {
+      "submittedAt": "Gửi ngày:",
+      "contentLabel": "Nội dung khiếu nại:",
+      "imageAlt": "Ảnh khiếu nại {{index}}",
+      "customerLabel": "Khách hàng:",
+      "facilityLabel": "Bãi xe bị khiếu nại:",
+      "facilityShortLabel": "Bãi xe:",
+      "providerLabel": "Chủ bãi:"
+    },
+    "history": {
+      "escalated": "[Khách hàng yêu cầu Admin can thiệp]: {{reason}}"
+    },
+    "statusInfo": {
+      "overdueTitle": "ĐÃ QUÁ HẠN 3 NGÀY CHƯA GIẢI TRÌNH",
+      "overdueDescription": "Hạn chót: {{date}}. Chủ bãi xe chưa gửi giải trình. Hệ thống đã ghi nhận quá hạn; BQT có thể tiếp tục đôn đốc hoặc đưa ra phán quyết.",
+      "overdueFallback": "Đã quá hạn",
+      "waitingDescription": "BQT đã gửi chỉ đạo. Thời hạn phản hồi: {{deadline}}.",
+      "deadlineBefore": "trước {{date}}",
+      "deadlineDefault": "3 ngày",
+      "providerRepliedDescription": "BQT vui lòng xem nội dung giải trình và đưa ra phán quyết cuối cùng.",
+      "latestReplyTitle": "Phản hồi gần nhất:"
+    },
+    "actions": {
+      "forward": "Chuyển bãi xe",
+      "forwardTitle": "Chuyển khiếu nại cho Chủ bãi xe kèm yêu cầu giải trình",
+      "reject": "Bác bỏ / Phán quyết",
+      "rejectTitle": "Bác bỏ hoặc cập nhật trạng thái khiếu nại",
+      "verdict": "Kết luận & Phán quyết",
+      "verdictTitle": "Xem xét giải trình và đưa ra phán quyết cuối cùng",
+      "overdueVerdict": "Phán quyết (Quá hạn)",
+      "overdueVerdictTitle": "Chủ bãi xe đã quá hạn 3 ngày. Admin có thể đưa ra phán quyết.",
+      "updateStatus": "Cập nhật trạng thái",
+      "updateStatusTitle": "Cập nhật trạng thái khiếu nại",
+      "changeStatus": "Đổi trạng thái",
+      "changeStatusTitle": "Điều chỉnh hoặc mở lại khiếu nại"
+    },
+    "statusOptions": {
+      "RESOLVED": {
+        "description": "Khiếu nại đã được xử lý dứt điểm và các bên đã thống nhất phương án, hoàn tiền hoặc bồi thường."
+      },
+      "REJECTED": {
+        "description": "Khiếu nại không hợp lệ, thông tin không chính xác hoặc không thuộc phạm vi trách nhiệm."
+      },
+      "PROCESSING": {
+        "description": "Admin đang xác minh thông tin, yêu cầu bổ sung bằng chứng hoặc đối soát giữa các bên."
+      },
+      "CLOSED": {
+        "description": "Đóng hồ sơ khiếu nại sau khi các bên đã kết thúc quá trình làm việc."
+      }
+    },
+    "forwardModal": {
+      "title": "Chuyển khiếu nại cho Chủ bãi xe",
+      "subtitle": "Khiếu nại #{{id}} • Yêu cầu kiểm tra và giải trình",
+      "facilityLabel": "Bãi xe tiếp nhận:",
+      "deadline": "Hạn giải trình: 3 ngày",
+      "instructionLabel": "Chỉ đạo / Yêu cầu giải trình gửi Chủ bãi xe",
+      "instructionPlaceholder": "Nhập yêu cầu kiểm tra, ví dụ: kiểm tra camera, đối soát nhân viên hoặc làm rõ phản ánh của khách...",
+      "validation": "Vui lòng nhập chỉ đạo hoặc yêu cầu giải trình (tối thiểu 5 ký tự).",
+      "submitting": "Đang chuyển...",
+      "submit": "Chuyển tiếp cho Chủ bãi xe"
+    },
+    "statusModal": {
+      "title": "Cập nhật trạng thái khiếu nại",
+      "subtitle": "Mã khiếu nại #{{id}} • Quyền hạn:",
+      "chooseStatus": "Chọn trạng thái cập nhật",
+      "noteLabel": "Ghi chú phán quyết của Admin (không bắt buộc)",
+      "notePlaceholder": "Nhập kết luận thẩm tra, hướng giải quyết hoặc căn cứ xử lý để thông báo đến Khách hàng và Chủ bãi xe...",
+      "characterCount": "{{count}}/2000 ký tự",
+      "invalidData": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại trạng thái và ghi chú.",
+      "submitting": "Đang cập nhật...",
+      "submit": "Lưu trạng thái"
+    }
   },
   "inspectors": {
     "title": "Quản Lý Nhân Viên Khảo Sát",

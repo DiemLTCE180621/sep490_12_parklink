@@ -374,7 +374,7 @@ const CustomerContractsPage = () => {
                         )}
                         <button
                           type="button"
-                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
+                          onClick={(e) => handleOpenComplaint(item.reservation?.id, e)}
                           className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
                         >
                           {t('contracts.card.complaint')}

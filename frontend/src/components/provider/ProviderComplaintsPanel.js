@@ -32,7 +32,7 @@ const STATUS_BADGE_CONFIG = {
   CLOSED: { bg: 'bg-gray-200 text-gray-800 border-gray-300', icon: ShieldAlert }
 };
 
-const FILTER_TABS = ['ALL', 'WAITING_PROVIDER', 'PROVIDER_REPLIED', 'RESOLVED'];
+const FILTER_TABS = ['ALL', 'WAITING_PROVIDER', 'RESOLVED'];
 
 const ProviderComplaintsPanel = () => {
   const { t, i18n } = useTranslation('provider');
@@ -298,31 +298,31 @@ const ProviderComplaintsPanel = () => {
                   {latestAdminInstruction && (
                     <div className={`p-4 rounded-xl border space-y-1.5 ${
                       item.is_overdue
-                        ? 'bg-rose-50/90 border-rose-300 text-rose-950'
-                        : 'bg-amber-50/90 border-amber-200 text-amber-950'
+                        ? 'bg-rose-50 border-rose-200 text-rose-900'
+                        : 'bg-slate-50 border-slate-200 text-slate-800'
                     }`}>
                       <div className="flex items-center justify-between gap-2">
-                        <div className={`flex items-center gap-2 font-extrabold text-xs ${item.is_overdue ? 'text-rose-900' : 'text-amber-900'}`}>
-                          <ShieldAlert className={`w-4 h-4 ${item.is_overdue ? 'text-rose-600' : 'text-amber-600'}`} />
+                        <div className={`flex items-center gap-2 font-bold text-xs ${item.is_overdue ? 'text-rose-800' : 'text-slate-700'}`}>
+                          <ShieldAlert className={`w-4 h-4 ${item.is_overdue ? 'text-rose-500' : 'text-neighbor-600'}`} />
                           <span>{t('complaints.card.adminInstruction')}</span>
                         </div>
                         {item.deadline && (
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             item.is_overdue
-                              ? 'bg-rose-200 text-rose-900 border border-rose-300 animate-pulse'
-                              : 'bg-amber-100 text-amber-800 border border-amber-300'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-white text-slate-600 border border-slate-200'
                           }`}>
                             {item.is_overdue ? t('complaints.card.overdue3Days') : t('complaints.card.deadline', { date: new Date(item.deadline).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN') })}
                           </span>
                         )}
                       </div>
                       <p className={`text-xs sm:text-sm whitespace-pre-wrap leading-relaxed font-medium ${
-                        item.is_overdue ? 'text-rose-900' : 'text-amber-900'
+                        item.is_overdue ? 'text-rose-800' : 'text-slate-700'
                       }`}>
                         {latestAdminInstruction.message || latestAdminInstruction.note}
                       </p>
                       {latestAdminInstruction.created_at && (
-                        <span className={`text-[11px] block ${item.is_overdue ? 'text-rose-700/80' : 'text-amber-700/80'}`}>
+                        <span className={`text-[11px] block ${item.is_overdue ? 'text-rose-600' : 'text-slate-500'}`}>
                           {t('complaints.card.forwardedAt', { datetime: new Date(latestAdminInstruction.created_at).toLocaleString(isEnglish ? 'en-GB' : 'vi-VN') })}
                         </span>
                       )}

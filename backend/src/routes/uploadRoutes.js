@@ -6,9 +6,7 @@ const uploadController = require('../controllers/uploadController');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 const uploadValidation = require('../validations/uploadValidation');
 
-// Chỉ user đã đăng nhập (có token) mới được gọi API này
 router.use(authenticateToken);
-// Phân quyền cho upload file/ảnh: Tất cả các vai trò đã đăng nhập (bao gồm cả ADMIN)
 router.use(authorizeRoles('CUSTOMER', 'PROVIDER', 'FIELD_INSPECTOR', 'ADMIN'));
 
 // Route xử lý upload NHIỀU file cùng lúc 

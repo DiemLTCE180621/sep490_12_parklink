@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   ShieldCheck,
@@ -18,6 +19,7 @@ const UpdateComplaintStatusModal = memo(({
   complaint,
   onSuccess
 }) => {
+  const { t } = useTranslation('admin');
   const [selectedStatus, setSelectedStatus] = useState('RESOLVED');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,7 @@ const UpdateComplaintStatusModal = memo(({
     });
 
     if (!validation.isValid) {
-      setErrorMsg(validation.errors.status || validation.errors.note || 'Dữ liệu không hợp lệ');
+      setErrorMsg(t('complaints.statusModal.invalidData'));
       return;
     }
 
@@ -80,12 +82,12 @@ const UpdateComplaintStatusModal = memo(({
       setErrorMsg(
         err.response?.data?.message ||
         err.message ||
-        'Lỗi khi cập nhật trạng thái khiếu nại!'
+        t('complaints.errors.updateStatus')
       );
     } finally {
       setLoading(false);
     }
-  }, [complaint, selectedStatus, note, onSuccess, onClose]);
+  }, [complaint, selectedStatus, note, onSuccess, onClose, t]);
 
   if (!isOpen || !complaint) return null;
 
@@ -106,10 +108,10 @@ const UpdateComplaintStatusModal = memo(({
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
-                Cập Nhật Trạng Thái Khiếu Nại
+                {t('complaints.statusModal.title')}
               </h3>
               <p className="text-xs text-gray-500">
-                Mã khiếu nại #{complaint.id} • Quyền hạn: <span className="font-semibold text-purple-700">Admin ParkLink</span>
+                {t('complaints.statusModal.subtitle', { id: complaint.id })} <span className="font-semibold text-purple-700">{t('roles.admin')}</span>
               </p>
             </div>
           </div>
@@ -139,18 +141,18 @@ const UpdateComplaintStatusModal = memo(({
                 #{complaint.id} - {complaint.title}
               </span>
               <span className="px-2.5 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 border border-purple-200 text-[11px]">
-                {complaint.status}
+                {t(`complaints.statuses.${complaint.status}`, { defaultValue: complaint.status })}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-gray-600">
               <div className="flex items-center gap-1.5 truncate">
                 <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                <span className="truncate">Khách hàng: <strong className="text-gray-800">{complaint.customer?.full_name || 'Khách hàng'}</strong></span>
+                <span className="truncate">{t('complaints.card.customerLabel')} <strong className="text-gray-800">{complaint.customer?.full_name || t('roles.customer')}</strong></span>
               </div>
               <div className="flex items-center gap-1.5 truncate">
                 <Building2 className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                <span className="truncate">Bãi xe: <strong className="text-gray-800">{complaint.facility?.name}</strong></span>
+                <span className="truncate">{t('complaints.card.facilityShortLabel')} <strong className="text-gray-800">{complaint.facility?.name}</strong></span>
               </div>
             </div>
           </div>
@@ -158,7 +160,7 @@ const UpdateComplaintStatusModal = memo(({
           {}
           <div className="space-y-2.5">
             <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-              Chọn trạng thái cập nhật <span className="text-red-500">*</span>
+              {t('complaints.statusModal.chooseStatus')} <span className="text-red-500">*</span>
             </label>
 
             <div className="space-y-2">
@@ -182,12 +184,12 @@ const UpdateComplaintStatusModal = memo(({
                     />
                     <div className="flex-1 space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-sm text-gray-900">{opt.label}</span>
+                        <span className="font-extrabold text-sm text-gray-900">{t(`complaints.statuses.${opt.value}`, { defaultValue: opt.label })}</span>
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${opt.badgeClass}`}>
                           {opt.value}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">{opt.description}</p>
+                      <p className="text-xs text-gray-500 leading-relaxed">{t(`complaints.statusOptions.${opt.value}.description`, { defaultValue: opt.description })}</p>
                     </div>
                   </label>
                 );
@@ -199,10 +201,10 @@ const UpdateComplaintStatusModal = memo(({
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                Ghi chú phán quyết của Admin (Tùy chọn)
+                {t('complaints.statusModal.noteLabel')}
               </label>
               <span className="text-[11px] text-gray-400">
-                {note.length}/2000 ký tự
+                {t('complaints.statusModal.characterCount', { count: note.length })}
               </span>
             </div>
             <textarea
@@ -210,7 +212,7 @@ const UpdateComplaintStatusModal = memo(({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               maxLength={2000}
-              placeholder="Nhập kết luận thẩm tra, hướng giải quyết hoặc căn cứ xử lý để thông báo đến Khách hàng và Chủ bãi xe..."
+              placeholder={t('complaints.statusModal.notePlaceholder')}
               className="w-full px-3.5 py-2.5 rounded-2xl border border-gray-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition resize-none"
             />
           </div>
@@ -223,7 +225,7 @@ const UpdateComplaintStatusModal = memo(({
               disabled={loading}
               className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition disabled:opacity-50"
             >
-              Hủy Bỏ
+              {t('complaints.cancel')}
             </button>
             <button
               type="submit"
@@ -233,12 +235,12 @@ const UpdateComplaintStatusModal = memo(({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Đang Cập Nhật...
+                  {t('complaints.statusModal.submitting')}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  Lưu Trạng Thái
+                  {t('complaints.statusModal.submit')}
                 </>
               )}
             </button>

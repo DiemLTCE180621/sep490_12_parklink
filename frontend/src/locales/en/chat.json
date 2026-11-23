@@ -14,6 +14,7 @@
     "placeholder": "Type a message...",
     "uploadMediaTitle": "Send image/video",
     "uploadFileTitle": "Send file or document (Word, Excel, PDF, Zip...)",
+    "maxFilesError": "You can upload up to 5 files at a time.",
     "sendFileError": "An error occurred while sending attachments",
     "sendTextError": "An error occurred while sending the message"
   },
