@@ -9,7 +9,7 @@
       "logout": "Log Out"
     },
     "menu": {
-      "title": "Provider Portal Menu",
+      "title": "Provider Menu",
       "subtitle": "Facility Operations Control",
       "itemsCount": "{{count}} items",
       "viewing": "Currently viewing",

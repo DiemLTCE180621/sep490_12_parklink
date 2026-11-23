@@ -1,0 +1,28 @@
+{
+  "title": "Field Inspection Tasks",
+  "subtitle": "List of preliminarily approved parking facilities requiring on-site inspection and data verification",
+  "needSurvey": "Pending Inspection: {{count}} facilities",
+  "searchPlaceholder": "Search by facility name, address or provider name...",
+  "refresh": "Refresh",
+  "empty": "You have no assigned facilities to inspect.",
+  "emptyDesc": "Please wait for notifications or assignments from administrators.",
+  "loading": "Loading inspection task list...",
+  "errorLoading": "Error loading pending inspection facilities",
+  "inProgress": "Pending Inspection",
+  "vehiclesUnit": "spots",
+  "table": {
+    "id": "ID",
+    "facility": "Parking Facility",
+    "provider": "Provider",
+    "proposal": "Initial Proposal",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "surveyAction": "Inspection Report",
+  "surveyActionTitle": "Open on-site inspection report page",
+  "pagination": {
+    "info": "Page {{current}} / {{total}} (Total {{count}} facilities)",
+    "prev": "Previous",
+    "next": "Next"
+  }
+}

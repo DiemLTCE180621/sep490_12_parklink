@@ -41,15 +41,15 @@ import ScrollToTop from './components/common/ScrollToTop';
 import GlobalBroadcastAlerts from './components/common/GlobalBroadcastAlerts';
 
 const LoadingScreen = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="text-center">
-      <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-slate-600 font-medium">Đang tải ứng dụng ParkLink...</p>
+      <div className="w-12 h-12 border-4 border-neighbor-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-gray-600 font-medium">Đang tải ứng dụng ParkLink...</p>
     </div>
   </div>
 );
 
-// Chỉ cho khách (Guest). Nếu cần đổi mật khẩu lần đầu → /change-password-first-time
+
 const GuestOnlyRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
@@ -60,7 +60,7 @@ const GuestOnlyRoute = ({ children }) => {
   return <Navigate to={user?.role?.name === 'CUSTOMER' ? '/' : '/dashboard'} replace />;
 };
 
-// Chỉ cho tài khoản cần đổi mật khẩu lần đầu
+
 const ForcePasswordRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
@@ -71,7 +71,7 @@ const ForcePasswordRoute = ({ children }) => {
   return children;
 };
 
-// Yêu cầu đăng nhập
+
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
@@ -83,7 +83,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Yêu cầu đúng Role
+
 const RoleProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
@@ -96,7 +96,7 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Trang công cộng
+
 const PublicBrowseRoute = ({ children }) => {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <LoadingScreen />;
@@ -118,31 +118,31 @@ function AppContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen font-sans antialiased text-slate-800 bg-slate-50">
+    <div className="flex flex-col min-h-screen font-sans antialiased text-gray-800 bg-gray-50 w-full">
       <GlobalBroadcastAlerts />
       <Navbar />
       <main className="flex-grow">
         <Routes>
-          {/* Public */}
+          {}
           <Route path="/" element={<PublicBrowseRoute><HomePage /></PublicBrowseRoute>} />
           <Route path="/policies" element={<PolicyPage />} />
           <Route path="/policies/:identifier" element={<PolicyPage />} />
           <Route path="/facilities" element={<Navigate to="/search" replace />} />
 
-          {/* Guest only */}
+          {}
           <Route path="/login" element={<GuestOnlyRoute><LoginPage /></GuestOnlyRoute>} />
           <Route path="/forgot-password" element={<GuestOnlyRoute><ForgotPasswordPage /></GuestOnlyRoute>} />
           <Route path="/register" element={<GuestOnlyRoute><RegisterCustomerPage /></GuestOnlyRoute>} />
           <Route path="/register-provider" element={<GuestOnlyRoute><RegisterProviderPage /></GuestOnlyRoute>} />
 
-          {/* Bắt buộc đổi mật khẩu lần đầu (Force Change Password) */}
+          {}
           <Route path="/change-password-first-time" element={
             <ForcePasswordRoute>
               <ForceChangePasswordPage />
             </ForcePasswordRoute>
           } />
 
-          {/* Mọi role đã login */}
+          {}
           <Route path="/search" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <SearchPage />
@@ -210,7 +210,7 @@ function AppContent() {
             </RoleProtectedRoute>
           } />
 
-          {/* Customer only */}
+          {}
           <Route path="/facilities/:facilityId/reserve" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <CreateReservationPage />
@@ -282,7 +282,7 @@ function AppContent() {
             </RoleProtectedRoute>
           } />
 
-          {/* Provider only */}
+          {}
           <Route path="/provider/reservations" element={
             <RoleProtectedRoute allowedRoles={['PROVIDER']}>
               <ProviderReservationsPage />
@@ -329,7 +329,7 @@ function AppContent() {
             </RoleProtectedRoute>
           } />
 
-          {/* Customer + Provider */}
+          {}
           <Route path="/chat" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER', 'PROVIDER']}>
               <ChatPage />

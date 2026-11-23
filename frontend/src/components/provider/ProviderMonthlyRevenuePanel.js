@@ -45,17 +45,17 @@ const ProviderMonthlyRevenuePanel = () => {
   const [selectedYear, selectedMonthNumber] = selectedMonth.split('-').map(Number);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white divide-y divide-slate-200">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white divide-y divide-gray-200">
       <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">{t('monthlyRevenue.title')}</h2>
-          <p className="text-xs text-slate-500 mt-1">{t('monthlyRevenue.subtitle')}</p>
+          <h2 className="text-xl font-bold text-gray-900">{t('monthlyRevenue.title')}</h2>
+          <p className="text-xs text-gray-500 mt-1">{t('monthlyRevenue.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
-          <span role="status" className="min-w-32 text-right text-xs text-slate-500">{loading ? t('monthlyRevenue.updating') : ''}</span>
+          <span role="status" className="min-w-32 text-right text-xs text-gray-500">{loading ? t('monthlyRevenue.updating') : ''}</span>
           <button type="button" onClick={() => setRefreshCount((count) => count + 1)} disabled={loading}
-            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg transition border border-slate-300 flex items-center gap-1.5 shrink-0">
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} /> {t('monthlyRevenue.refresh')}
+            className="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg transition border border-gray-300 flex items-center gap-1.5 shrink-0">
+            <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${loading ? 'animate-spin' : ''}`} /> {t('monthlyRevenue.refresh')}
           </button>
         </div>
       </div>
@@ -63,48 +63,48 @@ const ProviderMonthlyRevenuePanel = () => {
       {error && <div role="alert" className="p-6 text-sm text-red-700">{error === '__LOAD_ERROR__' ? t('monthlyRevenue.loadError') : error}</div>}
       {report && (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+          <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-gray-200">
             <div className="p-5">
-              <span className="text-xs text-slate-500 block">{t('monthlyRevenue.kpis.monthRevenue.label', { month: report.month })}</span>
-              <div className="text-2xl font-bold text-teal-700 mt-1">{money(report.total_revenue)}</div>
-              <p className="text-xs text-slate-400 mt-0.5">{t('monthlyRevenue.kpis.monthRevenue.hint')}</p>
+              <span className="text-xs text-gray-500 block">{t('monthlyRevenue.kpis.monthRevenue.label', { month: report.month })}</span>
+              <div className="text-2xl font-bold text-neighbor-700 mt-1">{money(report.total_revenue)}</div>
+              <p className="text-xs text-gray-400 mt-0.5">{t('monthlyRevenue.kpis.monthRevenue.hint')}</p>
             </div>
             <div className="p-5">
-              <span className="text-xs text-slate-500 block">{t('monthlyRevenue.kpis.contractCount.label')}</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{report.contract_count}</div>
-              <p className="text-xs text-slate-400 mt-0.5">{t('monthlyRevenue.kpis.contractCount.hint')}</p>
+              <span className="text-xs text-gray-500 block">{t('monthlyRevenue.kpis.contractCount.label')}</span>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{report.contract_count}</div>
+              <p className="text-xs text-gray-400 mt-0.5">{t('monthlyRevenue.kpis.contractCount.hint')}</p>
             </div>
             <div className="p-5">
-              <span className="text-xs text-slate-500 block">{t('monthlyRevenue.kpis.avgPerContract.label')}</span>
-              <div className="text-2xl font-bold text-slate-900 mt-1">{money(report.contract_count ? report.total_revenue / report.contract_count : 0)}</div>
-              <p className="text-xs text-slate-400 mt-0.5">{t('monthlyRevenue.kpis.avgPerContract.hint')}</p>
+              <span className="text-xs text-gray-500 block">{t('monthlyRevenue.kpis.avgPerContract.label')}</span>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{money(report.contract_count ? report.total_revenue / report.contract_count : 0)}</div>
+              <p className="text-xs text-gray-400 mt-0.5">{t('monthlyRevenue.kpis.avgPerContract.hint')}</p>
             </div>
             <div className="p-5">
-              <span className="text-xs text-slate-500 block">{t('monthlyRevenue.kpis.annualProjected.label', { year: selectedYear })}</span>
-              <div className="text-2xl font-bold text-teal-700 mt-1">{money(yearlyRevenue)}</div>
-              <p className="text-xs text-slate-400 mt-0.5">{t('monthlyRevenue.kpis.annualProjected.hint')}</p>
+              <span className="text-xs text-gray-500 block">{t('monthlyRevenue.kpis.annualProjected.label', { year: selectedYear })}</span>
+              <div className="text-2xl font-bold text-neighbor-700 mt-1">{money(yearlyRevenue)}</div>
+              <p className="text-xs text-gray-400 mt-0.5">{t('monthlyRevenue.kpis.annualProjected.hint')}</p>
             </div>
           </div>
           <div className="p-6">
-            <h3 className="text-sm font-bold text-slate-900">{t('monthlyRevenue.chart.title', { year: selectedYear })}</h3>
-            <p className="text-xs text-slate-500 mt-1 mb-5">{t('monthlyRevenue.chart.subtitle')}</p>
+            <h3 className="text-sm font-bold text-gray-900">{t('monthlyRevenue.chart.title', { year: selectedYear })}</h3>
+            <p className="text-xs text-gray-500 mt-1 mb-5">{t('monthlyRevenue.chart.subtitle')}</p>
             <div className="grid h-48 grid-cols-12 items-end gap-1 sm:gap-3">
               {(report.monthly_trend || []).map((item) => (
                 <button key={item.month} type="button" onClick={() => setSelectedMonth(`${selectedYear}-${String(item.month).padStart(2, '0')}`)}
                   aria-label={t('monthlyRevenue.chart.barAria', { month: item.month, amount: money(item.revenue) })}
                   title={t('monthlyRevenue.chart.barAria', { month: item.month, amount: money(item.revenue) })}
                   className="flex h-full min-w-0 flex-col items-center justify-end gap-2 group">
-                  <span className={`w-full max-w-12 rounded-t-lg transition-all group-hover:bg-teal-500 ${item.month === selectedMonthNumber ? 'bg-teal-600' : 'bg-teal-200'}`}
+                  <span className={`w-full max-w-12 rounded-t-lg transition-all group-hover:bg-neighbor-700 ${item.month === selectedMonthNumber ? 'bg-neighbor-600' : 'bg-neighbor-200'}`}
                     style={{ height: `${Math.max(4, item.revenue / maxRevenue * 100)}%` }} />
-                  <span className={`text-[10px] sm:text-xs ${item.month === selectedMonthNumber ? 'font-bold text-teal-700' : 'text-slate-500'}`}>{item.month}</span>
+                  <span className={`text-[10px] sm:text-xs ${item.month === selectedMonthNumber ? 'font-bold text-neighbor-700' : 'text-gray-500'}`}>{item.month}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="px-6 py-3.5 bg-slate-50/60 text-xs text-slate-500 font-medium">{t('monthlyRevenue.table.title', { month: report.month, year: report.year, count: report.contract_count })}</div>
+          <div className="px-6 py-3.5 bg-gray-50/60 text-xs text-gray-500 font-medium">{t('monthlyRevenue.table.title', { month: report.month, year: report.year, count: report.contract_count })}</div>
           <div className="h-80 overflow-auto" aria-label={t('monthlyRevenue.table.ariaLabel')}>
             <table className="min-w-full text-left text-sm">
-              <thead className="sticky top-0 bg-slate-50 text-slate-600">
+              <thead className="sticky top-0 bg-gray-50 text-gray-600">
                 <tr>
                   <th className="px-4 py-3">{t('monthlyRevenue.table.columns.contract')}</th>
                   <th className="px-4 py-3">{t('monthlyRevenue.table.columns.customer')}</th>
@@ -112,10 +112,10 @@ const ProviderMonthlyRevenuePanel = () => {
                   <th className="px-4 py-3 text-right">{t('monthlyRevenue.table.columns.monthlyAmount')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-100">
                 {report.contracts.map((contract) => (
                   <tr key={contract.id}>
-                    <td className="px-4 py-3 font-semibold text-slate-900">{contract.contract_code}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">{contract.contract_code}</td>
                     <td className="px-4 py-3">{contract.customer_name}</td>
                     <td className="px-4 py-3 whitespace-nowrap">{date(contract.start_date)} – {date(contract.end_date)}</td>
                     <td className="px-4 py-3 text-right font-semibold whitespace-nowrap">{money(contract.monthly_amount)}</td>
@@ -123,9 +123,9 @@ const ProviderMonthlyRevenuePanel = () => {
                 ))}
               </tbody>
             </table>
-            {report.contract_count === 0 && <p className="p-8 text-center text-slate-500">{t('monthlyRevenue.table.empty')}</p>}
+            {report.contract_count === 0 && <p className="p-8 text-center text-gray-500">{t('monthlyRevenue.table.empty')}</p>}
           </div>
-          <p className="px-6 py-4 text-xs text-slate-500">{t('monthlyRevenue.table.disclaimer')}</p>
+          <p className="px-6 py-4 text-xs text-gray-500">{t('monthlyRevenue.table.disclaimer')}</p>
         </>
       )}
     </div>

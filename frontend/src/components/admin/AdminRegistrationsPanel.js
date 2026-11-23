@@ -1,4 +1,6 @@
+import StatusBadge from '../common/StatusBadge';
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import {
@@ -17,18 +19,15 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
   DollarSign,
   UserCheck
 } from 'lucide-react';
 import AssignInspectorModal from './AssignInspectorModal';
 import Toast from '../common/Toast';
 
-/**
- * AdminRegistrationsPanel: Giao diện Quản Lý Phê Duyệt Bãi Đỗ Xe
- * Thiết kế đồng bộ với hệ thống Admin (Table layout, Toolbar tìm kiếm & lọc, Điều hướng /id)
- */
+
 const AdminRegistrationsPanel = () => {
+  const { t } = useTranslation(['admin', 'common']);
   const navigate = useNavigate();
 
   const [registrations, setRegistrations] = useState([]);
@@ -39,8 +38,8 @@ const AdminRegistrationsPanel = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Modals xác nhận thao tác nhanh
-  const [actionModal, setActionModal] = useState(null); // { type: 'PREPARE' | 'FINALIZE' | 'REJECT', id: number }
+  
+  const [actionModal, setActionModal] = useState(null); 
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -114,7 +113,7 @@ const AdminRegistrationsPanel = () => {
     }
   };
 
-  // Đếm theo từng giai đoạn
+  
   const pendingCount = useMemo(
     () => registrations.filter((f) => f.verification_status === 'PENDING_REVIEW').length,
     [registrations]
@@ -128,7 +127,7 @@ const AdminRegistrationsPanel = () => {
     [registrations]
   );
 
-  // Lọc dữ liệu theo search và statusFilter
+  
   const filteredRegistrations = useMemo(() => {
     return registrations.filter((item) => {
       const matchSearch =
@@ -145,7 +144,7 @@ const AdminRegistrationsPanel = () => {
     });
   }, [registrations, search, statusFilter]);
 
-  // Phân trang
+  
   const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage) || 1;
   const paginatedList = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -161,57 +160,39 @@ const AdminRegistrationsPanel = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'PENDING_REVIEW':
-        return (
-          <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-amber-300">
-            <Clock className="w-3 h-3 text-amber-600" /> Chờ duyệt sơ bộ
-          </span>
-        );
+      case 'PENDING':
+        return <StatusBadge status="PENDING" label={t('admin:registrations.tabs.pendingReview', 'Chờ duyệt sơ bộ')} size="sm" />;
       case 'PREPARING':
-        return (
-          <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-sky-300">
-            <Wrench className="w-3 h-3 text-sky-600" /> Đang khảo sát
-          </span>
-        );
+        return <StatusBadge status="IN_PROGRESS" label={t('admin:registrations.tabs.preparing', 'Đang khảo sát')} size="sm" />;
       case 'INSPECTED':
-        return (
-          <span className="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-teal-300">
-            <CheckCircle2 className="w-3 h-3 text-teal-600" /> Đã khảo sát (Chờ duyệt)
-          </span>
-        );
+        return <StatusBadge status="VERIFIED" label={t('admin:registrations.tabs.inspected', 'Đã khảo sát (Chờ duyệt)')} size="sm" />;
       case 'APPROVED':
-        return (
-          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 border border-emerald-300">
-            <ShieldCheck className="w-3 h-3 text-emerald-600" /> Đã duyệt
-          </span>
-        );
+        return <StatusBadge status="ACTIVE" label={t('admin:registrations.tabs.approved', 'Đã duyệt')} size="sm" />;
+      case 'REJECTED':
+        return <StatusBadge status="REJECTED" label={t('admin:registrations.tabs.rejected', 'Từ chối')} size="sm" />;
       default:
-        return (
-          <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-full">
-            {status}
-          </span>
-        );
+        return <StatusBadge status={status} size="sm" />;
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-      {/* Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
+      {}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-teal-600" /> Quản Lý Phê Duyệt Bãi Đỗ Xe
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-neighbor-600" /> {t('admin:registrations.title', 'Quản Lý Phê Duyệt Bãi Đỗ Xe')}
           </h2>
-          <p className="text-slate-500 text-xs mt-1">
-            Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)
+          <p className="text-gray-500 text-xs mt-1">
+            {t('admin:registrations.subtitle', 'Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)')}
           </p>
         </div>
-        <div className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
-          Tổng cộng: <strong className="text-teal-700 font-extrabold">{registrations.length}</strong> hồ sơ
+        <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
+          {t('admin:registrations.totalCount', { count: registrations.length })}
         </div>
       </div>
 
-      {/* Workflow Stage Quick Filters */}
+      {}
       <div className="flex flex-wrap gap-2 text-xs font-semibold">
         <button
           onClick={() => {
@@ -220,11 +201,11 @@ const AdminRegistrationsPanel = () => {
           }}
           className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
             statusFilter === 'ALL'
-              ? 'bg-teal-600 text-white shadow-sm'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              ? 'bg-neighbor-600 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          Tất cả ({registrations.length})
+          {t('admin:registrations.tabs.all', 'Tất cả')} ({registrations.length})
         </button>
         <button
           onClick={() => {
@@ -237,7 +218,7 @@ const AdminRegistrationsPanel = () => {
               : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
           }`}
         >
-          <Clock className="w-3.5 h-3.5" /> Chờ duyệt sơ bộ ({pendingCount})
+          <Clock className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.pendingReview', 'Chờ duyệt sơ bộ')} ({pendingCount})
         </button>
         <button
           onClick={() => {
@@ -250,7 +231,7 @@ const AdminRegistrationsPanel = () => {
               : 'bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100'
           }`}
         >
-          <Wrench className="w-3.5 h-3.5" /> Đang khảo sát ({preparingCount})
+          <Wrench className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.preparing', 'Đang khảo sát')} ({preparingCount})
         </button>
         <button
           onClick={() => {
@@ -259,19 +240,19 @@ const AdminRegistrationsPanel = () => {
           }}
           className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
             statusFilter === 'INSPECTED'
-              ? 'bg-teal-700 text-white shadow-sm'
-              : 'bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100'
+              ? 'bg-neighbor-700 text-white shadow-sm'
+              : 'bg-neighbor-50 text-neighbor-800 border border-neighbor-200 hover:bg-neighbor-100'
           }`}
         >
-          <CheckCircle2 className="w-3.5 h-3.5" /> Đã khảo sát - Chờ duyệt ({inspectedCount})
+          <CheckCircle2 className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.inspected', 'Đã khảo sát - Chờ duyệt')} ({inspectedCount})
         </button>
       </div>
 
-      {/* Search & Filter Toolbar */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-        {/* Search input */}
+        {}
         <div className="sm:col-span-8 relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <Search className="w-4 h-4" />
           </div>
           <input
@@ -281,12 +262,12 @@ const AdminRegistrationsPanel = () => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Tìm theo tên bãi, địa chỉ, họ tên chủ bãi hoặc SĐT..."
-            className="w-full pl-9 pr-3 py-2.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+            placeholder={t('admin:registrations.searchPlaceholder', 'Tìm theo tên bãi xe, địa chỉ hoặc chủ bãi...')}
+            className="w-full pl-9 pr-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500"
           />
         </div>
 
-        {/* Status Dropdown Filter */}
+        {}
         <div className="sm:col-span-4 flex gap-2">
           <select
             value={statusFilter}
@@ -294,7 +275,7 @@ const AdminRegistrationsPanel = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full py-2.5 px-3 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+            className="w-full py-2.5 px-3 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white"
           >
             <option value="ALL">Tất cả Trạng thái</option>
             <option value="PENDING_REVIEW">Chờ duyệt sơ bộ</option>
@@ -305,15 +286,15 @@ const AdminRegistrationsPanel = () => {
           <button
             type="button"
             onClick={handleResetFilters}
-            className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border border-slate-200"
+            className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border border-gray-200"
             title="Làm mới bộ lọc"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-600" /> Làm mới
+            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> {t('admin:common.refresh', 'Làm mới')}
           </button>
         </div>
       </div>
 
-      {/* Error Message */}
+      {}
       {error && (
         <div className="p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 flex items-center gap-2">
           <XCircle className="w-4 h-4 shrink-0 text-red-600" />
@@ -321,24 +302,24 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {/* Loading state */}
+      {}
       {loading ? (
-        <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center gap-3">
-          <RefreshCw className="w-8 h-8 animate-spin text-teal-600" />
+        <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-neighbor-600" />
           <span>Đang tải danh sách phê duyệt bãi đỗ xe...</span>
         </div>
       ) : filteredRegistrations.length === 0 ? (
-        <div className="py-16 text-center text-slate-400">
-          <Building2 className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+        <div className="py-16 text-center text-gray-400">
+          <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="font-semibold text-sm">Không tìm thấy yêu cầu đăng ký nào phù hợp!</p>
-          <p className="text-xs text-slate-400 mt-1">Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm.</p>
+          <p className="text-xs text-gray-400 mt-1">Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm.</p>
         </div>
       ) : (
-        /* Data Table */
-        <div className="overflow-x-auto rounded-2xl border border-slate-100">
+        
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+              <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                 <th className="py-3.5 px-4">ID</th>
                 <th className="py-3.5 px-4 min-w-[280px]">Cơ sở bãi đỗ xe</th>
                 <th className="py-3.5 px-4 min-w-[200px]">Chủ bãi (Provider)</th>
@@ -347,23 +328,23 @@ const AdminRegistrationsPanel = () => {
                 <th className="py-3.5 px-4 text-right">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-gray-100 text-gray-700">
               {paginatedList.map((facility) => {
                 const isPending = facility.verification_status === 'PENDING_REVIEW';
                 const isPreparing = facility.verification_status === 'PREPARING';
                 const isInspected = facility.verification_status === 'INSPECTED';
 
                 return (
-                  <tr key={facility.id} className="hover:bg-slate-50/80 transition">
-                    {/* ID */}
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-400">
+                  <tr key={facility.id} className="hover:bg-gray-50/80 transition">
+                    {}
+                    <td className="py-3.5 px-4 font-mono font-bold text-gray-400">
                       #{facility.id}
                     </td>
 
-                    {/* Facility Info */}
+                    {}
                     <td className="py-3.5 px-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0 text-teal-700 mt-0.5">
+                        <div className="w-10 h-10 rounded-xl bg-neighbor-50 border border-neighbor-100 flex items-center justify-center shrink-0 text-neighbor-700 mt-0.5">
                           {facility.images && facility.images.length > 0 ? (
                             <img
                               src={facility.images[0].image_url}
@@ -377,58 +358,58 @@ const AdminRegistrationsPanel = () => {
                         <div className="space-y-0.5">
                           <button
                             onClick={() => navigate(`/admin/registrations/${facility.id}`)}
-                            className="font-bold text-slate-900 hover:text-teal-700 transition text-left line-clamp-1"
+                            className="font-bold text-gray-900 hover:text-neighbor-700 transition text-left line-clamp-1"
                           >
                             {facility.name}
                           </button>
-                          <div className="text-slate-500 text-[11px] flex items-center gap-1 line-clamp-1">
-                            <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <div className="text-gray-500 text-[11px] flex items-center gap-1 line-clamp-1">
+                            <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
                             {facility.address}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    {/* Provider Info */}
+                    {}
                     <td className="py-3.5 px-4">
                       <div className="space-y-0.5">
-                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="font-semibold text-gray-900 flex items-center gap-1.5">
+                          <User className="w-3.5 h-3.5 text-gray-400" />
                           {facility.provider?.full_name || 'N/A'}
                         </div>
-                        <div className="text-slate-500 text-[11px] flex items-center gap-1.5">
-                          <Mail className="w-3 h-3 text-slate-400" />
+                        <div className="text-gray-500 text-[11px] flex items-center gap-1.5">
+                          <Mail className="w-3 h-3 text-gray-400" />
                           {facility.provider?.email || 'N/A'}
                         </div>
                         {facility.provider?.phone_number && (
-                          <div className="text-slate-500 text-[11px] flex items-center gap-1.5">
-                            <Phone className="w-3 h-3 text-slate-400" />
+                          <div className="text-gray-500 text-[11px] flex items-center gap-1.5">
+                            <Phone className="w-3 h-3 text-gray-400" />
                             {facility.provider?.phone_number}
                           </div>
                         )}
                       </div>
                     </td>
 
-                    {/* Capacity & Fee */}
+                    {}
                     <td className="py-3.5 px-4">
                       <div className="space-y-0.5">
-                        <div className="font-bold text-slate-800">
+                        <div className="font-bold text-gray-800">
                           {facility.capacity} xe
                         </div>
-                        <div className="text-teal-700 font-semibold text-[11px] flex items-center gap-0.5">
-                          <DollarSign className="w-3 h-3 text-teal-600" />
+                        <div className="text-neighbor-700 font-semibold text-[11px] flex items-center gap-0.5">
+                          <DollarSign className="w-3 h-3 text-neighbor-600" />
                           {Number(facility.system_fee || 0).toLocaleString('vi-VN')} VNĐ
                         </div>
                       </div>
                     </td>
 
-                    {/* Status Badge & Inspector */}
+                    {}
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <div>
                         {getStatusBadge(facility.verification_status)}
                         {facility.assigned_inspector ? (
-                          <div className="text-[11px] text-teal-800 font-semibold flex items-center gap-1 mt-1">
-                            <UserCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                          <div className="text-[11px] text-neighbor-800 font-semibold flex items-center gap-1 mt-1">
+                            <UserCheck className="w-3.5 h-3.5 text-neighbor-600 shrink-0" />
                             <span className="truncate max-w-[140px]" title={facility.assigned_inspector.full_name}>
                               {facility.assigned_inspector.full_name}
                             </span>
@@ -441,19 +422,19 @@ const AdminRegistrationsPanel = () => {
                       </div>
                     </td>
 
-                    {/* Action Buttons */}
+                    {}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="inline-flex items-center gap-2 justify-end">
-                        {/* Nút Xem chi tiết chuyển sang /id */}
+                        {}
                         <button
                           onClick={() => navigate(`/admin/registrations/${facility.id}`)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 text-xs font-bold rounded-lg border border-teal-200 transition"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-800 text-xs font-bold rounded-lg border border-neighbor-200 transition"
                           title="Xem chi tiết đơn này"
                         >
                           <Eye className="w-3.5 h-3.5" /> Chi tiết
                         </button>
 
-                        {/* Thao tác duyệt sơ bộ */}
+                        {}
                         {isPending && (
                           <>
                             <button
@@ -473,12 +454,12 @@ const AdminRegistrationsPanel = () => {
                           </>
                         )}
 
-                        {/* Thao tác duyệt chính thức khi đã khảo sát */}
+                        {}
                         {isInspected && (
                           <>
                             <button
                               onClick={() => setActionModal({ type: 'FINALIZE', id: facility.id })}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg shadow-sm transition"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-bold rounded-lg shadow-sm transition"
                               title="Hoàn tất phê duyệt & Cấp mật khẩu"
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" /> Duyệt chính thức
@@ -493,14 +474,14 @@ const AdminRegistrationsPanel = () => {
                           </>
                         )}
 
-                        {/* Đang khảo sát thực địa */}
+                        {}
                         {isPreparing && (
                           <button
                             onClick={() => handleOpenReassignModal(facility.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg border border-slate-200 transition"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg border border-gray-200 transition"
                             title="Đổi nhân viên khảo sát phụ trách"
                           >
-                            <UserCheck className="w-3.5 h-3.5 text-teal-600" /> Đổi NV
+                            <UserCheck className="w-3.5 h-3.5 text-neighbor-600" /> Đổi NV
                           </button>
                         )}
                       </div>
@@ -513,9 +494,9 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-600">
+        <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-600">
           <div>
             Trang <strong>{currentPage}</strong> / {totalPages} (Tổng{' '}
             {filteredRegistrations.length} hồ sơ)
@@ -524,14 +505,14 @@ const AdminRegistrationsPanel = () => {
             <button
               disabled={currentPage <= 1 || loading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
               <ChevronLeft className="w-4 h-4" /> Trước
             </button>
             <button
               disabled={currentPage >= totalPages || loading}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
               Sau <ChevronRight className="w-4 h-4" />
             </button>
@@ -539,7 +520,7 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {/* Modal Phân công nhân viên khảo sát (Phương án A - Nâng Cấp Popup To & Đa Năng) */}
+      {}
       <AssignInspectorModal
         isOpen={actionModal?.type === 'PREPARE' || actionModal?.type === 'REASSIGN'}
         onClose={() => setActionModal(null)}
@@ -587,32 +568,32 @@ const AdminRegistrationsPanel = () => {
         }}
       />
 
-      {/* Action Confirmation Modal for Finalize / Reject */}
+      {}
       {actionModal && (actionModal.type === 'FINALIZE' || actionModal.type === 'REJECT') && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl my-auto transition-all">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 md:p-8 max-w-md w-full shadow-2xl my-auto transition-all">
             {actionModal.type === 'FINALIZE' && (
               <>
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-teal-600" />
+                <div className="w-16 h-16 bg-neighbor-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-neighbor-600" />
                 </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
+                <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
                   Phê Duyệt Chính Thức
                 </h3>
-                <p className="text-center text-slate-500 text-sm mb-6">
+                <p className="text-center text-gray-500 text-sm mb-6">
                   Nhân viên khảo sát đã hoàn tất báo cáo và hình ảnh thực địa. Bạn có chắc chắn muốn hoàn tất duyệt và cấp tài khoản cho cơ sở này?
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setActionModal(null)}
-                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs"
+                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-xs"
                   >
                     Hủy
                   </button>
                   <button
                     disabled={isSubmitting}
                     onClick={confirmAction}
-                    className="flex-1 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
+                    className="flex-1 py-3 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
                   >
                     {isSubmitting ? 'Đang xử lý...' : 'Duyệt & Cấp Mật Khẩu'}
                   </button>
@@ -625,10 +606,10 @@ const AdminRegistrationsPanel = () => {
                 <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <XCircle className="w-8 h-8 text-rose-600" />
                 </div>
-                <h3 className="text-xl font-bold text-center text-slate-900 mb-2">
+                <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
                   Từ Chối Đăng Ký
                 </h3>
-                <p className="text-center text-slate-500 text-sm mb-4">
+                <p className="text-center text-gray-500 text-sm mb-4">
                   Vui lòng cung cấp lý do từ chối để thông báo cho Provider.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-3 justify-center">
@@ -637,7 +618,7 @@ const AdminRegistrationsPanel = () => {
                     onClick={() =>
                       setRejectReason('Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.')
                     }
-                    className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition"
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
                     Thiếu thông tin
                   </button>
@@ -646,7 +627,7 @@ const AdminRegistrationsPanel = () => {
                     onClick={() =>
                       setRejectReason('Vị trí hoặc mức giá đăng ký không phù hợp quy định.')
                     }
-                    className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition"
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
                     Vị trí/Giá sai
                   </button>
@@ -655,7 +636,7 @@ const AdminRegistrationsPanel = () => {
                     onClick={() =>
                       setRejectReason('Khảo sát thực địa không đáp ứng tiêu chuẩn an toàn.')
                     }
-                    className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition"
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
                     Không đạt tiêu chuẩn
                   </button>
@@ -664,7 +645,7 @@ const AdminRegistrationsPanel = () => {
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="Nhập lý do chi tiết..."
-                  className="w-full p-3 border border-slate-200 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none h-24 text-xs"
+                  className="w-full p-3 border border-gray-200 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none h-24 text-xs"
                 />
                 <div className="flex gap-3">
                   <button
@@ -672,7 +653,7 @@ const AdminRegistrationsPanel = () => {
                       setActionModal(null);
                       setRejectReason('');
                     }}
-                    className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition text-xs"
+                    className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-xs"
                   >
                     Hủy
                   </button>
@@ -690,7 +671,7 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {/* Toast Alert */}
+      {}
       {toast && (
         <Toast
           message={toast.message}

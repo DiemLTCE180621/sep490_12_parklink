@@ -30,7 +30,7 @@ const ICON_MAP = {
 
 const renderIcon = (iconName) => {
   const IconComp = ICON_MAP[iconName] || HelpCircle;
-  return <IconComp className="w-4 h-4 text-slate-600" />;
+  return <IconComp className="w-4 h-4 text-neighbor-600" />;
 };
 
 const AdminAmenitiesPanel = () => {
@@ -136,7 +136,7 @@ const AdminAmenitiesPanel = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-5">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 sm:p-7 space-y-6">
       {toast && (
         <Toast
           message={toast.message}
@@ -145,25 +145,25 @@ const AdminAmenitiesPanel = () => {
         />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Layers className="w-6 h-6 text-teal-600" />
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
+            <Layers className="w-6 h-6 sm:w-7 sm:h-7 text-neighbor-600" />
             Quản Lý Tiện Ích Bãi Xe
           </h2>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-gray-500 text-sm mt-1">
             Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.
           </p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-          <span className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
-            Tổng cộng: <strong className="text-teal-700 font-extrabold">{filteredAmenities.length}</strong> tiện ích
+          <span className="text-sm font-semibold bg-gray-100 px-3.5 py-2 rounded-xl text-gray-700">
+            Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{filteredAmenities.length}</strong> tiện ích
           </span>
 
           <button
             onClick={handleOpenCreate}
-            className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-sm transition flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-sm font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" /> Thêm tiện ích
           </button>
@@ -172,7 +172,7 @@ const AdminAmenitiesPanel = () => {
 
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
             <Search className="w-4 h-4" />
           </div>
           <input
@@ -180,15 +180,15 @@ const AdminAmenitiesPanel = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm theo tên tiện ích, nhóm phân loại..."
-            className="w-full pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500 transition"
+            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 transition"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white font-medium text-slate-700"
+            className="px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white font-medium text-gray-700"
           >
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hiển thị</option>
@@ -198,116 +198,119 @@ const AdminAmenitiesPanel = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white font-medium text-slate-700"
+            className="px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white font-medium text-gray-700"
           >
             <option value="ALL">Tất cả nhóm</option>
-            <option value="SECURITY">An ninh</option>
-            <option value="SERVICE">Dịch vụ</option>
+            <option value="SECURITY">An ninh & An toàn</option>
+            <option value="SERVICE">Dịch vụ tiện ích</option>
             <option value="INFRASTRUCTURE">Cơ sở hạ tầng</option>
-            <option value="CONVENIENCE">Tiện nghi</option>
+            <option value="CONVENIENCE">Tiện nghi bổ sung</option>
           </select>
 
           <button
             onClick={fetchAmenities}
             disabled={loading}
-            className="p-2 text-slate-600 hover:text-teal-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition"
+            className="p-2.5 text-gray-600 hover:text-neighbor-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer"
             title="Tải lại dữ liệu"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-teal-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full text-left border-collapse text-xs">
+      <div className="overflow-x-auto rounded-xl border border-gray-200">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 font-semibold text-slate-600 uppercase tracking-wider">
-              <th className="py-3 px-4 w-16">ID</th>
-              <th className="py-3 px-4">Tên tiện ích</th>
-              <th className="py-3 px-4">Nhóm danh mục</th>
-              <th className="py-3 px-4 text-center">Bãi xe áp dụng</th>
-              <th className="py-3 px-4 text-center">Trạng thái</th>
-              <th className="py-3 px-4 text-center w-28">Thao tác</th>
+            <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <th className="py-3.5 px-4 w-16">ID</th>
+              <th className="py-3.5 px-4">Tên tiện ích</th>
+              <th className="py-3.5 px-4">Nhóm danh mục</th>
+              <th className="py-3.5 px-4 text-center">Bãi xe áp dụng</th>
+              <th className="py-3.5 px-4 text-center">Trạng thái</th>
+              <th className="py-3.5 px-4 text-center w-28">Thao tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-800">
+          <tbody className="divide-y divide-gray-100 text-sm">
             {loading && amenities.length === 0 ? (
               <tr>
-                <td colSpan="6" className="py-12 text-center text-slate-400">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-teal-600" />
-                  <span>Đang tải danh sách tiện ích...</span>
+                <td colSpan="6" className="py-14 text-center text-gray-400">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-neighbor-600" />
+                  <span className="text-sm font-medium">Đang tải danh sách tiện ích...</span>
                 </td>
               </tr>
             ) : filteredAmenities.length === 0 ? (
               <tr>
-                <td colSpan="6" className="py-10 text-center text-slate-400">
-                  <p className="font-medium text-slate-600">Không tìm thấy tiện ích nào phù hợp</p>
+                <td colSpan="6" className="py-12 text-center text-gray-400">
+                  <p className="font-semibold text-gray-600 text-sm">Không tìm thấy tiện ích nào phù hợp</p>
+                  <p className="text-xs text-gray-400 mt-1">Thử thay đổi từ khóa tìm kiếm hoặc lọc theo trạng thái khác</p>
                 </td>
               </tr>
             ) : (
               filteredAmenities.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-3 px-4 font-mono font-medium text-slate-500">
+                <tr key={item.id} className="hover:bg-gray-50/80 transition">
+                  <td className="py-3.5 px-4 font-mono font-bold text-gray-400 text-sm whitespace-nowrap">
                     #{item.id}
                   </td>
 
-                  <td className="py-3 px-4 font-medium text-slate-900">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                  <td className="py-3.5 px-4 font-semibold text-gray-900">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-neighbor-50 text-neighbor-600 border border-neighbor-100 flex items-center justify-center shrink-0">
                         {renderIcon(item.icon)}
                       </div>
-                      <span>{item.name}</span>
+                      <span className="text-sm font-semibold text-gray-900">{item.name}</span>
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200">
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-semibold border border-gray-200 uppercase tracking-wide">
                       {item.type || 'CHUNG'}
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 text-slate-600 font-medium">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                      {item._count?.facility_amenities || 0}
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
+                      <Building2 className="w-3.5 h-3.5 text-neighbor-600" />
+                      {item._count?.facility_amenities || 0} bãi xe
                     </span>
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     {item.is_active ? (
-                      <span className="bg-teal-100 text-teal-800 font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 text-[11px]">
-                        <Eye className="w-3 h-3" /> Hiển thị
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        Hiển thị
                       </span>
                     ) : (
-                      <span className="bg-rose-100 text-rose-800 font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 text-[11px]">
-                        <EyeOff className="w-3 h-3" /> Đang ẩn
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-xs font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                        Đang ẩn
                       </span>
                     )}
                   </td>
 
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-1">
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                    <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => handleOpenEdit(item)}
-                        className="p-1.5 text-slate-500 hover:text-teal-600 hover:bg-slate-100 rounded transition"
+                        className="p-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition cursor-pointer"
                         title="Chỉnh sửa thông tin"
                       >
-                        <Edit2 className="w-3.5 h-3.5" />
+                        <Edit2 className="w-4 h-4" />
                       </button>
 
                       <button
                         onClick={() => handleOpenToggle(item)}
-                        className={`p-1.5 rounded transition ${
+                        className={`p-2 rounded-lg border transition cursor-pointer ${
                           item.is_active
-                            ? 'text-rose-500 hover:text-rose-700 hover:bg-rose-50'
-                            : 'text-teal-600 hover:text-teal-700 hover:bg-teal-50'
+                            ? 'text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border-rose-200'
+                            : 'text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
                         }`}
                         title={item.is_active ? 'Ẩn tiện ích này' : 'Hiện lại tiện ích này'}
                       >
                         {item.is_active ? (
-                          <EyeOff className="w-3.5 h-3.5" />
+                          <EyeOff className="w-4 h-4" />
                         ) : (
-                          <Eye className="w-3.5 h-3.5" />
+                          <Eye className="w-4 h-4" />
                         )}
                       </button>
                     </div>

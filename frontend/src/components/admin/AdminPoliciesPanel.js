@@ -52,24 +52,24 @@ const AdminPoliciesPanel = () => {
         />
       )}
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-6 h-6 text-teal-600" /> Quản Lý Chính Sách Hệ Thống
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <ShieldCheck className="w-6 h-6 text-neighbor-600" /> Quản Lý Chính Sách Hệ Thống
             </h2>
-            <p className="text-slate-500 text-xs mt-1">
+            <p className="text-gray-500 text-xs mt-1">
               Quản lý văn bản điều khoản, quy định dịch vụ và cập nhật thông báo tới khách hàng & đối tác
             </p>
           </div>
-          <div className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
-            Tổng cộng: <strong className="text-teal-700 font-extrabold">{policies.length}</strong> chính sách
+          <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
+            Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{policies.length}</strong> chính sách
           </div>
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center gap-3">
-            <div className="w-8 h-8 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 border-2 border-neighbor-600 border-t-transparent rounded-full animate-spin"></div>
             <span>Đang tải danh sách chính sách...</span>
           </div>
         ) : error ? (
@@ -77,10 +77,10 @@ const AdminPoliciesPanel = () => {
             {error}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-slate-100">
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+                <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                   <th className="py-3 px-4">Loại Chính Sách</th>
                   <th className="py-3 px-4">Tiêu Đề</th>
                   <th className="py-3 px-4">Trạng Thái</th>
@@ -89,13 +89,13 @@ const AdminPoliciesPanel = () => {
                   <th className="py-3 px-4 text-center">Thao Tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-gray-100 text-gray-700">
                 {policies.map((policy) => (
-                  <tr key={policy.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-mono font-bold text-teal-700 whitespace-nowrap">
+                  <tr key={policy.id} className="hover:bg-gray-50/80 transition">
+                    <td className="py-3.5 px-4 font-mono font-bold text-neighbor-700 whitespace-nowrap">
                       {policy.policy_type}
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-900">
+                    <td className="py-3.5 px-4 font-semibold text-gray-900">
                       {policy.title}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
@@ -104,20 +104,20 @@ const AdminPoliciesPanel = () => {
                           <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Hoạt động
                         </span>
                       ) : (
-                        <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                          <XCircle className="w-3.5 h-3.5 text-slate-400" /> Vô hiệu hóa
+                        <span className="bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                          <XCircle className="w-3.5 h-3.5 text-gray-400" /> Vô hiệu hóa
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-gray-600 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <User className="w-3.5 h-3.5 text-slate-400" />
+                        <User className="w-3.5 h-3.5 text-gray-400" />
                         <span>{policy.admin?.full_name || 'Hệ thống'}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-gray-500 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
                         <span>{formatDate(policy.updated_at)}</span>
                       </div>
                     </td>
@@ -125,7 +125,7 @@ const AdminPoliciesPanel = () => {
                       <button
                         onClick={() => navigate(`/admin/policies/${policy.id}/edit`)}
                         title="Chỉnh sửa chính sách"
-                        className="p-1.5 px-3 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 transition text-xs inline-flex items-center gap-1.5 font-bold"
+                        className="p-1.5 px-3 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-800 rounded-lg border border-neighbor-200 transition text-xs inline-flex items-center gap-1.5 font-bold"
                       >
                         <Edit className="w-3.5 h-3.5" />
                         <span>Chỉnh Sửa</span>

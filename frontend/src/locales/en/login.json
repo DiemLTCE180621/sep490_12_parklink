@@ -34,5 +34,60 @@
     "missingCredentials": "Please enter both your email address and password!",
     "invalidCredentials": "Invalid email address or password.",
     "googleFailed": "Google sign-in failed!"
+  },
+  "forgotPasswordPage": {
+    "title": "Forgot Password",
+    "subtitleStep1": "Enter your email to receive an OTP verification code to reset your password",
+    "subtitleStep2": "Verification code has been sent to {{email}}",
+    "emailLabel": "Registered Email Address",
+    "emailPlaceholder": "Enter your email address",
+    "emailNotice": "A 6-digit verification code valid for 15 minutes will be sent to this email.",
+    "sendOtp": "Send OTP Via Email",
+    "sendingOtp": "Sending code...",
+    "otpLabel": "Verification Code OTP (6 digits)",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "At least 8 characters, 1 uppercase, 1 lowercase, 1 number",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "resendOtp": "Resend code",
+    "resetPassword": "Reset Password",
+    "resettingPassword": "Processing...",
+    "backToLogin": "Back to log in",
+    "simulatedOtp": "System test code:",
+    "errors": {
+      "missingEmail": "Please enter your email address!",
+      "invalidOtp": "Please enter a valid 6-digit OTP code!",
+      "invalidPassword": "New password must be at least 8 characters long, including uppercase, lowercase, and a number!",
+      "mismatchPassword": "Confirm password does not match.",
+      "sendFailed": "Failed to send OTP code! Please check your email address.",
+      "verifyFailed": "OTP verification failed!"
+    },
+    "success": {
+      "otpSent": "OTP code has been sent to your email!",
+      "passwordReset": "Password has been reset successfully!"
+    }
+  },
+  "forceChangePasswordPage": {
+    "title": "Change Password On First Login",
+    "subtitle": "To ensure your account security, please set a new password before proceeding.",
+    "notice": "You are using a temporary password issued by the system. Please create a new password to secure your personal account.",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "requirements": "Password security requirements:",
+    "ruleLength": "At least 8 characters",
+    "ruleUpper": "At least 1 uppercase letter (A-Z)",
+    "ruleLower": "At least 1 lowercase letter (a-z)",
+    "ruleNumber": "At least 1 number (0-9)",
+    "submit": "Update Password & Enter Platform",
+    "submitting": "Saving password...",
+    "backToLogin": "Log out & Back to login",
+    "errors": {
+      "invalidPassword": "Password does not meet the security criteria!",
+      "mismatch": "Confirm password does not match!",
+      "failed": "Failed to change password, please try again!"
+    },
+    "success": "Password updated successfully! Redirecting..."
   }
 }

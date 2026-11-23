@@ -80,7 +80,7 @@
       },
       "slotCapacity": {
         "label": "Slot Capacity (Total Parking Slots)",
-        "placeholder": "Enter total parking slots"
+        "placeholder": "Enter parking capacity"
       },
       "monthlyPrice": {
         "label": "Monthly Rental Price",

@@ -80,7 +80,7 @@
       },
       "slotCapacity": {
         "label": "Sức chứa (Tổng số slot đỗ)",
-        "placeholder": "Nhập tổng số slot đỗ"
+        "placeholder": "Nhập sức chứa"
       },
       "monthlyPrice": {
         "label": "Giá thuê theo tháng",

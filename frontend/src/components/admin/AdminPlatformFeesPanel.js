@@ -10,10 +10,7 @@ import { translatePlatformFeeName, translatePlatformFeeDescription } from '../..
 import Toast from '../common/Toast';
 import ConfirmModal from '../modals/ConfirmModal';
 
-/**
- * Panel Quản lý Biểu Phí Nền Tảng
- * Hỗ trợ chế độ Admin (đầy đủ quyền) và chế độ Xem cho Provider (isReadOnly)
- */
+
 const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
   const { t, i18n } = useTranslation('provider');
   const tp = (viText, key, opts) => (isReadOnly ? t(key, opts) : viText);
@@ -23,14 +20,14 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Trạng thái modal xác nhận bật/tắt kích hoạt hiện đại (thay thế window.confirm)
+  
   const [confirmToggleState, setConfirmToggleState] = useState({
     isOpen: false,
     fee: null,
     loading: false
   });
 
-  // 1. View Platform Fee: Tải danh sách biểu phí từ Backend
+  
   const fetchFees = useCallback(async () => {
     try {
       setLoading(true);
@@ -51,7 +48,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
     fetchFees();
   }, [fetchFees]);
 
-  // 4. Activate/Deactivate Platform Fee với ConfirmModal hiện đại
+  
   const handleOpenToggleConfirm = (fee) => {
     setConfirmToggleState({
       isOpen: true,
@@ -83,8 +80,8 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-      {/* Toast thông báo hiện đại */}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
+      {}
       {toast && (
         <Toast
           message={toast.message === '__LOAD_ERROR__' ? tp('Không thể tải danh sách biểu phí nền tảng', 'platformFees.loadError') : toast.message}
@@ -93,14 +90,14 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
         />
       )}
 
-      {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
+      {}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-teal-600" />
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <DollarSign className="w-6 h-6 text-neighbor-600" />
             {isReadOnly ? t('platformFees.title') : 'Quản Lý Gói Biểu Phí Nền Tảng'}
           </h2>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-gray-500 text-xs mt-1">
             {isReadOnly
               ? t('platformFees.subtitle')
               : 'Cấu hình các gói phí nền tảng thu 1 lần theo quy mô bãi đỗ sau khi khảo sát thực địa'}
@@ -111,17 +108,17 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
           <button
             onClick={fetchFees}
             disabled={loading}
-            className="p-2.5 text-slate-600 hover:text-teal-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2.5 text-gray-600 hover:text-neighbor-600 hover:bg-gray-50 border border-gray-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold"
             title={tp('Làm mới danh sách', 'platformFees.refreshTitle')}
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-teal-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
             {tp('Làm mới', 'platformFees.refresh')}
           </button>
 
           {!isReadOnly && (
             <button
               onClick={() => navigate('/admin/platform-fees/create')}
-              className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
+              className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
               title="Tạo gói biểu phí mới"
             >
               <Plus className="w-4 h-4" /> Thêm Gói Biểu Phí Mới
@@ -130,16 +127,16 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
         </div>
       </div>
 
-      {/* Thông tin tóm tắt quy định thu phí đề tài */}
-      <div className="p-3.5 bg-teal-50/70 border border-teal-100 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="text-teal-700 font-medium">{tp('Thu 1 lần khi duyệt đưa cơ sở lên sàn', 'platformFees.bannerNote')}</span>
+      {}
+      <div className="p-3.5 bg-neighbor-50/70 border border-neighbor-100 rounded-xl flex flex-wrap items-center justify-between gap-2 text-xs">
+        <span className="text-neighbor-700 font-medium">{tp('Thu 1 lần khi duyệt đưa cơ sở lên sàn', 'platformFees.bannerNote')}</span>
       </div>
 
-      {/* Bảng danh sách biểu phí (View Platform Fee - Theo khung Min - Max) */}
+      {}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/75 border-y border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <tr className="bg-gray-50/75 border-y border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
               <th className="py-3.5 px-4">{tp('Tên Gói & Mô Tả', 'platformFees.columns.nameAndDesc')}</th>
               <th className="py-3.5 px-4 text-center">{tp('Khung Quy Mô Slot', 'platformFees.columns.slotTier')}</th>
               <th className="py-3.5 px-4 text-right">{tp('Mức Phí Thu 1 Lần', 'platformFees.columns.oneTimeFee')}</th>
@@ -147,33 +144,33 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
               {!isReadOnly && <th className="py-3.5 px-4 text-center">Thao Tác</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
+          <tbody className="divide-y divide-gray-100 text-sm">
             {loading && fees.length === 0 ? (
               <tr>
-                <td colSpan={isReadOnly ? 4 : 5} className="py-12 text-center text-slate-400">
-                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+                <td colSpan={isReadOnly ? 4 : 5} className="py-12 text-center text-gray-400">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-neighbor-600" />
                   {tp('Đang tải danh sách biểu phí nền tảng...', 'platformFees.loading')}
                 </td>
               </tr>
             ) : fees.length === 0 ? (
               <tr>
-                <td colSpan={isReadOnly ? 4 : 5} className="py-12 text-center text-slate-400">
-                  <Layers className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                <td colSpan={isReadOnly ? 4 : 5} className="py-12 text-center text-gray-400">
+                  <Layers className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                   {tp('Chưa có gói biểu phí nào được tạo trên hệ thống.', 'platformFees.empty')}
                 </td>
               </tr>
             ) : (
               fees.map((fee) => (
-                <tr key={fee.id} className="hover:bg-slate-50/60 transition">
+                <tr key={fee.id} className="hover:bg-gray-50/60 transition">
                   <td className="py-4 px-4">
-                    <div className="font-bold text-slate-900">{translatePlatformFeeName(fee.name, feeLanguage)}</div>
+                    <div className="font-bold text-gray-900">{translatePlatformFeeName(fee.name, feeLanguage)}</div>
                     {fee.description && (
-                      <div className="text-xs text-slate-500 mt-0.5 line-clamp-1">{translatePlatformFeeDescription(fee.description, feeLanguage)}</div>
+                      <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{translatePlatformFeeDescription(fee.description, feeLanguage)}</div>
                     )}
                   </td>
 
                   <td className="py-4 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-700 font-bold text-xs border border-gray-200">
                       {fee.max_slots && fee.max_slots < 900
                         ? tp(`${fee.min_slots} - ${fee.max_slots} chỗ`, 'platformFees.slotRange', { min: fee.min_slots, max: fee.max_slots })
                         : tp(`Từ ${fee.min_slots} chỗ trở lên`, 'platformFees.slotFrom', { min: fee.min_slots })}
@@ -181,10 +178,10 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
                   </td>
 
                   <td className="py-4 px-4 text-right whitespace-nowrap">
-                    <span className="text-base font-extrabold text-teal-800">
+                    <span className="text-base font-extrabold text-neighbor-800">
                       {Number(fee.fee_amount).toLocaleString('vi-VN')}
                     </span>
-                    <span className="text-xs font-semibold text-slate-500 ml-1">{tp('VNĐ', 'platformFees.currency')}</span>
+                    <span className="text-xs font-semibold text-gray-500 ml-1">{tp('VNĐ', 'platformFees.currency')}</span>
                   </td>
 
                   <td className="py-4 px-4 text-center whitespace-nowrap">
@@ -193,7 +190,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
                         <CheckCircle2 className="w-3.5 h-3.5" /> {tp('Đang áp dụng', 'platformFees.active')}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
                         <XCircle className="w-3.5 h-3.5" /> {tp('Tạm ngưng', 'platformFees.inactive')}
                       </span>
                     )}
@@ -202,16 +199,16 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
                   {!isReadOnly && (
                     <td className="py-4 px-4 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
-                        {/* Chuyển sang Trang Edit riêng thay vì mở popup */}
+                        {}
                         <button
                           onClick={() => navigate(`/admin/platform-fees/${fee.id}`)}
-                          className="p-2 text-slate-600 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition"
+                          className="p-2 text-gray-600 hover:text-neighbor-600 hover:bg-neighbor-50 rounded-lg transition"
                           title="Chỉnh sửa trên trang riêng"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
 
-                        {/* Bật / Tắt trạng thái áp dụng với Modal xác nhận hiện đại */}
+                        {}
                         <button
                           onClick={() => handleOpenToggleConfirm(fee)}
                           className={`p-2 rounded-lg transition ${fee.is_active
@@ -232,7 +229,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
         </table>
       </div>
 
-      {/* MODAL XÁC NHẬN BẬT / TẮT KÍCH HOẠT HIỆN ĐẠI (THAY THẾ WINDOW.CONFIRM) */}
+      {}
       <ConfirmModal
         isOpen={confirmToggleState.isOpen}
         onClose={() => setConfirmToggleState({ isOpen: false, fee: null, loading: false })}

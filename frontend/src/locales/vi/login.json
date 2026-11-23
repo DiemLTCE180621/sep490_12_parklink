@@ -34,5 +34,60 @@
     "missingCredentials": "Vui lòng điền đầy đủ email và mật khẩu!",
     "invalidCredentials": "Email hoặc mật khẩu không chính xác!",
     "googleFailed": "Đăng nhập Google thất bại!"
+  },
+  "forgotPasswordPage": {
+    "title": "Quên Mật Khẩu",
+    "subtitleStep1": "Nhập email để nhận mã OTP xác thực đặt lại mật khẩu",
+    "subtitleStep2": "Mã xác thực đã được gửi tới email {{email}}",
+    "emailLabel": "Địa chỉ Email đăng ký",
+    "emailPlaceholder": "Nhập địa chỉ email của bạn",
+    "emailNotice": "Hệ thống sẽ gửi mã xác thực OTP gồm 6 chữ số có hiệu lực trong 15 phút đến email này.",
+    "sendOtp": "Gửi Mã OTP Qua Email",
+    "sendingOtp": "Đang gửi mã...",
+    "otpLabel": "Mã xác thực OTP (6 chữ số)",
+    "newPasswordLabel": "Mật khẩu mới",
+    "newPasswordPlaceholder": "Tối thiểu 8 ký tự, 1 hoa, 1 thường, 1 số",
+    "confirmPasswordLabel": "Xác nhận mật khẩu mới",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+    "resendOtp": "Gửi lại mã",
+    "resetPassword": "Đổi Mật Khẩu",
+    "resettingPassword": "Đang xử lý...",
+    "backToLogin": "Quay lại trang đăng nhập",
+    "simulatedOtp": "Mã thử nghiệm hệ thống:",
+    "errors": {
+      "missingEmail": "Vui lòng nhập địa chỉ email!",
+      "invalidOtp": "Vui lòng nhập mã OTP gồm đúng 6 chữ số!",
+      "invalidPassword": "Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường và 1 chữ số!",
+      "mismatchPassword": "Mật khẩu xác nhận không khớp.",
+      "sendFailed": "Gửi mã OTP thất bại! Vui lòng kiểm tra lại email.",
+      "verifyFailed": "Xác thực mã OTP thất bại!"
+    },
+    "success": {
+      "otpSent": "Mã OTP đã được gửi đến email của bạn!",
+      "passwordReset": "Đặt lại mật khẩu thành công!"
+    }
+  },
+  "forceChangePasswordPage": {
+    "title": "Đổi Mật Khẩu Lần Đầu",
+    "subtitle": "Để đảm bảo an toàn cho tài khoản, bạn cần thiết lập mật khẩu mới trước khi tiếp tục.",
+    "notice": "Bạn đang sử dụng mật khẩu tạm do hệ thống cấp. Vui lòng tạo mật khẩu mới để bảo mật tài khoản cá nhân.",
+    "newPasswordLabel": "Mật khẩu mới",
+    "newPasswordPlaceholder": "Nhập mật khẩu mới",
+    "confirmPasswordLabel": "Xác nhận mật khẩu mới",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+    "requirements": "Quy chuẩn an toàn mật khẩu:",
+    "ruleLength": "Tối thiểu 8 ký tự",
+    "ruleUpper": "Chứa ít nhất 1 chữ hoa (A-Z)",
+    "ruleLower": "Chứa ít nhất 1 chữ thường (a-z)",
+    "ruleNumber": "Chứa ít nhất 1 chữ số (0-9)",
+    "submit": "Cập Nhật Mật Khẩu & Vào Hệ Thống",
+    "submitting": "Đang lưu mật khẩu...",
+    "backToLogin": "Đăng xuất & Quay lại trang đăng nhập",
+    "errors": {
+      "invalidPassword": "Mật khẩu chưa đáp ứng đủ các tiêu chuẩn an toàn!",
+      "mismatch": "Mật khẩu xác nhận không khớp!",
+      "failed": "Đổi mật khẩu thất bại, vui lòng thử lại!"
+    },
+    "success": "Đổi mật khẩu thành công! Đang chuyển hướng..."
   }
 }
