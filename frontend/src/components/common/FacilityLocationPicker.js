@@ -26,16 +26,23 @@ const MapViewportController = ({ center }) => {
   const map = useMap();
 
   useEffect(() => {
-    // Sửa lỗi Leaflet tính sai kích thước khung chứa khi render trong form
+    let isMounted = true;
     const handleResize = () => {
-      map.invalidateSize();
+      if (!isMounted) return;
+      try {
+        if (map._mapPane) map.invalidateSize();
+      } catch (err) {}
     };
 
-    map.invalidateSize();
+    try {
+      if (map._mapPane) map.invalidateSize();
+    } catch (err) {}
+
     const timer = setTimeout(handleResize, 150);
     window.addEventListener('resize', handleResize);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
     };
@@ -43,8 +50,12 @@ const MapViewportController = ({ center }) => {
 
   useEffect(() => {
     if (center && Number.isFinite(center[0]) && Number.isFinite(center[1])) {
-      map.invalidateSize();
-      map.setView(center, 16, { animate: true });
+      try {
+        if (map._mapPane) {
+          map.invalidateSize();
+          map.setView(center, 16, { animate: true });
+        }
+      } catch (err) {}
     }
   }, [center, map]);
 

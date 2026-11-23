@@ -17,9 +17,9 @@
     "subtitle": "Quản lý và cập nhật thông tin liên hệ của bạn"
   },
   "warnings": {
-    "missingBoth": "Bạn chưa cập nhật số điện thoại và địa chỉ liên hệ. Vui lòng bổ sung đầy đủ thông tin bên dưới để Chủ bãi xe có thể liên lạc và lập hợp đồng khi bạn gửi yêu cầu đặt chỗ.",
-    "missingPhone": "Bạn chưa cập nhật số điện thoại. Vui lòng bổ sung số điện thoại liên hệ bên dưới để Chủ bãi xe có thể liên lạc khi bạn gửi yêu cầu đặt chỗ hoặc ký hợp đồng.",
-    "missingAddress": "Bạn chưa cập nhật địa chỉ thường trú / liên hệ. Vui lòng bổ sung thông tin địa chỉ bên dưới để phục vụ việc lập hợp đồng pháp lý khi thuê bãi xe."
+    "missingBoth": "Vui lòng cập nhật số điện thoại và địa chỉ để chủ bãi có thể liên hệ và tạo hợp đồng khi bạn gửi yêu cầu thuê chỗ.",
+    "missingPhone": "Vui lòng cập nhật số điện thoại để chủ bãi có thể liên hệ khi bạn gửi yêu cầu thuê chỗ.",
+    "missingAddress": "Vui lòng cập nhật địa chỉ liên hệ để tạo hợp đồng khi bạn gửi yêu cầu thuê chỗ."
   },
   "fields": {
     "email": {

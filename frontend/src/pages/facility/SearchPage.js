@@ -24,7 +24,6 @@ import {
   VIETNAM_SEA_MAP_OPTIONS,
 } from '../../utils/mapUtils';
 
-// Fix icon lỗi mặc định của leaflet khi dùng React
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -74,13 +73,14 @@ const getFacilityRating = (facility) => {
   };
 };
 
-// Component để di chuyển Map center
 const MapUpdater = ({ center, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    if (center && Number.isFinite(Number(center[0])) && Number.isFinite(Number(center[1]))) {
-      map.setView([Number(center[0]), Number(center[1])], zoom || map.getZoom(), { animate: false });
-    }
+    try {
+      if (center && Number.isFinite(Number(center[0])) && Number.isFinite(Number(center[1])) && map._mapPane) {
+        map.setView([Number(center[0]), Number(center[1])], zoom || map.getZoom(), { animate: false });
+      }
+    } catch (err) {}
   }, [center, zoom, map]);
   return null;
 };
@@ -94,29 +94,42 @@ const MapInitialCenter = ({ center, zoom }) => {
   }, [center, zoom]);
 
   useEffect(() => {
+    let isMounted = true;
     let userInteracted = false;
+    let timeoutId = null;
+
     const markUserInteraction = () => {
       userInteracted = true;
     };
 
     const setDefaultCenter = () => {
-      if (userInteracted) return;
-      const { center: currentCenter, zoom: currentZoom } = latestViewRef.current;
-      map.setView(currentCenter, currentZoom, { animate: false });
-      map.invalidateSize({ pan: false });
+      if (!isMounted || userInteracted) return;
+      try {
+        const container = map.getContainer();
+        if (!container || !map._mapPane) return;
+        const { center: currentCenter, zoom: currentZoom } = latestViewRef.current;
+        map.setView(currentCenter, currentZoom, { animate: false });
+        map.invalidateSize({ pan: false });
+      } catch (err) {}
     };
 
     map.on('dragstart zoomstart', markUserInteraction);
     const frameId = window.requestAnimationFrame(() => {
+      if (!isMounted) return;
       map.whenReady(() => {
+        if (!isMounted) return;
         setDefaultCenter();
-        window.setTimeout(setDefaultCenter, 650);
+        timeoutId = window.setTimeout(setDefaultCenter, 650);
       });
     });
 
     return () => {
+      isMounted = false;
       window.cancelAnimationFrame(frameId);
-      map.off('dragstart zoomstart', markUserInteraction);
+      if (timeoutId) window.clearTimeout(timeoutId);
+      try {
+        map.off('dragstart zoomstart', markUserInteraction);
+      } catch (err) {}
     };
   }, [map]);
 
@@ -127,17 +140,30 @@ const MapSizeInvalidator = () => {
   const map = useMap();
 
   useEffect(() => {
-    const invalidate = () => map.invalidateSize({ pan: false });
+    let isMounted = true;
+    const invalidate = () => {
+      if (!isMounted) return;
+      try {
+        if (map._mapPane && map.getContainer()) {
+          map.invalidateSize({ pan: false });
+        }
+      } catch (err) {}
+    };
+
     const frameId = window.requestAnimationFrame(invalidate);
     const firstTimeout = window.setTimeout(invalidate, 100);
     const secondTimeout = window.setTimeout(invalidate, 500);
-    const container = map.getContainer();
-    const observer = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(invalidate)
-      : null;
+    let observer = null;
+    try {
+      const container = map.getContainer();
+      if (container && typeof ResizeObserver !== 'undefined') {
+        observer = new ResizeObserver(invalidate);
+        observer.observe(container);
+      }
+    } catch (err) {}
 
-    observer?.observe(container);
     return () => {
+      isMounted = false;
       window.cancelAnimationFrame(frameId);
       window.clearTimeout(firstTimeout);
       window.clearTimeout(secondTimeout);
@@ -151,23 +177,34 @@ const MapSizeInvalidator = () => {
 const MapSearchChangeHandler = ({ hasSearched }) => {
   const map = useMap();
   useEffect(() => {
-    const container = map.getContainer();
-    if (container) {
-      if (!hasSearched) {
-        container.style.filter = 'blur(3px)';
-        container.style.pointerEvents = 'none';
-      } else {
-        container.style.filter = 'none';
-        container.style.pointerEvents = 'auto';
+    let isMounted = true;
+    let timer = null;
+    try {
+      const container = map.getContainer();
+      if (container) {
+        if (!hasSearched) {
+          container.style.filter = 'blur(3px)';
+          container.style.pointerEvents = 'none';
+        } else {
+          container.style.filter = 'none';
+          container.style.pointerEvents = 'auto';
+        }
       }
-    }
-    if (hasSearched) {
-      map.invalidateSize({ pan: false });
-      const timer = window.setTimeout(() => {
+      if (hasSearched && map._mapPane) {
         map.invalidateSize({ pan: false });
-      }, 300);
-      return () => window.clearTimeout(timer);
-    }
+        timer = window.setTimeout(() => {
+          if (!isMounted) return;
+          try {
+            if (map._mapPane) map.invalidateSize({ pan: false });
+          } catch (err) {}
+        }, 300);
+      }
+    } catch (err) {}
+
+    return () => {
+      isMounted = false;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [hasSearched, map]);
   return null;
 };
@@ -180,7 +217,6 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, loading: authLoading } = useAuth();
 
-  //search state  
   const [keyword, setKeyword] = useState('');
   const [vehicleType, setVehicleType] = useState('');
   const [dbVehicleTypes, setDbVehicleTypes] = useState([]);
@@ -212,20 +248,20 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [userLocation, setUserLocation] = useState(null); // [lat, lng]
-  const [locationAccuracy, setLocationAccuracy] = useState(null); // metres
-  const [searchedLocation, setSearchedLocation] = useState(null); // [lat, lng]
+  const [userLocation, setUserLocation] = useState(null); 
+  const [locationAccuracy, setLocationAccuracy] = useState(null); 
+  const [searchedLocation, setSearchedLocation] = useState(null); 
   const [isFallbackLocation, setIsFallbackLocation] = useState(false);
-  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER); // Mặc định Ninh Kiều, Cần Thơ
+  const [mapCenter, setMapCenter] = useState(DEFAULT_MAP_CENTER);
   const [mapZoom, setMapZoom] = useState(DEFAULT_MAP_ZOOM);
+  const [mobileTab, setMobileTab] = useState('list');
 
   const [amenitiesList, setAmenitiesList] = useState([]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
 
-  //state for compare
-  const [compareIds, setCompareIds] = useState([]);         // Danh sách ID bãi đang chọn so sánh
-  const [isCompareOpen, setIsCompareOpen] = useState(false); // Trạng thái mở modal so sánh
-  const [toastMsg, setToastMsg] = useState('');              // Toast thông báo lỗi giới hạn
+  const [compareIds, setCompareIds] = useState([]);         
+  const [isCompareOpen, setIsCompareOpen] = useState(false); 
+  const [toastMsg, setToastMsg] = useState('');              
   const [toastType, setToastType] = useState('error');
   const [mapTileError, setMapTileError] = useState(false);
   const latestSearchRequest = useRef(0);
@@ -233,16 +269,12 @@ const SearchPage = () => {
 
   const [favoriteIds, setFavoriteIds] = useState([]);
 
-  // Load favorites sau khi auth đã sẵn sàng (không phải đang loading)
   useEffect(() => {
-    // Chứ nhận isAuthenticated và user từ AuthContext
     if (isAuthenticated && user?.role?.name === 'CUSTOMER') {
       loadFavorites();
     } else if (!isAuthenticated) {
-      // User đăng xuất hoặc không có phân quyền, xóa favorites
       setFavoriteIds([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user?.id, user?.role?.name]);
 
   const loadFavorites = async () => {
@@ -279,12 +311,9 @@ const SearchPage = () => {
     }
   };
 
-  /**
-   * Toggle checkbox so sánh của một bãi đỗ xe.
-   * Giới hạn tối đa 4 bãi — hiển thị toast cảnh báo nếu vượt quá (EX-01).
-   */
+  
   const handleToggleCompare = useCallback((e, facId) => {
-    e.stopPropagation(); // Không trigger sự kiện click card bên dưới
+    e.stopPropagation(); 
     const normalizedFacilityId = Number(facId);
     if (!Number.isInteger(normalizedFacilityId) || normalizedFacilityId <= 0) {
       setToastMsg(tRef.current('search.toasts.invalidCompareFacility'));
@@ -294,11 +323,9 @@ const SearchPage = () => {
 
     setCompareIds(prev => {
       if (prev.includes(normalizedFacilityId)) {
-        // Bỏ chọn
         return prev.filter(id => id !== normalizedFacilityId);
       }
       if (prev.length >= 4) {
-        // EX-01: Đã đủ 4 bãi, hiển thị toast cảnh báo
         setToastMsg(tRef.current('search.toasts.maxCompareLimit'));
         setToastType('error');
         return prev;
@@ -307,13 +334,10 @@ const SearchPage = () => {
     });
   }, []);
 
-  /**
-   * Xóa 1 bãi khỏi danh sách so sánh (Case A.1: Remove item from matrix)
-   */
+  
   const handleRemoveFromCompare = useCallback((facId) => {
     setCompareIds(prev => {
       const updated = prev.filter(id => id !== facId);
-      // Nếu còn lại < 2, tự đóng modal
       if (updated.length < 2) setIsCompareOpen(false);
       return updated;
     });
@@ -324,7 +348,6 @@ const SearchPage = () => {
       return;
     }
 
-    // Khởi tạo lấy params từ state (nếu từ HomePage chuyển qua)
     let fromHomepage = false;
     let initialKeyword = keyword;
     if (location.state) {
@@ -350,7 +373,6 @@ const SearchPage = () => {
         fetchFacilities(null, null, initialKeyword);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated, user?.id, user?.role?.name]);
 
   const fetchAmenities = async () => {
@@ -567,7 +589,6 @@ const SearchPage = () => {
     await fetchFacilities(null, null, facility.name, false);
   };
 
-  //drag marker
   const handleSearchedLocationDragEnd = async (e) => {
     const marker = e.target;
     if (!marker) return;
@@ -586,9 +607,7 @@ const SearchPage = () => {
     }
   };
 
-  /**
-   * Xử lý di dời marker vị trí GPS của người dùng
-   */
+  
   const handleUserLocationDragEnd = async (e) => {
     const marker = e.target;
     if (!marker) return;
@@ -607,11 +626,7 @@ const SearchPage = () => {
     }
   };
 
-  /**
-   * Mở chỉ đường bằng Google Maps trực tiếp:
-   * Điểm đi: Vị trí người dùng đã tìm kiếm hoặc vị trí GPS hiện tại (nếu có).
-   * Điểm đến: Tọa độ hoặc địa chỉ của bãi đỗ xe.
-   */
+  
   const handleGetDirections = (fac) => {
     const facLat = Number(fac.latitude);
     const facLng = Number(fac.longitude);
@@ -705,11 +720,11 @@ const SearchPage = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-slate-50">
-      {/* Toast thông báo giới hạn so sánh */}
+    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-gray-50">
+      
       <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg('')} />
 
-      {/* Modal so sánh (Function 3.41) */}
+      
       <CompareModal
         selectedIds={compareIds}
         isOpen={isCompareOpen}
@@ -717,8 +732,8 @@ const SearchPage = () => {
         onClose={() => setIsCompareOpen(false)}
         onRemove={handleRemoveFromCompare}
       />
-      {/* HEADER / FILTER BAR */}
-      <header className="relative bg-white border-b border-slate-200 shadow-sm z-[30] px-4 py-3 shrink-0">
+      
+      <header className="relative bg-white border-b border-gray-200 shadow-sm z-[30] px-4 py-3 shrink-0">
         <form onSubmit={handleSearch} className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3">
 
           <div className="relative flex-1 w-full">
@@ -733,10 +748,10 @@ const SearchPage = () => {
               onFacilitySelect={handleFacilitySelect}
               includeFacilities={true}
               placeholder={t('search.filters.keywordPlaceholder')}
-              inputClassName="py-2.5 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              inputClassName="py-2.5 bg-gray-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-200 transition"
             />
             {keyword && (
-              <button type="button" onClick={clearKeyword} className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+              <button type="button" onClick={clearKeyword} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             )}
@@ -751,7 +766,7 @@ const SearchPage = () => {
                 onChange={(e) => setMinPrice(e.target.value)}
                 placeholder={t('search.filters.minPricePlaceholder')}
                 aria-label={t('search.filters.minPriceAria')}
-                className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+                className="w-24 py-2.5 px-3 bg-gray-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-200 transition"
               />
               <input
                 type="number"
@@ -760,14 +775,14 @@ const SearchPage = () => {
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder={t('search.filters.maxPricePlaceholder')}
                 aria-label={t('search.filters.maxPriceAria')}
-                className="w-24 py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+                className="w-24 py-2.5 px-3 bg-gray-100 border border-transparent rounded-xl text-sm focus:bg-white focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-200 transition"
               />
             </div>
 
             <select
               value={vehicleType}
               onChange={(e) => setVehicleType(e.target.value)}
-              className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              className="py-2.5 px-3 bg-gray-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-200 transition"
             >
               <option value="">{t('search.filters.allVehicleTypes')}</option>
               {displayVehicleTypes.map(vt => (
@@ -786,7 +801,7 @@ const SearchPage = () => {
                   fetchFacilities(loc[0], loc[1], keyword, !searchedLocation, newRadius);
                 }
               }}
-              className="py-2.5 px-3 bg-slate-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition"
+              className="py-2.5 px-3 bg-gray-100 border border-transparent rounded-xl text-sm font-medium focus:bg-white focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-200 transition"
             >
               <option value={1}>{t('search.filters.radiusOption', { km: 1 })}</option>
               <option value={3}>{t('search.filters.radiusOption', { km: 3 })}</option>
@@ -801,14 +816,14 @@ const SearchPage = () => {
               type="button"
               onClick={handleLocateMe}
               title={t('search.filters.locateMeTitle')}
-              className="px-4 py-2.5 bg-teal-50 text-teal-700 hover:bg-teal-100 font-semibold rounded-xl border border-teal-200 flex items-center justify-center transition whitespace-nowrap"
+              className="px-4 py-2.5 bg-neighbor-50 text-neighbor-700 hover:bg-neighbor-100 font-semibold rounded-xl border border-neighbor-200 flex items-center justify-center transition whitespace-nowrap"
             >
               <Navigation className="w-5 h-5" />
             </button>
 
             <button
               type="submit"
-              className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 whitespace-nowrap flex-1 md:flex-none"
+              className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 whitespace-nowrap flex-1 md:flex-none"
             >
               <Search className="w-5 h-5" /> {t('search.filters.searchButton')}
             </button>
@@ -817,7 +832,7 @@ const SearchPage = () => {
 
         <div className="max-w-7xl mx-auto mt-2 flex flex-wrap items-center gap-3 text-xs">
           {locationAccuracy !== null && (
-            <span className="text-slate-500">
+            <span className="text-gray-500">
               {t('search.filters.gpsAccuracy', { meters: Math.round(locationAccuracy) })}
             </span>
           )}
@@ -833,7 +848,7 @@ const SearchPage = () => {
             >
               {t('search.filters.clearFilters')}
             </button>
-            <span className="text-xs font-bold text-slate-500 uppercase mr-2">{t('search.filters.amenitiesLabel')}</span>
+            <span className="text-xs font-bold text-gray-500 uppercase mr-2">{t('search.filters.amenitiesLabel')}</span>
             {amenitiesList.map((amenity) => {
               const isSelected = selectedAmenities.includes(amenity.id);
               return (
@@ -842,8 +857,8 @@ const SearchPage = () => {
                   type="button"
                   onClick={() => toggleAmenity(amenity.id)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-all ${isSelected
-                    ? 'bg-teal-100 border-teal-300 text-teal-800 shadow-sm'
-                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'bg-neighbor-100 border-neighbor-300 text-neighbor-800 shadow-sm'
+                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
                     }`}
                 >
                   {translateAmenityName(amenity.name, i18n.language)}
@@ -853,7 +868,7 @@ const SearchPage = () => {
             <button
               type="button"
               onClick={handleSearch}
-              className="ml-auto px-4 py-1.5 text-xs font-bold rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition flex items-center gap-1.5"
+              className="ml-auto px-4 py-1.5 text-xs font-bold rounded-full bg-neighbor-600 hover:bg-neighbor-700 text-white shadow-sm transition flex items-center gap-1.5"
             >
               <Search className="w-3.5 h-3.5" /> {t('search.filters.applyAmenities')}
             </button>
@@ -861,39 +876,37 @@ const SearchPage = () => {
         )}
       </header>
 
-      {/* MAIN SPLIT VIEW */}
-      <main className="flex-1 min-h-0 flex flex-col-reverse md:flex-row overflow-hidden relative">
-        {/* LEFT PANEL: LIST OF RESULTS */}
-        <div className="w-full md:w-[450px] lg:w-[500px] h-1/2 md:h-full min-h-0 bg-slate-50 border-r border-slate-200 flex flex-col shadow-xl z-20">
-          <div className="p-4 bg-white border-b border-slate-200 flex justify-between items-center shrink-0">
-            <h2 className="text-lg font-bold text-slate-900">
+      <main className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden relative">
+        <div className={`w-full md:w-[450px] lg:w-[500px] ${mobileTab === 'list' ? 'flex' : 'hidden'} md:flex h-full min-h-0 bg-gray-50 border-r border-gray-200 flex-col z-20`}>
+          <div className="p-4 bg-white border-b border-gray-200 flex justify-between items-center shrink-0">
+            <h2 className="text-lg font-bold text-gray-900">
               {hasSearched ? (
-                <>{t('search.results.foundCountPrefix')} <span className="text-teal-600">{facilities.length}</span> {t('search.results.foundCountSuffix')}</>
+                <>{t('search.results.foundCountPrefix')} <span className="text-neighbor-600">{facilities.length}</span> {t('search.results.foundCountSuffix')}</>
               ) : (
                 <>{t('search.results.titleDefault')}</>
               )}
             </h2>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <List className="w-4 h-4" /> {t('search.results.listView')}
             </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             {!hasSearched ? (
-              <div className="text-center py-16 text-slate-500 flex flex-col items-center">
-                <Search className="w-10 h-10 mb-3 text-slate-300" />
-                <p className="font-semibold text-slate-700">{t('search.results.emptyInitialTitle')}</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
+              <div className="text-center py-16 text-gray-500 flex flex-col items-center">
+                <Search className="w-10 h-10 mb-3 text-gray-300" />
+                <p className="font-semibold text-gray-700">{t('search.results.emptyInitialTitle')}</p>
+                <p className="text-xs text-gray-400 mt-1 max-w-xs">
                   {t('search.results.emptyInitialDesc')}
                 </p>
               </div>
             ) : loading ? (
-              <div className="text-center py-10 text-slate-500">{t('search.results.searching')}</div>
+              <div className="text-center py-10 text-gray-500">{t('search.results.searching')}</div>
             ) : error ? (
               <div className="text-center py-10 text-red-500">{error}</div>
             ) : facilities.length === 0 ? (
-              <div className="text-center py-10 text-slate-500 flex flex-col items-center">
-                <Info className="w-10 h-10 mb-3 text-slate-300" />
+              <div className="text-center py-10 text-gray-500 flex flex-col items-center">
+                <Info className="w-10 h-10 mb-3 text-gray-300" />
                 <p>{t('search.results.noResultsTitle')}</p>
                 <p className="text-sm mt-1">{t('search.results.noResultsHint')}</p>
               </div>
@@ -907,23 +920,26 @@ const SearchPage = () => {
                   <div
                     key={fac.id}
                     className={`bg-white rounded-2xl p-4 shadow-sm border transition cursor-pointer ${isSelected
-                      ? 'border-teal-400 shadow-teal-100 ring-2 ring-teal-300/50'
-                      : 'border-slate-200 hover:shadow-md hover:border-teal-300'
+                      ? 'border-neighbor-400 shadow-neighbor-100 ring-2 ring-neighbor-300/50'
+                      : 'border-gray-200 hover:shadow-md hover:border-neighbor-300'
                       }`}
                     onClick={() => {
                       if (fac.latitude && fac.longitude) {
                         setMapCenter([fac.latitude, fac.longitude]);
                         setMapZoom(16);
+                        if (window.innerWidth < 768) {
+                          setMobileTab('map');
+                        }
                       }
                     }}
                   >
                     <div className="flex gap-4">
-                      {/* Thumbnail */}
-                      <div className="relative w-24 h-24 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-100">
+                      
+                      <div className="relative w-24 h-24 rounded-xl bg-gray-100 overflow-hidden shrink-0 border border-gray-100">
                         {fac.images && fac.images.length > 0 ? (
                           <img src={fac.images[0].image_url} alt={fac.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
                             <CarFront className="w-8 h-8" />
                           </div>
                         )}
@@ -934,7 +950,7 @@ const SearchPage = () => {
                         )}
                       </div>
 
-                      {/* Info */}
+                      
                       <div className="flex-1 flex flex-col justify-between relative">
                         <button
                           type="button"
@@ -942,8 +958,8 @@ const SearchPage = () => {
                           onClick={(e) => handleToggleCompare(e, fac.id)}
                           title={isSelected ? t('search.results.compareRemoveTitle') : t('search.results.compareAddTitle')}
                           className={`absolute -top-1 -right-1 z-10 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl border transition ${isSelected
-                            ? 'bg-teal-100 border-teal-300 text-teal-700'
-                            : 'bg-white border-slate-200 text-slate-500 hover:border-teal-300 hover:text-teal-600'
+                            ? 'bg-neighbor-100 border-neighbor-300 text-neighbor-700'
+                            : 'bg-white border-gray-200 text-gray-500 hover:border-neighbor-300 hover:text-neighbor-600'
                             }`}
                         >
                           {isSelected
@@ -954,9 +970,9 @@ const SearchPage = () => {
                         </button>
                         <div className="pr-20">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="font-bold text-slate-900 line-clamp-1">{fac.name}</h3>
+                            <h3 className="font-bold text-gray-900 line-clamp-1">{fac.name}</h3>
                           </div>
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 flex gap-1">
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2 flex gap-1">
                             <MapPin className="w-3.5 h-3.5 shrink-0" /> {fac.address}
                           </p>
                         </div>
@@ -970,7 +986,7 @@ const SearchPage = () => {
                             </div>
                             <div className={`text-xs font-bold px-2 py-1 rounded-lg border whitespace-nowrap shrink-0 ${isOutOfSlots
                               ? 'bg-rose-50 text-rose-700 border-rose-200'
-                              : 'bg-teal-50 text-teal-700 border-teal-200'
+                              : 'bg-neighbor-50 text-neighbor-700 border-neighbor-200'
                               }`}>
                               {isOutOfSlots
                                 ? t('search.results.slotsRemaining', { available: 0, total: fac.capacity || 0 })
@@ -978,7 +994,7 @@ const SearchPage = () => {
                             </div>
                           </div>
                           {fac.distance !== null && fac.distance !== undefined && (
-                            <div className="text-xs font-semibold text-teal-600 bg-teal-50 px-2 py-1 rounded-lg border border-teal-100 whitespace-nowrap shrink-0">
+                            <div className="text-xs font-semibold text-neighbor-600 bg-neighbor-50 px-2 py-1 rounded-lg border border-neighbor-100 whitespace-nowrap shrink-0">
                               {t('search.results.distanceAway', { km: (fac.distance).toFixed(1) })}
                             </div>
                           )}
@@ -986,11 +1002,11 @@ const SearchPage = () => {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between gap-2">
                       <div>
-                        <div className="text-xs text-slate-500 uppercase font-semibold">{t('search.results.priceHeader')}</div>
-                        <div className="text-lg font-bold text-teal-600">
-                          {fac.price_per_month ? fac.price_per_month.toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN') : '0'} {t('search.results.currencySuffix')} <span className="text-xs text-slate-400 font-normal">{t('search.results.perMonthSuffix')}</span>
+                        <div className="text-xs text-gray-500 uppercase font-semibold">{t('search.results.priceHeader')}</div>
+                        <div className="text-lg font-bold text-neighbor-600">
+                          {fac.price_per_month ? fac.price_per_month.toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN') : '0'} {t('search.results.currencySuffix')} <span className="text-xs text-gray-400 font-normal">{t('search.results.perMonthSuffix')}</span>
                         </div>
                       </div>
 
@@ -1000,11 +1016,11 @@ const SearchPage = () => {
                           onClick={(e) => handleToggleFavorite(e, fac.id)}
                           aria-label={favoriteIds.includes(Number(fac.id)) ? t('search.results.removeFavoriteLabel') : t('search.results.addFavoriteLabel')}
                           title={favoriteIds.includes(Number(fac.id)) ? t('search.results.removeFavoriteLabel') : t('search.results.addFavoriteLabel')}
-                          className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 transition-colors"
+                          className="p-2 rounded-xl border border-gray-200 bg-white hover:bg-rose-50 hover:border-rose-200 transition-colors"
                         >
-                          <Heart className={`w-4 h-4 ${favoriteIds.includes(Number(fac.id)) ? 'text-rose-500 fill-rose-500' : 'text-slate-400'}`} />
+                          <Heart className={`w-4 h-4 ${favoriteIds.includes(Number(fac.id)) ? 'text-rose-500 fill-rose-500' : 'text-gray-400'}`} />
                         </button>
-                        {/* Nút Chỉ đường trực tiếp qua Google Maps */}
+                        
                         <button
                           type="button"
                           onClick={(e) => {
@@ -1012,14 +1028,14 @@ const SearchPage = () => {
                             handleGetDirections(fac);
                           }}
                           title={t('search.results.directionsTitle')}
-                          className="px-3 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 text-xs font-bold rounded-xl transition flex items-center gap-1 border border-teal-200 shadow-sm"
+                          className="px-3 py-2 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-700 text-xs font-bold rounded-xl transition flex items-center gap-1 border border-neighbor-200 shadow-sm"
                         >
                           <Navigation className="w-3.5 h-3.5" /> {t('search.results.directions')}
                         </button>
-                        {/* Nút Chi tiết */}
+                        
                         <button
                           onClick={(e) => { e.stopPropagation(); handleNavigateToDetail(fac.id); }}
-                          className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition"
+                          className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition"
                         >
                           {t('search.results.details')}
                         </button>
@@ -1032,8 +1048,7 @@ const SearchPage = () => {
           </div>
         </div>
 
-        {/* RIGHT PANEL: INTERACTIVE MAP */}
-        <div className="flex-1 h-1/2 md:h-full min-h-0 relative z-0">
+        <div className={`flex-1 ${mobileTab === 'map' ? 'block' : 'hidden'} md:block h-full min-h-0 relative z-0`}>
           <div className={`w-full h-full transition-[filter] duration-300 ${!hasSearched ? 'filter blur-[3px] pointer-events-none' : 'filter-none pointer-events-auto'}`}>
             <MapContainer
               center={mapCenter}
@@ -1088,7 +1103,7 @@ const SearchPage = () => {
                 />
               )}
 
-              {/* Vị trí địa chỉ được tìm kiếm bằng chữ - Cho phép kéo thả di dời */}
+              
               {searchedLocation && (
                 <Marker
                   position={searchedLocation}
@@ -1103,8 +1118,8 @@ const SearchPage = () => {
                       <div className="font-bold text-red-600 text-xs flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5" /> {t('search.map.searchPointTitle')}
                       </div>
-                      <p className="text-xs text-slate-700 mt-1">{keyword || t('search.map.selectedLocationFallback')}</p>
-                      <p className="text-[10px] text-slate-400 mt-1 italic">
+                      <p className="text-xs text-gray-700 mt-1">{keyword || t('search.map.selectedLocationFallback')}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 italic">
                         {t('search.map.dragHint')}
                       </p>
                     </div>
@@ -1112,7 +1127,7 @@ const SearchPage = () => {
                 </Marker>
               )}
 
-              {/* Vị trí của user - Cho phép kéo thả di dời */}
+              
               {userLocation && (
                 <Marker
                   position={userLocation}
@@ -1124,13 +1139,13 @@ const SearchPage = () => {
                 >
                   <Popup>
                     <div className="p-1">
-                      <div className="font-bold text-teal-600 text-xs flex items-center gap-1">
+                      <div className="font-bold text-neighbor-600 text-xs flex items-center gap-1">
                         <Navigation className="w-3.5 h-3.5" /> {t('search.map.currentLocationTitle')}
                       </div>
-                      <p className="text-xs text-slate-700 mt-1">
+                      <p className="text-xs text-gray-700 mt-1">
                         {isFallbackLocation ? t('search.map.defaultFallbackLocation') : (keyword || t('search.map.yourLocationFallback'))}
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-1 italic">
+                      <p className="text-[10px] text-gray-400 mt-1 italic">
                         {t('search.map.dragHint')}
                       </p>
                     </div>
@@ -1138,7 +1153,7 @@ const SearchPage = () => {
                 </Marker>
               )}
 
-              {/* Các bãi đỗ xe */}
+              
               {facilities.map(fac => {
                 const latitude = Number(fac.latitude);
                 const longitude = Number(fac.longitude);
@@ -1156,8 +1171,8 @@ const SearchPage = () => {
                   return (
                     <Marker key={fac.id} position={[latitude, longitude]} icon={facilityCarIcon}>
                       <Popup minWidth={290} maxWidth={320} className="parklink-facility-popup">
-                        <div className="w-[270px] overflow-hidden rounded-xl bg-white text-slate-800">
-                          <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-slate-100">
+                        <div className="w-[270px] overflow-hidden rounded-xl bg-white text-gray-800">
+                          <div className="relative h-28 -mx-0 -mt-0 overflow-hidden bg-gray-100">
                             {primaryImage ? (
                               <img
                                 src={primaryImage.image_url}
@@ -1165,13 +1180,13 @@ const SearchPage = () => {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
                                 <CarFront className="w-8 h-8" />
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-gray-950/75 via-transparent to-transparent" />
                             <div className="absolute left-2.5 bottom-2 flex items-center gap-1.5">
-                              <span className="px-2 py-1 rounded-md bg-teal-600 text-white text-[10px] font-bold">
+                              <span className="px-2 py-1 rounded-md bg-neighbor-600 text-white text-[10px] font-bold">
                                 {t('search.map.verifiedBadge')}
                               </span>
                               {isOutOfSlots && (
@@ -1185,10 +1200,10 @@ const SearchPage = () => {
                           <div className="p-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className="min-w-0">
-                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                                   #{String(fac.id).padStart(4, '0')}
                                 </p>
-                                <h4 className="mt-0.5 text-sm font-bold leading-tight text-slate-900 line-clamp-2">
+                                <h4 className="mt-0.5 text-sm font-bold leading-tight text-gray-900 line-clamp-2">
                                   {fac.name}
                                 </h4>
                               </div>
@@ -1200,21 +1215,21 @@ const SearchPage = () => {
                               ) : null}
                             </div>
 
-                            <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-slate-500">
-                              <MapPin className="mt-0.5 w-3.5 h-3.5 shrink-0 text-teal-600" />
+                            <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-gray-500">
+                              <MapPin className="mt-0.5 w-3.5 h-3.5 shrink-0 text-neighbor-600" />
                               <span className="line-clamp-2">{fac.address || t('search.map.addressNotUpdated')}</span>
                             </p>
 
                             <div className="mt-3 grid grid-cols-2 gap-2">
-                              <div className="rounded-lg bg-teal-50 px-2 py-1.5">
-                                <p className="text-[10px] text-teal-700">{t('search.map.monthlyPriceLabel')}</p>
-                                <p className="mt-0.5 text-xs font-bold text-teal-800">
+                              <div className="rounded-lg bg-neighbor-50 px-2 py-1.5">
+                                <p className="text-[10px] text-neighbor-700">{t('search.map.monthlyPriceLabel')}</p>
+                                <p className="mt-0.5 text-xs font-bold text-neighbor-800">
                                   {Number(fac.price_per_month || 0).toLocaleString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN')} {t('search.results.currencySuffix')}
                                 </p>
                               </div>
-                              <div className={`rounded-lg px-2 py-1.5 ${isOutOfSlots ? 'bg-rose-50 border border-rose-100' : 'bg-slate-50'}`}>
-                                <p className={`text-[10px] ${isOutOfSlots ? 'text-rose-600 font-semibold' : 'text-slate-500'}`}>{t('search.map.slotStatusLabel')}</p>
-                                <p className={`mt-0.5 text-xs font-bold ${isOutOfSlots ? 'text-rose-700' : 'text-slate-800'}`}>
+                              <div className={`rounded-lg px-2 py-1.5 ${isOutOfSlots ? 'bg-rose-50 border border-rose-100' : 'bg-gray-50'}`}>
+                                <p className={`text-[10px] ${isOutOfSlots ? 'text-rose-600 font-semibold' : 'text-gray-500'}`}>{t('search.map.slotStatusLabel')}</p>
+                                <p className={`mt-0.5 text-xs font-bold ${isOutOfSlots ? 'text-rose-700' : 'text-gray-800'}`}>
                                   {isOutOfSlots ? t('search.results.slotsRemaining', { available: 0, total: fac.capacity || 0 }) : t('search.results.slotsRemaining', { available: fac.available_slots ?? fac.capacity, total: fac.capacity || 0 })}
                                 </p>
                               </div>
@@ -1223,19 +1238,19 @@ const SearchPage = () => {
                             {amenityNames.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-1">
                                 {amenityNames.map((amenity, index) => (
-                                  <span key={`${amenity}-${index}`} className="rounded bg-slate-100 px-1.5 py-1 text-[10px] text-slate-600">
+                                  <span key={`${amenity}-${index}`} className="rounded bg-gray-100 px-1.5 py-1 text-[10px] text-gray-600">
                                     {amenity}
                                   </span>
                                 ))}
                               </div>
                             )}
 
-                            {/* Hàng 2 nút: Xem chi tiết và Chỉ đường Google Maps */}
+                            
                             <div className="mt-3 flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => handleNavigateToDetail(fac.id)}
-                                className="flex-1 rounded-lg bg-slate-900 py-2 text-xs font-bold text-white transition hover:bg-slate-800 text-center"
+                                className="flex-1 rounded-lg bg-gray-900 py-2 text-xs font-bold text-white transition hover:bg-gray-800 text-center"
                               >
                                 {t('search.results.details')}
                               </button>
@@ -1245,7 +1260,7 @@ const SearchPage = () => {
                                   e.stopPropagation();
                                   handleGetDirections(fac);
                                 }}
-                                className="flex-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
+                                className="flex-1 rounded-lg bg-neighbor-600 hover:bg-neighbor-700 text-white py-2 text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
                                 title={t('search.results.directionsTitle')}
                               >
                                 <Navigation className="w-3.5 h-3.5" /> {t('search.results.directions')}
@@ -1266,15 +1281,15 @@ const SearchPage = () => {
           {!hasSearched && (
             <div
               onWheel={(e) => e.stopPropagation()}
-              className="absolute inset-0 bg-slate-900/35 backdrop-blur-[2px] z-[1000] flex items-center justify-center p-4 pointer-events-auto cursor-default select-none transition-all duration-300"
+              className="absolute inset-0 bg-gray-900/35 backdrop-blur-[2px] z-[1000] flex items-center justify-center p-4 pointer-events-auto cursor-default select-none transition-all duration-300"
             >
-              <div className="bg-white/95 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-slate-200/90 flex items-center gap-3.5 max-w-sm text-left">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 shadow-xs">
+              <div className="bg-white/95 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-gray-200/90 flex items-center gap-3.5 max-w-sm text-left">
+                <div className="w-10 h-10 rounded-xl bg-neighbor-50 text-neighbor-600 flex items-center justify-center shrink-0 shadow-xs">
                   <Search className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-slate-900">{t('search.map.startTitle')}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">
+                  <div className="text-sm font-bold text-gray-900">{t('search.map.startTitle')}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
                     {t('search.map.startDesc')}
                   </div>
                 </div>
@@ -1282,35 +1297,57 @@ const SearchPage = () => {
             </div>
           )}
 
-          {/* MAP BADGE */}
+          
           <div className={`absolute top-4 left-4 z-[400] pointer-events-none ${!hasSearched ? 'hidden' : ''}`}>
-            <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-md flex items-center gap-2">
+            <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-gray-200 shadow-md flex items-center gap-2">
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neighbor-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-neighbor-600"></span>
               </span>
-              <span className="text-xs font-bold text-slate-700">Live Map View</span>
+              <span className="text-xs font-bold text-gray-700">Live Map View</span>
             </div>
           </div>
         </div>
       </main>
 
-      {/*FLOATING COMPARE BAR */}
+      {compareIds.length < 2 && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileTab((prev) => (prev === 'list' ? 'map' : 'list'))}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-xs font-semibold rounded-full shadow-lg border border-gray-700 active:scale-95 transition-transform cursor-pointer"
+          >
+            {mobileTab === 'list' ? (
+              <>
+                <MapPin className="w-4 h-4 text-neighbor-400" />
+                <span>{t('search.results.mapView') || 'Xem bản đồ'}</span>
+              </>
+            ) : (
+              <>
+                <List className="w-4 h-4 text-neighbor-400" />
+                <span>{t('search.results.listView') || 'Xem danh sách'}</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      
       {compareIds.length >= 2 && (
         <div
           id="floating-compare-bar"
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-auto max-w-xl px-5 py-3 bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-700/50 flex items-center gap-4 animate-slideUp"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[500] w-auto max-w-xl px-5 py-3 bg-gray-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700/50 flex items-center gap-4 animate-slideUp"
         >
-          {/*chosen lots info*/}
+          
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
-              <GitCompareArrows className="w-3.5 h-3.5 text-teal-400" />
+            <div className="w-7 h-7 rounded-xl bg-neighbor-600/20 border border-neighbor-400/30 flex items-center justify-center shrink-0">
+              <GitCompareArrows className="w-3.5 h-3.5 text-neighbor-400" />
             </div>
             <div className="min-w-0">
               <p className="text-white font-bold text-xs">
-                {t('search.compareBar.selectedCount')} <span className="text-teal-400">{compareIds.length}</span>{t('search.compareBar.selectedCountSuffix')}
+                {t('search.compareBar.selectedCount')} <span className="text-neighbor-400">{compareIds.length}</span>{t('search.compareBar.selectedCountSuffix')}
               </p>
-              <p className="text-slate-400 text-[10px] truncate">
+              <p className="text-gray-400 text-[10px] truncate">
                 {facilities
                   .filter(f => compareIds.includes(f.id))
                   .map(f => f.name)
@@ -1319,21 +1356,21 @@ const SearchPage = () => {
             </div>
           </div>
 
-          {/* Nút xóa tất cả */}
+          
           <button
             id="compare-bar-clear-btn"
             onClick={() => setCompareIds([])}
             title={t('search.compareBar.clearAllTitle')}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition shrink-0"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700 transition shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* Nút So Sánh */}
+          
           <button
             id="compare-bar-submit-btn"
             onClick={() => setIsCompareOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-900 text-sm font-extrabold rounded-xl transition shrink-0 shadow-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-neighbor-600 hover:bg-neighbor-400 text-gray-900 text-sm font-extrabold rounded-xl transition shrink-0 shadow-lg"
           >
             <GitCompareArrows className="w-4 h-4" />
             {t('search.compareBar.compareButton', { count: compareIds.length })}

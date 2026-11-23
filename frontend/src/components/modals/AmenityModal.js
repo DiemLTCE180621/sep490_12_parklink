@@ -120,36 +120,44 @@ const AmenityModal = ({ isOpen, onClose, onSuccess, amenity = null }) => {
   const SelectedIconComp = (ICON_OPTIONS.find((i) => i.value === formData.icon) || ICON_OPTIONS[0]).icon;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
       <div
-        className="bg-white rounded-2xl max-w-md w-full shadow-lg border border-slate-200 overflow-hidden"
+        className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-gray-200 overflow-hidden transform transition-all duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-teal-600" />
-            <h3 className="text-base font-bold text-slate-900">
-              {isEdit ? 'Chỉnh Sửa Tiện Ích' : 'Thêm Tiện Ích Mới'}
-            </h3>
+        <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 bg-white">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-neighbor-50 text-neighbor-600 border border-neighbor-100 flex items-center justify-center shrink-0">
+              <Layers className="w-5 h-5 text-neighbor-600" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-neighbor-700 uppercase tracking-wider block">
+                Danh mục tiện ích
+              </span>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">
+                {isEdit ? 'Chỉnh Sửa Tiện Ích' : 'Thêm Tiện Ích Mới'}
+              </h3>
+            </div>
           </div>
           <button
             onClick={onClose}
             disabled={submitting}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+            className="w-9 h-9 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 flex items-center justify-center transition cursor-pointer"
+            aria-label="Đóng"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-5 bg-white">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
-              {error}
+            <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center gap-2">
+              <span>{error}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Tên tiện ích <span className="text-red-500">*</span>
             </label>
             <input
@@ -157,19 +165,19 @@ const AmenityModal = ({ isOpen, onClose, onSuccess, amenity = null }) => {
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="VD: Mái che mưa nắng, Camera an ninh..."
-              className="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 transition"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Nhóm danh mục
             </label>
             <select
               value={formData.type}
               onChange={(e) => handleChange('type', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
+              className="w-full px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white transition"
             >
               {TYPE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -180,17 +188,17 @@ const AmenityModal = ({ isOpen, onClose, onSuccess, amenity = null }) => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Biểu tượng hiển thị
             </label>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-slate-100 text-teal-700 border border-slate-200 flex items-center justify-center shrink-0">
-                <SelectedIconComp className="w-4 h-4" />
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-neighbor-50 text-neighbor-700 border border-neighbor-200 flex items-center justify-center shrink-0 shadow-2xs">
+                <SelectedIconComp className="w-6 h-6 text-neighbor-700" />
               </div>
               <select
                 value={formData.icon}
                 onChange={(e) => handleChange('icon', e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-white"
+                className="flex-1 px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white transition"
               >
                 {ICON_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -201,36 +209,41 @@ const AmenityModal = ({ isOpen, onClose, onSuccess, amenity = null }) => {
             </div>
           </div>
 
-          <div className="pt-2">
-            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+          <div className="pt-1">
+            <label className="flex items-center gap-3.5 p-3.5 rounded-xl border border-gray-200 bg-gray-50/70 hover:bg-gray-50 cursor-pointer transition select-none">
               <input
                 type="checkbox"
                 checked={formData.is_active}
                 onChange={(e) => handleChange('is_active', e.target.checked)}
-                className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500"
+                className="w-4 h-4 text-neighbor-600 rounded border-gray-300 focus:ring-neighbor-600 cursor-pointer"
               />
-              <span className="text-xs font-medium text-slate-700">
-                Kích hoạt hiển thị cho các cơ sở bãi xe lựa chọn
-              </span>
+              <div>
+                <span className="text-sm font-semibold text-gray-800 block">
+                  Kích hoạt hiển thị cho các cơ sở bãi xe lựa chọn
+                </span>
+                <span className="text-xs text-gray-500 block mt-0.5">
+                  Cho phép chủ bãi xe lựa chọn tiện ích này khi thiết lập tiện nghi cơ sở.
+                </span>
+              </div>
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition"
+              className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg shadow-sm transition flex items-center gap-1.5"
+              className="px-6 py-2.5 text-sm font-bold text-white bg-neighbor-600 hover:bg-neighbor-700 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer active:scale-95"
             >
-              {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {isEdit ? 'Lưu thay đổi' : 'Tạo tiện ích'}
+              {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>{isEdit ? 'Lưu thay đổi' : 'Tạo tiện ích'}</span>
             </button>
           </div>
         </form>

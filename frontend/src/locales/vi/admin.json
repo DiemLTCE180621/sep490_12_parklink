@@ -1,0 +1,308 @@
+{
+  "header": {
+    "roleTitle": "Ban Quản Trị Hệ Thống"
+  },
+  "sidebar": {
+    "title": "Menu Quản Trị",
+    "subtitle": "Hệ thống ParkLink",
+    "itemsCount": "{{count}} mục",
+    "viewing": "Đang xem mục",
+    "close": "Đóng",
+    "allMenu": "Tất cả menu"
+  },
+  "tabs": {
+    "overview": "Tổng Quan",
+    "registrations": "Duyệt Bãi Đỗ Xe",
+    "users": "Quản Lý Người Dùng",
+    "inspectors": "Nhân Viên Khảo Sát",
+    "facilities": "Tất Cả Cơ Sở",
+    "contracts": "Quản Lý Hợp Đồng",
+    "providerRevenue": "Doanh Thu Bãi Xe",
+    "transactions": "Lịch Sử Giao Dịch",
+    "complaints": "Quản Lý Khiếu Nại",
+    "reviews": "Quản Lý Đánh Giá",
+    "platformFees": "Phí Nền Tảng",
+    "vehicleTypes": "Loại Phương Tiện",
+    "amenities": "Quản Lý Tiện Ích",
+    "broadcast": "Phát Thông Báo",
+    "timelineSettings": "Cấu Hình Thời Hạn",
+    "policies": "Chính Sách Hệ Thống",
+    "provider-revenue": "Doanh Thu Bãi Xe",
+    "platform-fees": "Phí Nền Tảng",
+    "vehicle-types": "Loại Phương Tiện",
+    "timeline-settings": "Cấu Hình Thời Hạn"
+  },
+  "common": {
+    "search": "Tìm kiếm...",
+    "refresh": "Làm mới",
+    "reset": "Đặt lại",
+    "all": "Tất cả",
+    "actions": "Thao tác",
+    "status": "Trạng thái",
+    "total": "Tổng cộng",
+    "pagination": "Trang {{current}} / {{total}}",
+    "empty": "Không tìm thấy dữ liệu phù hợp.",
+    "loading": "Đang tải dữ liệu..."
+  },
+  "statuses": {
+    "active": "Hoạt động",
+    "pending": "Chờ duyệt",
+    "pendingReview": "Chờ duyệt sơ bộ",
+    "preparing": "Đang khảo sát",
+    "inspected": "Đã khảo sát",
+    "approved": "Đã duyệt",
+    "rejected": "Đã từ chối",
+    "blocked": "Đã khóa",
+    "locked": "Đã khóa"
+  },
+  "roles": {
+    "customer": "Khách hàng",
+    "provider": "Chủ bãi xe",
+    "fieldInspector": "Nhân viên khảo sát",
+    "admin": "Quản trị viên"
+  },
+  "dashboard": {
+    "statCards": {
+      "totalUsers": "Tổng người dùng",
+      "activeFacilities": "Bãi xe đang hoạt động",
+      "pendingFacilities": "Bãi xe đăng ký chưa được duyệt",
+      "totalReservations": "Tổng yêu cầu thuê",
+      "totalContracts": "Tổng hợp đồng thuê",
+      "pendingComplaints": "Khiếu nại chờ tiếp nhận",
+      "paidPlatformFees": "Phí nền tảng đã thu"
+    },
+    "activitySeries": {
+      "facilities": "Bãi xe đăng ký",
+      "reservations": "Yêu cầu thuê",
+      "contracts": "Hợp đồng thuê",
+      "complaints": "Khiếu nại"
+    },
+    "title": "Tổng quan hệ thống",
+    "subtitle": "Tình hình hoạt động hiện tại của ParkLink",
+    "exportBtn": "Xuất báo cáo tổng quan",
+    "exporting": "Đang xuất file...",
+    "refreshBtn": "Làm mới"
+  },
+  "users": {
+    "title": "Quản Lý Tài Khoản Người Dùng",
+    "subtitle": "Danh sách toàn bộ Khách hàng, Chủ bãi đỗ xe, Nhân viên khảo sát và Admin trong hệ thống ParkLink",
+    "totalCount": "Tổng cộng: {{count}} tài khoản",
+    "searchPlaceholder": "Tìm theo họ tên, email hoặc số điện thoại...",
+    "allRoles": "Tất cả vai trò",
+    "allStatuses": "Tất cả trạng thái",
+    "table": {
+      "id": "ID",
+      "fullName": "Họ và Tên",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "actions": {
+      "viewDetail": "Xem chi tiết",
+      "edit": "Chỉnh sửa",
+      "resetPassword": "Cấp lại mật khẩu",
+      "lock": "Khóa tài khoản",
+      "unlock": "Mở khóa tài khoản"
+    },
+    "empty": "Không tìm thấy tài khoản nào phù hợp!"
+  },
+  "registrations": {
+    "title": "Quản Lý Phê Duyệt Bãi Đỗ Xe",
+    "subtitle": "Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)",
+    "totalCount": "Tổng cộng: {{count}} hồ sơ",
+    "searchPlaceholder": "Tìm theo tên bãi xe, địa chỉ hoặc chủ bãi...",
+    "tabs": {
+      "all": "Tất cả",
+      "pendingReview": "Chờ duyệt sơ bộ",
+      "preparing": "Đang khảo sát",
+      "inspected": "Đã khảo sát (Chờ duyệt)",
+      "approved": "Đã duyệt",
+      "rejected": "Đã từ chối"
+    },
+    "table": {
+      "id": "ID",
+      "facilityName": "Cơ sở bãi đỗ xe",
+      "provider": "Chủ bãi (Provider)",
+      "submittedDate": "Ngày gửi hồ sơ",
+      "status": "Trạng thái",
+      "actions": "Thao tác",
+      "scaleAndFee": "Quy mô & Phí"
+    },
+    "actions": {
+      "viewDetail": "Xem chi tiết",
+      "assignInspector": "Phân công khảo sát",
+      "finalize": "Duyệt chính thức",
+      "reject": "Từ chối hồ sơ"
+    },
+    "empty": "Không tìm thấy hồ sơ đăng ký nào phù hợp!"
+  },
+  "facilities": {
+    "title": "Tất Cả Cơ Sở Bãi Đỗ Xe",
+    "subtitle": "Danh sách toàn bộ các bãi đỗ xe đang vận hành trong hệ thống ParkLink",
+    "totalCount": "Tổng cộng: {{count}} cơ sở",
+    "searchPlaceholder": "Tìm theo tên bãi xe hoặc địa chỉ..."
+  },
+  "contracts": {
+    "title": "Quản Lý Hợp Đồng Hệ Thống",
+    "subtitle": "Theo dõi toàn bộ hợp đồng thuê bãi giữa Khách hàng và Chủ bãi xe",
+    "totalCount": "Tổng cộng: {{count}} hợp đồng",
+    "searchPlaceholder": "Tìm theo mã hợp đồng, tên bãi xe hoặc khách hàng..."
+  },
+  "complaints": {
+    "title": "Quản Lý Khiếu Nại Hệ Thống",
+    "subtitle": "Theo dõi và xử lý các phản ánh dịch vụ từ khách hàng và chủ bãi xe",
+    "totalCount": "Tổng cộng: {{count}} khiếu nại",
+    "searchPlaceholder": "Tìm theo tiêu đề, ID hoặc khách hàng..."
+  },
+  "inspectors": {
+    "title": "Quản Lý Nhân Viên Khảo Sát",
+    "subtitle": "Danh sách và phân công nhân viên kiểm tra thực địa bãi đỗ xe",
+    "totalCount": "Tổng cộng: {{count}} nhân viên"
+  },
+  "providerRevenue": {
+    "title": "Doanh Thu Bãi Xe",
+    "subtitle": "Báo cáo doanh thu bãi đỗ xe và đối soát phí nền tảng"
+  },
+  "reviews": {
+    "title": "Quản Lý Đánh Giá Cơ Sở",
+    "subtitle": "Theo dõi và kiểm duyệt đánh giá, nhận xét của khách hàng"
+  },
+  "platformFees": {
+    "title": "Cấu Hình Phí Nền Tảng",
+    "subtitle": "Quản lý mức phí hoa hồng và biểu phí dịch vụ ParkLink"
+  },
+  "vehicleTypes": {
+    "title": "Loại Phương Tiện Hỗ Trợ",
+    "subtitle": "Quản lý danh mục loại xe và kích thước vị trí đỗ"
+  },
+  "amenities": {
+    "title": "Quản Lý Tiện Ích Cơ Sở",
+    "subtitle": "Danh mục các tiện ích đi kèm tại bãi đỗ xe (mái che, camera, sạc điện...)"
+  },
+  "broadcast": {
+    "title": "Phát Thông Báo Toàn Hệ Thống",
+    "subtitle": "Gửi thông báo khẩn cấp hoặc tin tức đến toàn bộ người dùng ParkLink"
+  },
+  "timelineSettings": {
+    "title": "Cấu Hình Thời Hạn Hệ Thống",
+    "subtitle": "Thiết lập thời hạn tự động hủy yêu cầu, hạn thanh toán và gia hạn"
+  },
+  "policies": {
+    "title": "Chính Sách & Điều Khoản Hệ Thống",
+    "subtitle": "Quản lý các điều khoản sử dụng, chính sách bảo mật và quy định bãi xe"
+  },
+  "userDetail": {
+    "backToList": "Quay lại danh sách người dùng",
+    "breadcrumb": "Chi tiết người dùng",
+    "userId": "Mã tài khoản hệ thống: #{{id}}",
+    "joinedDate": "Gia nhập từ {{date}}",
+    "editBtn": "Sửa Thông Tin",
+    "resetPasswordBtn": "Đặt Lại Mật Khẩu",
+    "lockBtn": "Khóa Tài Khoản",
+    "unlockBtn": "Mở Khóa Tài Khoản",
+    "stats": {
+      "status": "Trạng thái tài khoản",
+      "role": "Vai trò hệ thống",
+      "activity": "Chỉ số hoạt động",
+      "security": "Bảo mật tài khoản",
+      "activeSlots": "Chỗ trống",
+      "reservations": "Đơn đặt chỗ",
+      "facilities": "Cơ sở quản lý"
+    },
+    "roles": {
+      "ADMIN": "Quản trị viên",
+      "PROVIDER": "Chủ bãi đỗ xe",
+      "FIELD_INSPECTOR": "Nhân viên khảo sát",
+      "CUSTOMER": "Khách thuê"
+    },
+    "basicInfo": {
+      "title": "Thông Tin Cơ Bản & Liên Hệ",
+      "email": "Địa chỉ Email",
+      "phone": "Số điện thoại",
+      "address": "Địa chỉ liên hệ",
+      "passwordStatus": "Đổi mật khẩu lần đầu",
+      "pwdMustChange": "Cần đổi mật khẩu",
+      "pwdSet": "Đã thiết lập",
+      "createdAt": "Ngày tạo tài khoản",
+      "updatedAt": "Lần cập nhật cuối",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "activity": {
+      "title": "Nhật Ký & Hoạt Động",
+      "reservations": "Tổng đơn đặt chỗ",
+      "reservationCount": "{{count}} lượt",
+      "assignedFacilities": "Cơ sở phụ trách",
+      "facilityCount": "{{count}} cơ sở",
+      "linkedFacility": "Cơ sở liên kết",
+      "notRegistered": "Chưa đăng ký cơ sở nào",
+      "viewAllContracts": "Xem tất cả hợp đồng"
+    },
+    "providerFacility": {
+      "title": "Cơ Sở Bãi Đỗ Xe Sở Hữu",
+      "facilityName": "Tên cơ sở",
+      "facilityAddress": "Địa chỉ bãi xe",
+      "capacity": "Quy mô sức chứa",
+      "slots": "{{capacity}} chỗ đỗ",
+      "availableSlots": "Chỗ trống khả dụng: {{count}}",
+      "price": "Giá thuê tham khảo",
+      "pricePerMonth": "{{price}} đ/tháng",
+      "visibility": "Trạng thái hiển thị",
+      "visible": "Đang công khai",
+      "hidden": "Đang ẩn",
+      "viewFacilityDetails": "Xem chi tiết và kiểm duyệt cơ sở tại Quản lý Cơ sở",
+      "noFacility": "Tài khoản đối tác này hiện chưa liên kết với cơ sở bãi đỗ xe nào.",
+      "paidFee": "Đã đóng phí hệ thống",
+      "unpaidFee": "Chưa đóng phí"
+    },
+    "inspectorTasks": {
+      "title": "Nhiệm Vụ Khảo Sát Thực Địa",
+      "inCharge": "Phụ trách: {{count}} cơ sở",
+      "facilityCode": "Mã bãi: #{{id}}",
+      "noTasks": "Hiện tại nhân viên này chưa được phân công khảo sát cơ sở bãi đỗ nào."
+    },
+    "dialogs": {
+      "lockTitle": "Xác nhận Khóa tài khoản",
+      "unlockTitle": "Xác nhận Mở khóa tài khoản",
+      "resetTitle": "Đặt lại mật khẩu",
+      "lockPrompt": "Bạn có chắc chắn muốn khóa tài khoản của {{name}}? Khi bị khóa, tài khoản này sẽ ngay lập tức bị từ chối đăng nhập vào hệ thống ParkLink.",
+      "lockNoteProvider": "Lưu ý: Cơ sở bãi xe \"{{facility}}\" sẽ bị ẩn và các yêu cầu đặt chỗ đang chờ sẽ bị hủy.",
+      "lockNoteCustomer": "Lưu ý: Các yêu cầu đặt chỗ đang chờ của khách hàng này sẽ bị hủy.",
+      "lockNoteInspector": "Lưu ý: Các cơ sở đang phân công cho nhân viên này sẽ được chuyển về chờ duyệt lại.",
+      "unlockPrompt": "Bạn có chắc chắn muốn mở khóa tài khoản của {{name}}? Người dùng sẽ có thể đăng nhập bình thường trở lại.",
+      "resetPrompt": "Hệ thống sẽ tạo mật khẩu tạm thời mới và gửi qua email tới {{email}}. Người dùng sẽ đổi mật khẩu ở lần đăng nhập tiếp theo.",
+      "cancel": "Hủy bỏ",
+      "confirmLock": "Khóa Tài Khoản",
+      "confirmUnlock": "Mở Khóa Tài Khoản",
+      "confirmReset": "Xác nhận Đặt lại"
+    },
+    "messages": {
+      "loading": "Đang tải thông tin người dùng...",
+      "loadErrorTitle": "Không Thể Tải Dữ Liệu",
+      "userNotFound": "Người dùng không tồn tại hoặc đã bị xóa.",
+      "lockSuccess": "Khóa tài khoản thành công.",
+      "unlockSuccess": "Mở khóa tài khoản thành công.",
+      "resetSuccess": "Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi tới email.",
+      "actionFailed": "Thao tác thất bại!"
+    },
+    "security": {
+      "title": "Bảo Mật & Xác Thực",
+      "authMethod": "Phương thức đăng nhập",
+      "googleSSO": "Tài khoản Google SSO",
+      "standardPassword": "Mật khẩu hệ thống",
+      "firstPassword": "Đổi mật khẩu lần đầu",
+      "pwdMustChange": "Cần đổi mật khẩu",
+      "pwdSet": "Đã thiết lập"
+    },
+    "quickLinks": {
+      "title": "Lối Tắt Hoạt Động",
+      "viewContracts": "Hợp đồng thuê",
+      "viewContractsDesc": "Tra cứu các hợp đồng và biên bản xác nhận điện tử",
+      "viewReservations": "Yêu cầu đặt chỗ",
+      "viewReservationsDesc": "Theo dõi lịch sử gửi xe theo tháng của người dùng",
+      "manageFacilities": "Quản lý cơ sở bãi xe",
+      "manageFacilitiesDesc": "Kiểm duyệt và thiết lập danh sách cơ sở bãi xe"
+    }
+  }
+}

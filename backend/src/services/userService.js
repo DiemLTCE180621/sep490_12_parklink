@@ -102,7 +102,7 @@ class UserService {
     }
 
     if (user.role && user.role.name === 'ADMIN') {
-      throw Object.assign(new Error("Không thể đặt lại mật khẩu cho tài khoản Quản trị viên (ADMIN)!"), {
+      throw Object.assign(new Error("Không thể đặt lại mật khẩu cho tài khoản Quản trị viên."), {
         status: 400,
       });
     }
@@ -125,7 +125,7 @@ class UserService {
         io.to(`user_${userId}`).emit('force_logout', {
           userId,
           reason: 'PASSWORD_RESET',
-          message: 'Mật khẩu tài khoản của bạn đã được đặt lại bởi Quản trị viên. Vui lòng kiểm tra email để lấy mật khẩu tạm thời mới và đăng nhập lại!'
+          message: 'Mật khẩu tài khoản đã được đặt lại bởi Quản trị viên. Vui lòng kiểm tra email để đăng nhập lại.'
         });
       }
     } catch (socketErr) {
@@ -133,7 +133,7 @@ class UserService {
     }
 
     return {
-      message: "Đặt lại mật khẩu thành công! Mật khẩu tạm thời đã được gửi tới email của người dùng.",
+      message: "Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi tới email của người dùng.",
       simulatedTempPassword: emailResult.simulated ? tempPassword : undefined
     };
   }
@@ -147,7 +147,7 @@ class UserService {
     }
 
     if (user.role && user.role.name === 'ADMIN') {
-      throw Object.assign(new Error("Không thể khóa tài khoản Quản trị viên (ADMIN)!"), {
+      throw Object.assign(new Error("Không thể khóa tài khoản Quản trị viên."), {
         status: 400,
       });
     }
@@ -157,12 +157,15 @@ class UserService {
 
     const isProviderWithFacility = (user.role?.name === 'PROVIDER' || Boolean(user.facility)) && user.facility?.id;
     const isCustomer = user.role?.name === 'CUSTOMER';
+    const isFieldInspector = user.role?.name === 'FIELD_INSPECTOR';
 
     if (newStatus === "BLOCKED") {
       if (isProviderWithFacility) {
         updated = await userRepository.blockProviderAndHideFacility(userId, user.facility.id);
       } else if (isCustomer) {
         updated = await userRepository.blockCustomerAndCancelPendingReservations(userId);
+      } else if (isFieldInspector) {
+        updated = await userRepository.blockInspectorAndResetAssignedFacilities(userId);
       } else {
         updated = await userRepository.updateUser(userId, { status: newStatus });
       }
@@ -177,7 +180,7 @@ class UserService {
           io.to(`user_${userId}`).emit('force_logout', {
             userId,
             reason: 'ACCOUNT_BLOCKED',
-            message: 'Tài khoản của bạn đã bị khóa bởi Quản trị viên. Vui lòng liên hệ bộ phận hỗ trợ!'
+            message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.'
           });
         }
       } catch (socketErr) {

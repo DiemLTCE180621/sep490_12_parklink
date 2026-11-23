@@ -14,7 +14,8 @@ import {
   Loader2,
   CheckSquare,
   Square,
-  Printer
+  Printer,
+  Check
 } from 'lucide-react';
 
 const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
@@ -171,38 +172,42 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="contract-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-xs animate-fadeIn print:static print:bg-white print:p-0 print:m-0 print:block">
+    <div className="contract-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fadeIn print:static print:bg-white print:p-0 print:m-0 print:block">
       <div
-        className="contract-modal-dialog bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-7xl overflow-hidden transform transition-all duration-200 h-[96vh] max-h-[96vh] flex flex-col print:h-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:max-w-none print:block"
+        className="contract-modal-dialog bg-white rounded-3xl shadow-2xl border border-slate-200/80 w-full max-w-4xl lg:max-w-5xl overflow-hidden transform transition-all duration-200 h-[92vh] max-h-[92vh] flex flex-col print:h-auto print:max-h-none print:overflow-visible print:border-none print:shadow-none print:rounded-none print:max-w-none print:block"
         onClick={(e) => e.stopPropagation()}
       >
         
-        <div className="print:hidden bg-slate-900 px-6 py-4 text-white relative shrink-0 flex items-center justify-between border-b border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-teal-600/30 border border-teal-500/40 text-teal-400 flex items-center justify-center">
-              <FileText className="w-4 h-4" />
+        <div className="print:hidden px-6 sm:px-8 py-5 bg-gradient-to-r from-neighbor-900 via-neighbor-800 to-neighbor-900 text-white flex items-center justify-between shrink-0 border-b border-neighbor-800">
+          <div className="flex items-center gap-3.5 min-w-0 pr-4">
+            <div className="w-11 h-11 rounded-2xl bg-white/10 text-white flex items-center justify-center shrink-0 border border-white/15 shadow-xs">
+              <FileText className="w-6 h-6 text-neighbor-200" />
             </div>
-            <div>
-              <span className="text-[11px] text-slate-400 font-semibold uppercase block">{t('contractModal.brand')}</span>
-              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+            <div className="min-w-0">
+              <span className="text-[11px] text-neighbor-200 font-semibold uppercase block tracking-wider">
+                {t('contractModal.brand')}
+              </span>
+              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug truncate">
                 {t('contractModal.codeLabel')} {contract?.contract_code || contractInfo.contract_code || `HD-#${contractId}`}
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 shrink-0">
             <button
               type="button"
               onClick={() => window.print()}
-              className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+              className="px-3.5 py-2 bg-neighbor-600 hover:bg-neighbor-500 text-white rounded-xl text-xs font-semibold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
               title={t('contractModal.printTitle')}
             >
-              <Printer className="w-3.5 h-3.5" /> {t('contractModal.printButton')}
+              <Printer className="w-3.5 h-3.5" />
+              <span>{t('contractModal.printButton')}</span>
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center transition"
+              aria-label="Close"
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition border border-white/15 shrink-0 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -450,13 +455,23 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
         </div>
 
         
-        <div className="print:hidden p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <div className="print:hidden px-6 sm:px-8 py-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between shrink-0">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 font-semibold text-xs rounded-xl border border-gray-300 transition shadow-2xs cursor-pointer"
+          >
+            <Printer className="w-3.5 h-3.5 text-gray-500" />
+            <span>{t('contractModal.printButton')}</span>
+          </button>
+
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs rounded-lg transition"
+            className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
-            {t('contractModal.close')}
+            <Check className="w-4 h-4" />
+            <span>{t('contractModal.close')}</span>
           </button>
         </div>
       </div>

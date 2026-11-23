@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Mail,
   Phone,
@@ -20,28 +21,31 @@ import {
   MapPin,
   UserCheck,
   Car,
-  ExternalLink
+  ExternalLink,
+  ChevronRight,
+  ShieldCheck,
+  User as UserIcon
 } from 'lucide-react';
 import userService from '../../services/userService';
 import EditUserModal from '../../components/admin/EditUserModal';
+import StatusBadge from '../../components/common/StatusBadge';
 
-// Trang Chi tiết tài khoản người dùng Admin (UC12, UC10, UC13, UC14, UC15)
 const AdminUserDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['admin', 'common']);
+  const isEnglish = i18n.language?.startsWith('en');
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // UC13: Edit User Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // State cho Confirm Dialog (UC10: Reset mật khẩu, UC14/15: Khóa/Mở khóa)
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
-    type: '' // 'LOCK' | 'UNLOCK' | 'RESET_PASSWORD'
+    type: ''
   });
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -55,10 +59,10 @@ const AdminUserDetailPage = () => {
         if (payload?.user) {
           setUser(payload.user);
         } else {
-          setError('Không tìm thấy thông tin người dùng.');
+          setError(t('admin:userDetail.messages.userNotFound'));
         }
       } catch (err) {
-        setError(err.response?.data?.message || err.message || 'Lỗi khi tải thông tin người dùng');
+        setError(err.response?.data?.message || err.message || t('admin:userDetail.messages.loadErrorTitle'));
       } finally {
         setLoading(false);
       }
@@ -67,11 +71,11 @@ const AdminUserDetailPage = () => {
     if (id) {
       fetchUser();
     }
-  }, [id]);
+  }, [id, t]);
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Chưa cập nhật';
-    return new Date(dateString).toLocaleString('vi-VN', {
+    if (!dateString) return t('admin:userDetail.basicInfo.notUpdated');
+    return new Date(dateString).toLocaleString(isEnglish ? 'en-US' : 'vi-VN', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -103,17 +107,17 @@ const AdminUserDetailPage = () => {
             ? { facility: { ...prev.facility, visibility_status: 'HIDDEN' } }
             : {})
         }));
-        setSuccessMessage(res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!'));
+        setSuccessMessage(res.message || (type === 'LOCK' ? t('admin:userDetail.messages.lockSuccess') : t('admin:userDetail.messages.unlockSuccess')));
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(user.id);
         setUser((prev) => ({ ...prev, requires_password_change: true }));
-        const msg = res.message || 'Đặt lại mật khẩu thành công! Mật khẩu mới đã được gửi tới email.';
+        const msg = res.message || t('admin:userDetail.messages.resetSuccess');
         setSuccessMessage(msg);
       }
 
       setConfirmDialog({ isOpen: false, type: '' });
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Thao tác thất bại!');
+      setError(err.response?.data?.message || err.message || t('admin:userDetail.messages.actionFailed'));
     } finally {
       setActionLoading(false);
     }
@@ -123,14 +127,34 @@ const AdminUserDetailPage = () => {
     const role = (roleName || '').toUpperCase();
     switch (role) {
       case 'ADMIN':
-        return <span className="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full border border-purple-200">Quản trị viên</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+            <Shield className="w-3.5 h-3.5" />
+            {t('admin:userDetail.roles.ADMIN')}
+          </span>
+        );
       case 'PROVIDER':
-        return <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200">Chủ bãi đỗ xe</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+            <Building2 className="w-3.5 h-3.5" />
+            {t('admin:userDetail.roles.PROVIDER')}
+          </span>
+        );
       case 'FIELD_INSPECTOR':
-        return <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">Nhân viên khảo sát</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+            <UserCheck className="w-3.5 h-3.5" />
+            {t('admin:userDetail.roles.FIELD_INSPECTOR')}
+          </span>
+        );
       case 'CUSTOMER':
       default:
-        return <span className="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full border border-teal-200">Khách thuê</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
+            <Car className="w-3.5 h-3.5" />
+            {t('admin:userDetail.roles.CUSTOMER')}
+          </span>
+        );
     }
   };
 
@@ -138,13 +162,18 @@ const AdminUserDetailPage = () => {
     const status = (statusStr || '').toUpperCase();
     switch (status) {
       case 'ACTIVE':
-        return <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 w-max"><CheckCircle2 className="w-3.5 h-3.5" /> Hoạt động</span>;
+        return <StatusBadge status="ACTIVE" size="sm" />;
       case 'PENDING':
-        return <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 w-max"><Clock className="w-3.5 h-3.5" /> Chờ duyệt</span>;
+        return <StatusBadge status="PENDING" size="sm" />;
       case 'BLOCKED':
-        return <span className="bg-rose-100 text-rose-800 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 w-max"><AlertTriangle className="w-3.5 h-3.5" /> Đã khóa</span>;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            {isEnglish ? 'Blocked' : 'Đã khóa'}
+          </span>
+        );
       default:
-        return <span className="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-1 rounded-full w-max">{status}</span>;
+        return <StatusBadge status={status} size="sm" />;
     }
   };
 
@@ -152,22 +181,22 @@ const AdminUserDetailPage = () => {
     const s = (vStatus || '').toUpperCase();
     switch (s) {
       case 'VERIFIED':
-        return <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Đã xác thực</span>;
+        return <StatusBadge status="VERIFIED" size="sm" />;
       case 'PENDING_REVIEW':
-        return <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><Clock className="w-3 h-3" /> Chờ duyệt</span>;
+        return <StatusBadge status="PENDING" size="sm" />;
       case 'REJECTED':
-        return <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Bị từ chối</span>;
+        return <StatusBadge status="REJECTED" size="sm" />;
       default:
-        return <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{s}</span>;
+        return <StatusBadge status={s} size="sm" />;
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="text-center space-y-3">
-          <RefreshCw className="w-8 h-8 text-teal-600 animate-spin mx-auto" />
-          <p className="text-sm text-slate-600 font-medium">Đang tải thông tin người dùng...</p>
+          <RefreshCw className="w-8 h-8 text-neighbor-600 animate-spin mx-auto" />
+          <p className="text-sm text-gray-600 font-medium">{t('admin:userDetail.messages.loading')}</p>
         </div>
       </div>
     );
@@ -175,16 +204,16 @@ const AdminUserDetailPage = () => {
 
   if (error && !user) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 max-w-md w-full text-center space-y-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-2xl shadow-xs border border-gray-200 max-w-md w-full text-center space-y-4">
           <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
-          <h2 className="text-xl font-bold text-slate-800">Không Thể Tải Dữ Liệu</h2>
-          <p className="text-sm text-slate-500">{error || 'Người dùng không tồn tại hoặc đã bị xóa.'}</p>
+          <h2 className="text-xl font-bold text-gray-900">{t('admin:userDetail.messages.loadErrorTitle')}</h2>
+          <p className="text-sm text-gray-500">{error || t('admin:userDetail.messages.userNotFound')}</p>
           <button
             onClick={() => navigate('/dashboard', { state: { adminTab: 'users' } })}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-xl text-xs font-semibold hover:bg-gray-800 transition shadow-xs cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" /> Quay lại danh sách
+            <ArrowLeft className="w-4 h-4" /> {t('admin:userDetail.backToList')}
           </button>
         </div>
       </div>
@@ -195,321 +224,430 @@ const AdminUserDetailPage = () => {
   const isBlocked = user.status === 'BLOCKED';
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Nút quay lại */}
-        <button
-          onClick={() => navigate('/dashboard', { state: { adminTab: 'users' } })}
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-teal-600 transition"
-        >
-          <ArrowLeft className="w-4 h-4" /> Quay lại danh sách người dùng
-        </button>
+    <div className="min-h-screen bg-gray-50/70 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/dashboard', { state: { adminTab: 'users' } })}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-neighbor-700 bg-white hover:bg-gray-50 px-3.5 py-2 rounded-xl border border-gray-200 shadow-2xs transition cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-500" />
+            {t('admin:userDetail.backToList')}
+          </button>
 
-        {/* Thông báo thành công */}
+          <span className="text-xs font-semibold text-gray-600 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-2xs font-mono">
+            #{user.id}
+          </span>
+        </div>
+
         {successMessage && (
-          <div className="p-4 bg-emerald-50 text-emerald-800 text-xs font-medium rounded-2xl border border-emerald-200 flex justify-between items-center animate-in fade-in">
+          <div className="p-4 bg-emerald-50 text-emerald-800 text-xs font-medium rounded-xl border border-emerald-200 flex justify-between items-center shadow-2xs animate-in fade-in">
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               {successMessage}
             </span>
-            <button onClick={() => setSuccessMessage('')} className="text-emerald-600 hover:text-emerald-900">
+            <button onClick={() => setSuccessMessage('')} className="text-emerald-600 hover:text-emerald-900 cursor-pointer">
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Thông báo lỗi nếu có */}
         {error && (
-          <div className="p-4 bg-red-50 text-red-700 text-xs rounded-2xl border border-red-200 flex justify-between items-center">
-            <span>{error}</span>
-            <button onClick={() => setError('')} className="text-red-500 hover:text-red-800">
+          <div className="p-4 bg-rose-50 text-rose-700 text-xs font-medium rounded-xl border border-rose-200 flex justify-between items-center shadow-2xs">
+            <span className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              {error}
+            </span>
+            <button onClick={() => setError('')} className="text-rose-500 hover:text-rose-800 cursor-pointer">
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Card Header Profile */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-8 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-teal-500 text-slate-950 font-black flex items-center justify-center text-3xl shadow-md border border-teal-400/30">
-                {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
-              </div>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 sm:p-7">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-gray-100">
+            <div className="flex items-center gap-4">
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="w-16 h-16 rounded-2xl object-cover border border-gray-200 shrink-0 shadow-2xs"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-neighbor-50 text-neighbor-800 font-bold flex items-center justify-center text-2xl border border-neighbor-200/80 shadow-2xs shrink-0">
+                  {user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
+
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold">{user.full_name || 'Người dùng ParkLink'}</h1>
-                <p className="text-teal-300 text-xs font-medium mt-1">Mã tài khoản hệ thống: #{user.id}</p>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-2xl font-bold text-gray-900">{user.full_name || 'Người dùng ParkLink'}</h1>
+                  {getRoleBadge(user.role?.name)}
+                  {getStatusBadge(user.status)}
+                </div>
+                <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-2 flex-wrap">
+                  <span className="font-medium text-gray-600">{user.email}</span>
+                  <span className="text-gray-300">•</span>
+                  <span>{t('admin:userDetail.joinedDate', { date: formatDate(user.created_at) })}</span>
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {getRoleBadge(user.role?.name)}
-              {getStatusBadge(user.status)}
+            <div className="flex items-center gap-2.5 flex-wrap shrink-0 self-stretch sm:self-auto justify-end">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="px-4 py-2 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                {t('admin:userDetail.editBtn')}
+              </button>
+
+              {!isAdmin && (
+                <button
+                  onClick={() => setConfirmDialog({ isOpen: true, type: 'RESET_PASSWORD' })}
+                  className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-xs font-semibold rounded-xl shadow-2xs transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-gray-500" />
+                  {t('admin:userDetail.resetPasswordBtn')}
+                </button>
+              )}
+
+              {!isAdmin && (
+                <button
+                  onClick={() => setConfirmDialog({ isOpen: true, type: isBlocked ? 'UNLOCK' : 'LOCK' })}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl border shadow-2xs transition flex items-center gap-1.5 cursor-pointer ${
+                    isBlocked
+                      ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                      : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border-rose-200'
+                  }`}
+                >
+                  {isBlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                  {isBlocked ? t('admin:userDetail.unlockBtn') : t('admin:userDetail.lockBtn')}
+                </button>
+              )}
             </div>
-          </div>
-
-          {/* Action Bar (UC10, UC13, UC14, UC15) */}
-          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-700/60">
-            {/* UC13: Sửa thông tin */}
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5"
-            >
-              <Edit2 className="w-3.5 h-3.5" /> Sửa Thông Tin
-            </button>
-
-            {/* UC10: Đặt lại mật khẩu */}
-            {!isAdmin && (
-              <button
-                onClick={() => setConfirmDialog({ isOpen: true, type: 'RESET_PASSWORD' })}
-                className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5"
-              >
-                <KeyRound className="w-3.5 h-3.5" /> Đặt Lại Mật Khẩu
-              </button>
-            )}
-
-            {/* UC14 & UC15: Khóa / Mở khóa tài khoản */}
-            {!isAdmin && (
-              <button
-                onClick={() => setConfirmDialog({ isOpen: true, type: isBlocked ? 'UNLOCK' : 'LOCK' })}
-                className={`px-4 py-2 text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5 border ${
-                  isBlocked
-                    ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
-                    : 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-rose-500/40'
-                }`}
-              >
-                {isBlocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                {isBlocked ? 'Mở Khóa Tài Khoản' : 'Khóa Tài Khoản'}
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Thông tin chi tiết */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Card Thông tin cơ bản */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Shield className="w-4 h-4 text-teal-600" /> Thông Tin Cơ Bản
-            </h3>
-
-            <div className="space-y-3.5 text-sm">
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <Mail className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Email</span>
-                  <span className="font-semibold text-slate-800">{user.email}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-700 flex items-center justify-center">
+                  <UserIcon className="w-4 h-4" />
                 </div>
+                <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.basicInfo.title')}</h2>
               </div>
 
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <Phone className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Số điện thoại</span>
-                  <span className="font-semibold text-slate-800">{user.phone_number || 'Chưa cập nhật'}</span>
+              <div className="p-5 divide-y divide-gray-100 text-xs">
+                <div className="py-3 flex items-start justify-between gap-3 first:pt-0">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <Mail className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.basicInfo.email')}
+                  </span>
+                  <span className="font-semibold text-gray-900 text-right break-all">{user.email}</span>
+                </div>
+
+                <div className="py-3 flex items-start justify-between gap-3">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <Phone className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.basicInfo.phone')}
+                  </span>
+                  <span className="font-semibold text-gray-900 text-right">{user.phone_number || t('admin:userDetail.basicInfo.notUpdated')}</span>
+                </div>
+
+                <div className="py-3 flex items-start justify-between gap-3">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.basicInfo.address')}
+                  </span>
+                  <span className="font-semibold text-gray-900 text-right">{user.address || t('admin:userDetail.basicInfo.notUpdated')}</span>
+                </div>
+
+                <div className="py-3 flex items-start justify-between gap-3">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.basicInfo.createdAt')}
+                  </span>
+                  <span className="font-semibold text-gray-900 text-right">{formatDate(user.created_at)}</span>
+                </div>
+
+                <div className="py-3 flex items-start justify-between gap-3 last:pb-0">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <Clock className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.basicInfo.updatedAt')}
+                  </span>
+                  <span className="font-semibold text-gray-900 text-right">{formatDate(user.updated_at)}</span>
                 </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <MapPin className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Địa chỉ liên hệ</span>
-                  <span className="font-semibold text-slate-800">{user.address || 'Chưa cập nhật'}</span>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-700 flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4" />
                 </div>
+                <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.security.title')}</h2>
               </div>
 
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <Key className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Đổi mật khẩu lần đầu</span>
-                  <span className="font-semibold text-slate-800">
-                    {user.requires_password_change ? 'Cần đổi mật khẩu' : 'Đã thiết lập'}
+              <div className="p-5 divide-y divide-gray-100 text-xs">
+                <div className="py-3 flex items-center justify-between gap-3 first:pt-0">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <Key className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.security.authMethod')}
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    {user.has_password === false ? t('admin:userDetail.security.googleSSO') : t('admin:userDetail.security.standardPassword')}
+                  </span>
+                </div>
+
+                <div className="py-3 flex items-center justify-between gap-3 last:pb-0">
+                  <span className="text-gray-500 font-medium flex items-center gap-2 shrink-0">
+                    <KeyRound className="w-3.5 h-3.5 text-gray-400" />
+                    {t('admin:userDetail.security.firstPassword')}
+                  </span>
+                  <span className="shrink-0">
+                    {user.requires_password_change ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                        {t('admin:userDetail.security.pwdMustChange')}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        {t('admin:userDetail.security.pwdSet')}
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Card Thời gian & Hoạt động */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
-            <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-teal-600" /> Nhật Ký & Hoạt Động
-            </h3>
-
-            <div className="space-y-3.5 text-sm">
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <Clock className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Ngày tạo tài khoản</span>
-                  <span className="font-semibold text-slate-800">{formatDate(user.created_at)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                <Clock className="w-5 h-5 text-teal-600 shrink-0" />
-                <div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Lần cập nhật cuối</span>
-                  <span className="font-semibold text-slate-800">{formatDate(user.updated_at)}</span>
-                </div>
-              </div>
-
-              {user.role?.name === 'CUSTOMER' && (
-                <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <Car className="w-5 h-5 text-teal-600 shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Tổng đơn đặt chỗ</span>
-                    <span className="font-semibold text-slate-800">
-                      <strong className="text-teal-700 font-extrabold">{user._count?.reservations || 0}</strong> lượt
-                    </span>
+          <div className="lg:col-span-2 space-y-6">
+            {user.role?.name === 'CUSTOMER' && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-700 flex items-center justify-center">
+                      <Car className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.activity.title')}</h2>
                   </div>
-                </div>
-              )}
-
-              {user.role?.name === 'FIELD_INSPECTOR' && (
-                <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <UserCheck className="w-5 h-5 text-teal-600 shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cơ sở phụ trách</span>
-                    <span className="font-semibold text-slate-800">
-                      <strong className="text-teal-700 font-extrabold">{user.assigned_facilities?.length || 0}</strong> cơ sở
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {user.role?.name === 'PROVIDER' && (
-                <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50 border border-slate-100">
-                  <Building2 className="w-5 h-5 text-teal-600 shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Cơ sở liên kết</span>
-                    <span className="font-semibold text-slate-800">
-                      {user.facility ? user.facility.name : 'Chưa đăng ký'}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* PHẦN THỰC THỂ LIÊN KẾT (CHỈ HIỂN THỊ KHI CÓ THỰC THỂ CỤ THỂ) */}
-        {/* 1. Dành cho Chủ bãi xe (PROVIDER) */}
-        {user.role?.name === 'PROVIDER' && (
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-teal-600" /> Cơ Sở Bãi Đỗ Xe Sở Hữu
-              </h3>
-              {user.facility && (
-                <div className="flex flex-wrap items-center gap-2">
-                  {getVerificationBadge(user.facility.verification_status)}
-                  <span
-                    className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                      user.facility.payment_status === 'PAID'
-                        ? 'bg-teal-100 text-teal-800'
-                        : 'bg-slate-100 text-slate-600'
-                    }`}
-                  >
-                    {user.facility.payment_status === 'PAID' ? 'Đã đóng phí hệ thống' : 'Chưa đóng phí'}
+                  <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200">
+                    {t('admin:userDetail.roles.CUSTOMER')}
                   </span>
                 </div>
-              )}
-            </div>
 
-            {user.facility ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-sm">
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên cơ sở</span>
-                    <span className="font-bold text-slate-900 text-base">{user.facility.name}</span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 sm:col-span-2">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Địa chỉ bãi xe</span>
-                    <span className="font-semibold text-slate-800 flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-teal-600 shrink-0" />
-                      {user.facility.address}
-                    </span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Quy mô sức chứa</span>
-                    <span className="font-bold text-slate-900">{user.facility.capacity} chỗ đỗ</span>
-                    <span className="text-xs text-slate-500 block mt-0.5">
-                      (Chỗ trống khả dụng: <strong>{user.facility.available_slots ?? 0}</strong>)
-                    </span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Giá thuê tham khảo</span>
-                    <span className="font-bold text-teal-700 text-base">
-                      {Number(user.facility.price_per_month).toLocaleString('vi-VN')} đ/tháng
-                    </span>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Trạng thái hiển thị</span>
-                    <span className="font-bold text-slate-800">
-                      {user.facility.visibility_status === 'VISIBLE' ? 'Đang công khai' : 'Đang ẩn'}
-                    </span>
-                  </div>
-                </div>
+                <div className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 bg-gray-50/70 rounded-xl border border-gray-200/80">
+                      <span className="text-xs text-gray-500 font-medium block mb-1">
+                        {t('admin:userDetail.activity.reservations')}
+                      </span>
+                      <div className="text-2xl font-bold text-neighbor-800">
+                        {t('admin:userDetail.activity.reservationCount', { count: user._count?.reservations || 0 })}
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">Toàn bộ yêu cầu thuê bãi xe theo tháng</p>
+                    </div>
 
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/dashboard', { state: { adminTab: 'facilities' } })}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline transition"
-                  >
-                    Xem chi tiết và kiểm duyệt cơ sở tại Quản lý Cơ sở <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
+                    <div className="p-4 bg-gray-50/70 rounded-xl border border-gray-200/80">
+                      <span className="text-xs text-gray-500 font-medium block mb-1">
+                        {t('admin:userDetail.stats.status')}
+                      </span>
+                      <div className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                        <span className={`w-2.5 h-2.5 rounded-full ${isBlocked ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+                        {isBlocked ? (isEnglish ? 'Blocked' : 'Đã khóa') : (isEnglish ? 'Active' : 'Hoạt động')}
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">Quyền truy cập dịch vụ trên hệ thống</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100 space-y-3">
+                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      {t('admin:userDetail.quickLinks.title')}
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/dashboard', { state: { adminTab: 'contracts' } })}
+                        className="p-3.5 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 transition text-left flex items-center justify-between group shadow-2xs cursor-pointer"
+                      >
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900 group-hover:text-neighbor-700 transition">
+                            {t('admin:userDetail.quickLinks.viewContracts')}
+                          </h4>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {t('admin:userDetail.quickLinks.viewContractsDesc')}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-neighbor-700 group-hover:translate-x-0.5 transition shrink-0" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate('/dashboard', { state: { adminTab: 'users' } })}
+                        className="p-3.5 bg-white hover:bg-gray-50 rounded-xl border border-gray-200 transition text-left flex items-center justify-between group shadow-2xs cursor-pointer"
+                      >
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-900 group-hover:text-neighbor-700 transition">
+                            {t('admin:userDetail.quickLinks.viewReservations')}
+                          </h4>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {t('admin:userDetail.quickLinks.viewReservationsDesc')}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-neighbor-700 group-hover:translate-x-0.5 transition shrink-0" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                <Building2 className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                <p className="text-xs font-semibold">Tài khoản đối tác này hiện chưa liên kết với cơ sở bãi đỗ xe nào.</p>
+            )}
+
+            {user.role?.name === 'PROVIDER' && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-700 flex items-center justify-center">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.providerFacility.title')}</h2>
+                  </div>
+                  {user.facility && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {getVerificationBadge(user.facility.verification_status)}
+                      <span
+                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                          user.facility.payment_status === 'PAID'
+                            ? 'bg-neighbor-50 text-neighbor-700 border-neighbor-200'
+                            : 'bg-gray-100 text-gray-600 border-gray-200'
+                        }`}
+                      >
+                        {user.facility.payment_status === 'PAID' ? t('admin:userDetail.providerFacility.paidFee') : t('admin:userDetail.providerFacility.unpaidFee')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {user.facility ? (
+                  <div className="p-6 space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                      <div className="p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/70">
+                        <span className="text-gray-500 font-medium block mb-1">{t('admin:userDetail.providerFacility.facilityName')}</span>
+                        <span className="font-bold text-gray-900 text-sm">{user.facility.name}</span>
+                      </div>
+                      <div className="p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/70 sm:col-span-2">
+                        <span className="text-gray-500 font-medium block mb-1">{t('admin:userDetail.providerFacility.facilityAddress')}</span>
+                        <span className="font-semibold text-gray-800 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          {user.facility.address}
+                        </span>
+                      </div>
+                      <div className="p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/70">
+                        <span className="text-gray-500 font-medium block mb-1">{t('admin:userDetail.providerFacility.capacity')}</span>
+                        <span className="font-bold text-gray-900">
+                          {t('admin:userDetail.providerFacility.slots', { capacity: user.facility.capacity })}
+                        </span>
+                        <span className="text-[11px] text-gray-500 block mt-0.5">
+                          {t('admin:userDetail.providerFacility.availableSlots', { count: user.facility.available_slots ?? 0 })}
+                        </span>
+                      </div>
+                      <div className="p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/70">
+                        <span className="text-gray-500 font-medium block mb-1">{t('admin:userDetail.providerFacility.price')}</span>
+                        <span className="font-bold text-neighbor-700 text-sm">
+                          {t('admin:userDetail.providerFacility.pricePerMonth', { price: Number(user.facility.price_per_month).toLocaleString(isEnglish ? 'en-US' : 'vi-VN') })}
+                        </span>
+                      </div>
+                      <div className="p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/70">
+                        <span className="text-gray-500 font-medium block mb-1">{t('admin:userDetail.providerFacility.visibility')}</span>
+                        <span className="font-bold text-gray-900">
+                          {user.facility.visibility_status === 'VISIBLE' ? t('admin:userDetail.providerFacility.visible') : t('admin:userDetail.providerFacility.hidden')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => navigate('/dashboard', { state: { adminTab: 'facilities' } })}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-neighbor-700 hover:text-neighbor-800 hover:underline transition cursor-pointer"
+                      >
+                        {t('admin:userDetail.providerFacility.viewFacilityDetails')}
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-400 bg-gray-50/50">
+                    <Building2 className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                    <p className="text-xs font-medium text-gray-500">{t('admin:userDetail.providerFacility.noFacility')}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {user.role?.name === 'FIELD_INSPECTOR' && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-700 flex items-center justify-center">
+                      <UserCheck className="w-4 h-4" />
+                    </div>
+                    <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.inspectorTasks.title')}</h2>
+                  </div>
+                  <span className="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-lg text-gray-700 border border-gray-200">
+                    {t('admin:userDetail.inspectorTasks.inCharge', { count: user.assigned_facilities?.length || 0 })}
+                  </span>
+                </div>
+
+                <div className="p-6">
+                  {user.assigned_facilities && user.assigned_facilities.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {user.assigned_facilities.map((f) => (
+                        <div key={f.id} className="p-4 bg-gray-50/70 rounded-xl border border-gray-200/80 flex flex-col justify-between gap-2.5">
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-xs">{f.name}</h3>
+                            <p className="text-xs text-gray-500 flex items-center gap-1.5 mt-1">
+                              <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                              {f.address}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+                            <span className="text-[11px] text-gray-500 font-mono">{t('admin:userDetail.inspectorTasks.facilityCode', { id: f.id })}</span>
+                            {getVerificationBadge(f.verification_status)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-gray-400 bg-gray-50/50">
+                      <UserCheck className="w-10 h-10 mx-auto text-gray-300 mb-2" />
+                      <p className="text-xs font-medium text-gray-500">{t('admin:userDetail.inspectorTasks.noTasks')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {user.role?.name === 'ADMIN' && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-xs p-6 space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-sm font-bold text-gray-900">{t('admin:userDetail.roles.ADMIN')}</h2>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Tài khoản mang đặc quyền Quản trị viên cấp cao. Có toàn quyền truy cập, kiểm duyệt cơ sở bãi xe, quản lý tài chính nền tảng, điều phối nhân viên khảo sát và phân quyền hệ thống ParkLink.
+                </p>
               </div>
             )}
           </div>
-        )}
-
-        {/* 2. Dành cho Nhân viên khảo sát (FIELD_INSPECTOR) */}
-        {user.role?.name === 'FIELD_INSPECTOR' && (
-          <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-md space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-teal-600" /> Nhiệm Vụ Khảo Sát Thực Địa
-              </h3>
-              <span className="text-xs font-bold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
-                Phụ trách: <strong className="text-teal-700 font-extrabold">{user.assigned_facilities?.length || 0}</strong> cơ sở
-              </span>
-            </div>
-
-            {user.assigned_facilities && user.assigned_facilities.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {user.assigned_facilities.map((f) => (
-                  <div key={f.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col justify-between gap-2.5">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{f.name}</h4>
-                      <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-1">
-                        <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        {f.address}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
-                      <span className="text-[11px] text-slate-400 font-mono">Mã bãi: #{f.id}</span>
-                      {getVerificationBadge(f.verification_status)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                <UserCheck className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                <p className="text-xs font-semibold">Hiện tại nhân viên này chưa được phân công khảo sát cơ sở bãi đỗ nào.</p>
-              </div>
-            )}
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* UC13: MODAL SỬA THÔNG TIN */}
       <EditUserModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
@@ -517,89 +655,88 @@ const AdminUserDetailPage = () => {
         onSuccess={handleEditSuccess}
       />
 
-      {/* CONFIRMATION DIALOG (CHO UC10, UC14, UC15) */}
       {confirmDialog.isOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
-            <div className="flex items-center gap-4">
+        <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150 border border-gray-200">
+            <div className="flex items-center gap-3.5">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                   confirmDialog.type === 'LOCK'
-                    ? 'bg-rose-100 text-rose-600'
+                    ? 'bg-rose-50 text-rose-600 border-rose-200'
                     : confirmDialog.type === 'UNLOCK'
-                    ? 'bg-emerald-100 text-emerald-600'
-                    : 'bg-amber-100 text-amber-600'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    : 'bg-amber-50 text-amber-600 border-amber-200'
                 }`}
               >
                 {confirmDialog.type === 'LOCK' ? (
-                  <Lock className="w-7 h-7" />
+                  <Lock className="w-6 h-6" />
                 ) : confirmDialog.type === 'UNLOCK' ? (
-                  <Unlock className="w-7 h-7" />
+                  <Unlock className="w-6 h-6" />
                 ) : (
-                  <KeyRound className="w-7 h-7" />
+                  <KeyRound className="w-6 h-6" />
                 )}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900">
+                <h3 className="text-lg font-bold text-gray-900">
                   {confirmDialog.type === 'LOCK'
-                    ? 'Xác nhận Khóa tài khoản'
+                    ? t('admin:userDetail.dialogs.lockTitle')
                     : confirmDialog.type === 'UNLOCK'
-                    ? 'Xác nhận Mở khóa tài khoản'
-                    : 'Đặt lại mật khẩu'}
+                    ? t('admin:userDetail.dialogs.unlockTitle')
+                    : t('admin:userDetail.dialogs.resetTitle')}
                 </h3>
-                <p className="text-sm text-slate-500 mt-0.5">#{user.id} — {user.email}</p>
+                <p className="text-xs text-gray-500 mt-0.5 font-mono">#{user.id} — {user.email}</p>
               </div>
             </div>
 
-            <div className="text-base text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <div className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-200">
               {confirmDialog.type === 'LOCK' && (
-                <div>
+                <div className="space-y-2">
                   <p>
-                    Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{user.full_name}</strong>? Khi bị khóa, tài khoản này sẽ ngay lập tức bị từ chối đăng nhập vào hệ thống ParkLink.
+                    {t('admin:userDetail.dialogs.lockPrompt', { name: user.full_name })}
                   </p>
                   {user.role?.name === 'PROVIDER' && user.facility && (
-                    <p className="text-rose-600 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Cơ sở bãi đỗ xe "{user.facility.name}" của đối tác này cũng sẽ tự động chuyển sang trạng thái ẨN để đảm bảo an toàn giao dịch.
+                    <p className="text-rose-600 font-semibold">
+                      {t('admin:userDetail.dialogs.lockNoteProvider', { facility: user.facility.name })}
                     </p>
                   )}
                   {user.role?.name === 'CUSTOMER' && (
-                    <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Các yêu cầu đặt chỗ đang chờ duyệt của khách hàng này sẽ tự động được hủy.
+                    <p className="text-amber-700 font-semibold">
+                      {t('admin:userDetail.dialogs.lockNoteCustomer')}
                     </p>
                   )}
                   {user.role?.name === 'FIELD_INSPECTOR' && (
-                    <p className="text-amber-700 font-semibold text-sm mt-2">
-                      ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                    <p className="text-amber-700 font-semibold">
+                      {t('admin:userDetail.dialogs.lockNoteInspector')}
                     </p>
                   )}
                 </div>
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>
-                  Bạn có chắc chắn muốn <strong>mở khóa tài khoản</strong> của <strong>{user.full_name}</strong>? Người dùng sẽ có thể đăng nhập bình thường trở lại.
+                  {t('admin:userDetail.dialogs.unlockPrompt', { name: user.full_name })}
                 </p>
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  Hệ thống sẽ tự động tạo một mật khẩu ngẫu nhiên mới và gửi thông báo qua email tới <strong>{user.email}</strong>. Người dùng sẽ bị bắt buộc đổi mật khẩu mới ở lần đăng nhập tiếp theo.
+                  {t('admin:userDetail.dialogs.resetPrompt', { email: user.email })}
                 </p>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setConfirmDialog({ isOpen: false, type: '' })}
                 disabled={actionLoading}
-                className="px-6 py-2.5 border border-slate-200 text-slate-700 font-semibold text-base rounded-xl hover:bg-slate-50 transition"
+                className="px-4 py-2 border border-gray-300 text-gray-700 font-semibold text-xs rounded-xl hover:bg-gray-50 transition cursor-pointer"
               >
-                Hủy
+                {t('admin:userDetail.dialogs.cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleConfirmAction}
                 disabled={actionLoading}
-                className={`px-6 py-2.5 text-white font-bold text-base rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2 ${
+                className={`px-4 py-2 text-white font-semibold text-xs rounded-xl shadow-xs transition disabled:opacity-50 flex items-center gap-2 cursor-pointer ${
                   confirmDialog.type === 'LOCK'
                     ? 'bg-rose-600 hover:bg-rose-700'
                     : confirmDialog.type === 'UNLOCK'
@@ -607,12 +744,12 @@ const AdminUserDetailPage = () => {
                     : 'bg-amber-600 hover:bg-amber-700'
                 }`}
               >
-                {actionLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
+                {actionLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
                 {confirmDialog.type === 'LOCK'
-                  ? 'Khóa Tài Khoản'
+                  ? t('admin:userDetail.dialogs.confirmLock')
                   : confirmDialog.type === 'UNLOCK'
-                  ? 'Mở Khóa Tài Khoản'
-                  : 'Đặt lại mật khẩu'}
+                  ? t('admin:userDetail.dialogs.confirmUnlock')
+                  : t('admin:userDetail.dialogs.confirmReset')}
               </button>
             </div>
           </div>

@@ -95,155 +95,153 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="bg-slate-50 flex flex-col justify-center py-4 sm:py-6 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-600 text-white shadow-lg mb-4">
-          <LogIn className="w-7 h-7" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-xl w-full p-8 sm:p-10">
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center mx-auto mb-3 border border-neighbor-100 shadow-xs">
+            <LogIn className="w-6 h-6" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            {t('title')}
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            {t('subtitle')}
+          </p>
         </div>
-        <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-          {t('title')}
-        </h2>
-        <p className="mt-2 text-sm text-slate-600">
-          {t('subtitle')}
-        </p>
-      </div>
 
-      <div className="mt-4 sm:mx-auto sm:w-full sm:max-w-xl">
-        <div className="bg-white py-6 px-6 shadow-xl rounded-3xl border border-slate-100 sm:px-10">
-          {sessionNotice && (
-            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-3 animate-fadeIn">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <span>{sessionNotice}</span>
-            </div>
-          )}
+        {sessionNotice && (
+          <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <span>{sessionNotice}</span>
+          </div>
+        )}
 
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                {t('fields.email.label')}
-              </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder={t('fields.email.placeholder')}
-                  className="block w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                />
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              {t('fields.email.label')}
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <Mail className="w-4 h-4" />
               </div>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder={t('fields.email.placeholder')}
+                className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                required
+              />
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-semibold text-slate-700">
-                  {t('fields.password.label')}
-                </label>
-                <Link
-                  to="/forgot-password"
-                  className="text-xs font-bold text-teal-600 hover:text-teal-800 hover:underline transition"
-                >
-                  {t('forgotPassword')}
-                </Link>
-              </div>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder={t('fields.password.placeholder')}
-                  className="block w-full pl-10 pr-11 py-3 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-base font-bold text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition duration-200 disabled:opacity-50"
-            >
-              {loading ? t('submitting') : (
-                <span className="flex items-center gap-2">
-                  {t('submit')} <ArrowRight className="w-5 h-5" />
-                </span>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 font-semibold tracking-wider">
-                  {t('orContinueWith')}
-                </span>
-              </div>
-            </div>
-
-            <GoogleLoginButton
-              onSuccess={handleGoogleSuccess}
-              onError={(msg) => setError(msg)}
-              disabled={loading}
-              showDisclaimer={false}
-            />
           </div>
 
-          <p className="mt-5 text-[11px] text-slate-500 text-center leading-normal">
-            {t('policyNotice.prefix')}
-            <button
-              type="button"
-              onClick={() => setPolicyModalOpen(true)}
-              className="text-teal-600 hover:text-teal-700 font-semibold underline"
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-semibold text-gray-700">
+                {t('fields.password.label')}
+              </label>
+              <Link
+                to="/forgot-password"
+                className="text-sm font-semibold text-neighbor-700 hover:text-neighbor-800 transition-colors"
+              >
+                {t('forgotPassword')}
+              </Link>
+            </div>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <Lock className="w-4 h-4" />
+              </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder={t('fields.password.placeholder')}
+                className="w-full pl-11 pr-11 py-3 border border-gray-300 rounded-lg text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white font-bold text-base rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? t('submitting') : (
+              <span className="flex items-center gap-1.5">
+                {t('submit')} <ArrowRight className="w-4 h-4" />
+              </span>
+            )}
+          </button>
+        </form>
+
+        <div className="mt-5">
+          <div className="relative mb-3">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-3 text-gray-400 font-medium">
+                {t('orContinueWith')}
+              </span>
+            </div>
+          </div>
+
+          <GoogleLoginButton
+            onSuccess={handleGoogleSuccess}
+            onError={(msg) => setError(msg)}
+            disabled={loading}
+            showDisclaimer={false}
+          />
+        </div>
+
+        <p className="mt-4 text-xs text-gray-500 text-center leading-normal">
+          {t('policyNotice.prefix')}
+          <button
+            type="button"
+            onClick={() => setPolicyModalOpen(true)}
+            className="text-neighbor-700 hover:text-neighbor-800 font-semibold underline ml-1 cursor-pointer"
+          >
+            {t('policyNotice.linkText')}
+          </button>{t('policyNotice.suffix')}
+        </p>
+
+        <div className="mt-5 pt-4 border-t border-gray-100 space-y-2.5">
+          <div className="text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            {t('noAccount')}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Link
+              to="/register"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-gray-200 hover:bg-gray-50 rounded-lg text-sm font-semibold text-gray-700 transition-colors"
             >
-              {t('policyNotice.linkText')}
-            </button>{t('policyNotice.suffix')}
-          </p>
+              <User className="w-4 h-4 text-neighbor-600" /> {t('registerCustomer')}
+            </Link>
 
-          <div className="mt-6 pt-5 border-t border-slate-100 space-y-3">
-            <div className="text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              {t('noAccount')}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Link
-                to="/register"
-                className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
-              >
-                <User className="w-4 h-4 text-teal-600" /> {t('registerCustomer')}
-              </Link>
-
-              <Link
-                to="/register-provider"
-                className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-teal-200 bg-teal-50/50 rounded-xl text-xs font-bold text-teal-800 hover:bg-teal-100/50 transition"
-              >
-                <Building2 className="w-4 h-4 text-teal-600" /> {t('registerProvider')}
-              </Link>
-            </div>
+            <Link
+              to="/register-provider"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-neighbor-200 bg-neighbor-50/60 hover:bg-neighbor-100/60 rounded-lg text-sm font-semibold text-neighbor-800 transition-colors"
+            >
+              <Building2 className="w-4 h-4 text-neighbor-600" /> {t('registerProvider')}
+            </Link>
           </div>
         </div>
       </div>

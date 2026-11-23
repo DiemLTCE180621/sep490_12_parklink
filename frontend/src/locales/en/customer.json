@@ -9,9 +9,23 @@
       "logout": "Log Out"
     },
     "profileCard": {
-      "title": "Personal Information",
+      "title": "Account Information",
       "phoneNotUpdated": "Not updated",
-      "roleBadge": "Customer"
+      "roleBadge": "Customer",
+      "addressNotUpdated": "Not updated",
+      "securityNote": "Account protected by ParkLink Security",
+      "editDetailedProfile": "Update Profile",
+      "changePassword": "Change Password"
+    },
+    "profile": {
+      "title": "Personal Information",
+      "badge": "Customer",
+      "fullName": "Full Name",
+      "email": "Account Email",
+      "phone": "Phone Number",
+      "address": "Contact Address",
+      "notUpdated": "Not updated",
+      "editButton": "Edit Profile"
     },
     "reservationsCard": {
       "title": "Parking Reservation Management",
@@ -20,6 +34,58 @@
       "subDesc": "Manage and track approval progress for your monthly parking space reservation requests",
       "myListButton": "My Reservation Requests",
       "findNewButton": "Find New Parking Lots"
+    },
+    "stats": {
+      "activeContracts": "Active Contracts",
+      "activeContractsDesc": "Currently valid parking contracts",
+      "pendingRequests": "Pending Requests",
+      "pendingRequestsDesc": "Awaiting provider response",
+      "complaints": "Service Inquiries",
+      "complaintsDesc": "Track incident resolutions",
+      "findParking": "Explore Parking",
+      "findParkingDesc": "Find monthly parking spaces near you",
+      "manageContracts": "Manage contracts",
+      "viewRequests": "View requests",
+      "viewComplaints": "View complaints",
+      "exploreNow": "Find lots now"
+    },
+    "quickActions": {
+      "title": "Customer Services & Quick Actions",
+      "subtitle": "Quick access to your monthly parking management tools",
+      "search": {
+        "title": "Find Parking Spaces",
+        "desc": "Explore verified monthly parking lots with transparent pricing and real photos.",
+        "action": "Explore now"
+      },
+      "contracts": {
+        "title": "My Parking Contracts",
+        "desc": "Track rental duration, manage registered license plates, and renew contracts online.",
+        "action": "Manage contracts"
+      },
+      "reservations": {
+        "title": "Submitted Requests",
+        "desc": "Track approval status from parking lot owners and manage vehicle details.",
+        "action": "View requests"
+      },
+      "complaints": {
+        "title": "Support & Inquiries",
+        "desc": "Submit issues or questions for prompt review and resolution by ParkLink team.",
+        "action": "Submit inquiry"
+      }
+    },
+    "activity": {
+      "title": "Your Parking Activity",
+      "subtitle": "Track your active parking space and latest rental requests",
+      "activeContractTitle": "Active Parking Space",
+      "noActiveContract": "You do not have any active monthly parking contracts",
+      "noActiveContractDesc": "Monthly parking rentals help you save costs and secure a reliable, dedicated parking spot.",
+      "findParkingNow": "Find Nearby Parking Spaces",
+      "viewContractDetail": "View Contract & Renew",
+      "recentRequestTitle": "Latest Rental Request",
+      "noRecentRequest": "No pending rental requests at the moment.",
+      "viewRequestDetail": "View Request Details",
+      "submittedDate": "Submitted date",
+      "vehicle": "Vehicle"
     }
   },
   "reservations": {

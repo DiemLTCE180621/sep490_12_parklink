@@ -88,13 +88,13 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-200 text-slate-700 border border-slate-300">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-gray-200 text-gray-700 border border-gray-300">
             <Ban className="w-3.5 h-3.5" /> Khách Thuê Đã Hủy
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-800">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-gray-100 text-gray-800">
             {status}
           </span>
         );
@@ -109,22 +109,22 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
   const displayAddress = dcMatch ? dcMatch[1].trim() : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fadeIn">
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 max-h-[92vh] flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-4xl overflow-hidden transform transition-all duration-300 max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 p-6 text-white relative shrink-0">
+        <div className="bg-gradient-to-r from-neighbor-900 via-neighbor-800 to-neighbor-900 p-6 text-white relative shrink-0 border-b border-neighbor-800">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-slate-300 hover:text-white"
+            className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-gray-300 hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-4 h-4 text-teal-400" />
-            <span className="text-xs text-teal-300 font-bold uppercase tracking-wider">Chi Tiết Yêu Cầu Thuê #{reservationId}</span>
+            <FileText className="w-4 h-4 text-neighbor-400" />
+            <span className="text-xs text-neighbor-300 font-bold uppercase tracking-wider">Chi Tiết Yêu Cầu Thuê #{reservationId}</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Yêu Cầu Đăng Ký Thuê Bãi Xe</h2>
         </div>
@@ -132,8 +132,8 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
         <div className="p-6 overflow-y-auto space-y-6 flex-grow">
           {loading ? (
             <div className="py-12 text-center space-y-3">
-              <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
-              <p className="text-sm font-semibold text-slate-600">Đang lấy dữ liệu yêu cầu thuê...</p>
+              <Loader2 className="w-8 h-8 animate-spin text-neighbor-600 mx-auto" />
+              <p className="text-sm font-semibold text-gray-600">Đang lấy dữ liệu yêu cầu thuê...</p>
             </div>
           ) : error ? (
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-3">
@@ -149,12 +149,12 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               )}
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                 <div>
-                  <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Trạng thái hiện tại</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase block mb-1">Trạng thái hiện tại</span>
                   {getStatusBadge(reservation.status)}
                 </div>
-                <div className="text-xs text-slate-500 font-medium">
+                <div className="text-xs text-gray-500 font-medium">
                   Ngày gửi: {new Date(reservation.created_at).toLocaleDateString('vi-VN')}
                 </div>
               </div>
@@ -168,49 +168,49 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                 </div>
               )}
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Building2 className="w-4 h-4 text-teal-600" /> Thông Tin Bãi Đỗ Xe
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                <h4 className="text-xs font-extrabold text-neighbor-800 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
+                  <Building2 className="w-4 h-4 text-neighbor-600" /> Thông Tin Bãi Đỗ Xe
                 </h4>
 
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold">Tên cơ sở:</span>
-                    <p className="font-bold text-slate-900 text-base">{reservation.facility?.name}</p>
+                    <span className="text-xs text-gray-500 font-semibold">Tên cơ sở:</span>
+                    <p className="font-bold text-gray-900 text-base">{reservation.facility?.name}</p>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold">Địa chỉ:</span>
-                    <p className="text-slate-700 flex items-start gap-1.5 mt-0.5">
-                      <MapPin className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-xs text-gray-500 font-semibold">Địa chỉ:</span>
+                    <p className="text-gray-700 flex items-start gap-1.5 mt-0.5">
+                      <MapPin className="w-4 h-4 text-neighbor-600 shrink-0 mt-0.5" />
                       {reservation.facility?.address}
                     </p>
                   </div>
-                  <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                    <span className="text-xs text-slate-500 font-semibold">Giá thuê theo tháng:</span>
-                    <span className="font-extrabold text-teal-700 text-base">
+                  <div className="flex justify-between items-center pt-1 border-t border-gray-100">
+                    <span className="text-xs text-gray-500 font-semibold">Giá thuê theo tháng:</span>
+                    <span className="font-extrabold text-neighbor-700 text-base">
                       {Number(reservation.facility?.price_per_month || 0).toLocaleString('vi-VN')} VNĐ/tháng
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Car className="w-4 h-4 text-teal-600" /> Chi Tiết Thuê & Phương Tiện
+              <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                <h4 className="text-xs font-extrabold text-neighbor-800 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
+                  <Car className="w-4 h-4 text-neighbor-600" /> Chi Tiết Thuê & Phương Tiện
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold">Thông tin xe đăng ký đỗ:</span>
-                    <p className="font-bold text-slate-900 mt-0.5 flex items-center gap-2">
-                      <Car className="w-4 h-4 text-slate-400" /> {displayVehicle || reservation.vehicle_info}
+                    <span className="text-xs text-gray-500 font-semibold">Thông tin xe đăng ký đỗ:</span>
+                    <p className="font-bold text-gray-900 mt-0.5 flex items-center gap-2">
+                      <Car className="w-4 h-4 text-gray-400" /> {displayVehicle || reservation.vehicle_info}
                     </p>
                   </div>
 
                   <div>
-                    <span className="text-xs text-slate-500 font-semibold">Ngày mong muốn bắt đầu thuê:</span>
-                    <p className="font-bold text-teal-900 mt-0.5 flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-teal-600" />
+                    <span className="text-xs text-gray-500 font-semibold">Ngày mong muốn bắt đầu thuê:</span>
+                    <p className="font-bold text-neighbor-900 mt-0.5 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-neighbor-600" />
                       {new Date(reservation.desired_start_date).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
@@ -218,40 +218,40 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
               </div>
 
               {reservation.customer && (
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3">
-                  <h4 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
-                    <User className="w-4 h-4 text-teal-600" /> Thông Tin Khách Thuê
+                <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
+                  <h4 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-2 border-b border-gray-200 pb-2">
+                    <User className="w-4 h-4 text-neighbor-600" /> Thông Tin Khách Thuê
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <User className="w-4 h-4 text-slate-400 shrink-0" />
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <User className="w-4 h-4 text-gray-400 shrink-0" />
                       <span className="font-bold">{reservation.customer.full_name}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                      <a href={`tel:${reservation.customer.phone_number}`} className="font-bold text-teal-700 hover:underline">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Phone className="w-4 h-4 text-gray-400 shrink-0" />
+                      <a href={`tel:${reservation.customer.phone_number}`} className="font-bold text-neighbor-700 hover:underline">
                         {reservation.customer.phone_number || 'Chưa cập nhật'}
                       </a>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-700 sm:col-span-2">
-                      <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                      <span className="font-medium text-xs text-slate-600">{reservation.customer.email}</span>
+                    <div className="flex items-center gap-2 text-gray-700 sm:col-span-2">
+                      <Mail className="w-4 h-4 text-gray-400 shrink-0" />
+                      <span className="font-medium text-xs text-gray-600">{reservation.customer.email}</span>
                     </div>
 
                     {displayCccd && (
-                      <div className="text-xs text-slate-700 pt-1.5 border-t border-slate-200/80">
-                        <span className="text-[11px] font-bold text-slate-400 block uppercase">Số CMND / Thẻ CCCD</span>
-                        <span className="font-bold text-slate-900">{displayCccd}</span>
+                      <div className="text-xs text-gray-700 pt-1.5 border-t border-gray-200/80">
+                        <span className="text-[11px] font-bold text-gray-400 block uppercase">Số CMND / Thẻ CCCD</span>
+                        <span className="font-bold text-gray-900">{displayCccd}</span>
                       </div>
                     )}
 
                     {displayAddress && (
-                      <div className="text-xs text-slate-700 pt-1.5 border-t border-slate-200/80">
-                        <span className="text-[11px] font-bold text-slate-400 block uppercase">Địa Chỉ Thường Trú</span>
-                        <span className="font-bold text-slate-900">{displayAddress}</span>
+                      <div className="text-xs text-gray-700 pt-1.5 border-t border-gray-200/80">
+                        <span className="text-[11px] font-bold text-gray-400 block uppercase">Địa Chỉ Thường Trú</span>
+                        <span className="font-bold text-gray-900">{displayAddress}</span>
                       </div>
                     )}
                   </div>
@@ -259,26 +259,26 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
               )}
 
               {reservation.facility?.provider && (
-                <div className="bg-teal-50/60 p-5 rounded-2xl border border-teal-100 space-y-3">
-                  <h4 className="text-xs font-extrabold text-teal-800 uppercase tracking-wider flex items-center gap-2 border-b border-teal-100 pb-2">
-                    <User className="w-4 h-4 text-teal-600" /> Liên Hệ Chủ Bãi Đỗ Xe
+                <div className="bg-neighbor-50/60 p-5 rounded-2xl border border-neighbor-100 space-y-3">
+                  <h4 className="text-xs font-extrabold text-neighbor-800 uppercase tracking-wider flex items-center gap-2 border-b border-neighbor-100 pb-2">
+                    <User className="w-4 h-4 text-neighbor-600" /> Liên Hệ Chủ Bãi Đỗ Xe
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <User className="w-4 h-4 text-teal-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <User className="w-4 h-4 text-neighbor-600 shrink-0" />
                       <span className="font-bold">{reservation.facility.provider.full_name}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-700">
-                      <Phone className="w-4 h-4 text-teal-600 shrink-0" />
-                      <a href={`tel:${reservation.facility.provider.phone_number}`} className="font-bold text-teal-700 hover:underline">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <Phone className="w-4 h-4 text-neighbor-600 shrink-0" />
+                      <a href={`tel:${reservation.facility.provider.phone_number}`} className="font-bold text-neighbor-700 hover:underline">
                         {reservation.facility.provider.phone_number}
                       </a>
                     </div>
 
-                    <div className="flex items-center gap-2 text-slate-700 sm:col-span-2">
-                      <Mail className="w-4 h-4 text-teal-600 shrink-0" />
+                    <div className="flex items-center gap-2 text-gray-700 sm:col-span-2">
+                      <Mail className="w-4 h-4 text-neighbor-600 shrink-0" />
                       <span className="font-medium text-xs">{reservation.facility.provider.email}</span>
                     </div>
                   </div>
@@ -293,8 +293,8 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
                       {reservation.confirmation_record.status}
                     </span>
                   </div>
-                  <p className="text-sm font-extrabold text-slate-900">
-                    Mã Hợp Đồng: <span className="font-mono text-teal-800">{reservation.confirmation_record.contract_code}</span>
+                  <p className="text-sm font-extrabold text-gray-900">
+                    Mã Hợp Đồng: <span className="font-mono text-neighbor-800">{reservation.confirmation_record.contract_code}</span>
                   </p>
                 </div>
               )}
@@ -302,11 +302,11 @@ const ReservationDetailModal = ({ reservationId, isOpen, onClose, onRefresh }) =
           ) : null}
         </div>
 
-        <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
+        <div className="p-5 bg-gray-50 border-t border-gray-100 flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm rounded-xl transition"
+            className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-sm rounded-xl transition"
           >
             Đóng
           </button>

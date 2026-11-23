@@ -1,7 +1,3 @@
-/**
- * Middleware validation kiểm tra tính hợp lệ của dữ liệu đầu vào cho Field Inspector API
- */
-
 const {
   cleanText,
   isValidName,
@@ -9,9 +5,6 @@ const {
   isValidEmail
 } = require('../utils/validators');
 
-/**
- * Validate tạo tài khoản Nhân viên khảo sát (UC-86)
- */
 const validateCreateFieldInspector = (req, res, next) => {
   const { email, full_name, phone_number, address } = req.body;
   const errors = [];
@@ -48,9 +41,6 @@ const validateCreateFieldInspector = (req, res, next) => {
   next();
 };
 
-/**
- * Validate cập nhật thông tin Nhân viên khảo sát (UC-88)
- */
 const validateUpdateFieldInspector = (req, res, next) => {
   const { full_name, phone_number, address, status } = req.body;
   const errors = [];

@@ -16,7 +16,7 @@ import {
 import { markNotificationAsRead } from '../../services/notificationService';
 import Toast from '../common/Toast';
 
-// Icon, màu sắc và nhãn cho loại và mức độ ưu tiên thông báo
+
 const getTypeStyle = (type = '', priority = '', t) => {
   const normType = (type || '').toUpperCase();
   const normPriority = (priority || '').toUpperCase();
@@ -48,8 +48,8 @@ const getTypeStyle = (type = '', priority = '', t) => {
   if (normType.includes('ĐẶT CHỖ') || normType.includes('RESERVATION') || normType.includes('BOOKING')) {
     return {
       icon: CalendarCheck,
-      bgColor: 'bg-teal-100 text-teal-700',
-      badgeColor: 'bg-teal-50 text-teal-700 border-teal-200',
+      bgColor: 'bg-neighbor-100 text-neighbor-700',
+      badgeColor: 'bg-neighbor-50 text-neighbor-700 border-neighbor-200',
       label: t('notifications.badges.reservation')
     };
   }
@@ -71,13 +71,13 @@ const getTypeStyle = (type = '', priority = '', t) => {
   }
   return {
     icon: Info,
-    bgColor: 'bg-slate-100 text-slate-700',
-    badgeColor: 'bg-slate-50 text-slate-700 border-slate-200',
+    bgColor: 'bg-gray-100 text-gray-700',
+    badgeColor: 'bg-gray-50 text-gray-700 border-gray-200',
     label: t('notifications.badges.general')
   };
 };
 
-//modal for full noti, auto mark as read when open
+
 const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, autoMarkAsRead = true }) => {
   const { t, i18n } = useTranslation('common');
   const tRef = useRef(t);
@@ -127,7 +127,7 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
     })
     : '';
 
-  // Nhận diện liên kết chính sách phù hợp
+  
   const getPolicyUrl = () => {
     const title = notification.title || '';
     const content = notification.content || '';
@@ -171,12 +171,12 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
           onClose={() => setToast(null)}
         />
       )}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
-        <div className="bg-white rounded-none w-[95vw] md:w-[70vw] max-w-[1400px] h-[75vh] md:h-[80vh] shadow-2xl border-2 border-slate-400 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
-          {/* Header Modal */}
-          <div className="p-6 sm:p-7 border-b border-slate-200 bg-slate-50 flex items-start justify-between gap-4 shrink-0">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-gray-950/75 backdrop-blur-sm animate-in fade-in duration-150">
+        <div className="bg-white rounded-none w-[95vw] md:w-[70vw] max-w-[1400px] h-[75vh] md:h-[80vh] shadow-2xl border-2 border-gray-400 overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
+          {}
+          <div className="p-6 sm:p-7 border-b border-gray-200 bg-gray-50 flex items-start justify-between gap-4 shrink-0">
             <div className="flex items-start gap-4">
-              <div className={`w-14 h-14 rounded-none flex items-center justify-center shrink-0 border ${style.bgColor} border-slate-300`}>
+              <div className={`w-14 h-14 rounded-none flex items-center justify-center shrink-0 border ${style.bgColor} border-gray-300`}>
                 <IconComponent className="w-7 h-7" />
               </div>
               <div>
@@ -185,49 +185,49 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
                     {categoryBadgeLabel}
                   </span>
                   {notification.priority && (
-                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-none bg-slate-200 text-slate-800">
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-none bg-gray-200 text-gray-800">
                       {formatPriorityLabel(notification.priority)}
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-950 leading-snug">
+                <h3 className="text-xl sm:text-2xl font-black text-gray-950 leading-snug">
                   {notification.title}
                 </h3>
               </div>
             </div>
           </div>
 
-          {/* metadata */}
-          <div className="px-6 sm:px-8 py-3 bg-white border-b border-slate-200 flex items-center justify-between text-xs sm:text-sm text-slate-600 font-medium shrink-0">
+          {}
+          <div className="px-6 sm:px-8 py-3 bg-white border-b border-gray-200 flex items-center justify-between text-xs sm:text-sm text-gray-600 font-medium shrink-0">
             <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
+              <Clock className="w-4 h-4 text-gray-400" />
               {formattedDate}
             </span>
             <span className={`flex items-center gap-1.5 font-bold px-3 py-1 rounded-none border text-xs uppercase tracking-wide ${notification.is_read
-              ? 'text-teal-800 bg-teal-50 border-teal-200'
+              ? 'text-neighbor-800 bg-neighbor-50 border-neighbor-200'
               : 'text-amber-800 bg-amber-50 border-amber-200'
               }`}>
-              <CheckCheck className={`w-4 h-4 ${notification.is_read ? 'text-teal-600' : 'text-amber-600'}`} />
+              <CheckCheck className={`w-4 h-4 ${notification.is_read ? 'text-neighbor-600' : 'text-amber-600'}`} />
               {notification.is_read ? t('notifications.modal.markedRead') : t('notifications.modal.unread')}
             </span>
           </div>
-          {/* Nội dung chi tiết thông báo */}
+          {}
           <div className="p-6 sm:p-8 flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 shrink-0">
+            <div className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3 shrink-0">
               {t('notifications.modal.contentLabel')}
             </div>
-            <div className="p-6 rounded-none bg-slate-50 border-2 border-slate-200 text-slate-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
+            <div className="p-6 rounded-none bg-gray-50 border-2 border-gray-200 text-gray-800 text-base sm:text-lg leading-relaxed flex-1 min-h-0 overflow-y-auto whitespace-pre-line font-medium shadow-inner">
               {displayContent || notification.content}
             </div>
           </div>
 
-          {/* Footer Modal */}
-          <div className="p-5 sm:p-6 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3 shrink-0">
+          {}
+          <div className="p-5 sm:p-6 border-t border-gray-200 bg-gray-50 flex items-center justify-between gap-3 shrink-0">
             {policyUrl ? (
               <Link
                 to={policyUrl}
                 onClick={onClose}
-                className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
+                className="px-6 py-3 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs uppercase tracking-wider transition inline-flex items-center gap-2 shadow-sm rounded-none"
               >
                 <span>{t('notifications.modal.viewPolicy')}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -238,7 +238,7 @@ const NotificationDetailModal = ({ isOpen, onClose, notification, onMarkedRead, 
             <button
               type="button"
               onClick={onClose}
-              className="px-8 py-3 rounded-none bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
+              className="px-8 py-3 rounded-none bg-gray-900 hover:bg-gray-800 text-white font-black text-xs uppercase tracking-widest transition active:translate-y-0.5 shadow-md"
             >
               {t('notifications.modal.close')}
             </button>

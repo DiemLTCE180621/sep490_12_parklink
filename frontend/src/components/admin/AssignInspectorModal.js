@@ -14,12 +14,7 @@ import {
   Briefcase
 } from 'lucide-react';
 
-/**
- * AssignInspectorModal: Modal phân công nhân viên khảo sát thực địa
- * - Kích thước cố định tuyệt đối (Fixed Dimensions): h-[85vh] min-h-[600px], không bao giờ co rút hay biến dạng dù ít hay nhiều nhân viên
- * - Mở rộng tối đa (max-w-4xl / md:max-w-5xl)
- * - Cuộn chuột mượt mà (Mouse Wheel Scrolling) với thanh cuộn tùy biến
- */
+
 const AssignInspectorModal = ({
   isOpen,
   onClose,
@@ -36,12 +31,12 @@ const AssignInspectorModal = ({
   const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState('');
 
-  // Bộ lọc & Tìm kiếm
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArea, setSelectedArea] = useState('ALL');
-  const [workloadFilter, setWorkloadFilter] = useState('ALL'); // 'ALL' | 'IDLE' | 'BUSY'
+  const [workloadFilter, setWorkloadFilter] = useState('ALL'); 
 
-  // Tải danh sách nhân viên khảo sát đang hoạt động khi mở modal
+  
   useEffect(() => {
     if (!isOpen) return;
 
@@ -56,7 +51,7 @@ const AssignInspectorModal = ({
 
         if (isMounted) {
           setInspectors(validList);
-          // Mặc định chọn nhân viên hiện tại nếu có, hoặc nhân viên đầu tiên
+          
           if (currentInspectorId) {
             setSelectedId(String(currentInspectorId));
           } else if (validList.length > 0) {
@@ -75,7 +70,7 @@ const AssignInspectorModal = ({
 
     fetchInspectors();
 
-    // Reset bộ lọc mỗi khi mở lại modal
+    
     setSearchQuery('');
     setSelectedArea('ALL');
     setWorkloadFilter('ALL');
@@ -85,7 +80,7 @@ const AssignInspectorModal = ({
     };
   }, [isOpen, currentInspectorId]);
 
-  // Trích xuất danh sách các khu vực/quận huyện từ địa chỉ nhân viên
+  
   const availableAreas = useMemo(() => {
     const areas = new Set();
     inspectors.forEach((ins) => {
@@ -112,10 +107,10 @@ const AssignInspectorModal = ({
     return Array.from(areas);
   }, [inspectors]);
 
-  // Lọc danh sách nhân viên theo từ khóa, khu vực và khối lượng công việc
+  
   const filteredInspectors = useMemo(() => {
     return inspectors.filter((ins) => {
-      // 1. Lọc theo từ khóa tìm kiếm
+      
       const q = searchQuery.trim().toLowerCase();
       const matchSearch =
         !q ||
@@ -124,12 +119,12 @@ const AssignInspectorModal = ({
         (ins.phone_number || '').toLowerCase().includes(q) ||
         (ins.address || '').toLowerCase().includes(q);
 
-      // 2. Lọc theo khu vực
+      
       const matchArea =
         selectedArea === 'ALL' ||
         (ins.address || '').toLowerCase().includes(selectedArea.toLowerCase());
 
-      // 3. Lọc theo khối lượng công việc (Workload)
+      
       const activeTasks = ins._count?.assigned_facilities || 0;
       let matchWorkload = true;
       if (workloadFilter === 'IDLE') {
@@ -156,8 +151,8 @@ const AssignInspectorModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 overflow-hidden">
-      {/* CSS tùy biến thanh cuộn mượt mà khi lăn con chuột */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-3 sm:p-4 overflow-hidden">
+      {}
       <style>{`
         .inspector-scroll-area::-webkit-scrollbar {
           width: 7px;
@@ -175,85 +170,81 @@ const AssignInspectorModal = ({
         }
       `}</style>
 
-      {/* Modal Container: 
-          - Mở rộng kích thước: max-w-4xl md:max-w-5xl
-          - Khóa cứng chiều cao: h-[85vh] min-h-[600px] max-h-[780px]
-          - Bất kể 1 nhân viên hay 50 nhân viên, modal KHÔNG BAO GIỜ bị co lại hay biến dạng!
-      */}
-      <div className="bg-white rounded-3xl w-full max-w-4xl md:max-w-5xl h-[85vh] min-h-[600px] max-h-[780px] shadow-2xl flex flex-col overflow-hidden transition-all animate-in fade-in zoom-in-95 duration-150">
+      {}
+      <div className="bg-white rounded-xl w-full max-w-4xl md:max-w-5xl h-[85vh] min-h-[600px] max-h-[780px] shadow-2xl flex flex-col overflow-hidden transition-all animate-in fade-in zoom-in-95 duration-150">
         
-        {/* 1. Header cố định ở trên */}
-        <div className="px-6 py-4 md:px-8 md:py-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+        {}
+        <div className="px-6 py-4 md:px-8 md:py-5 border-b border-gray-200 flex items-center justify-between shrink-0 bg-white">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-amber-100/80 rounded-2xl flex items-center justify-center text-amber-600 shrink-0 shadow-sm">
+            <div className="w-11 h-11 bg-amber-100/80 rounded-xl flex items-center justify-center text-amber-600 shrink-0 shadow-sm">
               <UserCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg md:text-xl font-bold text-slate-900">{title}</h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <h3 className="text-lg md:text-xl font-bold text-gray-900">{title}</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
                 Chỉ định nhân viên khảo sát thực địa phụ trách cơ sở bãi đỗ xe
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition flex items-center justify-center shrink-0"
+            className="w-9 h-9 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition flex items-center justify-center shrink-0"
             title="Đóng"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* 2. Banner bãi đỗ xe & Thanh tìm kiếm / Bộ lọc (Cố định ở trên) */}
-        <div className="px-6 py-3.5 md:px-8 border-b border-slate-100 bg-slate-50/60 shrink-0 space-y-3">
-          {/* Thông tin tóm tắt cơ sở cần khảo sát */}
-          <div className="p-3 bg-white rounded-2xl border border-slate-200/80 flex items-center gap-3 text-xs shadow-sm">
-            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 font-bold">
+        {}
+        <div className="px-6 py-3.5 md:px-8 border-b border-gray-200 bg-gray-50/60 shrink-0 space-y-3">
+          {}
+          <div className="p-3 bg-white rounded-xl border border-gray-200/80 flex items-center gap-3 text-xs shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center shrink-0 font-bold">
               <Building2 className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-slate-900 truncate">
+              <div className="font-bold text-gray-900 truncate">
                 {facilityName || 'Cơ sở bãi đỗ xe'}
               </div>
               {facilityAddress && (
-                <div className="text-slate-600 text-[11px] flex items-center gap-1.5 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                <div className="text-gray-600 text-[11px] flex items-center gap-1.5 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-neighbor-600 shrink-0" />
                   <span className="truncate">{facilityAddress}</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Thanh tìm kiếm & Bộ lọc (Search & Filters) */}
+          {}
           <div className="flex flex-col sm:flex-row gap-2.5 items-center">
-            {/* Input Search */}
+            {}
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Tìm nhân viên theo tên, email, SĐT, địa chỉ..."
-                className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition shadow-sm"
+                className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition shadow-sm"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Filter Area */}
+            {}
             {availableAreas.length > 0 && (
               <div className="relative w-full sm:w-48">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <MapPin className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <select
                   value={selectedArea}
                   onChange={(e) => setSelectedArea(e.target.value)}
-                  className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition appearance-none cursor-pointer truncate shadow-sm"
+                  className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition appearance-none cursor-pointer truncate shadow-sm"
                 >
                   <option value="ALL">Mọi khu vực</option>
                   {availableAreas.map((area, idx) => (
@@ -265,13 +256,13 @@ const AssignInspectorModal = ({
               </div>
             )}
 
-            {/* Filter Workload */}
+            {}
             <div className="relative w-full sm:w-40">
-              <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Briefcase className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <select
                 value={workloadFilter}
                 onChange={(e) => setWorkloadFilter(e.target.value)}
-                className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition appearance-none cursor-pointer shadow-sm"
+                className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition appearance-none cursor-pointer shadow-sm"
               >
                 <option value="ALL">Mọi tải việc</option>
                 <option value="IDLE">Rảnh (0 việc)</option>
@@ -280,8 +271,8 @@ const AssignInspectorModal = ({
             </div>
           </div>
 
-          {/* Bar số lượng & Đặt lại */}
-          <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-0.5">
+          {}
+          <div className="flex items-center justify-between text-[11px] text-gray-500 px-1 pt-0.5">
             <span>
               Tìm thấy <strong>{filteredInspectors.length}</strong> / {inspectors.length} nhân viên phù hợp
             </span>
@@ -289,7 +280,7 @@ const AssignInspectorModal = ({
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-teal-700 hover:text-teal-800 font-semibold hover:underline flex items-center gap-1"
+                className="text-neighbor-700 hover:text-neighbor-800 font-semibold hover:underline flex items-center gap-1"
               >
                 <RotateCcw className="w-3 h-3" /> Đặt lại
               </button>
@@ -297,7 +288,7 @@ const AssignInspectorModal = ({
           </div>
         </div>
 
-        {/* 3. Danh sách nhân viên: Cuộn chuột mượt mà (Mouse Wheel Scrolling) */}
+        {}
         <div
           className="inspector-scroll-area flex-1 min-h-0 overflow-y-auto p-4 md:p-6"
           style={{
@@ -306,12 +297,12 @@ const AssignInspectorModal = ({
           }}
         >
           {loading ? (
-            <div className="py-20 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2">
-              <RotateCcw className="w-6 h-6 animate-spin text-teal-600" />
+            <div className="py-20 text-center text-gray-400 text-xs flex flex-col items-center justify-center gap-2">
+              <RotateCcw className="w-6 h-6 animate-spin text-neighbor-600" />
               <span>Đang tải danh sách nhân viên khảo sát...</span>
             </div>
           ) : error ? (
-            <div className="p-4 bg-rose-50 text-rose-800 rounded-2xl border border-rose-200 text-xs text-center space-y-2">
+            <div className="p-4 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 text-xs text-center space-y-2">
               <p className="font-semibold">{error}</p>
               <button
                 onClick={onClose}
@@ -321,7 +312,7 @@ const AssignInspectorModal = ({
               </button>
             </div>
           ) : inspectors.length === 0 ? (
-            <div className="p-8 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 text-center space-y-2 my-auto">
+            <div className="p-8 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 text-center space-y-2 my-auto">
               <AlertCircle className="w-8 h-8 text-amber-600 mx-auto" />
               <p className="font-bold text-sm">Chưa có nhân viên khảo sát nào trong hệ thống!</p>
               <p className="text-[11px] text-amber-700 max-w-md mx-auto">
@@ -329,21 +320,21 @@ const AssignInspectorModal = ({
               </p>
             </div>
           ) : filteredInspectors.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-xs space-y-2 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
-              <Search className="w-8 h-8 mx-auto text-slate-300" />
-              <p className="font-semibold text-slate-600">
+            <div className="py-16 text-center text-gray-400 text-xs space-y-2 bg-gray-50/60 rounded-xl border border-dashed border-gray-200">
+              <Search className="w-8 h-8 mx-auto text-gray-300" />
+              <p className="font-semibold text-gray-600">
                 Không tìm thấy nhân viên nào phù hợp với bộ lọc.
               </p>
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="text-teal-700 hover:underline font-semibold"
+                className="text-neighbor-700 hover:underline font-semibold"
               >
                 Xóa bộ lọc để xem tất cả ({inspectors.length})
               </button>
             </div>
           ) : (
-            /* Hiển thị dạng Grid 2 cột rộng rãi, lăn chuột lên xuống thoải mái */
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {filteredInspectors.map((inspector) => {
                 const isSelected = String(selectedId) === String(inspector.id);
@@ -354,18 +345,18 @@ const AssignInspectorModal = ({
                   <div
                     key={inspector.id}
                     onClick={() => setSelectedId(String(inspector.id))}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 shadow-sm ${
+                    className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3 shadow-sm ${
                       isSelected
-                        ? 'border-teal-600 bg-teal-50/70 ring-2 ring-teal-500/20'
-                        : 'border-slate-200 hover:border-teal-300 hover:bg-slate-50/80 bg-white'
+                        ? 'border-neighbor-600 bg-neighbor-50/70 ring-2 ring-neighbor-600/20'
+                        : 'border-gray-200 hover:border-neighbor-300 hover:bg-gray-50/80 bg-white'
                     }`}
                   >
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div
-                        className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm shrink-0 shadow-sm transition-colors ${
+                        className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 shadow-sm transition-colors ${
                           isSelected
-                            ? 'bg-teal-600 text-white'
-                            : 'bg-slate-100 text-slate-700'
+                            ? 'bg-neighbor-600 text-white'
+                            : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {inspector.full_name?.charAt(0) || 'N'}
@@ -373,10 +364,10 @@ const AssignInspectorModal = ({
 
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs md:text-sm font-bold text-slate-900 truncate">
+                          <span className="text-xs md:text-sm font-bold text-gray-900 truncate">
                             {inspector.full_name}
                           </span>
-                          <span className="text-[10px] font-semibold text-teal-700 bg-teal-100/80 px-2 py-0.5 rounded-full shrink-0">
+                          <span className="text-[10px] font-semibold text-neighbor-700 bg-neighbor-100/80 px-2 py-0.5 rounded-full shrink-0">
                             NV Khảo sát
                           </span>
                           {isCurrent && (
@@ -386,7 +377,7 @@ const AssignInspectorModal = ({
                           )}
                         </div>
 
-                        {/* Tải công việc */}
+                        {}
                         <div>
                           {activeCount === 0 ? (
                             <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full inline-block">
@@ -399,37 +390,37 @@ const AssignInspectorModal = ({
                           )}
                         </div>
 
-                        {/* Thông tin liên hệ */}
-                        <div className="text-xs text-slate-500 flex items-center gap-3 pt-0.5 flex-wrap">
+                        {}
+                        <div className="text-xs text-gray-500 flex items-center gap-3 pt-0.5 flex-wrap">
                           <span className="flex items-center gap-1.5 truncate">
-                            <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                             {inspector.email}
                           </span>
                           {inspector.phone_number && (
-                            <span className="flex items-center gap-1.5 font-medium text-slate-700 shrink-0">
-                              <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="flex items-center gap-1.5 font-medium text-gray-700 shrink-0">
+                              <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                               {inspector.phone_number}
                             </span>
                           )}
                         </div>
 
-                        {/* Địa chỉ nhân viên */}
-                        <div className="pt-1 flex items-start gap-1.5 text-xs text-slate-700">
+                        {}
+                        <div className="pt-1 flex items-start gap-1.5 text-xs text-gray-700">
                           <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
-                          <span className="font-medium text-slate-700 line-clamp-2">
+                          <span className="font-medium text-gray-700 line-clamp-2">
                             <strong>Địa chỉ:</strong> {inspector.address || 'Chưa cập nhật địa chỉ'}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Radio checkmark */}
+                    {}
                     <div className="shrink-0 pl-1 pt-0.5">
                       <div
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'border-teal-600 bg-teal-600 text-white shadow-sm scale-110'
-                            : 'border-slate-300 bg-white'
+                            ? 'border-neighbor-600 bg-neighbor-600 text-white shadow-sm scale-110'
+                            : 'border-gray-300 bg-white'
                         }`}
                       >
                         {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -442,13 +433,13 @@ const AssignInspectorModal = ({
           )}
         </div>
 
-        {/* 4. Footer hành động cố định ở dưới */}
-        <div className="px-6 py-3.5 md:px-8 md:py-4 border-t border-slate-100 bg-slate-50/80 shrink-0 flex items-center justify-between gap-4">
-          <div className="text-xs text-slate-500 hidden sm:block">
+        {}
+        <div className="px-6 py-3.5 md:px-8 md:py-4 border-t border-gray-200 bg-gray-50/80 shrink-0 flex items-center justify-between gap-4">
+          <div className="text-xs text-gray-500 hidden sm:block">
             {selectedId ? (
               <span>
                 Đang chọn nhân viên:{' '}
-                <strong className="text-teal-700">
+                <strong className="text-neighbor-700">
                   {inspectors.find((i) => String(i.id) === String(selectedId))?.full_name}
                 </strong>
               </span>
@@ -460,7 +451,7 @@ const AssignInspectorModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 px-4 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl border border-slate-200 transition text-xs shadow-sm"
+              className="flex-1 py-2.5 px-4 bg-white hover:bg-gray-100 text-gray-700 font-bold rounded-xl border border-gray-200 transition text-xs shadow-sm"
             >
               Hủy
             </button>

@@ -1,0 +1,28 @@
+{
+  "title": "Công Việc Khảo Sát Thực Địa",
+  "subtitle": "Danh sách các bãi đỗ xe đã duyệt sơ bộ, cần nhân viên khảo sát đến kiểm tra thực tế và cập nhật dữ liệu",
+  "needSurvey": "Cần thực địa: {{count}} cơ sở",
+  "searchPlaceholder": "Tìm theo tên bãi xe, địa chỉ hoặc tên chủ bãi...",
+  "refresh": "Làm mới",
+  "empty": "Bạn chưa được phân công khảo sát cơ sở nào.",
+  "emptyDesc": "Vui lòng đợi thông báo hoặc phân công khảo sát từ Quản trị viên.",
+  "loading": "Đang tải danh sách công việc khảo sát...",
+  "errorLoading": "Lỗi khi tải danh sách bãi xe chờ khảo sát",
+  "inProgress": "Đang chờ khảo sát",
+  "vehiclesUnit": "xe",
+  "table": {
+    "id": "ID",
+    "facility": "Cơ sở bãi đỗ xe",
+    "provider": "Chủ bãi (Provider)",
+    "proposal": "Đề xuất ban đầu",
+    "status": "Trạng thái",
+    "actions": "Thao tác"
+  },
+  "surveyAction": "Báo cáo thực địa",
+  "surveyActionTitle": "Vào trang báo cáo kết quả khảo sát thực tế",
+  "pagination": {
+    "info": "Trang {{current}} / {{total}} (Tổng {{count}} cơ sở)",
+    "prev": "Trước",
+    "next": "Sau"
+  }
+}

@@ -177,14 +177,14 @@ const ProviderReservationsPanel = () => {
         );
       case 'CANCELLED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-gray-400" />
             {t('reservations.statuses.CANCELLED')}
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
             {status}
           </span>
         );
@@ -195,13 +195,13 @@ const ProviderReservationsPanel = () => {
     <div className="space-y-4">
       <Toast message={toastInfo.message} type={toastInfo.type} onClose={() => setToastInfo({ message: '', type: 'success' })} />
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden divide-y divide-slate-200">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-200">
         <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-gray-900">
               {t('reservations.title')}
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-gray-500 mt-1">
               {t('reservations.subtitle')}
             </p>
           </div>
@@ -209,110 +209,112 @@ const ProviderReservationsPanel = () => {
           <button
             onClick={fetchProviderReservations}
             disabled={loading}
-            className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-lg border border-slate-300 transition flex items-center gap-1.5 self-start sm:self-auto shrink-0"
+            className="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-300 transition flex items-center gap-1.5 self-start sm:self-auto shrink-0"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
             {t('reservations.refresh')}
           </button>
         </div>
 
-        <div className="px-6 py-3.5 bg-slate-50/60 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="px-6 py-2.5 bg-gray-50/70 border-b border-gray-100">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             <button
               onClick={() => setActiveTab('ALL')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'ALL'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('reservations.tabs.all', { count: totalCount })}
             </button>
             <button
               onClick={() => setActiveTab('PENDING')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'PENDING'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('reservations.tabs.pending', { count: pendingCount })}
             </button>
             <button
               onClick={() => setActiveTab('APPROVED')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'APPROVED'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('reservations.tabs.approved', { count: approvedCount })}
             </button>
             <button
               onClick={() => setActiveTab('REJECTED')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'REJECTED'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('reservations.tabs.rejected', { count: rejectedCount })}
             </button>
             <button
               onClick={() => setActiveTab('CANCELLED')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
                 activeTab === 'CANCELLED'
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-200/70'
+                  ? 'bg-gray-900 text-white shadow-xs'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/70'
               }`}
             >
               {t('reservations.tabs.cancelled', { count: cancelledCount })}
             </button>
           </div>
+        </div>
 
-          <div className="relative w-full md:w-64">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="px-6 py-3 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-b border-gray-100">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder={t('reservations.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-teal-600 transition"
+              className="w-full pl-9 pr-3.5 py-1.5 bg-gray-50/70 border border-gray-200 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-neighbor-600 transition"
             />
           </div>
         </div>
 
         {loading ? (
           <div className="p-16 text-center">
-            <Loader2 className="w-7 h-7 animate-spin text-teal-600 mx-auto mb-2.5" />
-            <p className="text-slate-500 text-sm">
+            <Loader2 className="w-7 h-7 animate-spin text-neighbor-600 mx-auto mb-2.5" />
+            <p className="text-gray-500 text-sm">
               {t('reservations.loading')}
             </p>
           </div>
         ) : error ? (
           <div className="p-10 text-center space-y-3">
             <AlertCircle className="w-10 h-10 text-red-500 mx-auto" />
-            <h3 className="text-base font-bold text-slate-900">{t('reservations.errorTitle')}</h3>
-            <p className="text-sm text-slate-600">{error === '__LOAD_ERROR__' ? t('reservations.loadError') : error}</p>
+            <h3 className="text-base font-bold text-gray-900">{t('reservations.errorTitle')}</h3>
+            <p className="text-sm text-gray-600">{error === '__LOAD_ERROR__' ? t('reservations.loadError') : error}</p>
             <button
               onClick={fetchProviderReservations}
-              className="px-4 py-2 bg-teal-600 text-white font-medium text-xs rounded-lg hover:bg-teal-700 transition"
+              className="px-4 py-2 bg-neighbor-600 text-white font-medium text-xs rounded-lg hover:bg-neighbor-700 transition"
             >
               {t('reservations.retry')}
             </button>
           </div>
         ) : filteredReservations.length === 0 ? (
           <div className="py-14 px-6 text-center space-y-2">
-            <Car className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-semibold text-slate-800">{t('reservations.empty.title')}</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <Car className="w-10 h-10 text-gray-300 mx-auto" />
+            <h3 className="text-base font-semibold text-gray-800">{t('reservations.empty.title')}</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
               {searchTerm
                 ? t('reservations.empty.searchEmpty')
                 : t('reservations.empty.defaultEmpty')}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-gray-200">
             {filteredReservations.map((item) => {
               const displayVehicle = cleanVehicleDisplay(item.vehicle_info);
 
@@ -320,11 +322,11 @@ const ProviderReservationsPanel = () => {
                 <div
                   key={item.id}
                   onClick={() => handleOpenDetail(item.id)}
-                  className="p-6 hover:bg-slate-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+                  className="p-6 hover:bg-gray-50/70 transition cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-5"
                 >
                   <div className="space-y-3 flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500">
-                      <span className="font-mono font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-gray-500">
+                      <span className="font-mono font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
                         {t('reservations.card.requestCode', { id: item.id })}
                       </span>
                       <span>•</span>
@@ -335,19 +337,19 @@ const ProviderReservationsPanel = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-1">
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('reservations.card.customerSection')}</span>
-                        <p className="font-semibold text-slate-900 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-xs text-gray-500 block">{t('reservations.card.customerSection')}</span>
+                        <p className="font-semibold text-gray-900 flex items-center gap-1.5">
+                          <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span>{item.customer?.full_name || t('reservations.card.defaultCustomer')}</span>
                         </p>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-gray-500">
                           <span className="inline-flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-slate-400" />
+                            <Phone className="w-3 h-3 text-gray-400" />
                             {item.customer?.phone_number || t('reservations.card.notUpdated')}
                           </span>
                           {item.customer?.email && (
                             <span className="inline-flex items-center gap-1 truncate">
-                              <Mail className="w-3 h-3 text-slate-400" />
+                              <Mail className="w-3 h-3 text-gray-400" />
                               {item.customer.email}
                             </span>
                           )}
@@ -355,38 +357,38 @@ const ProviderReservationsPanel = () => {
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('reservations.card.vehicleSection')}</span>
-                        <p className="font-semibold text-slate-900 flex items-center gap-1.5">
-                          <Car className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-xs text-gray-500 block">{t('reservations.card.vehicleSection')}</span>
+                        <p className="font-semibold text-gray-900 flex items-center gap-1.5">
+                          <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                           <span className="truncate">{displayVehicle}</span>
                         </p>
-                        <p className="text-xs text-slate-600 flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>{t('reservations.card.startDate')} <strong className="font-medium text-slate-800">{new Date(item.desired_start_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}</strong></span>
+                        <p className="text-xs text-gray-600 flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span>{t('reservations.card.startDate')} <strong className="font-medium text-gray-800">{new Date(item.desired_start_date).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}</strong></span>
                         </p>
                       </div>
 
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500 block">{t('reservations.card.facilitySection')}</span>
-                        <p className="font-semibold text-slate-900 truncate">
+                        <span className="text-xs text-gray-500 block">{t('reservations.card.facilitySection')}</span>
+                        <p className="font-semibold text-gray-900 truncate">
                           {item.facility?.name}
                         </p>
-                        <p className="text-xs text-slate-500 flex items-start gap-1 line-clamp-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <p className="text-xs text-gray-500 flex items-start gap-1 line-clamp-1">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" />
                           <span className="truncate">{item.facility?.address}</span>
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap sm:flex-row items-center gap-2 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 justify-end">
+                  <div className="flex flex-wrap sm:flex-row items-center gap-2 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-gray-200 justify-end">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleOpenDetail(item.id);
                       }}
-                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                      className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       {t('reservations.actions.details')}
@@ -400,7 +402,7 @@ const ProviderReservationsPanel = () => {
                             e.stopPropagation();
                             navigate(`/contracts/${item.confirmation_record.id}`);
                           }}
-                          className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           {t('reservations.actions.viewContract')}
@@ -414,7 +416,7 @@ const ProviderReservationsPanel = () => {
                               state: { reservation: item }
                             });
                           }}
-                          className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-neighbor-600 hover:bg-neighbor-700 text-white font-medium text-xs rounded-lg transition inline-flex items-center gap-1.5"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           {t('reservations.actions.createContract')}

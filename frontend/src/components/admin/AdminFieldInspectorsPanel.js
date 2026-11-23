@@ -20,7 +20,6 @@ const AdminFieldInspectorsPanel = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Dropdown Filter theo Địa chỉ (Tỉnh/Thành -> Phường/Xã)
   const [provinces, setProvinces] = useState([]);
   const [wards, setWards] = useState([]);
   const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
@@ -28,24 +27,21 @@ const AdminFieldInspectorsPanel = () => {
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingWards, setLoadingWards] = useState(false);
 
-  // Confirmation Dialog State (Lock / Unlock / Reset Password)
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, type: '', inspector: null });
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Modal State cho UC-86 (Create)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ email: '', full_name: '', phone_number: '', address: '' });
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  // Modal State cho UC-88 (Update)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingInspector, setEditingInspector] = useState(null);
   const [editForm, setEditForm] = useState({ full_name: '', phone_number: '', address: '', status: 'ACTIVE' });
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState('');
 
-  // Tải danh sách Tỉnh / Thành phố cho bộ lọc
+  
   useEffect(() => {
     let isMounted = true;
     const fetchProvinces = async () => {
@@ -63,7 +59,6 @@ const AdminFieldInspectorsPanel = () => {
     return () => { isMounted = false; };
   }, []);
 
-  // Tải danh sách Phường / Xã khi Tỉnh / Thành phố thay đổi
   useEffect(() => {
     if (!selectedProvinceCode) {
       setWards([]);
@@ -87,7 +82,6 @@ const AdminFieldInspectorsPanel = () => {
     return () => { isMounted = false; };
   }, [selectedProvinceCode]);
 
-  // Xử lý khi chọn Tỉnh / Thành phố
   const handleProvinceSelect = (e) => {
     const code = e.target.value;
     setSelectedProvinceCode(code);
@@ -100,7 +94,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Xử lý khi chọn Phường / Xã
   const handleWardSelect = (e) => {
     const code = e.target.value;
     setSelectedWardCode(code);
@@ -113,7 +106,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Đặt lại tất cả bộ lọc
   const handleResetFilters = () => {
     setSearch('');
     setSelectedProvinceCode('');
@@ -122,7 +114,6 @@ const AdminFieldInspectorsPanel = () => {
     setWards([]);
   };
 
-  // UC-87: Fetch Field Inspectors List
   const fetchInspectors = useCallback(async (page = 1) => {
     try {
       setLoading(true);
@@ -150,7 +141,6 @@ const AdminFieldInspectorsPanel = () => {
     fetchInspectors(1);
   }, [fetchInspectors]);
 
-  // UC-86: Submit Create Field Inspector
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     setCreateError('');
@@ -163,7 +153,7 @@ const AdminFieldInspectorsPanel = () => {
     try {
       setCreateLoading(true);
       const res = await fieldInspectorService.createFieldInspector(createForm);
-      setSuccessMessage(res.data?.message || 'Tạo tài khoản Nhân viên khảo sát thực địa thành công! Mật khẩu đã được gửi qua email.');
+      setSuccessMessage(res.data?.message || 'Tạo tài khoản nhân viên khảo sát thành công. Mật khẩu tạm thời đã được gửi qua email.');
       setIsCreateModalOpen(false);
       setCreateForm({ email: '', full_name: '', phone_number: '', address: '' });
       fetchInspectors(1);
@@ -174,7 +164,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // UC-88: Open Edit Modal
   const handleOpenEditModal = (inspector) => {
     setEditingInspector(inspector);
     setEditForm({
@@ -187,7 +176,6 @@ const AdminFieldInspectorsPanel = () => {
     setIsEditModalOpen(true);
   };
 
-  // UC-88: Submit Update Field Inspector
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditError('');
@@ -211,7 +199,6 @@ const AdminFieldInspectorsPanel = () => {
     }
   };
 
-  // Mở Popup Đặt lại mật khẩu
   const handleOpenResetPassword = (inspector) => {
     setConfirmDialog({
       isOpen: true,
@@ -220,7 +207,6 @@ const AdminFieldInspectorsPanel = () => {
     });
   };
 
-  // Mở Popup Khóa / Mở khóa
   const handleOpenToggleStatus = (inspector) => {
     const isBlocked = (inspector.status || '').toUpperCase() === 'BLOCKED';
     setConfirmDialog({
@@ -230,7 +216,6 @@ const AdminFieldInspectorsPanel = () => {
     });
   };
 
-  // Thực thi hành động từ Confirm Dialog
   const handleConfirmAction = async () => {
     const { type, inspector } = confirmDialog;
     if (!inspector) return;
@@ -241,14 +226,14 @@ const AdminFieldInspectorsPanel = () => {
 
       if (type === 'LOCK' || type === 'UNLOCK') {
         const res = await userService.toggleUserStatus(inspector.id);
-        const actionMsg = res.message || (type === 'LOCK' ? 'Đã khóa tài khoản thành công!' : 'Đã mở khóa tài khoản thành công!');
+        const actionMsg = res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.');
         setSuccessMessage(actionMsg);
         setInspectors((prev) =>
           prev.map((i) => (i.id === inspector.id ? { ...i, status: type === 'LOCK' ? 'BLOCKED' : 'ACTIVE' } : i))
         );
       } else if (type === 'RESET_PASSWORD') {
         const res = await userService.forceResetPassword(inspector.id);
-        const msg = res.message || 'Đặt lại mật khẩu thành công! Mật khẩu mới đã được gửi tới email.';
+        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi qua email.';
         setSuccessMessage(msg);
       }
 
@@ -268,26 +253,26 @@ const AdminFieldInspectorsPanel = () => {
       case 'BLOCKED':
         return <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Đã khóa</span>;
       default:
-        return <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{s}</span>;
+        return <span className="bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{s}</span>;
     }
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-      {/* Title Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
+      {}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <UserCheck className="w-6 h-6 text-teal-600" /> Quản Lý Nhân Viên Khảo Sát Thực Địa
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <UserCheck className="w-6 h-6 text-neighbor-600" /> Quản Lý Nhân Viên Khảo Sát Thực Địa
           </h2>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-gray-500 text-xs mt-1">
             Danh sách nhân viên khảo sát có nhiệm vụ kiểm tra và xác nhận bãi đỗ xe ngoài thực tế
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="text-xs font-semibold bg-slate-100 px-3 py-1.5 rounded-xl text-slate-700">
-            Tổng cộng: <strong className="text-teal-700 font-extrabold">{pagination.totalItems}</strong> nhân viên
+          <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
+            Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{pagination.totalItems}</strong> nhân viên
           </div>
 
           <button
@@ -295,14 +280,14 @@ const AdminFieldInspectorsPanel = () => {
               setCreateError('');
               setIsCreateModalOpen(true);
             }}
-            className="px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2"
+            className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Thêm Nhân Viên Khảo Sát
           </button>
         </div>
       </div>
 
-      {/* Success Notification */}
+      {}
       {successMessage && (
         <div className="p-4 bg-emerald-50 text-emerald-800 text-xs font-medium rounded-xl border border-emerald-200 flex justify-between items-center">
           <span>{successMessage}</span>
@@ -312,12 +297,11 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* Search & Address Filter Bar */}
-      <div className="space-y-3 bg-slate-50/70 p-4 rounded-2xl border border-slate-100">
+      {}
+      <div className="space-y-3 bg-gray-50/70 p-4 rounded-xl border border-gray-200">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Ô 1: Tìm kiếm theo Tên, Email, SĐT */}
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <Search className="w-4 h-4" />
             </div>
             <input
@@ -325,17 +309,16 @@ const AdminFieldInspectorsPanel = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm theo họ tên, email, SĐT..."
-              className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium"
             />
           </div>
 
-          {/* Ô 2: List chọn Tỉnh / Thành phố */}
           <div className="relative">
             <select
               value={selectedProvinceCode}
               onChange={handleProvinceSelect}
               disabled={loadingProvinces}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-700 disabled:bg-slate-100 cursor-pointer"
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700 disabled:bg-gray-100 cursor-pointer"
             >
               <option value="">-- Tất cả Tỉnh / Thành Phố --</option>
               {provinces.map((p) => (
@@ -346,13 +329,12 @@ const AdminFieldInspectorsPanel = () => {
             </select>
           </div>
 
-          {/* Ô 3: List chọn Phường / Xã */}
           <div className="relative">
             <select
               value={selectedWardCode}
               onChange={handleWardSelect}
               disabled={!selectedProvinceCode || loadingWards}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-medium text-slate-700 disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+              className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700 disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
             >
               <option value="">-- Tất cả Phường / Xã --</option>
               {wards.map((w) => (
@@ -363,32 +345,30 @@ const AdminFieldInspectorsPanel = () => {
             </select>
           </div>
 
-          {/* Ô 4: Nút Làm mới */}
           <button
             type="button"
             onClick={handleResetFilters}
             title="Đặt lại bộ lọc & Tải lại danh sách"
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-200"
+            className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-600" /> Làm mới
+            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> Làm mới
           </button>
         </div>
 
-        {/* Hiển thị chi tiết khi đang lọc */}
         {(search || addressFilter) && (
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-1 border-t border-slate-200/60">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 pt-1 border-t border-gray-200/60">
             <span className="font-semibold">Đang lọc theo:</span>
             {search && (
-              <span className="bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-lg border border-teal-200 font-medium flex items-center gap-1">
+              <span className="bg-neighbor-50 text-neighbor-700 px-2.5 py-0.5 rounded-lg border border-neighbor-200 font-medium flex items-center gap-1">
                 Từ khóa: "{search}"
-                <button onClick={() => setSearch('')} className="hover:text-teal-900 ml-1">
+                <button onClick={() => setSearch('')} className="hover:text-neighbor-900 ml-1">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {addressFilter && (
-              <span className="bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-lg border border-teal-200 font-medium flex items-center gap-1">
-                <MapPin className="w-3 h-3 text-teal-600" />
+              <span className="bg-neighbor-50 text-neighbor-700 px-2.5 py-0.5 rounded-lg border border-neighbor-200 font-medium flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-neighbor-600" />
                 Địa chỉ: "{addressFilter}"
                 <button
                   onClick={() => {
@@ -397,7 +377,7 @@ const AdminFieldInspectorsPanel = () => {
                     setAddressFilter('');
                     setWards([]);
                   }}
-                  className="hover:text-teal-900 ml-1"
+                  className="hover:text-neighbor-900 ml-1"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -413,7 +393,7 @@ const AdminFieldInspectorsPanel = () => {
         )}
       </div>
 
-      {/* Table Section */}
+      {}
       {error && (
         <div className="p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200">
           {error}
@@ -421,13 +401,13 @@ const AdminFieldInspectorsPanel = () => {
       )}
 
       {loading ? (
-        <div className="py-16 text-center text-slate-500 text-sm flex flex-col items-center justify-center gap-3">
-          <RefreshCw className="w-8 h-8 animate-spin text-teal-600" />
+        <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
+          <RefreshCw className="w-8 h-8 animate-spin text-neighbor-600" />
           <span>Đang tải danh sách nhân viên khảo sát...</span>
         </div>
       ) : inspectors.length === 0 ? (
-        <div className="py-16 text-center text-slate-400">
-          <UserCheck className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+        <div className="py-16 text-center text-gray-400">
+          <UserCheck className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="font-semibold text-sm">
             {search || addressFilter
               ? 'Không tìm thấy nhân viên khảo sát nào phù hợp với bộ lọc tìm kiếm!'
@@ -436,19 +416,19 @@ const AdminFieldInspectorsPanel = () => {
           {search || addressFilter ? (
             <button
               onClick={handleResetFilters}
-              className="text-xs text-teal-600 hover:text-teal-700 font-bold mt-2 underline"
+              className="text-xs text-neighbor-600 hover:text-neighbor-700 font-bold mt-2 underline"
             >
               Xóa bộ lọc tìm kiếm
             </button>
           ) : (
-            <p className="text-xs text-slate-400 mt-1">Nhấn "Thêm Nhân Viên Khảo Sát" ở trên để tạo tài khoản mới.</p>
+            <p className="text-xs text-gray-400 mt-1">Nhấn "Thêm Nhân Viên Khảo Sát" ở trên để tạo tài khoản mới.</p>
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-100">
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-600 font-bold border-b border-slate-100">
+              <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                 <th className="py-3 px-4">ID</th>
                 <th className="py-3 px-4">Họ và Tên</th>
                 <th className="py-3 px-4">Email Đăng Nhập</th>
@@ -458,24 +438,23 @@ const AdminFieldInspectorsPanel = () => {
                 <th className="py-3 px-4 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
+            <tbody className="divide-y divide-gray-100 text-gray-700">
               {inspectors.map((inspector) => (
-                <tr key={inspector.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-3 px-4 font-mono font-bold text-slate-400">#{inspector.id}</td>
-                  <td className="py-3 px-4 font-semibold text-slate-900">{inspector.full_name}</td>
-                  <td className="py-3 px-4 text-slate-600">{inspector.email}</td>
-                  <td className="py-3 px-4 font-mono text-slate-700">{inspector.phone_number || '—'}</td>
-                  <td className="py-3 px-4 text-slate-700" title={inspector.address || ''}>
+                <tr key={inspector.id} className="hover:bg-gray-50/80 transition">
+                  <td className="py-3 px-4 font-mono font-bold text-gray-400">#{inspector.id}</td>
+                  <td className="py-3 px-4 font-semibold text-gray-900">{inspector.full_name}</td>
+                  <td className="py-3 px-4 text-gray-600">{inspector.email}</td>
+                  <td className="py-3 px-4 font-mono text-gray-700">{inspector.phone_number || '—'}</td>
+                  <td className="py-3 px-4 text-gray-700" title={inspector.address || ''}>
                     {inspector.address ? (
                       inspector.address.split(',').map((p) => p.trim()).filter(Boolean).pop() || inspector.address
                     ) : (
-                      <span className="text-slate-400 italic text-xs">Chưa cập nhật</span>
+                      <span className="text-gray-400 italic text-xs">Chưa cập nhật</span>
                     )}
                   </td>
                   <td className="py-3 px-4">{getStatusBadge(inspector.status)}</td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-2">
-                      {/* Chỉnh sửa thông tin */}
                       <button
                         onClick={() => handleOpenEditModal(inspector)}
                         title="Chỉnh sửa thông tin"
@@ -484,7 +463,6 @@ const AdminFieldInspectorsPanel = () => {
                         <Edit className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Đặt lại mật khẩu */}
                       <button
                         onClick={() => handleOpenResetPassword(inspector)}
                         title="Đặt lại mật khẩu"
@@ -493,7 +471,6 @@ const AdminFieldInspectorsPanel = () => {
                         <KeyRound className="w-3.5 h-3.5" />
                       </button>
 
-                      {/* Khóa / Mở khóa tài khoản */}
                       <button
                         onClick={() => handleOpenToggleStatus(inspector)}
                         title={(inspector.status || '').toUpperCase() === 'BLOCKED' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
@@ -518,9 +495,8 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-600">
+        <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-600">
           <div>
             Trang <strong>{pagination.currentPage}</strong> / {pagination.totalPages} (Tổng: {pagination.totalItems})
           </div>
@@ -528,14 +504,14 @@ const AdminFieldInspectorsPanel = () => {
             <button
               disabled={pagination.currentPage <= 1 || loading}
               onClick={() => fetchInspectors(pagination.currentPage - 1)}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
               <ChevronLeft className="w-4 h-4" /> Trước
             </button>
             <button
               disabled={pagination.currentPage >= pagination.totalPages || loading}
               onClick={() => fetchInspectors(pagination.currentPage + 1)}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
               Sau <ChevronRight className="w-4 h-4" />
             </button>
@@ -543,32 +519,31 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* MODAL UC-86: CREATE FIELD INSPECTOR */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <UserCheck className="w-6 h-6 text-teal-600" /> Tạo Tài Khoản Nhân Viên Khảo Sát
+        <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
+            <div className="flex justify-between items-center border-b border-gray-200 pb-4">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <UserCheck className="w-6 h-6 text-neighbor-600" /> Tạo Tài Khoản Nhân Viên Khảo Sát
               </h3>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {createError && (
-              <div className="p-4 bg-red-50 text-red-700 text-sm rounded-2xl border border-red-200">
+              <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200">
                 {createError}
               </div>
             )}
 
             <form onSubmit={handleCreateSubmit} className="space-y-5 text-sm">
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-teal-600" /> Họ và Tên Nhân Viên <span className="text-red-500">*</span>
+                <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <User className="w-4 h-4 text-neighbor-600" /> Họ và Tên Nhân Viên <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -576,13 +551,13 @@ const AdminFieldInspectorsPanel = () => {
                   placeholder="Nhập họ và tên"
                   value={createForm.full_name}
                   onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })}
-                  className="w-full px-4 py-3 text-sm border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-teal-600" /> Email Đăng Nhập <span className="text-red-500">*</span>
+                <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <Mail className="w-4 h-4 text-neighbor-600" /> Email Đăng Nhập <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -590,13 +565,13 @@ const AdminFieldInspectorsPanel = () => {
                   placeholder="Nhập email"
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  className="w-full px-4 py-3 text-sm border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-teal-600" /> Số Điện Thoại <span className="text-red-500">*</span>
+                <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <Phone className="w-4 h-4 text-neighbor-600" /> Số Điện Thoại <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -604,13 +579,13 @@ const AdminFieldInspectorsPanel = () => {
                   placeholder="Nhập số điện thoại"
                   value={createForm.phone_number}
                   onChange={(e) => setCreateForm({ ...createForm, phone_number: e.target.value })}
-                  className="w-full px-4 py-3 text-sm border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition"
+                  className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ
+                <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-neighbor-600" /> Địa Chỉ
                 </label>
                 <AddressSelector
                   value={createForm.address}
@@ -618,22 +593,22 @@ const AdminFieldInspectorsPanel = () => {
                 />
               </div>
 
-              <div className="p-4 bg-teal-50/80 rounded-2xl border border-teal-100 text-teal-800 text-xs leading-relaxed">
+              <div className="p-4 bg-neighbor-50/80 rounded-xl border border-neighbor-100 text-neighbor-800 text-xs leading-relaxed">
                 <strong>Lưu ý:</strong> Mật khẩu sẽ được sinh tự động ngẫu nhiên và gửi tới Email trên. Nhân viên sẽ được yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-5 py-2.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 transition"
+                  className="px-5 py-2.5 border border-gray-200 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-50 transition"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={createLoading}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {createLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Tạo Tài Khoản'}
                 </button>
@@ -643,66 +618,65 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* MODAL UC-88: EDIT FIELD INSPECTOR */}
       {isEditModalOpen && editingInspector && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <Edit className="w-6 h-6 text-teal-600" /> Chỉnh Sửa Nhân Viên Khảo Sát (#{editingInspector.id})
+        <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
+            <div className="flex justify-between items-center border-b border-gray-200 pb-4">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Edit className="w-6 h-6 text-neighbor-600" /> Chỉnh Sửa Nhân Viên Khảo Sát (#{editingInspector.id})
               </h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {editError && (
-              <div className="p-4 bg-red-50 text-red-700 text-sm rounded-2xl border border-red-200">
+              <div className="p-4 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200">
                 {editError}
               </div>
             )}
 
             <form onSubmit={handleEditSubmit} className="space-y-5 text-sm">
               <div>
-                <label className="block font-bold text-slate-500 mb-1.5">Email (Không thể thay đổi)</label>
+                <label className="block font-bold text-gray-500 mb-1.5">Email (Không thể thay đổi)</label>
                 <input
                   type="text"
                   disabled
                   value={editingInspector.email}
-                  className="w-full px-4 py-3 bg-slate-100 text-slate-500 border border-slate-200 rounded-2xl cursor-not-allowed font-medium text-sm"
+                  className="w-full px-4 py-3 bg-gray-100 text-gray-500 border border-gray-200 rounded-xl cursor-not-allowed font-medium text-sm"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Họ và Tên</label>
+                <label className="block font-bold text-gray-700 mb-1.5">Họ và Tên</label>
                 <input
                   type="text"
                   required
                   placeholder="Nhập họ và tên"
                   value={editForm.full_name}
                   onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 text-sm transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Số Điện Thoại</label>
+                <label className="block font-bold text-gray-700 mb-1.5">Số Điện Thoại</label>
                 <input
                   type="text"
                   required
                   placeholder="Nhập số điện thoại"
                   value={editForm.phone_number}
                   onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 text-sm transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-teal-600" /> Địa Chỉ
+                <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-neighbor-600" /> Địa Chỉ
                 </label>
                 <AddressSelector
                   value={editForm.address}
@@ -711,29 +685,29 @@ const AdminFieldInspectorsPanel = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1.5">Trạng Thái Tài Khoản</label>
+                <label className="block font-bold text-gray-700 mb-1.5">Trạng Thái Tài Khoản</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white font-bold text-sm transition"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-bold text-sm transition"
                 >
                   <option value="ACTIVE">Hoạt động</option>
                   <option value="BLOCKED">Khóa tài khoản</option>
                 </select>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-5 py-2.5 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-50 transition"
+                  className="px-5 py-2.5 border border-gray-200 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-50 transition"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={editLoading}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
                 >
                   {editLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Lưu Thay Đổi'}
                 </button>
@@ -743,13 +717,13 @@ const AdminFieldInspectorsPanel = () => {
         </div>
       )}
 
-      {/* CONFIRMATION DIALOG (CHO RESET_PASSWORD, LOCK, UNLOCK) */}
+      {}
       {confirmDialog.isOpen && confirmDialog.inspector && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-slate-100">
+        <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
             <div className="flex items-center gap-4">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
                   confirmDialog.type === 'LOCK'
                     ? 'bg-rose-100 text-rose-600'
                     : confirmDialog.type === 'UNLOCK'
@@ -766,18 +740,18 @@ const AdminFieldInspectorsPanel = () => {
                 )}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-900">
+                <h3 className="text-xl font-bold text-gray-900">
                   {confirmDialog.type === 'LOCK'
                     ? 'Xác nhận Khóa tài khoản'
                     : confirmDialog.type === 'UNLOCK'
                     ? 'Xác nhận Mở khóa tài khoản'
                     : 'Đặt lại mật khẩu'}
                 </h3>
-                <p className="text-sm text-slate-500 mt-0.5">#{confirmDialog.inspector.id} — {confirmDialog.inspector.email}</p>
+                <p className="text-sm text-gray-500 mt-0.5">#{confirmDialog.inspector.id} — {confirmDialog.inspector.email}</p>
               </div>
             </div>
 
-            <div className="text-base text-slate-700 leading-relaxed bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <div className="text-base text-gray-700 leading-relaxed bg-gray-50 p-5 rounded-xl border border-gray-200">
               {confirmDialog.type === 'LOCK' && (
                 <div>
                   <p>
@@ -805,7 +779,7 @@ const AdminFieldInspectorsPanel = () => {
                 type="button"
                 onClick={() => setConfirmDialog({ isOpen: false, type: '', inspector: null })}
                 disabled={actionLoading}
-                className="px-6 py-2.5 border border-slate-200 text-slate-700 font-semibold text-base rounded-xl hover:bg-slate-50 transition"
+                className="px-6 py-2.5 border border-gray-200 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 transition"
               >
                 Hủy
               </button>

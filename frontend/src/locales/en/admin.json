@@ -1,0 +1,308 @@
+{
+  "header": {
+    "roleTitle": "System Administration"
+  },
+  "sidebar": {
+    "title": "Admin Menu",
+    "subtitle": "ParkLink System",
+    "itemsCount": "{{count}} items",
+    "viewing": "Viewing section",
+    "close": "Close",
+    "allMenu": "All menus"
+  },
+  "tabs": {
+    "overview": "Overview",
+    "registrations": "Facility Approvals",
+    "users": "User Management",
+    "inspectors": "Field Inspectors",
+    "facilities": "All Facilities",
+    "contracts": "Contract Management",
+    "providerRevenue": "Facility Revenue",
+    "transactions": "Transaction History",
+    "complaints": "Complaint Management",
+    "reviews": "Reviews & Ratings",
+    "platformFees": "Platform Fees",
+    "vehicleTypes": "Vehicle Types",
+    "amenities": "Facility Amenities",
+    "broadcast": "System Broadcast",
+    "timelineSettings": "Timeline Settings",
+    "policies": "System Policies",
+    "provider-revenue": "Facility Revenue",
+    "platform-fees": "Platform Fees",
+    "vehicle-types": "Vehicle Types",
+    "timeline-settings": "Timeline Settings"
+  },
+  "common": {
+    "search": "Search...",
+    "refresh": "Refresh",
+    "reset": "Reset",
+    "all": "All",
+    "actions": "Actions",
+    "status": "Status",
+    "total": "Total",
+    "pagination": "Page {{current}} of {{total}}",
+    "empty": "No matching data found.",
+    "loading": "Loading data..."
+  },
+  "statuses": {
+    "active": "Active",
+    "pending": "Pending",
+    "pendingReview": "Pending Review",
+    "preparing": "In Survey",
+    "inspected": "Inspected",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "blocked": "Blocked",
+    "locked": "Locked"
+  },
+  "roles": {
+    "customer": "Customer",
+    "provider": "Provider",
+    "fieldInspector": "Field Inspector",
+    "admin": "Administrator"
+  },
+  "dashboard": {
+    "statCards": {
+      "totalUsers": "Total Users",
+      "activeFacilities": "Active Facilities",
+      "pendingFacilities": "Pending Facility Registrations",
+      "totalReservations": "Total Reservations",
+      "totalContracts": "Total Contracts",
+      "pendingComplaints": "Pending Complaints",
+      "paidPlatformFees": "Collected Platform Fees"
+    },
+    "activitySeries": {
+      "facilities": "Facility Registrations",
+      "reservations": "Rental Requests",
+      "contracts": "Rental Contracts",
+      "complaints": "Complaints"
+    },
+    "title": "System Overview",
+    "subtitle": "Current operating performance of ParkLink",
+    "exportBtn": "Export Overview Report",
+    "exporting": "Exporting file...",
+    "refreshBtn": "Refresh"
+  },
+  "users": {
+    "title": "User Account Management",
+    "subtitle": "List of all Customers, Parking Providers, Field Inspectors and Administrators in ParkLink",
+    "totalCount": "Total: {{count}} accounts",
+    "searchPlaceholder": "Search by full name, email or phone number...",
+    "allRoles": "All Roles",
+    "allStatuses": "All Statuses",
+    "table": {
+      "id": "ID",
+      "fullName": "Full Name",
+      "email": "Email",
+      "phone": "Phone Number",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "viewDetail": "View Details",
+      "edit": "Edit",
+      "resetPassword": "Reset Password",
+      "lock": "Lock Account",
+      "unlock": "Unlock Account"
+    },
+    "empty": "No matching accounts found!"
+  },
+  "registrations": {
+    "title": "Parking Facility Approvals",
+    "subtitle": "Track field inspection progress and approve new parking registrations from Providers",
+    "totalCount": "Total: {{count}} applications",
+    "searchPlaceholder": "Search by facility name, address or provider...",
+    "tabs": {
+      "all": "All",
+      "pendingReview": "Pending Review",
+      "preparing": "In Survey",
+      "inspected": "Inspected (Pending Approval)",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "table": {
+      "id": "ID",
+      "facilityName": "Parking Facility",
+      "provider": "Provider",
+      "submittedDate": "Submission Date",
+      "status": "Status",
+      "actions": "Actions",
+      "scaleAndFee": "Scale & Fee"
+    },
+    "actions": {
+      "viewDetail": "View Details",
+      "assignInspector": "Assign Inspector",
+      "finalize": "Finalize & Approve",
+      "reject": "Reject Application"
+    },
+    "empty": "No matching registration records found!"
+  },
+  "facilities": {
+    "title": "All Parking Facilities",
+    "subtitle": "Comprehensive list of all parking facilities operating in ParkLink",
+    "totalCount": "Total: {{count}} facilities",
+    "searchPlaceholder": "Search by facility name or address..."
+  },
+  "contracts": {
+    "title": "Platform Contract Management",
+    "subtitle": "Track all monthly parking rental contracts between Customers and Providers",
+    "totalCount": "Total: {{count}} contracts",
+    "searchPlaceholder": "Search by contract code, facility name or customer..."
+  },
+  "complaints": {
+    "title": "Platform Complaints Management",
+    "subtitle": "Monitor and resolve service complaints from customers and providers",
+    "totalCount": "Total: {{count}} complaints",
+    "searchPlaceholder": "Search by title, ID or customer..."
+  },
+  "inspectors": {
+    "title": "Field Inspector Management",
+    "subtitle": "List and dispatch field inspectors for on-site facility verification",
+    "totalCount": "Total: {{count}} inspectors"
+  },
+  "providerRevenue": {
+    "title": "Facility Revenue",
+    "subtitle": "Parking revenue reports and platform fee reconciliations"
+  },
+  "reviews": {
+    "title": "Facility Reviews Management",
+    "subtitle": "Monitor and moderate customer reviews and ratings"
+  },
+  "platformFees": {
+    "title": "Platform Fee Configuration",
+    "subtitle": "Manage platform commission rates and service fee schedules"
+  },
+  "vehicleTypes": {
+    "title": "Supported Vehicle Types",
+    "subtitle": "Manage vehicle categories and parking space dimensions"
+  },
+  "amenities": {
+    "title": "Facility Amenities Management",
+    "subtitle": "Manage available facility amenities (roof shelter, CCTV, EV charging...)"
+  },
+  "broadcast": {
+    "title": "System Broadcast Announcements",
+    "subtitle": "Send urgent alerts or announcements to all ParkLink users"
+  },
+  "timelineSettings": {
+    "title": "System Timeline Settings",
+    "subtitle": "Configure automated deadlines for request cancellation, payments and renewals"
+  },
+  "policies": {
+    "title": "System Policies & Terms",
+    "subtitle": "Manage platform terms of service, privacy policies and facility rules"
+  },
+  "userDetail": {
+    "backToList": "Back to user list",
+    "breadcrumb": "User Details",
+    "userId": "System Account ID: #{{id}}",
+    "joinedDate": "Joined since {{date}}",
+    "editBtn": "Edit Information",
+    "resetPasswordBtn": "Reset Password",
+    "lockBtn": "Lock Account",
+    "unlockBtn": "Unlock Account",
+    "stats": {
+      "status": "Account Status",
+      "role": "System Role",
+      "activity": "Key Activity",
+      "security": "Account Security",
+      "activeSlots": "Available slots",
+      "reservations": "Reservations",
+      "facilities": "Facilities"
+    },
+    "roles": {
+      "ADMIN": "Administrator",
+      "PROVIDER": "Parking Provider",
+      "FIELD_INSPECTOR": "Field Inspector",
+      "CUSTOMER": "Customer"
+    },
+    "basicInfo": {
+      "title": "Basic & Contact Information",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "address": "Contact Address",
+      "passwordStatus": "First Login Password",
+      "pwdMustChange": "Must change",
+      "pwdSet": "Configured",
+      "createdAt": "Account Created Date",
+      "updatedAt": "Last Updated Date",
+      "notUpdated": "Not updated"
+    },
+    "activity": {
+      "title": "Logs & Activity",
+      "reservations": "Total Reservations",
+      "reservationCount": "{{count}} requests",
+      "assignedFacilities": "Assigned Facilities",
+      "facilityCount": "{{count}} facilities",
+      "linkedFacility": "Linked Facility",
+      "notRegistered": "No facility registered",
+      "viewAllContracts": "View all contracts"
+    },
+    "providerFacility": {
+      "title": "Owned Parking Facility",
+      "facilityName": "Facility Name",
+      "facilityAddress": "Facility Address",
+      "capacity": "Capacity Scale",
+      "slots": "{{capacity}} slots",
+      "availableSlots": "Available slots: {{count}}",
+      "price": "Reference Rental Price",
+      "pricePerMonth": "{{price}} VND/month",
+      "visibility": "Display Status",
+      "visible": "Public",
+      "hidden": "Hidden",
+      "viewFacilityDetails": "View details and audit in Facility Management",
+      "noFacility": "This partner account is not currently linked to any parking facility.",
+      "paidFee": "Platform fee paid",
+      "unpaidFee": "Unpaid"
+    },
+    "inspectorTasks": {
+      "title": "Field Survey Assignments",
+      "inCharge": "Assigned: {{count}} facilities",
+      "facilityCode": "Facility Code: #{{id}}",
+      "noTasks": "This inspector is not currently assigned to survey any parking facilities."
+    },
+    "dialogs": {
+      "lockTitle": "Confirm Lock Account",
+      "unlockTitle": "Confirm Unlock Account",
+      "resetTitle": "Reset Password",
+      "lockPrompt": "Are you sure you want to lock the account of {{name}}? Once locked, this account will immediately be denied login to ParkLink.",
+      "lockNoteProvider": "Note: Parking facility \"{{facility}}\" will be hidden and pending reservation requests will be cancelled.",
+      "lockNoteCustomer": "Note: Pending reservation requests from this customer will be cancelled.",
+      "lockNoteInspector": "Note: Facilities assigned to this inspector will be returned to pending status.",
+      "unlockPrompt": "Are you sure you want to unlock the account of {{name}}? The user will be able to log in normally again.",
+      "resetPrompt": "The system will generate a temporary password and send it via email to {{email}}. The user must change password on next login.",
+      "cancel": "Cancel",
+      "confirmLock": "Lock Account",
+      "confirmUnlock": "Unlock Account",
+      "confirmReset": "Confirm Reset"
+    },
+    "messages": {
+      "loading": "Loading user details...",
+      "loadErrorTitle": "Unable to Load Data",
+      "userNotFound": "User does not exist or has been deleted.",
+      "lockSuccess": "Account locked successfully.",
+      "unlockSuccess": "Account unlocked successfully.",
+      "resetSuccess": "Password reset successfully. A temporary password has been sent to email.",
+      "actionFailed": "Action failed!"
+    },
+    "security": {
+      "title": "Security & Authentication",
+      "authMethod": "Sign-in Method",
+      "googleSSO": "Google SSO Account",
+      "standardPassword": "System Password",
+      "firstPassword": "First Login Password",
+      "pwdMustChange": "Must change",
+      "pwdSet": "Configured"
+    },
+    "quickLinks": {
+      "title": "Quick Operations",
+      "viewContracts": "Rental Contracts",
+      "viewContractsDesc": "Look up confirmation records and contracts",
+      "viewReservations": "Reservation Requests",
+      "viewReservationsDesc": "Track monthly parking request history",
+      "manageFacilities": "Manage Facilities",
+      "manageFacilitiesDesc": "Audit and configure parking facilities"
+    }
+  }
+}

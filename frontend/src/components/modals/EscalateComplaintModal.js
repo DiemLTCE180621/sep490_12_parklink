@@ -68,24 +68,24 @@ const EscalateComplaintModal = memo(({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/60 backdrop-blur-sm animate-fadeIn"
       onClick={loading ? undefined : onClose}
     >
       <div
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden transform transition-all duration-200 animate-scaleUp flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg overflow-hidden transform transition-all duration-200 animate-scaleUp flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 via-slate-50 to-white">
+        {}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-purple-100 bg-gradient-to-r from-purple-50 via-gray-50 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-600/20">
               <ShieldAlert className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-extrabold text-slate-900">
+              <h3 className="text-base sm:text-lg font-extrabold text-gray-900">
                 Yêu Cầu Admin Can Thiệp
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-gray-500">
                 Chuyển cấp khiếu nại #{complaint.id} lên Ban Quản Trị ParkLink
               </p>
             </div>
@@ -93,13 +93,13 @@ const EscalateComplaintModal = memo(({
           <button
             onClick={onClose}
             disabled={loading}
-            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition disabled:opacity-50"
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* BODY */}
+        {}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5 leading-relaxed">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -108,11 +108,11 @@ const EscalateComplaintModal = memo(({
             </span>
           </div>
 
-          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-xs space-y-1">
-            <p className="font-extrabold text-slate-900 text-sm">{complaint.title}</p>
-            <div className="flex items-center gap-1.5 text-slate-600">
-              <Building2 className="w-3.5 h-3.5 text-teal-600" />
-              <span>Bãi xe: <strong className="text-slate-800">{complaint.facility?.name}</strong></span>
+          <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-200/80 text-xs space-y-1">
+            <p className="font-extrabold text-gray-900 text-sm">{complaint.title}</p>
+            <div className="flex items-center gap-1.5 text-gray-600">
+              <Building2 className="w-3.5 h-3.5 text-neighbor-600" />
+              <span>Bãi xe: <strong className="text-gray-800">{complaint.facility?.name}</strong></span>
             </div>
           </div>
 
@@ -125,10 +125,10 @@ const EscalateComplaintModal = memo(({
 
           <div className="space-y-1.5">
             <div className="flex justify-between items-center text-xs">
-              <label className="font-bold text-slate-700">
+              <label className="font-bold text-gray-700">
                 Lý do yêu cầu Admin can thiệp <span className="text-red-500">*</span>
               </label>
-              <span className="text-[11px] font-mono text-slate-400">
+              <span className="text-[11px] font-mono text-gray-400">
                 {reason.length}/1000
               </span>
             </div>
@@ -137,19 +137,19 @@ const EscalateComplaintModal = memo(({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Nêu rõ lý do (ví dụ: Chủ bãi xe quá 48h không phản hồi, giải thích của chủ bãi không hợp lý, bãi xe từ chối bồi thường...)"
-              className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-slate-800 text-sm leading-relaxed resize-none transition"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-gray-800 text-sm leading-relaxed resize-none transition"
               disabled={loading}
               maxLength={1000}
             />
           </div>
 
-          {/* FOOTER */}
-          <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+          {}
+          <div className="pt-3 border-t border-gray-100 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 font-bold text-xs transition disabled:opacity-50"
             >
               Hủy Bỏ
             </button>

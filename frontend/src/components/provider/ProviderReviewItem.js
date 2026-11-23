@@ -48,24 +48,24 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
   }, [replyText, review.id, onReplySubmit]);
 
   return (
-    <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition-shadow space-y-4">
-      {/* Header review */}
+    <div className="bg-white p-5 sm:p-6 rounded-xl border border-gray-200/90 shadow-sm hover:shadow-md transition-shadow space-y-4">
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-neighbor-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
             {review.customer?.full_name?.charAt(0).toUpperCase() || 'U'}
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+            <h4 className="font-bold text-gray-900 text-sm sm:text-base">
               {review.customer?.full_name || t('reviews.item.defaultCustomer')}
             </h4>
-            <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs text-gray-400 flex items-center gap-1.5 mt-0.5">
               <Calendar className="w-3.5 h-3.5" />
               {new Date(review.created_at).toLocaleDateString(isEnglish ? 'en-GB' : 'vi-VN')}
               {review.facility?.name && (
                 <>
                   <span>•</span>
-                  <span className="text-teal-700 font-medium inline-flex items-center gap-1">
+                  <span className="text-neighbor-700 font-medium inline-flex items-center gap-1">
                     <Building2 className="w-3 h-3" />
                     {review.facility.name}
                   </span>
@@ -80,34 +80,34 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
         </div>
       </div>
 
-      {/* Nội dung đánh giá */}
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-700 leading-relaxed">
+      {}
+      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm text-gray-700 leading-relaxed">
         {review.comment}
       </div>
 
-      {/* Khu vực phản hồi của Provider */}
+      {}
       {review.provider_reply && !isReplying && (
-        <div className="ml-4 sm:ml-8 pl-4 border-l-2 border-teal-500 bg-teal-50/50 p-4 rounded-r-xl space-y-2">
+        <div className="ml-4 sm:ml-8 pl-4 border-l-2 border-neighbor-500 bg-neighbor-50/50 p-4 rounded-r-xl space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-teal-800 flex items-center gap-1.5">
-              <CornerDownRight className="w-3.5 h-3.5 text-teal-600" />
+            <span className="font-bold text-neighbor-800 flex items-center gap-1.5">
+              <CornerDownRight className="w-3.5 h-3.5 text-neighbor-600" />
               {t('reviews.item.providerReplyLabel')}
             </span>
             <button
               onClick={handleStartReply}
-              className="inline-flex items-center gap-1 text-slate-500 hover:text-teal-700 font-medium transition-colors"
+              className="inline-flex items-center gap-1 text-gray-500 hover:text-neighbor-700 font-medium transition-colors"
             >
               <Edit3 className="w-3 h-3" />
               {t('reviews.item.editReply')}
             </button>
           </div>
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm text-gray-700 leading-relaxed">
             {review.provider_reply}
           </p>
         </div>
       )}
 
-      {/* Form viết / sửa phản hồi */}
+      {}
       {isReplying ? (
         <form onSubmit={handleSubmit} className="ml-4 sm:ml-8 space-y-3 pt-2">
           <div className="relative">
@@ -117,10 +117,10 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
               onChange={(e) => setReplyText(e.target.value)}
               placeholder={t('reviews.item.replyPlaceholder')}
               maxLength={1000}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 bg-slate-50/50 transition-all resize-y"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-neighbor-500 focus:ring-1 focus:ring-neighbor-500 bg-gray-50/50 transition-all resize-y"
               autoFocus
             />
-            <span className="absolute right-3 bottom-3 text-xs text-slate-400">
+            <span className="absolute right-3 bottom-3 text-xs text-gray-400">
               {replyText.length}/1000
             </span>
           </div>
@@ -134,7 +134,7 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
               type="button"
               onClick={handleCancelReply}
               disabled={isCurrentSubmitting}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
               {t('reviews.item.cancel')}
@@ -142,7 +142,7 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
             <button
               type="submit"
               disabled={isCurrentSubmitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors shadow-sm disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-neighbor-600 hover:bg-neighbor-700 transition-colors shadow-sm disabled:opacity-50"
             >
               {isCurrentSubmitting ? (
                 <>
@@ -163,7 +163,7 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
           <div className="flex justify-end pt-1">
             <button
               onClick={handleStartReply}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-700 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 px-3.5 py-1.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-neighbor-700 hover:text-neighbor-800 bg-neighbor-50 hover:bg-neighbor-100 px-3.5 py-1.5 rounded-lg transition-colors"
             >
               <CornerDownRight className="w-3.5 h-3.5" />
               {t('reviews.item.replyAction')}

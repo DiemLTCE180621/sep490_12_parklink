@@ -282,10 +282,19 @@ class UserRepository {
 
   async blockProviderAndHideFacility(userId, facilityId) {
     return await prisma.$transaction(async (tx) => {
-      
       await tx.facility.update({
         where: { id: facilityId },
         data: { visibility_status: 'HIDDEN' }
+      });
+
+      await tx.reservation_Request.updateMany({
+        where: {
+          facility_id: facilityId,
+          status: 'PENDING'
+        },
+        data: {
+          status: 'CANCELLED'
+        }
       });
 
       return await tx.user.update({
@@ -313,9 +322,39 @@ class UserRepository {
     });
   }
 
+  async blockInspectorAndResetAssignedFacilities(userId) {
+    return await prisma.$transaction(async (tx) => {
+      await tx.facility.updateMany({
+        where: {
+          assigned_inspector_id: userId,
+          verification_status: 'PREPARING'
+        },
+        data: {
+          assigned_inspector_id: null,
+          verification_status: 'PENDING_REVIEW'
+        }
+      });
+
+      return await tx.user.update({
+        where: { id: userId },
+        data: { status: 'BLOCKED' },
+        select: {
+          id: true,
+          email: true,
+          full_name: true,
+          phone_number: true,
+          status: true,
+          requires_password_change: true,
+          created_at: true,
+          updated_at: true,
+          role: true
+        }
+      });
+    });
+  }
+
   async blockCustomerAndCancelPendingReservations(userId) {
     return await prisma.$transaction(async (tx) => {
-      
       await tx.reservation_Request.updateMany({
         where: {
           customer_id: userId,

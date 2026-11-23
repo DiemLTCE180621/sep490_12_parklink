@@ -71,6 +71,7 @@ const VietmapAddressAutocomplete = ({
   disabled = false,
   minChars = 2,
   includeFacilities = false,
+  hideIcon = false,
 }) => {
   const { t } = useTranslation('common');
   const [suggestions, setSuggestions] = useState([]);
@@ -79,11 +80,11 @@ const VietmapAddressAutocomplete = ({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const requestIdRef = useRef(0);
-  //flag if user is typing
+  
   const userTypedRef = useRef(false);
 
   useEffect(() => {
-    //if value changed because user drag marker, dont trigger search
+    
     if (!userTypedRef.current) {
       setSuggestions([]);
       setFacilitySuggestions([]);
@@ -131,7 +132,7 @@ const VietmapAddressAutocomplete = ({
         if (requestId === requestIdRef.current) {
           setSuggestions(nextPlaceSuggestions);
           setFacilitySuggestions(nextFacilitySuggestions);
-          //open dropdown if user is typing
+          
           setIsOpen(
             userTypedRef.current && (nextPlaceSuggestions.length > 0 || nextFacilitySuggestions.length > 0)
           );
@@ -190,7 +191,7 @@ const VietmapAddressAutocomplete = ({
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-teal-600 z-10" />
+      {!hideIcon && <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neighbor-600 z-10" />}
       <input
         type="text"
         value={value}
@@ -205,22 +206,22 @@ const VietmapAddressAutocomplete = ({
           }
         }}
         placeholder={placeholder}
-        className={`w-full pl-10 pr-10 ${inputClassName}`}
+        className={`w-full ${hideIcon ? 'pl-0 pr-6' : 'pl-10 pr-10'} ${inputClassName}`}
         required={required}
         disabled={disabled}
         autoComplete="off"
       />
-      {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-teal-600 animate-spin" />}
+      {isLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neighbor-600 animate-spin" />}
       {isOpen && (suggestions.length > 0 || facilitySuggestions.length > 0) && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-[700] max-h-96 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl divide-y divide-slate-100">
-          {/*registered parking lot*/}
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-[700] max-h-96 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl divide-y divide-gray-100">
+          {}
           {facilitySuggestions.length > 0 && (
             <div>
-              <div className="px-3.5 py-2 bg-teal-50/80 flex items-center justify-between text-[11px] font-bold text-teal-800 uppercase tracking-wider">
+              <div className="px-3.5 py-2 bg-neighbor-50/80 flex items-center justify-between text-[11px] font-bold text-neighbor-800 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-teal-600" /> {t('autocomplete.facilitiesGroup')}
+                  <Building2 className="w-3.5 h-3.5 text-neighbor-600" /> {t('autocomplete.facilitiesGroup')}
                 </span>
-                <span className="text-[10px] text-teal-600 font-semibold px-1.5 py-0.5 rounded bg-teal-100">
+                <span className="text-[10px] text-neighbor-600 font-semibold px-1.5 py-0.5 rounded bg-neighbor-100">
                   {t('autocomplete.resultsCount', { count: facilitySuggestions.length })}
                 </span>
               </div>
@@ -230,18 +231,18 @@ const VietmapAddressAutocomplete = ({
                   key={`fac-${fac.id}`}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => handleSelectFacility(fac)}
-                  className="w-full px-3.5 py-2.5 text-left hover:bg-teal-50/60 transition-colors flex items-center gap-3 border-b border-slate-100 last:border-b-0 group"
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-neighbor-50/60 transition-colors flex items-center gap-3 border-b border-gray-100 last:border-b-0 group"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-white transition">
+                  <div className="w-8 h-8 rounded-lg bg-neighbor-100 text-neighbor-700 flex items-center justify-center shrink-0 group-hover:bg-neighbor-600 group-hover:text-white transition">
                     <Building2 className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-bold text-slate-900 truncate group-hover:text-teal-700 transition">
+                      <p className="text-sm font-bold text-gray-900 truncate group-hover:text-neighbor-700 transition">
                         {fac.name}
                       </p>
                       {fac.price_per_month && (
-                        <span className="text-xs font-bold text-teal-600 shrink-0">
+                        <span className="text-xs font-bold text-neighbor-600 shrink-0">
                           {Number(fac.price_per_month).toLocaleString('vi-VN')} {t('autocomplete.pricePerMonthSuffix')}
                         </span>
                       )}
@@ -252,12 +253,12 @@ const VietmapAddressAutocomplete = ({
             </div>
           )}
 
-          {/*address*/}
+          {}
           {suggestions.length > 0 && (
             <div>
-              <div className="px-3.5 py-2 bg-slate-50 flex items-center justify-between text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+              <div className="px-3.5 py-2 bg-gray-50 flex items-center justify-between text-[11px] font-bold text-gray-600 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" /> {t('autocomplete.placesGroup')}
+                  <MapPin className="w-3.5 h-3.5 text-gray-500" /> {t('autocomplete.placesGroup')}
                 </span>
               </div>
               {suggestions.map((suggestion, index) => (
@@ -266,9 +267,9 @@ const VietmapAddressAutocomplete = ({
                   key={suggestion.ref_id || suggestion.id || `place-${index}`}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => handleSelectPlace(suggestion)}
-                  className="w-full px-3.5 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-start gap-2.5 border-b last:border-b-0 border-slate-100"
+                  className="w-full px-3.5 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-start gap-2.5 border-b last:border-b-0 border-gray-100"
                 >
-                  <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
+                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
                   <span className="line-clamp-1">{getSuggestionLabel(suggestion)}</span>
                 </button>
               ))}

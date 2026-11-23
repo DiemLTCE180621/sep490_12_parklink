@@ -34,7 +34,7 @@ const STATUS_BADGE_CONFIG = {
   ESCALATED: { label: 'Cần Admin Can Thiệp', bg: 'bg-purple-100 text-purple-800 border-purple-300', icon: ShieldAlert },
   RESOLVED: { label: 'Đã Giải Quyết', bg: 'bg-emerald-100 text-emerald-800 border-emerald-300', icon: CheckCircle2 },
   REJECTED: { label: 'Bác Bỏ', bg: 'bg-rose-100 text-rose-800 border-rose-300', icon: XCircle },
-  CLOSED: { label: 'Đã Đóng', bg: 'bg-slate-200 text-slate-800 border-slate-300', icon: CheckCircle2 }
+  CLOSED: { label: 'Đã Đóng', bg: 'bg-gray-200 text-gray-800 border-gray-300', icon: CheckCircle2 }
 };
 
 const FILTER_TABS = [
@@ -60,7 +60,7 @@ const AdminComplaintsPanel = () => {
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isForwardModalOpen, setIsForwardModalOpen] = useState(false);
 
-  // Modal chuyển tiếp cho Provider
+  
   const handleOpenForwardModal = useCallback((complaintItem) => {
     setSelectedComplaint(complaintItem);
     setIsForwardModalOpen(true);
@@ -76,7 +76,7 @@ const AdminComplaintsPanel = () => {
     });
   }, []);
 
-  // Modal cập nhật trạng thái Admin
+  
   const handleOpenStatusModal = useCallback((complaintItem) => {
     setSelectedComplaint(complaintItem);
     setIsStatusModalOpen(true);
@@ -130,7 +130,7 @@ const AdminComplaintsPanel = () => {
     return () => socket.off('complaint_updated', handleComplaintUpdate);
   }, [socket, fetchComplaints]);
 
-  // Huy hiệu trạng thái
+  
   const getStatusBadge = useCallback((status, isOverdue = false) => {
     if (status === 'WAITING_PROVIDER' && isOverdue) {
       return (
@@ -141,7 +141,7 @@ const AdminComplaintsPanel = () => {
     }
     const conf = STATUS_BADGE_CONFIG[status] || {
       label: status,
-      bg: 'bg-slate-100 text-slate-800 border-slate-200',
+      bg: 'bg-gray-100 text-gray-800 border-gray-200',
       icon: Clock
     };
     const Icon = conf.icon;
@@ -152,7 +152,7 @@ const AdminComplaintsPanel = () => {
     );
   }, []);
 
-  // Lọc dữ liệu tìm kiếm
+  
   const filteredComplaints = useMemo(() => {
     return complaints.filter((item) => {
       if (statusFilter !== 'ALL') {
@@ -176,7 +176,7 @@ const AdminComplaintsPanel = () => {
     });
   }, [complaints, statusFilter, searchTerm]);
 
-  // Hiển thị thông báo trạng thái bên trái
+  
   const renderStatusInfo = (item) => {
     if (['PENDING_ADMIN', 'PENDING', 'OPEN'].includes(item.status)) return null;
 
@@ -238,28 +238,28 @@ const AdminComplaintsPanel = () => {
         ? { box: 'text-emerald-800 bg-emerald-50/60 border-emerald-100', icon: 'text-emerald-600', text: 'text-emerald-950' }
         : isRejected
         ? { box: 'text-rose-800 bg-rose-50/60 border-rose-100', icon: 'text-rose-600', text: 'text-rose-950' }
-        : { box: 'text-teal-800 bg-teal-50/60 border-teal-100', icon: 'text-teal-600', text: 'text-teal-900' };
+        : { box: 'text-neighbor-800 bg-neighbor-50/60 border-neighbor-100', icon: 'text-neighbor-600', text: 'text-neighbor-900' };
 
       return (
         <div className={`flex items-start gap-2 text-xs flex-1 p-3 rounded-xl border ${theme.box}`}>
           <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${theme.icon}`} />
           <div className="space-y-1 flex-1">
             <span className={`font-extrabold ${theme.text}`}>{label}</span>
-            <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">{responseText}</p>
+            <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">{responseText}</p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex items-center gap-2 text-xs text-slate-700 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200 flex-1">
-        <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+      <div className="flex items-center gap-2 text-xs text-gray-700 bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 flex-1">
+        <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
         <span className="font-medium">Hồ sơ khiếu nại đang được xử lý.</span>
       </div>
     );
   };
 
-  // Hiển thị các nút thao tác bên phải
+  
   const renderActionButtons = (item) => {
     const isPending = ['PENDING_ADMIN', 'PENDING', 'OPEN'].includes(item.status);
 
@@ -304,7 +304,7 @@ const AdminComplaintsPanel = () => {
         <button
           onClick={() => handleOpenStatusModal(item)}
           className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition ${
-            item.is_overdue ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-800 hover:bg-slate-900'
+            item.is_overdue ? 'bg-rose-600 hover:bg-rose-700' : 'bg-gray-800 hover:bg-gray-900'
           }`}
           title={item.is_overdue ? 'Chủ bãi xe đã quá hạn 3 ngày. Admin có thể ra phán quyết ngay' : 'Cập nhật trạng thái'}
         >
@@ -317,7 +317,7 @@ const AdminComplaintsPanel = () => {
     const statusMap = {
       RESOLVED: { text: 'Đã giải quyết xong', style: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
       REJECTED: { text: 'Đã bác bỏ', style: 'text-rose-700 bg-rose-50 border-rose-200' },
-      CLOSED: { text: 'Đã đóng', style: 'text-slate-700 bg-slate-100 border-slate-300' }
+      CLOSED: { text: 'Đã đóng', style: 'text-gray-700 bg-gray-100 border-gray-300' }
     };
     const currentStatus = statusMap[item.status];
 
@@ -330,7 +330,7 @@ const AdminComplaintsPanel = () => {
         )}
         <button
           onClick={() => handleOpenStatusModal(item)}
-          className="text-xs font-bold text-slate-600 hover:text-purple-600 hover:bg-purple-50 px-2.5 py-1.5 rounded-xl border border-slate-200 transition"
+          className="text-xs font-bold text-gray-600 hover:text-purple-600 hover:bg-purple-50 px-2.5 py-1.5 rounded-xl border border-gray-200 transition"
           title="Điều chỉnh hoặc mở lại khiếu nại"
         >
           Đổi trạng thái
@@ -341,22 +341,22 @@ const AdminComplaintsPanel = () => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-4">
-        <Loader2 className="w-10 h-10 animate-spin text-teal-600 mx-auto" />
-        <p className="text-slate-600 font-semibold text-sm">Đang tải danh sách khiếu nại...</p>
+      <div className="bg-white rounded-xl p-12 text-center border border-gray-200 shadow-sm space-y-4">
+        <Loader2 className="w-10 h-10 animate-spin text-neighbor-600 mx-auto" />
+        <p className="text-gray-600 font-semibold text-sm">Đang tải danh sách khiếu nại...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-3xl p-8 border border-red-200 shadow-sm text-center space-y-4">
+      <div className="bg-white rounded-xl p-8 border border-red-200 shadow-sm text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-        <h3 className="text-lg font-bold text-slate-900">Không thể tải dữ liệu</h3>
-        <p className="text-sm text-slate-600">{error}</p>
+        <h3 className="text-lg font-bold text-gray-900">Không thể tải dữ liệu</h3>
+        <p className="text-sm text-gray-600">{error}</p>
         <button
           onClick={() => fetchComplaints(true)}
-          className="px-5 py-2.5 bg-teal-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-teal-700 transition"
+          className="px-5 py-2.5 bg-neighbor-600 text-white font-bold text-xs rounded-xl shadow-md hover:bg-neighbor-700 transition"
         >
           Thử Lại
         </button>
@@ -366,14 +366,14 @@ const AdminComplaintsPanel = () => {
 
   return (
     <div className="space-y-6">
-      {/* Toast thông báo */}
+      {}
       <Toast
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ message: '', type: 'success' })}
       />
 
-      {/* Modal cập nhật trạng thái khiếu nại */}
+      {}
       <UpdateComplaintStatusModal
         isOpen={isStatusModalOpen}
         onClose={() => setIsStatusModalOpen(false)}
@@ -381,7 +381,7 @@ const AdminComplaintsPanel = () => {
         onSuccess={handleStatusSuccess}
       />
 
-      {/* Modal chuyển tiếp cho Chủ bãi xe */}
+      {}
       <ForwardComplaintModal
         isOpen={isForwardModalOpen}
         onClose={() => setIsForwardModalOpen(false)}
@@ -389,54 +389,54 @@ const AdminComplaintsPanel = () => {
         onSuccess={handleForwardSuccess}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {/* Header Panel */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 bg-gradient-to-r from-white to-slate-50 px-5 py-4 sm:px-6">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        {}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50 px-5 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-100 shadow-sm">
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 sm:text-lg">Quản lý khiếu nại hệ thống</h3>
+              <h3 className="text-base font-extrabold text-gray-900 sm:text-lg">Quản lý khiếu nại hệ thống</h3>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => fetchComplaints(true)}
-              className="p-2 text-slate-500 hover:text-teal-600 hover:bg-teal-50 rounded-xl transition"
+              className="p-2 text-gray-500 hover:text-neighbor-600 hover:bg-neighbor-50 rounded-xl transition"
               title="Tải lại danh sách"
             >
               <RefreshCw className="w-4 h-4" />
             </button>
-            <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-bold text-slate-700 shadow-sm">
-              Tổng cộng: <span className="ml-1 text-teal-700">{complaints.length}</span>
+            <span className="inline-flex items-center rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-bold text-gray-700 shadow-sm">
+              Tổng cộng: <span className="ml-1 text-neighbor-700">{complaints.length}</span>
             </span>
           </div>
         </div>
 
-        {/* Thanh tìm kiếm & Bộ lọc */}
-        <div className="p-4 sm:px-6 border-b border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+        {}
+        <div className="p-4 sm:px-6 border-b border-gray-200 bg-gray-50/70 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm theo tiêu đề, ID, khách hàng, bãi xe..."
-              className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition"
+              className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition"
             />
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <Filter className="w-4 h-4 text-gray-400 shrink-0" />
             {FILTER_TABS.map((btn) => (
               <button
                 key={btn.id}
                 onClick={() => setStatusFilter(btn.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 ${
                   statusFilter === btn.id
-                    ? 'bg-teal-600 text-white shadow-sm'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                    ? 'bg-neighbor-600 text-white shadow-sm'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'
                 }`}
               >
                 {btn.label}
@@ -445,52 +445,52 @@ const AdminComplaintsPanel = () => {
           </div>
         </div>
 
-        {/* Danh sách khiếu nại */}
+        {}
         {filteredComplaints.length === 0 ? (
           <div className="flex min-h-[280px] flex-col items-center justify-center px-5 py-10 text-center">
             <div className="relative mb-4">
-              <div className="absolute inset-0 scale-150 rounded-full bg-slate-100"></div>
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-400 shadow-sm">
+              <div className="absolute inset-0 scale-150 rounded-full bg-gray-100"></div>
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 shadow-sm">
                 <Inbox className="h-7 w-7" />
               </div>
             </div>
-            <h3 className="text-base font-extrabold text-slate-800 sm:text-lg">
+            <h3 className="text-base font-extrabold text-gray-800 sm:text-lg">
               {complaints.length === 0 ? 'Không có khiếu nại nào' : 'Không tìm thấy khiếu nại phù hợp'}
             </h3>
-            <p className="mt-2 max-w-sm text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-sm text-sm leading-6 text-gray-500">
               {complaints.length === 0
                 ? 'Hệ thống hiện chưa ghi nhận khiếu nại nào. Các yêu cầu mới sẽ xuất hiện tại đây.'
                 : 'Thử điều chỉnh lại từ khóa tìm kiếm hoặc bỏ chọn các bộ lọc trạng thái.'}
             </p>
           </div>
         ) : (
-          <div className="p-4 sm:p-5 space-y-4 bg-slate-50/50">
+          <div className="p-4 sm:p-5 space-y-4 bg-gray-50/50">
             {filteredComplaints.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-md transition flex flex-col gap-3.5"
+                className="bg-white rounded-xl p-5 border border-gray-200/90 shadow-sm hover:shadow-md transition flex flex-col gap-3.5"
               >
-                {/* 1. Header: Mã ID, Tiêu đề, Ngày gửi, Trạng thái */}
-                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                {}
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-gray-200">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-mono font-bold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded text-xs border border-slate-200">
+                    <span className="font-mono font-bold bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded text-xs border border-gray-200">
                       #{item.id}
                     </span>
-                    <h4 className="text-base sm:text-lg font-extrabold text-slate-900">{item.title}</h4>
-                    <span className="text-slate-300">•</span>
-                    <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <h4 className="text-base sm:text-lg font-extrabold text-gray-900">{item.title}</h4>
+                    <span className="text-gray-300">•</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400" />
                       Gửi ngày: {new Date(item.created_at).toLocaleDateString('vi-VN')}
                     </span>
                   </div>
                   <div>{getStatusBadge(item.status, item.is_overdue)}</div>
                 </div>
 
-                {/* 2. Nội dung khiếu nại & Ảnh đính kèm */}
-                <div className="text-sm text-slate-700 space-y-2">
+                {}
+                <div className="text-sm text-gray-700 space-y-2">
                   <div className="flex items-start gap-2">
-                    <span className="font-bold text-slate-900 shrink-0">Nội dung khiếu nại:</span>
-                    <p className="text-slate-800 whitespace-pre-wrap flex-1 leading-relaxed">{item.description}</p>
+                    <span className="font-bold text-gray-900 shrink-0">Nội dung khiếu nại:</span>
+                    <p className="text-gray-800 whitespace-pre-wrap flex-1 leading-relaxed">{item.description}</p>
                   </div>
                   {Array.isArray(item.image_urls) && item.image_urls.length > 0 && (
                     <div className="pt-1 flex flex-wrap gap-2">
@@ -500,7 +500,7 @@ const AdminComplaintsPanel = () => {
                           href={url}
                           target="_blank"
                           rel="noreferrer"
-                          className="relative block w-20 h-20 rounded-xl overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition group"
+                          className="relative block w-20 h-20 rounded-xl overflow-hidden border border-gray-200 hover:ring-2 hover:ring-neighbor-600 transition group"
                         >
                           <img
                             src={url}
@@ -513,39 +513,39 @@ const AdminComplaintsPanel = () => {
                   )}
                 </div>
 
-                {/* 3. Thông tin người gửi & Bãi xe */}
-                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs">
-                  <div className="flex items-start gap-2.5 text-slate-600">
-                    <User className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                {}
+                <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs">
+                  <div className="flex items-start gap-2.5 text-gray-600">
+                    <User className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
-                      <span className="block text-slate-400 font-medium">Khách hàng:</span>
-                      <p className="font-bold text-slate-900 text-sm leading-snug">{item.customer?.full_name || 'Khách hàng'}</p>
+                      <span className="block text-gray-400 font-medium">Khách hàng:</span>
+                      <p className="font-bold text-gray-900 text-sm leading-snug">{item.customer?.full_name || 'Khách hàng'}</p>
                       {(item.customer?.phone_number || item.customer?.email) && (
-                        <p className="text-slate-500 text-xs">
+                        <p className="text-gray-500 text-xs">
                           {item.customer?.phone_number || item.customer?.email}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2.5 text-slate-600">
-                    <Building2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2.5 text-gray-600">
+                    <Building2 className="w-4 h-4 text-neighbor-600 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
-                      <span className="block text-slate-400 font-medium">Bãi xe bị khiếu nại:</span>
-                      <p className="font-bold text-slate-900 text-sm leading-snug">{item.facility?.name}</p>
+                      <span className="block text-gray-400 font-medium">Bãi xe bị khiếu nại:</span>
+                      <p className="font-bold text-gray-900 text-sm leading-snug">{item.facility?.name}</p>
                       {item.facility?.provider?.full_name && (
-                        <p className="text-slate-500 text-xs">
-                          Chủ bãi: <span className="font-semibold text-slate-700">{item.facility.provider.full_name}</span>
+                        <p className="text-gray-500 text-xs">
+                          Chủ bãi: <span className="font-semibold text-gray-700">{item.facility.provider.full_name}</span>
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* 4. Lịch sử trao đổi & Tiến trình */}
+                {}
                 {Array.isArray(item.response_history) && item.response_history.length > 0 && (
                   <div className="pt-2 space-y-2">
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
                       Tiến trình giải quyết khiếu nại & chuyển cấp:
                     </span>
                     <div className="space-y-2">
@@ -556,13 +556,13 @@ const AdminComplaintsPanel = () => {
                             hist.action === 'ESCALATED'
                               ? 'bg-purple-50 border border-purple-200 text-purple-900'
                               : hist.sender_role === 'ADMIN'
-                              ? 'bg-teal-50 border border-teal-200 text-teal-900'
-                              : 'bg-slate-50 border border-slate-200 text-slate-800'
+                              ? 'bg-neighbor-50 border border-neighbor-200 text-neighbor-900'
+                              : 'bg-gray-50 border border-gray-200 text-gray-800'
                           }`}
                         >
                           <div className="flex items-center justify-between font-bold">
                             <span>{hist.sender_name || (hist.sender_role === 'ADMIN' ? 'Ban Quản Trị' : 'Chủ bãi xe')}</span>
-                            <span className="text-slate-400 font-normal">
+                            <span className="text-gray-400 font-normal">
                               {hist.created_at ? new Date(hist.created_at).toLocaleString('vi-VN') : ''}
                             </span>
                           </div>
@@ -575,8 +575,8 @@ const AdminComplaintsPanel = () => {
                   </div>
                 )}
 
-                {/* 5. Khu vực phản hồi & Thao tác của Admin */}
-                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {}
+                <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   {renderStatusInfo(item)}
                   <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap ml-auto">
                     {renderActionButtons(item)}

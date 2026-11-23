@@ -9,9 +9,23 @@
       "logout": "Đăng Xuất"
     },
     "profileCard": {
-      "title": "Thông Tin Cá Nhân",
+      "title": "Thông Tin Tài Khoản",
       "phoneNotUpdated": "Chưa cập nhật",
-      "roleBadge": "Khách Thuê"
+      "roleBadge": "Khách Thuê",
+      "addressNotUpdated": "Chưa cập nhật",
+      "securityNote": "Tài khoản được bảo vệ bởi ParkLink Security",
+      "editDetailedProfile": "Cập Nhật Hồ Sơ",
+      "changePassword": "Đổi Mật Khẩu"
+    },
+    "profile": {
+      "title": "Thông Tin Cá Nhân",
+      "badge": "Khách Thuê",
+      "fullName": "Họ và tên",
+      "email": "Email tài khoản",
+      "phone": "Số điện thoại",
+      "address": "Địa chỉ liên hệ",
+      "notUpdated": "Chưa cập nhật",
+      "editButton": "Chỉnh sửa thông tin"
     },
     "reservationsCard": {
       "title": "Quản Lý Yêu Cầu Thuê Bãi Xe",
@@ -20,6 +34,58 @@
       "subDesc": "Quản lý và kiểm tra tiến độ duyệt các đăng ký thuê bãi đỗ xe theo tháng",
       "myListButton": "Danh Sách Yêu Cầu Thuê Của Tôi",
       "findNewButton": "Tìm Bãi Đỗ Xe Mới"
+    },
+    "stats": {
+      "activeContracts": "Hợp Đồng Đang Thuê",
+      "activeContractsDesc": "Hợp đồng giữ chỗ đang hiệu lực",
+      "pendingRequests": "Yêu Cầu Chờ Duyệt",
+      "pendingRequestsDesc": "Đang chờ chủ bãi phản hồi",
+      "complaints": "Phản Ánh Dịch Vụ",
+      "complaintsDesc": "Theo dõi giải quyết khiếu nại",
+      "findParking": "Khám Phá Bãi Xe",
+      "findParkingDesc": "Thuê chỗ đỗ xe theo tháng gần bạn",
+      "manageContracts": "Quản lý hợp đồng",
+      "viewRequests": "Xem yêu cầu",
+      "viewComplaints": "Xem khiếu nại",
+      "exploreNow": "Tìm bãi xe ngay"
+    },
+    "quickActions": {
+      "title": "Dịch Vụ & Tiện Ích Khách Thuê",
+      "subtitle": "Truy cập nhanh các tính năng quản lý thuê bãi đỗ xe",
+      "search": {
+        "title": "Tìm Kiếm Bãi Đỗ Xe",
+        "desc": "Khám phá hàng trăm bãi xe uy tín, kiểm tra hình ảnh thực tế và giá niêm yết minh bạch.",
+        "action": "Khám phá ngay"
+      },
+      "contracts": {
+        "title": "Hợp Đồng Thuê Bãi",
+        "desc": "Theo dõi thời hạn thuê bãi, quản lý biển số xe và thanh toán gia hạn trực tuyến an toàn.",
+        "action": "Quản lý hợp đồng"
+      },
+      "reservations": {
+        "title": "Yêu Cầu Đã Gửi",
+        "desc": "Kiểm tra tiến độ phê duyệt từ các chủ bãi đỗ xe và quản lý thông tin xe đăng ký.",
+        "action": "Xem danh sách"
+      },
+      "complaints": {
+        "title": "Khiếu Nại & Hỗ Trợ",
+        "desc": "Gửi phản ánh sự cố hoặc thắc mắc để ban quản trị ParkLink giải quyết kịp thời.",
+        "action": "Gửi phản ánh"
+      }
+    },
+    "activity": {
+      "title": "Hoạt Động Thuê Bãi Của Bạn",
+      "subtitle": "Theo dõi tình trạng bãi đỗ xe và yêu cầu thuê gần nhất",
+      "activeContractTitle": "Bãi Xe Đang Thuê",
+      "noActiveContract": "Bạn chưa có hợp đồng thuê bãi xe nào đang hoạt động",
+      "noActiveContractDesc": "Thuê chỗ đỗ xe theo tháng giúp bạn tiết kiệm chi phí và luôn giữ được vị trí đỗ an toàn, ổn định.",
+      "findParkingNow": "Tìm Bãi Đỗ Xe Gần Bạn",
+      "viewContractDetail": "Xem Hợp Đồng & Gia Hạn",
+      "recentRequestTitle": "Yêu Cầu Thuê Bãi Gần Nhất",
+      "noRecentRequest": "Không có yêu cầu thuê nào đang chờ xử lý.",
+      "viewRequestDetail": "Xem Chi Tiết Yêu Cầu",
+      "submittedDate": "Ngày gửi",
+      "vehicle": "Phương tiện"
     }
   },
   "reservations": {

@@ -8,36 +8,30 @@ import VehicleTypeModal from '../modals/VehicleTypeModal';
 import ConfirmModal from '../modals/ConfirmModal';
 import Toast from '../common/Toast';
 
-/**
- * Panel Quản Lý Loại Phương Tiện Dành Cho Admin
- * Create Vehicle Type
- * View Vehicle Types
- * Update Vehicle Type
- * Deactivate Vehicle Type
- */
+
 const AdminVehicleTypesPanel = () => {
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // Bộ lọc và tìm kiếm
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Trạng thái modal tạo mới / chỉnh sửa
+  
   const [modalState, setModalState] = useState({
     isOpen: false,
     vehicleType: null
   });
 
-  // Trạng thái modal xác nhận vô hiệu hóa / kích hoạt
+  
   const [confirmToggleState, setConfirmToggleState] = useState({
     isOpen: false,
     vehicleType: null,
     loading: false
   });
 
-  // Tải danh sách loại phương tiện từ backend
+  
   const fetchVehicleTypes = useCallback(async () => {
     try {
       setLoading(true);
@@ -58,14 +52,14 @@ const AdminVehicleTypesPanel = () => {
     fetchVehicleTypes();
   }, [fetchVehicleTypes]);
 
-  // Lọc dữ liệu theo từ khóa tìm kiếm và tab trạng thái
+  
   const filteredVehicleTypes = useMemo(() => {
     return vehicleTypes.filter((vt) => {
-      // 1. Lọc theo trạng thái
+      
       if (statusFilter === 'ACTIVE' && !vt.is_active) return false;
       if (statusFilter === 'INACTIVE' && vt.is_active) return false;
 
-      // 2. Lọc theo từ khóa tìm kiếm
+      
       if (searchTerm.trim()) {
         const term = searchTerm.trim().toLowerCase();
         const matchCode = vt.type_code?.toLowerCase().includes(term);
@@ -78,7 +72,7 @@ const AdminVehicleTypesPanel = () => {
     });
   }, [vehicleTypes, searchTerm, statusFilter]);
 
-  // Thống kê nhanh
+  
   const stats = useMemo(() => {
     const total = vehicleTypes.length;
     const active = vehicleTypes.filter((v) => v.is_active).length;
@@ -86,7 +80,7 @@ const AdminVehicleTypesPanel = () => {
     return { total, active, inactive };
   }, [vehicleTypes]);
 
-  // Mở modal tạo mới 
+  
   const handleOpenCreateModal = () => {
     setModalState({
       isOpen: true,
@@ -94,7 +88,7 @@ const AdminVehicleTypesPanel = () => {
     });
   };
 
-  // Mở modal chỉnh sửa 
+  
   const handleOpenEditModal = (vt) => {
     setModalState({
       isOpen: true,
@@ -102,7 +96,7 @@ const AdminVehicleTypesPanel = () => {
     });
   };
 
-  // Mở modal xác nhận vô hiệu hóa / kích hoạt lại 
+  
   const handleOpenConfirmToggle = (vt) => {
     setConfirmToggleState({
       isOpen: true,
@@ -111,7 +105,7 @@ const AdminVehicleTypesPanel = () => {
     });
   };
 
-  // Thực hiện đổi trạng thái vô hiệu hóa / kích hoạt
+  
   const handleConfirmToggle = async () => {
     const vt = confirmToggleState.vehicleType;
     if (!vt) return;
@@ -135,8 +129,8 @@ const AdminVehicleTypesPanel = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-100 shadow-md p-6 space-y-6">
-      {/* Toast thông báo */}
+    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
+      {}
       {toast && (
         <Toast
           message={toast.message}
@@ -145,14 +139,14 @@ const AdminVehicleTypesPanel = () => {
         />
       )}
 
-      {/* Header Panel */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
+      {}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Car className="w-6 h-6 text-teal-600" />
+          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Car className="w-6 h-6 text-neighbor-600" />
             Quản Lý Danh Mục Loại Phương Tiện
           </h2>
-          <p className="text-slate-500 text-xs mt-1">
+          <p className="text-gray-500 text-xs mt-1">
             Quản trị các loại phương tiện mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.
           </p>
         </div>
@@ -161,36 +155,36 @@ const AdminVehicleTypesPanel = () => {
           <button
             onClick={fetchVehicleTypes}
             disabled={loading}
-            className="p-2.5 text-slate-600 hover:text-teal-600 hover:bg-slate-50 border border-slate-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold"
+            className="p-2.5 text-gray-600 hover:text-neighbor-600 hover:bg-gray-50 border border-gray-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold"
             title="Làm mới danh sách"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-teal-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
             Làm mới
           </button>
 
-          {/*Nút Thêm mới */}
+          {}
           <button
             onClick={handleOpenCreateModal}
-            className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
+            className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Thêm Loại Phương Tiện Mới
           </button>
         </div>
       </div>
 
-      {/* Thẻ Thống Kê Nhanh */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between">
+        <div className="bg-gray-50 border border-gray-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-slate-500">Tổng Số Loại Phương Tiện</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{stats.total}</p>
+            <p className="text-xs font-medium text-gray-500">Tổng Số Loại Phương Tiện</p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-teal-100/60 text-teal-700 flex items-center justify-center font-bold">
+          <div className="w-11 h-11 rounded-xl bg-neighbor-100/60 text-neighbor-700 flex items-center justify-center font-bold">
             <Car className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 flex items-center justify-between">
+        <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-emerald-700">Đang Hoạt Động (Active)</p>
             <p className="text-2xl font-bold text-emerald-800 mt-1">{stats.active}</p>
@@ -200,7 +194,7 @@ const AdminVehicleTypesPanel = () => {
           </div>
         </div>
 
-        <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-center justify-between">
+        <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p className="text-xs font-medium text-amber-700">Đã Vô Hiệu Hóa (Inactive)</p>
             <p className="text-2xl font-bold text-amber-800 mt-1">{stats.inactive}</p>
@@ -211,27 +205,27 @@ const AdminVehicleTypesPanel = () => {
         </div>
       </div>
 
-      {/* Thanh Tìm Kiếm & Bộ Lọc Trạng Thái */}
+      {}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Input Tìm kiếm */}
+        {}
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo tên, mã (type_code)..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition"
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neighbor-500 focus:bg-white transition"
           />
         </div>
 
-        {/* Tab Lọc Trạng Thái */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl w-full sm:w-auto self-stretch sm:self-auto">
+        {}
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl w-full sm:w-auto self-stretch sm:self-auto">
           <button
             onClick={() => setStatusFilter('ALL')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'ALL'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Tất Cả ({stats.total})
@@ -240,7 +234,7 @@ const AdminVehicleTypesPanel = () => {
             onClick={() => setStatusFilter('ACTIVE')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'ACTIVE'
               ? 'bg-white text-emerald-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Hoạt Động ({stats.active})
@@ -249,7 +243,7 @@ const AdminVehicleTypesPanel = () => {
             onClick={() => setStatusFilter('INACTIVE')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${statusFilter === 'INACTIVE'
               ? 'bg-white text-amber-700 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Đã Vô Hiệu Hóa ({stats.inactive})
@@ -257,11 +251,11 @@ const AdminVehicleTypesPanel = () => {
         </div>
       </div>
 
-      {/* Bảng Danh Sách Loại Phương Tiện */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200">
+      {}
+      <div className="overflow-x-auto rounded-xl border border-gray-200">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
               <th className="py-3.5 px-4">Mã Loại (Code)</th>
               <th className="py-3.5 px-4">Tên Loại Phương Tiện</th>
               <th className="py-3.5 px-4">Mô Tả Chi Tiết</th>
@@ -270,62 +264,62 @@ const AdminVehicleTypesPanel = () => {
               <th className="py-3.5 px-4 text-center">Thao Tác</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
+          <tbody className="divide-y divide-gray-100 text-sm">
             {loading && vehicleTypes.length === 0 ? (
               <tr>
-                <td colSpan="6" className="py-12 text-center text-slate-400">
-                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+                <td colSpan="6" className="py-12 text-center text-gray-400">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-neighbor-600" />
                   <span>Đang tải danh mục loại phương tiện...</span>
                 </td>
               </tr>
             ) : filteredVehicleTypes.length === 0 ? (
               <tr>
-                <td colSpan="6" className="py-12 text-center text-slate-400">
-                  <Car className="w-8 h-8 mx-auto mb-2 text-slate-300" />
-                  <p className="font-medium text-slate-600">Không tìm thấy loại phương tiện nào</p>
-                  <p className="text-xs text-slate-400 mt-1">
+                <td colSpan="6" className="py-12 text-center text-gray-400">
+                  <Car className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                  <p className="font-medium text-gray-600">Không tìm thấy loại phương tiện nào</p>
+                  <p className="text-xs text-gray-400 mt-1">
                     Thử thay đổi từ khóa tìm kiếm hoặc bấm &quot;Thêm Loại Phương Tiện Mới&quot;
                   </p>
                 </td>
               </tr>
             ) : (
               filteredVehicleTypes.map((vt) => (
-                <tr key={vt.id} className="hover:bg-slate-50/70 transition">
-                  {/* Mã định danh (type_code) */}
+                <tr key={vt.id} className="hover:bg-gray-50/70 transition">
+                  {}
                   <td className="py-3.5 px-4 whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-800 rounded-lg text-xs font-mono font-bold">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 border border-gray-200 text-gray-800 rounded-lg text-xs font-mono font-bold">
                       {vt.type_code}
                     </span>
                   </td>
 
-                  {/* Tên loại xe */}
-                  <td className="py-3.5 px-4 font-semibold text-slate-900">
+                  {}
+                  <td className="py-3.5 px-4 font-semibold text-gray-900">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-lg bg-neighbor-50 text-neighbor-600 flex items-center justify-center shrink-0">
                         <Car className="w-4 h-4" />
                       </div>
                       <span>{vt.name}</span>
                     </div>
                   </td>
 
-                  {/* Mô tả */}
-                  <td className="py-3.5 px-4 text-xs text-slate-600 max-w-xs">
+                  {}
+                  <td className="py-3.5 px-4 text-xs text-gray-600 max-w-xs">
                     {vt.description ? (
                       <p className="line-clamp-2">{vt.description}</p>
                     ) : (
-                      <span className="text-slate-400 italic">Chưa có mô tả</span>
+                      <span className="text-gray-400 italic">Chưa có mô tả</span>
                     )}
                   </td>
 
-                  {/* Số lượng bãi xe liên kết */}
+                  {}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-200">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
                       <Building2 className="w-3 h-3" />
                       {vt._count?.facility_vehicle_types || 0} bãi xe
                     </span>
                   </td>
 
-                  {/* Trạng thái hoạt động */}
+                  {}
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     {vt.is_active ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
@@ -342,16 +336,16 @@ const AdminVehicleTypesPanel = () => {
 
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <div className="flex items-center justify-center gap-2">
-                      {/* ập nhật */}
+                      {}
                       <button
                         onClick={() => handleOpenEditModal(vt)}
-                        className="p-1.5 text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition"
+                        className="p-1.5 text-gray-600 hover:text-neighbor-600 hover:bg-gray-100 rounded-lg transition"
                         title="Chỉnh sửa thông tin loại phương tiện"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
 
-                      {/* Vô hiệu hóa / Kích hoạt lại */}
+                      {}
                       <button
                         onClick={() => handleOpenConfirmToggle(vt)}
                         className={`p-1.5 rounded-lg transition ${vt.is_active
@@ -371,7 +365,7 @@ const AdminVehicleTypesPanel = () => {
         </table>
       </div>
 
-      {/* Modal Tạo Mới & Chỉnh Sửa */}
+      {}
       <VehicleTypeModal
         isOpen={modalState.isOpen}
         onClose={() => setModalState({ isOpen: false, vehicleType: null })}
@@ -382,7 +376,7 @@ const AdminVehicleTypesPanel = () => {
         }}
       />
 
-      {/* Modal Xác Nhận Vô Hiệu Hóa / Kích Hoạt*/}
+      {}
       <ConfirmModal
         isOpen={confirmToggleState.isOpen}
         loading={confirmToggleState.loading}

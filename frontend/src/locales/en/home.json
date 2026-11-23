@@ -1,48 +1,92 @@
 {
   "hero": {
-    "badge": "Trusted Monthly Parking Rental Platform",
+    "badge": "Long-Term Monthly Parking Platform",
     "titleBefore": "Find ",
     "titleHighlight": "Monthly",
     "titleAfter": " Parking Near You",
-    "subtitle": "ParkLink directly connects Parking Providers and long-term customers. Reserve secure parking spaces, protect your vehicle, and enjoy 100% transparent payments."
+    "subtitle": "ParkLink connects parking space providers with long-term customers. Convenient monthly reservations, transparent e-contracts, and cost-effective pricing."
+  },
+  "searchBar": {
+    "vehicleLabel": "Vehicle",
+    "allVehicles": "All vehicle types",
+    "locationLabel": "Location",
+    "locationPlaceholder": "Enter address, district, facility...",
+    "rentalTermLabel": "Term",
+    "monthlyRental": "Monthly parking",
+    "submit": "Search"
+  },
+  "featured": {
+    "badge": "Featured Spaces",
+    "title": "Top-Rated Monthly Parking Spots",
+    "subtitle": "Trusted parking facilities verified on-site by ParkLink for safety and convenience",
+    "viewAll": "View all on map"
+  },
+  "quickActions": {
+    "guestTitle": "Smart Parking Solutions",
+    "guestSubtitle": "Directly connecting property hosts with long-term monthly parkers",
+    "customerTitle": "Your Account Overview",
+    "customerSubtitle": "Welcome back {{name}}, manage your reservations and monthly contracts",
+    "providerTitle": "Host Partner Portal",
+    "providerSubtitle": "Welcome back {{name}}, manage your facility capacity and customer contracts",
+    "myReservationsBadge": "In Progress",
+    "myReservationsTitle": "My Reservations",
+    "myReservationsDesc": "Track review status of your spot reservations and host responses.",
+    "myReservationsCta": "View Reservations",
+    "myContractsBadge": "E-Contract",
+    "myContractsTitle": "Active Contracts",
+    "myContractsDesc": "Manage active contracts, monitor parking durations, and renew online.",
+    "myContractsCta": "View Contracts",
+    "myFavoritesBadge": "Saved Lots",
+    "myFavoritesTitle": "Favorite Spots",
+    "myFavoritesDesc": "Convenient facilities you marked to easily check or rent later.",
+    "myFavoritesCta": "View Saved Spots",
+    "manageFacilitiesTitle": "Manage Facilities",
+    "manageFacilitiesDesc": "Update vacant slot capacity, photos, and facility amenities.",
+    "manageFacilitiesCta": "Manage Facilities",
+    "manageContractsTitle": "Contracts & Customers",
+    "manageContractsDesc": "Approve reservation requests, create e-contracts, and track monthly parkers.",
+    "manageContractsCta": "Manage Contracts",
+    "exploreMapTitle": "Explore Map",
+    "exploreMapDesc": "Inspect pricing and parking density across surrounding neighborhoods.",
+    "exploreMapCta": "Open Search Map"
   },
   "customerCard": {
     "imageAlt": "Parking Customer",
     "badge": "Customer",
-    "title": "Looking for Long-Term Parking?",
+    "title": "Need Long-Term Parking?",
     "description": "Find safe parking near your home or workplace, sign clear monthly rental contracts, and enjoy 100% protected rights.",
-    "cta": "Register as Customer"
+    "cta": "Explore parking lots"
   },
   "searchCard": {
     "imageAlt": "ParkLink monthly parking contract signing",
     "cta": "Search Now"
   },
   "audience": {
-    "eyebrow": "WHO WE SERVE",
+    "eyebrow": "OUR NETWORK",
     "title": "Flexible Solutions for Both Sides"
   },
   "providerCard": {
-    "imageAlt": "Parking Provider",
-    "badge": "Parking Provider",
-    "title": "Are You a Parking Provider?",
-    "description": "List your parking facility on ParkLink to reach long-term customers, optimize slot capacity, and earn steady revenue.",
-    "cta": "Register as Parking Provider"
+    "imageAlt": "Parking Host",
+    "badge": "Space Host",
+    "title": "Have an Empty Space?",
+    "description": "Utilize your vacant property to host monthly parkers, optimize unused space, and earn steady recurring income.",
+    "cta": "Become a host"
   },
   "benefits": {
     "title": "Why Choose ParkLink?",
     "subtitle": "A direct connection platform with no middlemen, focused exclusively on monthly parking rentals",
     "items": {
       "monthly": {
-        "title": "Long-Term Monthly Rentals",
-        "description": "Secure a stable monthly parking space without worrying about running out of spots or sudden peak-season price hikes."
+        "title": "Guaranteed Monthly Spaces",
+        "description": "Secure a dedicated monthly parking slot with zero worries of full lots or sudden price surges."
       },
       "verification": {
-        "title": "Fast Verification",
-        "description": "Every parking facility and Provider account undergoes a strict on-site field inspection by our administration team."
+        "title": "Rigorous On-Site Inspection",
+        "description": "Every facility and partner undergoes an on-site inspection by ParkLink to verify location, security, and parking conditions."
       },
       "transparency": {
-        "title": "Transparent Operations",
-        "description": "Track your contracts, slot availability, and invoices online on the ParkLink web platform anytime, anywhere."
+        "title": "Transparent & Seamless",
+        "description": "Track e-contracts, payment schedules, and chat directly with hosts right on the system."
       }
     }
   }

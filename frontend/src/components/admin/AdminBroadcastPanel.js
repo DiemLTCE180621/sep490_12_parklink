@@ -15,14 +15,12 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import Toast from '../common/Toast';
 
-/**
- * Giao diện Quản trị viên Phát sóng thông báo Hệ thống
- */
+
 const AdminBroadcastPanel = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('WEB'); // 'WEB' hoặc 'EMAIL'
+  const [activeTab, setActiveTab] = useState('WEB'); 
 
-  // ─── STATE CHO TAB 1: WEB NOTIFICATION (UC-65) ───
+  
   const [webForm, setWebForm] = useState({
     targetRole: 'ALL',
     category: 'Bảo trì hệ thống (Maintenance)',
@@ -35,7 +33,7 @@ const AdminBroadcastPanel = () => {
   const [webLoading, setWebLoading] = useState(false);
   const [webSummary, setWebSummary] = useState(null);
 
-  // ─── STATE CHO TAB 2: EMAIL NOTIFICATION (UC-66) ───
+  
   const [emailForm, setEmailForm] = useState({
     recipientScope: 'ALL',
     category: 'Bảo trì & Cập nhật kỹ thuật',
@@ -48,10 +46,10 @@ const AdminBroadcastPanel = () => {
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailSummary, setEmailSummary] = useState(null);
 
-  // Toast feedback
+  
   const [toast, setToast] = useState(null);
 
-  //reset form handlers
+  
   const handleResetWebForm = () => {
     setWebForm({
       targetRole: 'ALL',
@@ -64,7 +62,7 @@ const AdminBroadcastPanel = () => {
     });
     setWebSummary(null);
   };
-  //broadcast handler
+  
   const handleSendWebBroadcast = async (isTestSelf = false) => {
     if (!webForm.title.trim()) {
       setToast({ message: 'Tiêu đề thông báo không được để trống!', type: 'error' });
@@ -163,13 +161,13 @@ const AdminBroadcastPanel = () => {
     <div className="space-y-6">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* TOP TAB NAVIGATION */}
-      <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+      {}
+      <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
         <button
           onClick={() => setActiveTab('WEB')}
-          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${activeTab === 'WEB'
-            ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-teal-600/20'
-            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${activeTab === 'WEB'
+            ? 'bg-gradient-to-r from-neighbor-600 to-neighbor-700 text-white shadow-neighbor-600/20'
+            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
         >
           <Radio className="w-4 h-4" />
@@ -178,26 +176,26 @@ const AdminBroadcastPanel = () => {
 
         <button
           onClick={() => setActiveTab('EMAIL')}
-          className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-bold text-sm transition-all shadow-sm ${activeTab === 'EMAIL'
-            ? 'bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-teal-600/20'
-            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          className={`flex items-center gap-2.5 px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-sm ${activeTab === 'EMAIL'
+            ? 'bg-gradient-to-r from-neighbor-600 to-neighbor-700 text-white shadow-neighbor-600/20'
+            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
         >
           <Mail className="w-4 h-4" />
           <span>Thông báo qua Email</span>
         </button>
       </div>
-      {/*web broadcast*/}
+      {}
 
       {activeTab === 'WEB' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
-          <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
+          <div className="p-6 bg-gradient-to-r from-neighbor-900 via-neighbor-800 to-neighbor-900 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-neighbor-800">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Radio className="w-5 h-5 text-teal-400 animate-pulse" />
+                <Radio className="w-5 h-5 text-neighbor-400 animate-pulse" />
                 <h2 className="text-xl font-bold">Gửi thông báo trên hệ thống</h2>
               </div>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-gray-300">
                 Gửi thông báo trực tiếp đến người dùng đang hoạt động trên nền tảng
               </p>
             </div>
@@ -208,16 +206,16 @@ const AdminBroadcastPanel = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
-            {/* target user */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-600 mb-2">
                   Đối tượng nhận thông báo
                 </label>
                 <select
                   value={webForm.targetRole}
                   onChange={(e) => setWebForm({ ...webForm, targetRole: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 font-medium text-sm text-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-neighbor-500 font-medium text-sm text-gray-800 transition"
                 >
                   <option value="ALL">Tất cả người dùng</option>
                   <option value="CUSTOMER">Khách hàng thuê bãi</option>
@@ -226,13 +224,13 @@ const AdminBroadcastPanel = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-600 mb-2">
                   Loại thông báo
                 </label>
                 <select
                   value={webForm.category}
                   onChange={(e) => setWebForm({ ...webForm, category: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 font-medium text-sm text-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-neighbor-500 font-medium text-sm text-gray-800 transition"
                 >
                   <option value="Bảo trì hệ thống (Maintenance)">Bảo trì hệ thống</option>
                   <option value="Cập nhật chính sách & Điều khoản">Cập nhật chính sách & Điều khoản</option>
@@ -242,9 +240,9 @@ const AdminBroadcastPanel = () => {
               </div>
             </div>
 
-            {/* priority */}
+            {}
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-600 mb-2">
                 Mức độ ưu tiên
               </label>
               <div className="grid grid-cols-3 gap-3">
@@ -258,8 +256,8 @@ const AdminBroadcastPanel = () => {
                     type="button"
                     onClick={() => setWebForm({ ...webForm, priority: p.value })}
                     className={`py-3 px-3 rounded-xl text-xs font-bold border transition text-center ${webForm.priority === p.value
-                      ? 'border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500/20'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      ? 'border-neighbor-600 bg-neighbor-50 text-neighbor-800 ring-2 ring-neighbor-600/20'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                       }`}
                   >
                     {p.label}
@@ -270,10 +268,10 @@ const AdminBroadcastPanel = () => {
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600">
                   Tiêu đề thông báo <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-gray-400">
                   {webForm.title.length}/120 ký tự
                 </span>
               </div>
@@ -283,17 +281,17 @@ const AdminBroadcastPanel = () => {
                 placeholder="VD: Thông báo bảo trì nâng cấp hệ thống 00:00 - 02:00 ngày 25/11"
                 value={webForm.title}
                 onChange={(e) => setWebForm({ ...webForm, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 text-sm font-semibold text-slate-800 transition"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-neighbor-500 text-sm font-semibold text-gray-800 transition"
               />
             </div>
 
-            {/* content */}
+            {}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600">
                   Nội dung thông báo <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-gray-400">
                   {webForm.content.length}/500 ký tự
                 </span>
               </div>
@@ -303,52 +301,52 @@ const AdminBroadcastPanel = () => {
                 placeholder="Nhập nội dung thông báo chi tiết gửi tới người dùng..."
                 value={webForm.content}
                 onChange={(e) => setWebForm({ ...webForm, content: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 text-sm text-slate-800 leading-relaxed transition"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-neighbor-500 text-sm text-gray-800 leading-relaxed transition"
               />
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-wrap gap-6 items-center">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 flex flex-wrap gap-6 items-center">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Tùy chọn hiển thị:
               </span>
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={webForm.showToast}
                   onChange={(e) => setWebForm({ ...webForm, showToast: e.target.checked })}
-                  className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                  className="rounded text-neighbor-600 focus:ring-neighbor-500 w-4 h-4"
                 />
                 Hiển thị thông báo nổi trên màn hình
               </label>
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={webForm.saveToDb}
                   onChange={(e) => setWebForm({ ...webForm, saveToDb: e.target.checked })}
-                  className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                  className="rounded text-neighbor-600 focus:ring-neighbor-500 w-4 h-4"
                 />
                 Lưu vào lịch sử thông báo
               </label>
             </div>
 
             {webSummary && (
-              <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200 flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
-                <div className="text-xs text-teal-900 space-y-1">
+              <div className="p-4 rounded-xl bg-neighbor-50 border border-neighbor-200 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-neighbor-600 shrink-0 mt-0.5" />
+                <div className="text-xs text-neighbor-900 space-y-1">
                   <p className="font-bold text-sm">Gửi thông báo thành công!</p>
-                  <p>Mã tác vụ: <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-teal-200">{webSummary.taskId}</code></p>
+                  <p>Mã tác vụ: <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-neighbor-200">{webSummary.taskId}</code></p>
                   <p>Số người nhận: <strong>{webSummary.totalRecipients} người dùng</strong></p>
-                  <p className="text-[11px] text-teal-700">Thời gian: {new Date(webSummary.timestamp).toLocaleString('vi-VN')}</p>
+                  <p className="text-[11px] text-neighbor-700">Thời gian: {new Date(webSummary.timestamp).toLocaleString('vi-VN')}</p>
                 </div>
               </div>
             )}
 
-            {/* Buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+            {}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleResetWebForm}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 font-bold text-xs text-slate-600 flex items-center gap-2 transition"
+                className="px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 font-bold text-xs text-gray-600 flex items-center gap-2 transition"
               >
                 <RotateCcw className="w-4 h-4" /> Làm mới
               </button>
@@ -358,16 +356,16 @@ const AdminBroadcastPanel = () => {
                   type="button"
                   disabled={webLoading}
                   onClick={() => handleSendWebBroadcast(true)}
-                  className="px-5 py-2.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 font-bold text-xs text-teal-800 flex items-center gap-2 transition disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl border border-neighbor-200 bg-neighbor-50 hover:bg-neighbor-100 font-bold text-xs text-neighbor-800 flex items-center gap-2 transition disabled:opacity-50"
                 >
-                  <Sparkles className="w-4 h-4 text-teal-600" /> Gửi thử cho tôi
+                  <Sparkles className="w-4 h-4 text-neighbor-600" /> Gửi thử cho tôi
                 </button>
 
                 <button
                   type="button"
                   disabled={webLoading}
                   onClick={() => handleSendWebBroadcast(false)}
-                  className="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-teal-600/25 transition disabled:opacity-50"
+                  className="px-6 py-3 rounded-xl bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-neighbor-600/25 transition disabled:opacity-50"
                 >
                   {webLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -381,18 +379,18 @@ const AdminBroadcastPanel = () => {
           </div>
         </div>
       )}
-      {/* email broadcast */}
+      {}
 
       {activeTab === 'EMAIL' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
-          {/* Banner tiêu đề */}
-          <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div className="bg-white rounded-xl border border-gray-200/80 shadow-xl overflow-hidden animate-in fade-in duration-150">
+          {}
+          <div className="p-6 bg-gradient-to-r from-gray-900 via-gray-800 to-indigo-950 text-white flex flex-col sm:flex-row justify-between sm:items-center gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-indigo-400" />
                 <h2 className="text-xl font-bold">Gửi thông báo qua Email</h2>
               </div>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-gray-300">
                 Soạn thảo và gửi thông báo trực tiếp tới email người dùng
               </p>
             </div>
@@ -403,16 +401,16 @@ const AdminBroadcastPanel = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
-            {/* target user */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-600 mb-2">
                   Đối tượng nhận email
                 </label>
                 <select
                   value={emailForm.recipientScope}
                   onChange={(e) => setEmailForm({ ...emailForm, recipientScope: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 font-medium text-sm text-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-neighbor-500 font-medium text-sm text-gray-800 transition"
                 >
                   <option value="ALL">Tất cả người dùng</option>
                   <option value="CUSTOMER">Khách hàng thuê bãi</option>
@@ -421,13 +419,13 @@ const AdminBroadcastPanel = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-2">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-gray-600 mb-2">
                   Loại thông báo
                 </label>
                 <select
                   value={emailForm.category}
                   onChange={(e) => setEmailForm({ ...emailForm, category: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-teal-500 font-medium text-sm text-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-neighbor-500 font-medium text-sm text-gray-800 transition"
                 >
                   <option value="Bảo trì & Cập nhật kỹ thuật">Bảo trì & Cập nhật kỹ thuật</option>
                   <option value="Thông báo Thay đổi chính sách">Thông báo Thay đổi chính sách</option>
@@ -436,13 +434,13 @@ const AdminBroadcastPanel = () => {
               </div>
             </div>
 
-            {/* email */}
+            {}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600">
                   Tiêu đề Email <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-gray-400">
                   {emailForm.subject.length}/120 ký tự
                 </span>
               </div>
@@ -452,17 +450,17 @@ const AdminBroadcastPanel = () => {
                 placeholder="VD: [ParkLink] Thông báo cập nhật chính sách và lịch bảo trì hệ thống"
                 value={emailForm.subject}
                 onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 text-sm font-semibold text-slate-800 transition"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-neighbor-500 text-sm font-semibold text-gray-800 transition"
               />
             </div>
 
-            {/* content */}
+            {}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+                <label className="text-xs font-extrabold uppercase tracking-wider text-gray-600">
                   Nội dung Email <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-xs font-semibold text-slate-400">
+                <span className="text-xs font-semibold text-gray-400">
                   {emailForm.htmlContent.length}/5,000 ký tự
                 </span>
               </div>
@@ -472,39 +470,39 @@ const AdminBroadcastPanel = () => {
                 placeholder="<p>Kính gửi Quý người dùng và Quý Đối tác ParkLink,</p><p>ParkLink trân trọng thông báo lịch nâng cấp định kỳ hạ tầng cổng thanh toán và quản lý dữ liệu bãi xe...</p>"
                 value={emailForm.htmlContent}
                 onChange={(e) => setEmailForm({ ...emailForm, htmlContent: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 font-mono text-sm text-slate-800 leading-relaxed transition"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-neighbor-500 font-mono text-sm text-gray-800 leading-relaxed transition"
               />
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 Hỗ trợ nội dung văn bản hoặc thẻ định dạng HTML cơ bản (&lt;p&gt;, &lt;strong&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, &lt;br&gt;...)
               </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex flex-wrap gap-6 items-center">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 flex flex-wrap gap-6 items-center">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                 Tùy chọn bổ sung:
               </span>
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={emailForm.attachSignature}
                   onChange={(e) => setEmailForm({ ...emailForm, attachSignature: e.target.checked })}
-                  className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                  className="rounded text-neighbor-600 focus:ring-neighbor-500 w-4 h-4"
                 />
                 Đính kèm chữ ký ParkLink & Hotline 1900
               </label>
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={emailForm.canSpamCompliance}
                   onChange={(e) => setEmailForm({ ...emailForm, canSpamCompliance: e.target.checked })}
-                  className="rounded text-teal-600 focus:ring-teal-500 w-4 h-4"
+                  className="rounded text-neighbor-600 focus:ring-neighbor-500 w-4 h-4"
                 />
                 Đính kèm thông tin bảo mật & quyền riêng tư
               </label>
             </div>
 
             {emailSummary && (
-              <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-start gap-3">
+              <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-200 flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
                 <div className="text-xs text-indigo-900 space-y-1">
                   <p className="font-bold text-sm">Đã khởi tạo tác vụ gửi Email!</p>
@@ -515,12 +513,12 @@ const AdminBroadcastPanel = () => {
               </div>
             )}
 
-            {/* Buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100">
+            {}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={handleResetEmailForm}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 font-bold text-xs text-slate-600 flex items-center gap-2 transition"
+                className="px-5 py-2.5 rounded-xl border border-gray-200 hover:bg-gray-100 font-bold text-xs text-gray-600 flex items-center gap-2 transition"
               >
                 <RotateCcw className="w-4 h-4" /> Làm mới
               </button>
@@ -532,7 +530,7 @@ const AdminBroadcastPanel = () => {
                     placeholder="Email nhận thử (VD: test@gmail.com)..."
                     value={emailForm.testEmail}
                     onChange={(e) => setEmailForm({ ...emailForm, testEmail: e.target.value })}
-                    className="px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:bg-white focus:ring-2 focus:ring-indigo-500 font-medium text-xs text-slate-800 transition w-56 sm:w-64"
+                    className="px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50/40 focus:bg-white focus:ring-2 focus:ring-indigo-500 font-medium text-xs text-gray-800 transition w-56 sm:w-64"
                   />
                   <button
                     type="button"
