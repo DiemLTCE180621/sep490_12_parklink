@@ -1,6 +1,8 @@
 const notificationRepository = require('../repositories/notificationRepository');
 const emailService = require('../utils/emailService');
+const emailFooter = require('../utils/emailFooter');
 const { getIO } = require('../config/socket');
+const { escapeHtml, sanitizeEmailHtml } = require('../utils/htmlSanitizer');
 
 //Service xử lý toàn bộ Business Logic liên quan đến thông báo (Notifications)
 
@@ -15,16 +17,16 @@ class NotificationService {
       priority = 'Bình thường',
       saveToDb = true,
       showToast = true
-    } = payload;
+    } = payload || {};
 
-    //Kiểm tra hợp lệ dữ liệu đầu vào
-    if (!title || !title.trim()) {
+    //Kiểm tra hợp lệ kiểu dữ liệu và nội dung đầu vào (phòng thủ khi gọi nội bộ từ service khác)
+    if (typeof title !== 'string' || !title.trim()) {
       const error = new Error('Tiêu đề thông báo không được để trống!');
       error.status = 400;
       throw error;
     }
 
-    if (!content || !content.trim()) {
+    if (typeof content !== 'string' || !content.trim()) {
       const error = new Error('Nội dung thông báo không được để trống!');
       error.status = 400;
       throw error;
@@ -91,19 +93,32 @@ class NotificationService {
       recipientScope = 'ALL',
       emailCategory = 'Bảo trì & Cập nhật kỹ thuật',
       testEmail
-    } = payload;
+    } = payload || {};
 
-    if (!subject || !subject.trim()) {
+    if (typeof subject !== 'string' || !subject.trim()) {
       const error = new Error('Tiêu đề Email không được để trống!');
       error.status = 400;
       throw error;
     }
 
-    if (!htmlContent || !htmlContent.trim()) {
+    if (typeof htmlContent !== 'string' || !htmlContent.trim()) {
       const error = new Error('Nội dung Email không được để trống!');
       error.status = 400;
       throw error;
     }
+
+    // Lọc bỏ thẻ HTML/JS nguy hiểm (script, iframe, on*, javascript:...) nhưng giữ định dạng cơ bản
+    const sanitizedHtmlContent = sanitizeEmailHtml(htmlContent);
+    if (!sanitizedHtmlContent) {
+      const error = new Error('Nội dung Email không hợp lệ hoặc không có văn bản hiển thị sau khi lọc HTML!');
+      error.status = 400;
+      throw error;
+    }
+
+    const safeCategoryText = typeof emailCategory === 'string' && emailCategory.trim()
+      ? emailCategory.trim()
+      : 'Bảo trì & Cập nhật kỹ thuật';
+    const safeCategoryHtml = escapeHtml(safeCategoryText);
 
     const validScopes = ['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'];
     const normalizedScope = validScopes.includes(recipientScope) ? recipientScope : 'ALL';
@@ -136,20 +151,16 @@ class NotificationService {
 
     //HTML with ParkLink template 
     const formattedHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #ffffff;">
+      <div style="font-family: Arial, sans-serif;">
         <div style="text-align: center; margin-bottom: 20px;">
-          <h2 style="color: #0d9488; margin: 0;">PARKLINK THÔNG BÁO HỆ THỐNG</h2>
-          <p style="color: #64748b; font-size: 13px; margin: 5px 0 0 0;">Phân loại: ${emailCategory}</p>
+          <h2 style="margin: 0;">PARKLINK THÔNG BÁO HỆ THỐNG</h2>
+          <p style="color: #64748b; font-size: 13px; margin: 5px 0 0 0;">Phân loại: ${safeCategoryHtml}</p>
         </div>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 15px 0 25px 0;" />
         <div style="color: #334155; line-height: 1.7; font-size: 15px;">
-          ${htmlContent}
+          ${sanitizedHtmlContent}
         </div>
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0 15px 0;" />
-        <div style="text-align: center; color: #94a3b8; font-size: 12px; line-height: 1.5;">
-          <p style="margin: 0;">Đây là email tự động từ Ban Quản Trị ParkLink. Vui lòng không trả lời trực tiếp email này.</p>
-          <p style="margin: 4px 0 0 0;">© 2026 ParkLink. Nền tảng kết nối dịch vụ bãi đỗ xe theo tháng.</p>
-        </div>
+        ${emailFooter}
       </div>
     `;
 
@@ -167,7 +178,7 @@ class NotificationService {
         await notificationRepository.createNotification({
           user_id: Number(adminId),
           title: `[EMAIL PHÁT SÓNG] ${subject.trim()}`,
-          content: `Đã phát sóng email tới ${recipientEmails.length} người dùng (Phạm vi: ${normalizedScope}, Thể loại: ${emailCategory}, Mã Batch: ${taskResult.batchId}).`,
+          content: `Đã phát sóng email tới ${recipientEmails.length} người dùng (Phạm vi: ${normalizedScope}, Thể loại: ${safeCategoryText}, Mã Batch: ${taskResult.batchId}).`,
           type: 'EMAIL_LOG',
           is_read: true // mark read
         });

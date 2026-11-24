@@ -2,46 +2,50 @@ const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
+const {
+  validateBroadcastPush,
+  validateBroadcastEmail,
+  validateGetMyNotifications,
+  validateMarkAsRead
+} = require('../validations/notificationValidation');
 
-/**
- * Route định nghĩa các endpoint cho module Thông báo (Notifications)
- * Tuân thủ quy tắc 3-tier: Chỉ định nghĩa URL và gán Middleware xác thực / phân quyền
- */
-
-//Phát sóng thông báo đẩy Web App
+//web push noti
 router.post(
   '/broadcast-push',
   authenticateToken,
   authorizeRoles('ADMIN'),
+  validateBroadcastPush,
   notificationController.broadcastPush
 );
 
-//Phát sóng thông báo Email hàng loạt
+//email noti
 router.post(
   '/broadcast-email',
   authenticateToken,
   authorizeRoles('ADMIN'),
+  validateBroadcastEmail,
   notificationController.broadcastEmail
 );
 
-//Lấy danh sách thông báo của tài khoản hiện tại
+//get current account noti
 router.get(
   '/my',
   authenticateToken,
+  validateGetMyNotifications,
   notificationController.getMyNotifications
 );
 
-//Đánh dấu tất cả thông báo là đã đọc
 router.put(
   '/read-all',
   authenticateToken,
   notificationController.markAllAsRead
 );
 
-//Đánh dấu một thông báo cụ thể là đã đọc
+//makr one as read
 router.put(
   '/:id/read',
   authenticateToken,
+  validateMarkAsRead,
   notificationController.markAsRead
 );
 
