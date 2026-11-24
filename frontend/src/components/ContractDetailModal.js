@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getConfirmationRecordDetail, acceptConfirmationRecord } from '../services/confirmationRecordService';
 import timelineSettingService from '../services/timelineSettingService';
+import { translateVehicleTypeToVi } from '../utils/translations';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './modals/ConfirmModal';
 import {
@@ -298,7 +299,7 @@ const ContractDetailModal = ({ contractId, isOpen, onClose, onRefresh }) => {
                   <p className="pl-4 text-xs sm:text-sm text-black leading-relaxed">
                     1.1. Bên A đồng ý nhận trông giữ và Bên B đồng ý gửi phương tiện xe ô tô theo đúng quy cách thông tin sau:
                   </p>
-                  <p className="pl-8 text-xs sm:text-sm text-black">- Loại phương tiện / Dòng xe: <strong>{vehicleInfo.vehicle_type || 'Ô tô'}</strong></p>
+                  <p className="pl-8 text-xs sm:text-sm text-black">- Loại phương tiện / Dòng xe: <strong>{translateVehicleTypeToVi(vehicleInfo.vehicle_type) || 'Ô tô'}</strong></p>
                   <p className="pl-8 text-xs sm:text-sm text-black">- Biển kiểm soát: <strong>{vehicleInfo.license_plate || vehicleInfo.vehicle_info_raw || contract.reservation?.vehicle_info}</strong></p>
                   <p className="pl-8 text-xs sm:text-sm text-black">- Vị trí gửi đỗ: <strong>{rentalInfo.parking_spot || 'Vị trí đỗ tự do trong bãi'}</strong> tại {ownerInfo.facility_name || contract.reservation?.facility?.name}.</p>
                 </div>

@@ -111,7 +111,7 @@
   },
   "registrations": {
     "title": "Quản Lý Phê Duyệt Bãi Đỗ Xe",
-    "subtitle": "Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)",
+    "subtitle": "Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi",
     "totalCount": "Tổng cộng: {{count}} hồ sơ",
     "searchPlaceholder": "Tìm theo tên bãi xe, địa chỉ hoặc chủ bãi...",
     "tabs": {
@@ -125,7 +125,7 @@
     "table": {
       "id": "ID",
       "facilityName": "Cơ sở bãi đỗ xe",
-      "provider": "Chủ bãi (Provider)",
+      "provider": "Chủ bãi",
       "submittedDate": "Ngày gửi hồ sơ",
       "status": "Trạng thái",
       "actions": "Thao tác",
@@ -278,54 +278,71 @@
     }
   },
   "contracts": {
-    "title": "Quản Lý Hợp Đồng Hệ Thống",
-    "subtitle": "Theo dõi toàn bộ hợp đồng thuê bãi giữa Khách hàng và Chủ bãi xe",
+    "title": "Quản Lý Hợp Đồng Thuê",
+    "subtitle": "Danh sách tất cả hợp đồng và biên bản xác nhận điện tử được lưu trữ trên hệ thống.",
     "totalCount": "Tổng cộng: {{count}} hợp đồng",
-    "searchPlaceholder": "Tìm theo mã hợp đồng, tên bãi xe hoặc khách hàng...",
-    "ui": {
-      "loadError": "Không thể tải danh sách hợp đồng!",
+    "refresh": "Làm mới",
+    "loadError": "Không thể tải danh sách hợp đồng!",
+    "retry": "Thử lại",
+    "loading": "Đang tải danh sách hợp đồng...",
+    "kpis": {
+      "total": "Tổng hợp đồng",
+      "totalSub": "Toàn bộ trên hệ thống",
       "active": "Đang hiệu lực",
-      "pendingSignature": "Chờ khách ký",
-      "expired": "Hết hạn",
-      "cancelled": "Đã hủy",
-      "terminated": "Đã chấm dứt",
-      "title": "Quản Lý Hợp Đồng Thuê",
-      "subtitle": "Danh sách tất cả hợp đồng và biên bản xác nhận điện tử được lưu trữ trên hệ thống.",
-      "refresh": "Làm mới",
-      "totalContracts": "Tổng hợp đồng",
-      "allSystem": "Toàn bộ trên hệ thống",
-      "activeHint": "Hợp đồng đang thực hiện",
-      "pendingHint": "Chờ xác nhận từ người thuê",
-      "search": "Tìm",
+      "activeSub": "Hợp đồng đang thực hiện",
+      "pending": "Chờ khách ký",
+      "pendingSub": "Chờ xác nhận từ người thuê"
+    },
+    "filters": {
+      "searchPlaceholder": "Tìm theo mã HĐ, khách hàng, bãi xe, biển số...",
+      "searchButton": "Tìm",
       "allStatuses": "Tất cả trạng thái",
+      "statusActive": "Đang hiệu lực (ACTIVE)",
+      "statusPending": "Chờ khách ký (PENDING)",
+      "statusExpired": "Hết hạn (EXPIRED)",
+      "statusCancelled": "Đã hủy (CANCELLED)",
+      "statusTerminated": "Đã thanh lý (TERMINATED)",
       "from": "Từ:",
       "to": "Đến:",
-      "filter": "Lọc",
-      "clearFilters": "Xóa lọc",
-      "resetFilters": "Đặt lại bộ lọc",
-      "loading": "Đang tải danh sách hợp đồng...",
-      "retry": "Thử lại",
-      "empty": "Không tìm thấy hợp đồng nào",
-      "emptyHint": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
+      "filterButton": "Lọc",
+      "resetTitle": "Đặt lại bộ lọc",
+      "resetButton": "Xóa lọc"
+    },
+    "statuses": {
+      "ACTIVE": "Đang hiệu lực",
+      "PENDING_SIGNATURE": "Chờ khách ký",
+      "EXPIRED": "Hết hạn",
+      "CANCELLED": "Đã hủy",
+      "TERMINATED": "Đã thanh lý"
+    },
+    "empty": {
+      "title": "Không tìm thấy hợp đồng nào",
+      "subtitle": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+    },
+    "table": {
       "code": "Mã Hợp Đồng",
       "customer": "Khách Thuê (Bên B)",
       "facility": "Bãi Đỗ Xe (Bên A)",
-      "vehicleSpot": "Phương Tiện / Ô Đỗ",
-      "period": "Thời Hạn",
+      "vehicle": "Phương Tiện / Ô Đỗ",
+      "duration": "Thời Hạn",
       "status": "Trạng Thái",
       "actions": "Thao Tác",
-      "details": "Chi tiết",
-      "previous": "Trước",
-      "next": "Sau",
-      "created": "Lập:",
-      "provider": "Chủ bãi:",
-      "spot": "Ô đỗ:",
-      "unknownCustomer": "Khách hàng",
-      "unknownFacility": "Bãi đỗ xe",
+      "createdAt": "Lập:",
+      "customerFallback": "Khách hàng",
+      "facilityFallback": "Bãi đỗ xe",
+      "ownerPrefix": "Chủ bãi:",
       "unknownPlate": "Chưa rõ biển số",
-      "freeSpot": "Tự do",
-      "searchPlaceholder": "Tìm theo mã HĐ, khách hàng, bãi xe, biển số...",
-      "pageSummary": "Hiển thị {{shown}} / {{total}} hợp đồng (Trang {{page}} / {{pages}})"
+      "spotLabel": "Ô đỗ:",
+      "spotFallback": "Tự do",
+      "detailButton": "Chi tiết"
+    },
+    "pagination": {
+      "showing": "Hiển thị",
+      "of": "/",
+      "contracts": "hợp đồng",
+      "page": "Trang",
+      "prev": "Trước",
+      "next": "Sau"
     }
   },
   "complaints": {
@@ -756,80 +773,154 @@
   "broadcast": {
     "title": "Phát Thông Báo Toàn Hệ Thống",
     "subtitle": "Gửi thông báo khẩn cấp hoặc tin tức đến toàn bộ người dùng ParkLink",
-    "ui": {
-      "webTab": "Thông báo trên Web",
-      "emailTab": "Thông báo qua Email",
-      "webTitle": "Gửi thông báo trên hệ thống",
-      "webSubtitle": "Gửi thông báo trực tiếp đến người dùng đang hoạt động trên nền tảng",
-      "online": "Thông báo trực tuyến",
-      "recipient": "Đối tượng nhận thông báo",
-      "emailRecipient": "Đối tượng nhận email",
-      "allUsers": "Tất cả người dùng",
-      "customers": "Khách hàng thuê bãi",
-      "providers": "Chủ bãi đỗ xe",
-      "category": "Loại thông báo",
-      "maintenance": "Bảo trì hệ thống",
-      "policyUpdate": "Cập nhật chính sách & Điều khoản",
-      "promotion": "Khuyến mãi & Tin tức nền tảng",
-      "general": "Thông báo chung",
-      "priority": "Mức độ ưu tiên",
-      "normal": "Bình thường",
-      "important": "Quan trọng",
-      "urgent": "Khẩn cấp",
-      "notificationTitle": "Tiêu đề thông báo",
-      "notificationContent": "Nội dung thông báo",
-      "characters": "ký tự",
-      "displayOptions": "Tùy chọn hiển thị:",
-      "showToast": "Hiển thị thông báo nổi trên màn hình",
-      "saveHistory": "Lưu vào lịch sử thông báo",
-      "webSent": "Gửi thông báo thành công!",
-      "taskId": "Mã tác vụ:",
-      "recipients": "Số người nhận:",
-      "time": "Thời gian:",
-      "refresh": "Làm mới",
-      "sendTestSelf": "Gửi thử cho tôi",
-      "sendNotification": "Gửi thông báo",
-      "emailTitle": "Gửi thông báo qua Email",
-      "emailSubtitle": "Soạn thảo và gửi thông báo trực tiếp tới email người dùng",
-      "emailService": "Dịch vụ Email",
-      "emailMaintenance": "Bảo trì & Cập nhật kỹ thuật",
-      "emailPolicy": "Thông báo Thay đổi chính sách",
-      "emailNews": "Bản tin ParkLink & Khuyến mãi",
-      "emailSubject": "Tiêu đề Email",
-      "emailContent": "Nội dung Email",
-      "htmlHint": "Hỗ trợ nội dung văn bản hoặc thẻ định dạng HTML cơ bản (&lt;p&gt;, &lt;strong&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;, &lt;br&gt;...)",
-      "extraOptions": "Tùy chọn bổ sung:",
-      "signature": "Đính kèm chữ ký ParkLink & Hotline 1900",
-      "privacy": "Đính kèm thông tin bảo mật & quyền riêng tư",
-      "emailQueued": "Đã khởi tạo tác vụ gửi Email!",
-      "queuedCount": "Số lượng email dự kiến gửi:",
-      "createdAt": "Thời gian tạo:",
-      "sendEmailTest": "Gửi thử nghiệm",
-      "sendEmail": "Gửi Email thông báo",
-      "webTitleRequired": "Tiêu đề thông báo không được để trống!",
-      "webContentRequired": "Nội dung thông báo không được để trống!",
-      "webTestSuccess": "Đã gửi thông báo thử nghiệm thành công!",
-      "webSuccess": "Đã gửi thông báo thành công tới {{count}} người dùng!",
-      "webError": "Lỗi gửi thông báo!",
-      "emailSubjectRequired": "Tiêu đề Email không được để trống!",
-      "emailContentRequired": "Nội dung thư không được để trống!",
-      "invalidTestEmail": "Địa chỉ email nhận thử nghiệm không hợp lệ (cần chứa ký tự @)!",
-      "emailTestSuccess": "Đã gửi email thử nghiệm thành công tới hộp thư {{email}}!",
-      "emailSuccess": "Đã khởi tạo tác vụ gửi email tới {{count}} người dùng!",
-      "emailError": "Lỗi gửi email thông báo!",
-      "webTitlePlaceholder": "VD: Thông báo bảo trì nâng cấp hệ thống 00:00 - 02:00 ngày 25/11",
-      "webContentPlaceholder": "Nhập nội dung thông báo chi tiết gửi tới người dùng...",
-      "emailSubjectPlaceholder": "VD: [ParkLink] Thông báo cập nhật chính sách và lịch bảo trì hệ thống",
-      "emailContentPlaceholder": "<p>Kính gửi Quý người dùng và Quý Đối tác ParkLink,</p><p>ParkLink trân trọng thông báo lịch nâng cấp định kỳ hạ tầng cổng thanh toán và quản lý dữ liệu bãi xe...</p>",
-      "testEmailPlaceholder": "Email nhận thử (VD: test@gmail.com)...",
-      "characterCount": "{{count}}/{{max}} ký tự",
-      "recipientsCount": "{{count}} người dùng",
-      "queuedEmails": "{{count}} địa chỉ"
+    "tabs": {
+      "web": "Thông báo trên Web",
+      "email": "Thông báo qua Email"
+    },
+    "web": {
+      "headerTitle": "Gửi thông báo trên hệ thống",
+      "headerSubtitle": "Gửi thông báo trực tiếp đến người dùng đang hoạt động trên nền tảng",
+      "liveBadge": "Thông báo trực tuyến",
+      "targetLabel": "Đối tượng nhận thông báo",
+      "targets": {
+        "ALL": "Tất cả người dùng",
+        "CUSTOMER": "Khách hàng thuê bãi",
+        "PROVIDER": "Chủ bãi đỗ xe"
+      },
+      "categoryLabel": "Loại thông báo",
+      "categories": {
+        "maintenance": "Bảo trì hệ thống",
+        "policy": "Cập nhật chính sách & Điều khoản",
+        "promo": "Khuyến mãi & Tin tức nền tảng",
+        "general": "Thông báo chung"
+      },
+      "priorityLabel": "Mức độ ưu tiên",
+      "priorities": {
+        "normal": "Bình thường",
+        "important": "Quan trọng",
+        "urgent": "Khẩn cấp"
+      },
+      "titleLabel": "Tiêu đề thông báo",
+      "titleCounter": "{{count}}/120 ký tự",
+      "titlePlaceholder": "VD: Thông báo bảo trì nâng cấp hệ thống 00:00 - 02:00 ngày 25/11",
+      "contentLabel": "Nội dung thông báo",
+      "contentCounter": "{{count}}/500 ký tự",
+      "contentPlaceholder": "Nhập nội dung thông báo chi tiết gửi tới người dùng...",
+      "optionsLabel": "Tùy chọn hiển thị:",
+      "showToastOption": "Hiển thị thông báo nổi trên màn hình",
+      "saveToDbOption": "Lưu vào lịch sử thông báo",
+      "summary": {
+        "title": "Gửi thông báo thành công!",
+        "taskId": "Mã tác vụ:",
+        "recipients": "Số người nhận:",
+        "recipientsValue": "{{count}} người dùng",
+        "time": "Thời gian:"
+      },
+      "reset": "Làm mới",
+      "testButton": "Gửi thử cho tôi",
+      "submitButton": "Gửi thông báo",
+      "validation": {
+        "titleRequired": "Tiêu đề thông báo không được để trống!",
+        "contentRequired": "Nội dung thông báo không được để trống!",
+        "testSuccess": "Đã gửi thông báo thử nghiệm thành công!",
+        "sendSuccess": "Đã gửi thông báo thành công tới {{count}} người dùng!",
+        "allUsers": "tất cả",
+        "sendError": "Lỗi gửi thông báo!"
+      }
+    },
+    "email": {
+      "headerTitle": "Gửi thông báo qua Email",
+      "headerSubtitle": "Soạn thảo và gửi thông báo trực tiếp tới email người dùng",
+      "serviceBadge": "Dịch vụ Email",
+      "targetLabel": "Đối tượng nhận email",
+      "categoryLabel": "Loại thông báo",
+      "categories": {
+        "maintenance": "Bảo trì & Cập nhật kỹ thuật",
+        "policy": "Thông báo Thay đổi chính sách",
+        "newsletter": "Bản tin ParkLink & Khuyến mãi"
+      },
+      "subjectLabel": "Tiêu đề Email",
+      "subjectCounter": "{{count}}/120 ký tự",
+      "subjectPlaceholder": "VD: [ParkLink] Thông báo cập nhật chính sách và lịch bảo trì hệ thống",
+      "contentLabel": "Nội dung Email",
+      "contentCounter": "{{count}}/5,000 ký tự",
+      "contentPlaceholder": "<p>Kính gửi Quý người dùng và Quý Đối tác ParkLink,</p><p>ParkLink trân trọng thông báo lịch nâng cấp định kỳ hạ tầng cổng thanh toán và quản lý dữ liệu bãi xe...</p>",
+      "htmlHint": "Hỗ trợ nội dung văn bản hoặc thẻ định dạng HTML cơ bản (<p>, <strong>, <ul>, <li>, <a>, <br>...)",
+      "optionsLabel": "Tùy chọn bổ sung:",
+      "attachSignature": "Đính kèm chữ ký ParkLink & Hotline 1900",
+      "privacyNote": "Đính kèm thông tin bảo mật & quyền riêng tư",
+      "summary": {
+        "title": "Đã khởi tạo tác vụ gửi Email!",
+        "taskId": "Mã tác vụ:",
+        "queued": "Số lượng email dự kiến gửi:",
+        "queuedValue": "{{count}} địa chỉ",
+        "time": "Thời gian tạo:"
+      },
+      "reset": "Làm mới",
+      "testPlaceholder": "Email nhận thử (VD: test@gmail.com)...",
+      "testButton": "Gửi thử nghiệm",
+      "submitButton": "Gửi Email thông báo",
+      "validation": {
+        "subjectRequired": "Tiêu đề Email không được để trống!",
+        "contentRequired": "Nội dung thư không được để trống!",
+        "invalidTestEmail": "Địa chỉ email nhận thử nghiệm không hợp lệ (cần chứa ký tự @)!",
+        "testSuccess": "Đã gửi email thử nghiệm thành công tới hộp thư {{email}}!",
+        "sendSuccess": "Đã khởi tạo tác vụ gửi email tới {{count}} người dùng!",
+        "sendError": "Lỗi gửi email thông báo!"
+      }
     }
   },
   "timelineSettings": {
-    "title": "Cấu Hình Thời Hạn Hệ Thống",
-    "subtitle": "Thiết lập thời hạn tự động hủy yêu cầu, hạn thanh toán và gia hạn"
+    "badge": "Quản Trị Hệ Thống",
+    "title": "Cấu Hình Thời Hạn Quy Trình Thuê Bãi Xe",
+    "subtitle": "Thiết lập thời hạn tự động xử lý cho chu trình thuê bãi xe: thời gian phản hồi yêu cầu đặt chỗ, lập hợp đồng điện tử, ký hợp đồng và thời hạn báo trước khi hủy.",
+    "lastUpdated": "Cập nhật gần nhất:",
+    "by": "bởi {{name}}",
+    "system": "Hệ thống",
+    "you": "Bạn",
+    "loading": "Đang tải cấu hình thời hạn...",
+    "duration": "Thời lượng:",
+    "unit": "Đơn vị:",
+    "units": {
+      "MINUTES": "Phút",
+      "HOURS": "Giờ",
+      "DAYS": "Ngày"
+    },
+    "targets": {
+      "provider": "Áp dụng cho chủ bãi xe",
+      "customer": "Áp dụng cho khách thuê",
+      "both": "Áp dụng cho cả hai bên"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Thời hạn phản hồi yêu cầu đặt chỗ",
+        "description": "Thời gian tối đa để chủ bãi phản hồi (Chấp nhận hoặc Từ chối) yêu cầu thuê của khách. Nếu quá thời gian này, hệ thống sẽ tự động hủy yêu cầu."
+      },
+      "contractCreation": {
+        "title": "Thời hạn lập hợp đồng sau khi duyệt",
+        "description": "Thời gian để chủ bãi khởi tạo hợp đồng điện tử sau khi đã chấp nhận yêu cầu. Nếu quá hạn này, yêu cầu thuê sẽ tự động hủy."
+      },
+      "contractSigning": {
+        "title": "Thời hạn khách hàng ký hợp đồng",
+        "description": "Thời gian để khách hàng kiểm tra và ký xác nhận hợp đồng điện tử. Quá hạn này mà khách chưa ký, hợp đồng và yêu cầu thuê sẽ tự động hủy."
+      },
+      "terminationNotice": {
+        "title": "Thời hạn báo trước khi chấm dứt hợp đồng",
+        "description": "Khoảng thời gian tối thiểu một bên cần gửi thông báo trước khi muốn chấm dứt hợp đồng thuê trước thời hạn thỏa thuận."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Khôi phục mặc định",
+      "saving": "Đang lưu cấu hình...",
+      "save": "Lưu Cấu Hình Thời Hạn"
+    },
+    "messages": {
+      "loadError": "Không thể tải cấu hình thời hạn hệ thống!",
+      "resetSuccess": "Đã đặt lại các giá trị mặc định. Nhấn \"Lưu Cấu Hình Thời Hạn\" để xác nhận.",
+      "validationError": "Các giá trị thời hạn phải là số dương lớn hơn 0!",
+      "updateSuccess": "Cập nhật cấu hình thời hạn hệ thống thành công!",
+      "updateError": "Lỗi khi lưu cấu hình thời hạn!"
+    }
   },
   "policies": {
     "title": "Chính Sách & Điều Khoản Hệ Thống",
@@ -989,58 +1080,6 @@
       "manageFacilitiesDesc": "Kiểm duyệt và thiết lập danh sách cơ sở bãi xe"
     }
   },
-  "timelineSettings": {
-    "badge": "Quản Trị Hệ Thống",
-    "title": "Cấu Hình Thời Hạn Quy Trình Thuê Bãi Xe",
-    "subtitle": "Thiết lập thời hạn tự động xử lý cho chu trình thuê bãi xe: thời gian phản hồi yêu cầu đặt chỗ, lập hợp đồng điện tử, ký hợp đồng và thời hạn báo trước khi hủy.",
-    "lastUpdated": "Cập nhật gần nhất:",
-    "by": "bởi {{name}}",
-    "system": "Hệ thống",
-    "you": "Bạn",
-    "loading": "Đang tải cấu hình thời hạn...",
-    "duration": "Thời lượng:",
-    "unit": "Đơn vị:",
-    "units": {
-      "MINUTES": "Phút",
-      "HOURS": "Giờ",
-      "DAYS": "Ngày"
-    },
-    "targets": {
-      "provider": "Áp dụng cho chủ bãi xe",
-      "customer": "Áp dụng cho khách thuê",
-      "both": "Áp dụng cho cả hai bên"
-    },
-    "fields": {
-      "reservationResponse": {
-        "title": "Thời hạn phản hồi yêu cầu đặt chỗ",
-        "description": "Thời gian tối đa để chủ bãi phản hồi (Chấp nhận hoặc Từ chối) yêu cầu thuê của khách. Nếu quá thời gian này, hệ thống sẽ tự động hủy yêu cầu."
-      },
-      "contractCreation": {
-        "title": "Thời hạn lập hợp đồng sau khi duyệt",
-        "description": "Thời gian để chủ bãi khởi tạo hợp đồng điện tử sau khi đã chấp nhận yêu cầu. Nếu quá hạn này, yêu cầu thuê sẽ tự động hủy."
-      },
-      "contractSigning": {
-        "title": "Thời hạn khách hàng ký hợp đồng",
-        "description": "Thời gian để khách hàng kiểm tra và ký xác nhận hợp đồng điện tử. Quá hạn này mà khách chưa ký, hợp đồng và yêu cầu thuê sẽ tự động hủy."
-      },
-      "terminationNotice": {
-        "title": "Thời hạn báo trước khi chấm dứt hợp đồng",
-        "description": "Khoảng thời gian tối thiểu một bên cần gửi thông báo trước khi muốn chấm dứt hợp đồng thuê trước thời hạn thỏa thuận."
-      }
-    },
-    "buttons": {
-      "resetDefaults": "Khôi phục mặc định",
-      "saving": "Đang lưu cấu hình...",
-      "save": "Lưu Cấu Hình Thời Hạn"
-    },
-    "messages": {
-      "loadError": "Không thể tải cấu hình thời hạn hệ thống!",
-      "resetSuccess": "Đã đặt lại các giá trị mặc định. Nhấn \"Lưu Cấu Hình Thời Hạn\" để xác nhận.",
-      "validationError": "Các giá trị thời hạn phải là số dương lớn hơn 0!",
-      "updateSuccess": "Cập nhật cấu hình thời hạn hệ thống thành công!",
-      "updateError": "Lỗi khi lưu cấu hình thời hạn!"
-    }
-  },
   "amenitySettings": {
     "title": "Quản Lý Tiện Ích Bãi Xe",
     "subtitle": "Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.",
@@ -1132,6 +1171,149 @@
       "createSuccess": "Tạo mới tiện ích thành công!",
       "updateSuccess": "Cập nhật tiện ích thành công!",
       "actionFailed": "Thao tác không thành công!"
+    }
+  },
+  "registrationDetail": {
+    "backToInspections": "Quay lại Công Việc Khảo Sát",
+    "backToRegistrations": "Quay lại Danh Sách Duyệt Bãi Đỗ Xe",
+    "registrationId": "Mã hồ sơ:",
+    "recordBadge": "HỒ SƠ #{{id}}",
+    "submittedOn": "Gửi ngày:",
+    "statuses": {
+      "pendingReview": "Chờ duyệt sơ bộ",
+      "preparing": "Đang chờ khảo sát thực địa",
+      "inspected": "Đã khảo sát - Chờ duyệt",
+      "approved": "Đã phê duyệt chính thức",
+      "rejected": "Đã từ chối",
+      "unknown": "Không xác định"
+    },
+    "stepper": {
+      "title": "Tiến trình xét duyệt hồ sơ",
+      "step1Title": "Tiếp nhận hồ sơ",
+      "step1Desc": "Provider gửi thông tin ban đầu",
+      "step2Title": "Duyệt sơ bộ",
+      "step2Desc": "Admin kiểm tra hồ sơ hợp lệ",
+      "step3Title": "Khảo sát thực địa",
+      "step3Desc": "Kiểm tra mặt bằng & chụp ảnh",
+      "step4Title": "Duyệt chính thức",
+      "step4Desc": "Kích hoạt tài khoản bãi xe"
+    },
+    "facilityInfo": {
+      "title": "Chi Tiết Cơ Sở Bãi Đỗ Xe",
+      "facilityName": "Tên cơ sở",
+      "capacityAfterSurvey": "Sức chứa sau khảo sát",
+      "capacityProposed": "Sức chứa đề xuất ban đầu",
+      "capacityUnit": "{{count}} vị trí đỗ xe",
+      "desiredPrice": "Giá thuê mong muốn",
+      "priceUnit": "{{price}} VNĐ / tháng",
+      "platformFee": "Phí nền tảng",
+      "feeUnit": "{{fee}} VNĐ",
+      "addressAfterSurvey": "Địa chỉ sau khảo sát",
+      "addressRegistered": "Địa chỉ đã khai báo",
+      "gps": "Tọa độ GPS",
+      "openGoogleMaps": "Mở Google Maps →",
+      "amenities": "Tiện ích đi kèm",
+      "defaultAmenity": "Tiện ích"
+    },
+    "surveyReport": {
+      "title": "Báo Cáo Kết Quả Khảo Sát Thực Địa",
+      "subtitle": "Nhập sức chứa, xác định vị trí thực tế và đính kèm 4 hình ảnh hiện trạng bắt buộc của bãi xe",
+      "capacityLabel": "Sức chứa thực tế (Số xe)",
+      "capacityPlaceholder": "Ví dụ: 30",
+      "capacityHint": "Số chỗ đỗ xe thực tế bạn đo đạc, kiểm tra tại hiện trường.",
+      "locationLabel": "Vị trí thực tế của bãi xe",
+      "locationHint": "Kiểm tra địa chỉ đã khai báo, rồi kéo ghim hoặc chọn lại vị trí chính xác trên bản đồ.",
+      "photosLabel": "Hình ảnh hiện trạng thực tế (Bắt buộc 4 góc độ)",
+      "photo1Title": "1. Đường vào bãi xe",
+      "photo1Hint": "Chụp rõ lối đi, độ rộng đường vào",
+      "photo2Title": "2. Toàn cảnh bãi đỗ xe",
+      "photo2Hint": "Chụp bao quát mặt bằng, sức chứa",
+      "photo3Title": "3. Cổng bãi đỗ xe",
+      "photo3Hint": "Chụp cổng ra vào, biển báo nếu có",
+      "photo4Title": "4. Góc độ khác / Mặt bằng",
+      "photo4Hint": "Góc chụp bổ sung mặt sàn, mái che",
+      "selected": "Đã chọn",
+      "changePhoto": "Đổi ảnh",
+      "deletePhoto": "Xóa",
+      "choosePhoto": "Chọn ảnh hoặc chụp ảnh",
+      "photoTypes": "PNG, JPG, JPEG",
+      "additionalTitle": "5. Hình ảnh bổ sung (Tùy chọn)",
+      "additionalHint": "Tải thêm nhiều hình ảnh góc chụp khác nếu cần",
+      "additionalCount": "{{count}} ảnh",
+      "addMorePhoto": "Thêm ảnh",
+      "submitting": "Đang tải lên Cloudinary & Gửi...",
+      "submit": "Gửi Kết Quả Khảo Sát"
+    },
+    "gallery": {
+      "title": "Hình Ảnh Cơ Sở & Khảo Sát Thực Địa",
+      "totalPhotos": "Tổng: {{count}} ảnh",
+      "primary": "Ảnh chính",
+      "viewZoom": "Xem ảnh phóng to",
+      "noPhotos": "Chưa có hình ảnh được tải lên cho bãi đỗ xe này.",
+      "inspectorWillUpdate": "Nhân viên khảo sát sẽ cập nhật ảnh sau khi hoàn tất kiểm tra thực địa tại biểu mẫu bên trên."
+    },
+    "provider": {
+      "title": "Thông Tin Chủ Bãi",
+      "role": "Đối tác Chủ Bãi Xe",
+      "unupdated": "Chưa cập nhật",
+      "emailNA": "N/A"
+    },
+    "inspector": {
+      "title": "NV Khảo Sát Thực Địa",
+      "unassigned": "Chưa phân công",
+      "notSpecified": "Chưa chỉ định",
+      "change": "Đổi NV",
+      "assign": "Phân công",
+      "addressNA": "Chưa cập nhật địa chỉ",
+      "waitingAssignment": "Hồ sơ đang chờ duyệt sơ bộ và phân công nhân viên khảo sát thực tế.",
+      "noInspectorNotice": "Bãi xe chưa có nhân viên khảo sát phụ trách cụ thể. Bạn có thể phân công ngay."
+    },
+    "actions": {
+      "titleInspector": "Nhiệm Vụ Khảo Sát",
+      "titleAdmin": "Quyết Định Xét Duyệt",
+      "surveyWorkflowTitle": "Quy trình thực địa:",
+      "surveyStep1": "Kiểm tra thông tin vị trí & độ rộng lối đi",
+      "surveyStep2": "Đo đạc sức chứa thực tế",
+      "surveyStep3": "Chụp 4 ảnh hiện trạng bắt buộc",
+      "surveyStep4": "Điền biểu mẫu báo cáo bên trái và gửi kết quả",
+      "goToReportForm": "Đến Biểu Mẫu Báo Cáo ↓",
+      "fillReport": "Điền Báo Cáo Thực Địa",
+      "surveyReportSubmitted": "Đã nộp báo cáo khảo sát",
+      "surveyCompleted": "Đã hoàn thành khảo sát",
+      "waitingAdminApproval": "Báo cáo thực địa đã được gửi thành công. Đang chờ Ban Quản Trị (Admin) xem xét và phê duyệt chính thức.",
+      "approvedNotice": "Bãi xe đã được duyệt!",
+      "currentStatus": "Trạng thái hiện tại:",
+      "pendingNotice": "Admin cần kiểm tra tính hợp lệ của thông tin và chọn nhân viên khảo sát thực địa phụ trách.",
+      "pendingPreliminary": "Hồ sơ đang chờ duyệt sơ bộ:",
+      "preliminaryAndAssign": "Duyệt sơ bộ & Giao khảo sát",
+      "rejectApplication": "Từ chối hồ sơ này",
+      "inSurveyNotice": "Đang khảo sát thực địa:",
+      "assignedTo": "Nhân viên phụ trách: {{name}} (SĐT: {{phone}}).",
+      "noInspectorAssignedYet": "Chưa có nhân viên khảo sát nào được chỉ định.",
+      "changeInspector": "Đổi nhân viên khảo sát",
+      "assignInspector": "Gán nhân viên khảo sát",
+      "surveyDoneNotice": "Dữ liệu thực địa đã được tải lên đầy đủ. Admin có thể xem xét và nhấn Duyệt chính thức để cấp mật khẩu và thông báo thanh toán cho Provider.",
+      "finalizeAndIssue": "Hoàn tất duyệt & Cấp mật khẩu",
+      "finalizeTitle": "Duyệt chính thức & Cấp mật khẩu",
+      "approvedDesc": "Cơ sở đã được duyệt và tài khoản Provider đã được cấp quyền truy cập hệ thống.",
+      "rejectedTitle": "Hồ sơ bị từ chối",
+      "rejectedDesc": "Yêu cầu đăng ký đã bị từ chối và email lý do đã được chuyển đến Provider."
+    },
+    "loading": "Đang tải chi tiết hồ sơ...",
+    "notFoundTitle": "Không tìm thấy thông tin",
+    "notFoundDesc": "Hồ sơ đăng ký không tồn tại hoặc đã bị xóa.",
+    "backToList": "Quay lại danh sách",
+    "retry": "Thử lại",
+    "alerts": {
+      "reportSuccess": "Gửi báo cáo khảo sát thực địa thành công! Đã cập nhật dữ liệu cơ sở.",
+      "reportError": "Lỗi gửi báo cáo: {{message}}",
+      "finalizeSuccess": "Đã duyệt chính thức! Email kèm thông tin thanh toán đã gửi cho Provider.",
+      "rejectReasonRequired": "Vui lòng nhập lý do từ chối!",
+      "rejectSuccess": "Đã từ chối hồ sơ đăng ký thành công!",
+      "actionFailed": "Thao tác thất bại: {{message}}",
+      "preliminarySuccess": "Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.",
+      "reassignSuccess": "Đã phân công lại nhân viên khảo sát thành công!",
+      "generalError": "Có lỗi xảy ra khi xử lý!"
     }
   }
 }

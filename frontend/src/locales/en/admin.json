@@ -278,54 +278,71 @@
     }
   },
   "contracts": {
-    "title": "Platform Contract Management",
-    "subtitle": "Track all monthly parking rental contracts between Customers and Providers",
+    "title": "Rental Contract Management",
+    "subtitle": "List of all electronic confirmation records and rental contracts stored in the system.",
     "totalCount": "Total: {{count}} contracts",
-    "searchPlaceholder": "Search by contract code, facility name or customer...",
-    "ui": {
-      "loadError": "Unable to load contracts.",
+    "refresh": "Refresh",
+    "loadError": "Unable to load rental contracts!",
+    "retry": "Retry",
+    "loading": "Loading rental contracts...",
+    "kpis": {
+      "total": "Total Contracts",
+      "totalSub": "All contracts on platform",
       "active": "Active",
-      "pendingSignature": "Awaiting customer signature",
-      "expired": "Expired",
-      "cancelled": "Cancelled",
-      "terminated": "Terminated",
-      "title": "Rental Contract Management",
-      "subtitle": "All contracts and electronic confirmation records stored in the system.",
-      "refresh": "Refresh",
-      "totalContracts": "Total Contracts",
-      "allSystem": "Across the system",
-      "activeHint": "Contracts in progress",
-      "pendingHint": "Awaiting tenant confirmation",
-      "search": "Search",
+      "activeSub": "Currently active contracts",
+      "pending": "Pending Signature",
+      "pendingSub": "Awaiting customer confirmation"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by contract code, customer, facility, plate...",
+      "searchButton": "Search",
       "allStatuses": "All statuses",
+      "statusActive": "Active (ACTIVE)",
+      "statusPending": "Pending Signature (PENDING)",
+      "statusExpired": "Expired (EXPIRED)",
+      "statusCancelled": "Cancelled (CANCELLED)",
+      "statusTerminated": "Terminated (TERMINATED)",
       "from": "From:",
       "to": "To:",
-      "filter": "Filter",
-      "clearFilters": "Clear filters",
-      "resetFilters": "Reset filters",
-      "loading": "Loading contracts...",
-      "retry": "Retry",
-      "empty": "No contracts found",
-      "emptyHint": "Try changing the filters or search term",
+      "filterButton": "Filter",
+      "resetTitle": "Reset filters",
+      "resetButton": "Clear"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "PENDING_SIGNATURE": "Pending Signature",
+      "EXPIRED": "Expired",
+      "CANCELLED": "Cancelled",
+      "TERMINATED": "Terminated"
+    },
+    "empty": {
+      "title": "No contracts found",
+      "subtitle": "Try adjusting your filters or search keywords"
+    },
+    "table": {
       "code": "Contract Code",
-      "customer": "Tenant (Party B)",
+      "customer": "Customer (Party B)",
       "facility": "Parking Facility (Party A)",
-      "vehicleSpot": "Vehicle / Parking Spot",
-      "period": "Term",
+      "vehicle": "Vehicle / Spot",
+      "duration": "Term",
       "status": "Status",
       "actions": "Actions",
-      "details": "Details",
-      "previous": "Previous",
-      "next": "Next",
-      "created": "Created:",
-      "provider": "Provider:",
-      "spot": "Spot:",
-      "unknownCustomer": "Customer",
-      "unknownFacility": "Parking facility",
-      "unknownPlate": "Unknown license plate",
-      "freeSpot": "Unassigned",
-      "searchPlaceholder": "Search by contract code, customer, facility, or plate...",
-      "pageSummary": "Showing {{shown}} / {{total}} contracts (Page {{page}} / {{pages}})"
+      "createdAt": "Issued:",
+      "customerFallback": "Customer",
+      "facilityFallback": "Parking Facility",
+      "ownerPrefix": "Owner:",
+      "unknownPlate": "Unknown plate",
+      "spotLabel": "Spot:",
+      "spotFallback": "Free-choice",
+      "detailButton": "Details"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "contracts": "contracts",
+      "page": "Page",
+      "prev": "Prev",
+      "next": "Next"
     }
   },
   "complaints": {
@@ -756,80 +773,154 @@
   "broadcast": {
     "title": "System Broadcast Announcements",
     "subtitle": "Send urgent alerts or announcements to all ParkLink users",
-    "ui": {
-      "webTab": "Web Notifications",
-      "emailTab": "Email Notifications",
-      "webTitle": "Send a system notification",
-      "webSubtitle": "Send notifications to active platform users",
-      "online": "Online notification",
-      "recipient": "Recipients",
-      "emailRecipient": "Email recipients",
-      "allUsers": "All users",
-      "customers": "Parking customers",
-      "providers": "Parking providers",
-      "category": "Notification category",
-      "maintenance": "System maintenance",
-      "policyUpdate": "Policy and terms update",
-      "promotion": "Promotions and platform news",
-      "general": "General notification",
-      "priority": "Priority",
-      "normal": "Normal",
-      "important": "Important",
-      "urgent": "Urgent",
-      "notificationTitle": "Notification title",
-      "notificationContent": "Notification content",
-      "characters": "characters",
-      "displayOptions": "Display options:",
-      "showToast": "Show pop-up notification on screen",
-      "saveHistory": "Save to notification history",
-      "webSent": "Notification sent successfully!",
-      "taskId": "Task ID:",
-      "recipients": "Recipients:",
-      "time": "Time:",
-      "refresh": "Reset",
-      "sendTestSelf": "Send a test to me",
-      "sendNotification": "Send notification",
-      "emailTitle": "Send an email notification",
-      "emailSubtitle": "Compose and send notifications to user email addresses",
-      "emailService": "Email service",
-      "emailMaintenance": "Maintenance and technical updates",
-      "emailPolicy": "Policy change notice",
-      "emailNews": "ParkLink newsletter and promotions",
-      "emailSubject": "Email subject",
-      "emailContent": "Email content",
-      "htmlHint": "Supports plain text or basic HTML tags (<p>, <strong>, <ul>, <li>, <a>, <br>...)",
-      "extraOptions": "Additional options:",
-      "signature": "Include ParkLink signature and hotline 1900",
-      "privacy": "Include privacy and security information",
-      "emailQueued": "Email delivery task created!",
-      "queuedCount": "Emails queued:",
-      "createdAt": "Created at:",
-      "sendEmailTest": "Send test email",
-      "sendEmail": "Send email notification",
-      "webTitleRequired": "Notification title is required.",
-      "webContentRequired": "Notification content is required.",
-      "webTestSuccess": "Test notification sent successfully!",
-      "webSuccess": "Notification sent to {{count}} users!",
-      "webError": "Unable to send notification.",
-      "emailSubjectRequired": "Email subject is required.",
-      "emailContentRequired": "Email content is required.",
-      "invalidTestEmail": "Enter a valid test email address.",
-      "emailTestSuccess": "Test email sent to {{email}}!",
-      "emailSuccess": "Email delivery queued for {{count}} users!",
-      "emailError": "Unable to send email notification.",
-      "webTitlePlaceholder": "Example: Scheduled maintenance from 00:00 to 02:00 on 25/11",
-      "webContentPlaceholder": "Enter the notification message for users...",
-      "emailSubjectPlaceholder": "Example: [ParkLink] Policy update and scheduled maintenance",
-      "emailContentPlaceholder": "<p>Dear ParkLink users and partners,</p><p>We are writing to announce scheduled maintenance for the payment and facility management systems...</p>",
-      "testEmailPlaceholder": "Test email (e.g. test@gmail.com)...",
-      "characterCount": "{{count}}/{{max}} characters",
-      "recipientsCount": "{{count}} users",
-      "queuedEmails": "{{count}} addresses"
+    "tabs": {
+      "web": "Web Push Notification",
+      "email": "Email Broadcast"
+    },
+    "web": {
+      "headerTitle": "Send System Web Notification",
+      "headerSubtitle": "Send real-time notifications directly to active users on the platform",
+      "liveBadge": "Live Notification",
+      "targetLabel": "Target Audience",
+      "targets": {
+        "ALL": "All users",
+        "CUSTOMER": "Customers (Renters)",
+        "PROVIDER": "Parking Providers"
+      },
+      "categoryLabel": "Notification Type",
+      "categories": {
+        "maintenance": "System Maintenance",
+        "policy": "Policy & Terms Update",
+        "promo": "Promotions & Platform News",
+        "general": "General Announcement"
+      },
+      "priorityLabel": "Priority Level",
+      "priorities": {
+        "normal": "Normal",
+        "important": "Important",
+        "urgent": "Urgent"
+      },
+      "titleLabel": "Notification Title",
+      "titleCounter": "{{count}}/120 characters",
+      "titlePlaceholder": "e.g., Scheduled system maintenance 00:00 - 02:00 on Nov 25",
+      "contentLabel": "Notification Content",
+      "contentCounter": "{{count}}/500 characters",
+      "contentPlaceholder": "Enter detailed notification message to send to users...",
+      "optionsLabel": "Display options:",
+      "showToastOption": "Show floating toast alert on screen",
+      "saveToDbOption": "Save to notification history",
+      "summary": {
+        "title": "Notification sent successfully!",
+        "taskId": "Task ID:",
+        "recipients": "Recipients:",
+        "recipientsValue": "{{count}} users",
+        "time": "Timestamp:"
+      },
+      "reset": "Reset",
+      "testButton": "Send Test to Me",
+      "submitButton": "Send Notification",
+      "validation": {
+        "titleRequired": "Notification title cannot be empty!",
+        "contentRequired": "Notification content cannot be empty!",
+        "testSuccess": "Test notification sent successfully!",
+        "sendSuccess": "Notification sent successfully to {{count}} users!",
+        "allUsers": "all",
+        "sendError": "Failed to send notification!"
+      }
+    },
+    "email": {
+      "headerTitle": "Send Email Broadcast",
+      "headerSubtitle": "Compose and send announcements directly to users' email inboxes",
+      "serviceBadge": "Email Service",
+      "targetLabel": "Email Recipients",
+      "categoryLabel": "Announcement Type",
+      "categories": {
+        "maintenance": "Maintenance & Technical Updates",
+        "policy": "Policy Change Notice",
+        "newsletter": "ParkLink Newsletter & Promotions"
+      },
+      "subjectLabel": "Email Subject",
+      "subjectCounter": "{{count}}/120 characters",
+      "subjectPlaceholder": "e.g., [ParkLink] Policy Update and Scheduled System Maintenance",
+      "contentLabel": "Email Content",
+      "contentCounter": "{{count}}/5,000 characters",
+      "contentPlaceholder": "<p>Dear ParkLink Users and Partners,</p><p>We would like to inform you about our scheduled maintenance for the payment gateway and parking management infrastructure...</p>",
+      "htmlHint": "Supports plain text or basic HTML formatting tags (<p>, <strong>, <ul>, <li>, <a>, <br>...)",
+      "optionsLabel": "Additional options:",
+      "attachSignature": "Attach ParkLink signature & Hotline 1900",
+      "privacyNote": "Include security & privacy notice",
+      "summary": {
+        "title": "Email broadcast queued!",
+        "taskId": "Task ID:",
+        "queued": "Estimated emails queued:",
+        "queuedValue": "{{count}} addresses",
+        "time": "Created at:"
+      },
+      "reset": "Reset",
+      "testPlaceholder": "Test email (e.g., test@gmail.com)...",
+      "testButton": "Send Test",
+      "submitButton": "Send Email Broadcast",
+      "validation": {
+        "subjectRequired": "Email subject cannot be empty!",
+        "contentRequired": "Email content cannot be empty!",
+        "invalidTestEmail": "Invalid test email address (must contain @)!",
+        "testSuccess": "Test email sent successfully to {{email}}!",
+        "sendSuccess": "Email broadcast queued for {{count}} users!",
+        "sendError": "Failed to send email broadcast!"
+      }
     }
   },
   "timelineSettings": {
-    "title": "System Timeline Settings",
-    "subtitle": "Configure automated deadlines for request cancellation, payments and renewals"
+    "badge": "System Administration",
+    "title": "Rental Process Timeline Configuration",
+    "subtitle": "Configure automated processing deadlines for the parking rental cycle: reservation request response time, electronic contract creation, contract signing, and termination notice period.",
+    "lastUpdated": "Last updated:",
+    "by": "by {{name}}",
+    "system": "System",
+    "you": "You",
+    "loading": "Loading timeline configuration...",
+    "duration": "Duration:",
+    "unit": "Unit:",
+    "units": {
+      "MINUTES": "Minutes",
+      "HOURS": "Hours",
+      "DAYS": "Days"
+    },
+    "targets": {
+      "provider": "Applies to parking provider",
+      "customer": "Applies to tenant / customer",
+      "both": "Applies to both parties"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Reservation response deadline",
+        "description": "Maximum time for provider to respond (Accept or Reject) to rental request. If expired, system will automatically cancel the request."
+      },
+      "contractCreation": {
+        "title": "Contract creation deadline after approval",
+        "description": "Time for provider to generate e-contract after accepting the request. If expired, rental request will automatically cancel."
+      },
+      "contractSigning": {
+        "title": "Customer contract signing deadline",
+        "description": "Time for customer to review and sign e-contract. If expired without signature, contract and rental request will automatically cancel."
+      },
+      "terminationNotice": {
+        "title": "Contract termination notice period",
+        "description": "Minimum advance notice period a party must provide before terminating a rental contract before agreed term."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Restore Defaults",
+      "saving": "Saving configuration...",
+      "save": "Save Timeline Configuration"
+    },
+    "messages": {
+      "loadError": "Unable to load system timeline configuration!",
+      "resetSuccess": "Default values restored. Click \"Save Timeline Configuration\" to confirm.",
+      "validationError": "Timeline values must be positive numbers greater than 0!",
+      "updateSuccess": "System timeline configuration updated successfully!",
+      "updateError": "Error saving timeline configuration!"
+    }
   },
   "policies": {
     "title": "System Policies & Terms",
@@ -989,58 +1080,6 @@
       "manageFacilitiesDesc": "Audit and configure parking facilities"
     }
   },
-  "timelineSettings": {
-    "badge": "System Administration",
-    "title": "Rental Process Timeline Configuration",
-    "subtitle": "Configure automated processing deadlines for the parking rental cycle: reservation request response time, electronic contract creation, contract signing, and termination notice period.",
-    "lastUpdated": "Last updated:",
-    "by": "by {{name}}",
-    "system": "System",
-    "you": "You",
-    "loading": "Loading timeline configuration...",
-    "duration": "Duration:",
-    "unit": "Unit:",
-    "units": {
-      "MINUTES": "Minutes",
-      "HOURS": "Hours",
-      "DAYS": "Days"
-    },
-    "targets": {
-      "provider": "Applies to parking provider",
-      "customer": "Applies to tenant / customer",
-      "both": "Applies to both parties"
-    },
-    "fields": {
-      "reservationResponse": {
-        "title": "Reservation response deadline",
-        "description": "Maximum time for provider to respond (Accept or Reject) to rental request. If expired, system will automatically cancel the request."
-      },
-      "contractCreation": {
-        "title": "Contract creation deadline after approval",
-        "description": "Time for provider to generate e-contract after accepting the request. If expired, rental request will automatically cancel."
-      },
-      "contractSigning": {
-        "title": "Customer contract signing deadline",
-        "description": "Time for customer to review and sign e-contract. If expired without signature, contract and rental request will automatically cancel."
-      },
-      "terminationNotice": {
-        "title": "Contract termination notice period",
-        "description": "Minimum advance notice period a party must provide before terminating a rental contract before agreed term."
-      }
-    },
-    "buttons": {
-      "resetDefaults": "Restore Defaults",
-      "saving": "Saving configuration...",
-      "save": "Save Timeline Configuration"
-    },
-    "messages": {
-      "loadError": "Unable to load system timeline configuration!",
-      "resetSuccess": "Default values restored. Click \"Save Timeline Configuration\" to confirm.",
-      "validationError": "Timeline values must be positive numbers greater than 0!",
-      "updateSuccess": "System timeline configuration updated successfully!",
-      "updateError": "Error saving timeline configuration!"
-    }
-  },
   "amenitySettings": {
     "title": "Parking Amenities Management",
     "subtitle": "List of amenities that parking facilities can select when registering in ParkLink.",
@@ -1132,6 +1171,149 @@
       "createSuccess": "Amenity created successfully!",
       "updateSuccess": "Amenity updated successfully!",
       "actionFailed": "Action failed!"
+    }
+  },
+  "registrationDetail": {
+    "backToInspections": "Back to Inspection Tasks",
+    "backToRegistrations": "Back to Facility Approvals",
+    "registrationId": "Application ID:",
+    "recordBadge": "APPLICATION #{{id}}",
+    "submittedOn": "Submitted on:",
+    "statuses": {
+      "pendingReview": "Pending Review",
+      "preparing": "Pending Field Inspection",
+      "inspected": "Inspected - Pending Approval",
+      "approved": "Officially Approved",
+      "rejected": "Rejected",
+      "unknown": "Unknown"
+    },
+    "stepper": {
+      "title": "Application Approval Process",
+      "step1Title": "Application Submitted",
+      "step1Desc": "Provider submitted initial details",
+      "step2Title": "Preliminary Review",
+      "step2Desc": "Admin verified documents",
+      "step3Title": "Field Inspection",
+      "step3Desc": "On-site premises check & photos",
+      "step4Title": "Final Approval",
+      "step4Desc": "Activate facility account"
+    },
+    "facilityInfo": {
+      "title": "Parking Facility Details",
+      "facilityName": "Facility Name",
+      "capacityAfterSurvey": "Capacity after inspection",
+      "capacityProposed": "Initially proposed capacity",
+      "capacityUnit": "{{count}} parking spots",
+      "desiredPrice": "Desired Rental Price",
+      "priceUnit": "{{price}} VND / month",
+      "platformFee": "Platform Fee",
+      "feeUnit": "{{fee}} VND",
+      "addressAfterSurvey": "Address after inspection",
+      "addressRegistered": "Declared address",
+      "gps": "GPS Coordinates",
+      "openGoogleMaps": "Open Google Maps →",
+      "amenities": "Included Amenities",
+      "defaultAmenity": "Amenity"
+    },
+    "surveyReport": {
+      "title": "Field Inspection Survey Report",
+      "subtitle": "Enter surveyed capacity, verify actual location, and attach 4 mandatory photos of the premises",
+      "capacityLabel": "Actual Capacity (Vehicles)",
+      "capacityPlaceholder": "e.g. 30",
+      "capacityHint": "Actual number of parking spots verified and measured on site.",
+      "locationLabel": "Actual Facility Location",
+      "locationHint": "Review declared address, then drag pin or select precise location on map.",
+      "photosLabel": "Premises Photos (4 Angles Required)",
+      "photo1Title": "1. Entry Route",
+      "photo1Hint": "Clear view of driveway and entry width",
+      "photo2Title": "2. Facility Overview",
+      "photo2Hint": "Wide view of grounds and parking layout",
+      "photo3Title": "3. Entrance Gate",
+      "photo3Hint": "Gate, entrance barrier, or signage",
+      "photo4Title": "4. Alternate Angle / Surface",
+      "photo4Hint": "Ground surface, roofing, or special angles",
+      "selected": "Selected",
+      "changePhoto": "Change photo",
+      "deletePhoto": "Remove",
+      "choosePhoto": "Select or capture photo",
+      "photoTypes": "PNG, JPG, JPEG",
+      "additionalTitle": "5. Additional Photos (Optional)",
+      "additionalHint": "Upload additional angles or details if needed",
+      "additionalCount": "{{count}} photos",
+      "addMorePhoto": "Add photo",
+      "submitting": "Uploading to Cloudinary & Submitting...",
+      "submit": "Submit Inspection Report"
+    },
+    "gallery": {
+      "title": "Facility & Site Inspection Photos",
+      "totalPhotos": "Total: {{count}} photos",
+      "primary": "Primary",
+      "viewZoom": "Click to zoom",
+      "noPhotos": "No photos uploaded for this facility yet.",
+      "inspectorWillUpdate": "The field inspector will upload photos upon completing the on-site survey form above."
+    },
+    "provider": {
+      "title": "Provider Information",
+      "role": "Facility Owner Partner",
+      "unupdated": "Not updated",
+      "emailNA": "N/A"
+    },
+    "inspector": {
+      "title": "Field Inspector",
+      "unassigned": "Unassigned",
+      "notSpecified": "Not specified",
+      "change": "Reassign",
+      "assign": "Assign",
+      "addressNA": "Address not updated",
+      "waitingAssignment": "Application is pending preliminary review and inspector assignment.",
+      "noInspectorNotice": "No inspector has been assigned yet. You can assign one now."
+    },
+    "actions": {
+      "titleInspector": "Inspection Mission",
+      "titleAdmin": "Approval Decision",
+      "surveyWorkflowTitle": "On-site procedure:",
+      "surveyStep1": "Verify location and entrance road width",
+      "surveyStep2": "Measure actual vehicle capacity",
+      "surveyStep3": "Capture 4 mandatory premises photos",
+      "surveyStep4": "Fill survey report on the left and submit",
+      "goToReportForm": "Go to Survey Report Form ↓",
+      "fillReport": "Fill Inspection Report",
+      "surveyReportSubmitted": "Survey report submitted",
+      "surveyCompleted": "Survey Completed",
+      "waitingAdminApproval": "Field report submitted successfully. Awaiting Admin final review and approval.",
+      "approvedNotice": "Facility Approved!",
+      "currentStatus": "Current status:",
+      "pendingNotice": "Admin needs to verify application validity and assign an on-site field inspector.",
+      "pendingPreliminary": "Application pending preliminary review:",
+      "preliminaryAndAssign": "Approve Preliminary & Assign Inspector",
+      "rejectApplication": "Reject this application",
+      "inSurveyNotice": "Under Field Inspection:",
+      "assignedTo": "Assigned inspector: {{name}} (Phone: {{phone}}).",
+      "noInspectorAssignedYet": "No inspector has been assigned yet.",
+      "changeInspector": "Change Inspector",
+      "assignInspector": "Assign Inspector",
+      "surveyDoneNotice": "Field survey data has been uploaded. Admin can review and finalize approval to issue account credentials and payment instructions to the Provider.",
+      "finalizeAndIssue": "Finalize Approval & Issue Password",
+      "finalizeTitle": "Final Approval & Issue Password",
+      "approvedDesc": "The facility is approved and the Provider account has been granted access.",
+      "rejectedTitle": "Application Rejected",
+      "rejectedDesc": "The registration was rejected and notification with reasons has been emailed to the Provider."
+    },
+    "loading": "Loading application details...",
+    "notFoundTitle": "Information Not Found",
+    "notFoundDesc": "Application does not exist or has been deleted.",
+    "backToList": "Back to list",
+    "retry": "Try again",
+    "alerts": {
+      "reportSuccess": "Inspection report submitted successfully! Facility data updated.",
+      "reportError": "Error submitting report: {{message}}",
+      "finalizeSuccess": "Officially approved! Payment details and credentials have been emailed to Provider.",
+      "rejectReasonRequired": "Please enter a rejection reason!",
+      "rejectSuccess": "Application rejected successfully!",
+      "actionFailed": "Action failed: {{message}}",
+      "preliminarySuccess": "Preliminary approval and inspector assignment complete! Provider notified via email.",
+      "reassignSuccess": "Inspector reassigned successfully!",
+      "generalError": "An error occurred while processing!"
     }
   }
 }

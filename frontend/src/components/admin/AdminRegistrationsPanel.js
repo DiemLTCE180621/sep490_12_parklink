@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   DollarSign,
-  UserCheck
+  UserCheck,
+  Car
 } from 'lucide-react';
 import AssignInspectorModal from './AssignInspectorModal';
 import Toast from '../common/Toast';
@@ -38,8 +39,8 @@ const AdminRegistrationsPanel = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  
-  const [actionModal, setActionModal] = useState(null); 
+
+  const [actionModal, setActionModal] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -113,7 +114,7 @@ const AdminRegistrationsPanel = () => {
     }
   };
 
-  
+
   const pendingCount = useMemo(
     () => registrations.filter((f) => f.verification_status === 'PENDING_REVIEW').length,
     [registrations]
@@ -127,7 +128,7 @@ const AdminRegistrationsPanel = () => {
     [registrations]
   );
 
-  
+
   const filteredRegistrations = useMemo(() => {
     return registrations.filter((item) => {
       const matchSearch =
@@ -144,7 +145,7 @@ const AdminRegistrationsPanel = () => {
     });
   }, [registrations, search, statusFilter]);
 
-  
+
   const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage) || 1;
   const paginatedList = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -178,14 +179,14 @@ const AdminRegistrationsPanel = () => {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-md p-6 space-y-6">
-      {}
+      { }
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <Building2 className="w-6 h-6 text-neighbor-600" /> {t('admin:registrations.title', 'Quản Lý Phê Duyệt Bãi Đỗ Xe')}
           </h2>
           <p className="text-gray-500 text-xs mt-1">
-            {t('admin:registrations.subtitle', 'Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)')}
+            {t('admin:registrations.subtitle', 'Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi')}
           </p>
         </div>
         <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
@@ -193,18 +194,17 @@ const AdminRegistrationsPanel = () => {
         </div>
       </div>
 
-      {}
+      { }
       <div className="flex flex-wrap gap-2 text-xs font-semibold">
         <button
           onClick={() => {
             setStatusFilter('ALL');
             setCurrentPage(1);
           }}
-          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
-            statusFilter === 'ALL'
-              ? 'bg-neighbor-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${statusFilter === 'ALL'
+            ? 'bg-neighbor-600 text-white shadow-sm'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
         >
           {t('admin:registrations.tabs.all', 'Tất cả')} ({registrations.length})
         </button>
@@ -213,11 +213,10 @@ const AdminRegistrationsPanel = () => {
             setStatusFilter('PENDING_REVIEW');
             setCurrentPage(1);
           }}
-          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
-            statusFilter === 'PENDING_REVIEW'
-              ? 'bg-amber-500 text-white shadow-sm'
-              : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
-          }`}
+          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${statusFilter === 'PENDING_REVIEW'
+            ? 'bg-amber-500 text-white shadow-sm'
+            : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+            }`}
         >
           <Clock className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.pendingReview', 'Chờ duyệt sơ bộ')} ({pendingCount})
         </button>
@@ -226,11 +225,10 @@ const AdminRegistrationsPanel = () => {
             setStatusFilter('PREPARING');
             setCurrentPage(1);
           }}
-          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
-            statusFilter === 'PREPARING'
-              ? 'bg-sky-600 text-white shadow-sm'
-              : 'bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100'
-          }`}
+          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${statusFilter === 'PREPARING'
+            ? 'bg-sky-600 text-white shadow-sm'
+            : 'bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100'
+            }`}
         >
           <Wrench className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.preparing', 'Đang khảo sát')} ({preparingCount})
         </button>
@@ -239,19 +237,18 @@ const AdminRegistrationsPanel = () => {
             setStatusFilter('INSPECTED');
             setCurrentPage(1);
           }}
-          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${
-            statusFilter === 'INSPECTED'
-              ? 'bg-neighbor-700 text-white shadow-sm'
-              : 'bg-neighbor-50 text-neighbor-800 border border-neighbor-200 hover:bg-neighbor-100'
-          }`}
+          className={`px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${statusFilter === 'INSPECTED'
+            ? 'bg-neighbor-700 text-white shadow-sm'
+            : 'bg-neighbor-50 text-neighbor-800 border border-neighbor-200 hover:bg-neighbor-100'
+            }`}
         >
           <CheckCircle2 className="w-3.5 h-3.5" /> {t('admin:registrations.tabs.inspected', 'Đã khảo sát - Chờ duyệt')} ({inspectedCount})
         </button>
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-        {}
+        { }
         <div className="sm:col-span-8 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
             <Search className="w-4 h-4" />
@@ -268,7 +265,7 @@ const AdminRegistrationsPanel = () => {
           />
         </div>
 
-        {}
+        { }
         <div className="sm:col-span-4 flex gap-2">
           <select
             value={statusFilter}
@@ -295,7 +292,7 @@ const AdminRegistrationsPanel = () => {
         </div>
       </div>
 
-      {}
+      { }
       {error && (
         <div className="p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 flex items-center gap-2">
           <XCircle className="w-4 h-4 shrink-0 text-red-600" />
@@ -303,7 +300,7 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {}
+      { }
       {loading ? (
         <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
           <RefreshCw className="w-8 h-8 animate-spin text-neighbor-600" />
@@ -316,209 +313,188 @@ const AdminRegistrationsPanel = () => {
           <p className="text-xs text-gray-400 mt-1">{t('admin:registrations.messages.emptyHint')}</p>
         </div>
       ) : (
-        
-        <div className="w-full">
-          <table className="block w-full text-left text-sm">
-            <thead className="sr-only">
-              <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
-                <th className="w-[72px] py-3.5 px-4">ID</th>
-                <th className="w-[500px] py-3.5 px-4">{t('admin:registrations.table.facilityName')}</th>
-                <th className="w-[250px] py-3.5 px-4">{t('admin:registrations.table.provider')}</th>
-                <th className="w-[175px] py-3.5 px-4">{t('admin:registrations.table.scaleAndFee')}</th>
-                <th className="w-[205px] py-3.5 px-4">{t('admin:registrations.table.approvalProgress')}</th>
-                <th className="w-[590px] py-3.5 px-4 text-right">{t('admin:registrations.table.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="block space-y-5 text-gray-700">
-              {paginatedList.map((facility) => {
-                const isPending = facility.verification_status === 'PENDING_REVIEW';
-                const isPreparing = facility.verification_status === 'PREPARING';
-                const isInspected = facility.verification_status === 'INSPECTED';
 
-                return (
-                  <tr key={facility.id} className="grid grid-cols-1 gap-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-neighbor-300 hover:shadow-md sm:gap-5 sm:p-7 lg:grid-cols-2">
-                    {}
-                    <td className="col-span-full p-0">
-                      <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-3 py-1 font-mono text-xs font-bold text-gray-500">
-                        #{facility.id}
-                      </span>
-                    </td>
+        <div className="w-full space-y-3">
+          {paginatedList.map((facility) => {
+            const isPending = facility.verification_status === 'PENDING_REVIEW';
+            const isPreparing = facility.verification_status === 'PREPARING';
+            const isInspected = facility.verification_status === 'INSPECTED';
 
-                    {}
-                    <td className="min-w-0 rounded-xl border border-neighbor-100 bg-neighbor-50/40 p-4 sm:p-5">
-                      <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-white border border-neighbor-100 flex items-center justify-center shrink-0 text-neighbor-700 shadow-sm">
-                          {facility.images && facility.images.length > 0 ? (
-                            <img
-                              src={facility.images[0].image_url}
-                              alt=""
-                              className="w-12 h-12 object-cover rounded-xl"
-                            />
-                          ) : (
-                            <Building2 className="w-6 h-6" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1 space-y-0.5 whitespace-nowrap">
-                          <button
-                            onClick={() => navigate(`/admin/registrations/${facility.id}`)}
-                            className="block max-w-full truncate text-base font-bold text-gray-900 hover:text-neighbor-700 transition text-left sm:text-lg"
-                            title={facility.name}
-                          >
-                            {facility.name}
-                          </button>
-                          <div className="flex items-center gap-1.5 whitespace-nowrap text-xs text-gray-500">
-                            <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
-                            <span className="min-w-0 truncate" title={facility.address}>{facility.address}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {}
-                    <td className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">{t('admin:registrations.table.provider')}</p>
-                      <div className="space-y-0.5">
-                        <div className="min-w-0 font-semibold text-gray-900 flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 shrink-0 text-gray-400" />
-                          <span className="truncate">{facility.provider?.full_name || 'N/A'}</span>
-                        </div>
-                        <div className="min-w-0 text-gray-500 text-[11px] flex items-center gap-1.5">
-                          <Mail className="w-3 h-3 shrink-0 text-gray-400" />
-                          <span className="truncate">{facility.provider?.email || 'N/A'}</span>
-                        </div>
-                        {facility.provider?.phone_number && (
-                          <div className="text-gray-500 text-[11px] flex items-center gap-1.5">
-                            <Phone className="w-3 h-3 text-gray-400" />
-                            {facility.provider?.phone_number}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    {}
-                    <td className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">{t('admin:registrations.table.scaleAndFee')}</p>
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-gray-800">
-                          {t('admin:registrations.table.vehicleCount', { count: facility.capacity })}
-                        </div>
-                        <div className="text-neighbor-700 font-semibold text-[11px] flex items-center gap-0.5 whitespace-nowrap">
-                          <DollarSign className="w-3 h-3 text-neighbor-600" />
-                          {Number(facility.system_fee || 0).toLocaleString('vi-VN')} {t('admin:registrations.table.currency')}
-                        </div>
-                      </div>
-                    </td>
-
-                    {}
-                    <td className="min-w-0 rounded-xl border border-gray-100 bg-gray-50/60 p-4 sm:p-5">
-                      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-400">{t('admin:registrations.table.approvalProgress')}</p>
-                      <div>
-                        {getStatusBadge(facility.verification_status)}
-                        {facility.assigned_inspector ? (
-                          <div className="text-[11px] text-neighbor-800 font-semibold flex items-center gap-1 mt-1">
-                            <UserCheck className="w-3.5 h-3.5 text-neighbor-600 shrink-0" />
-                            <span className="truncate max-w-[140px]" title={facility.assigned_inspector.full_name}>
-                              {facility.assigned_inspector.full_name}
-                            </span>
-                          </div>
-                        ) : isPreparing ? (
-                          <div className="text-[11px] text-amber-600 font-medium italic mt-1">
-                            {t('admin:registrations.table.unassignedInspector')}
-                          </div>
-                        ) : null}
-                      </div>
-                    </td>
-
-                    {}
-                    <td className="col-span-full -mx-5 -mb-5 border-t border-gray-100 bg-gray-50/70 px-5 py-4 sm:-mx-7 sm:-mb-7 sm:px-7">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {}
+            return (
+              <div
+                key={facility.id}
+                className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 shadow-xs hover:shadow-md hover:border-neighbor-300 transition-all duration-150 space-y-3"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start sm:items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-xl bg-neighbor-50 border border-neighbor-100 flex items-center justify-center shrink-0 text-neighbor-700 shadow-xs">
+                      {facility.images && facility.images.length > 0 ? (
+                        <img
+                          src={facility.images[0].image_url}
+                          alt=""
+                          className="w-11 h-11 object-cover rounded-xl"
+                        />
+                      ) : (
+                        <Building2 className="w-5 h-5 text-neighbor-600" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 font-mono text-[11px] font-bold text-gray-500">
+                          #{facility.id}
+                        </span>
                         <button
                           onClick={() => navigate(`/admin/registrations/${facility.id}`)}
-                          className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-neighbor-200 bg-white px-4 py-2.5 text-xs font-bold text-neighbor-800 shadow-sm transition hover:bg-neighbor-50"
-                          title={t('admin:registrations.actions.viewDetailTitle')}
+                          className="truncate text-base font-bold text-gray-900 hover:text-neighbor-700 transition text-left cursor-pointer"
+                          title={facility.name}
                         >
-                          <Eye className="w-3.5 h-3.5" /> {t('admin:registrations.actions.viewDetail')}
+                          {facility.name}
                         </button>
-
-                        {}
-                        {isPending && (
-                          <>
-                            <button
-                              onClick={() => handleOpenPrepareModal(facility.id)}
-                              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-amber-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
-                              title={t('admin:registrations.actions.preliminaryTitle')}
-                            >
-                              <UserCheck className="w-3.5 h-3.5" /> {t('admin:registrations.actions.preliminary')}
-                            </button>
-                            <button
-                              onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
-                              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-                              title={t('admin:registrations.actions.rejectTitle')}
-                            >
-                              <XCircle className="w-3.5 h-3.5" /> {t('admin:registrations.actions.reject')}
-                            </button>
-                          </>
-                        )}
-
-                        {}
-                        {isInspected && (
-                          <>
-                            <button
-                              onClick={() => setActionModal({ type: 'FINALIZE', id: facility.id })}
-                              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-neighbor-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-neighbor-700"
-                              title={t('admin:registrations.actions.finalizeTitle')}
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" /> {t('admin:registrations.actions.finalize')}
-                            </button>
-                            <button
-                              onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
-                              className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-                              title={t('admin:registrations.actions.rejectTitle')}
-                            >
-                              <XCircle className="w-3.5 h-3.5" /> {t('admin:registrations.actions.reject')}
-                            </button>
-                          </>
-                        )}
-
-                        {}
-                        {isPreparing && (
-                          <button
-                            onClick={() => handleOpenReassignModal(facility.id)}
-                            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 transition hover:bg-gray-100"
-                            title={t('admin:registrations.actions.reassignTitle')}
-                          >
-                            <UserCheck className="w-3.5 h-3.5 text-neighbor-600" /> {t('admin:registrations.actions.reassign')}
-                          </button>
-                        )}
                       </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-0.5 truncate" title={facility.address}>
+                        <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="truncate">{facility.address}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                    {getStatusBadge(facility.verification_status)}
+                    {facility.assigned_inspector ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-neighbor-800 font-semibold bg-neighbor-50 px-2.5 py-1 rounded-md border border-neighbor-200">
+                        <UserCheck className="w-3.5 h-3.5 text-neighbor-600" />
+                        <span className="truncate max-w-[120px]" title={facility.assigned_inspector.full_name}>
+                          {facility.assigned_inspector.full_name}
+                        </span>
+                      </span>
+                    ) : isPreparing ? (
+                      <span className="text-xs text-amber-600 font-medium italic">
+                        {t('admin:registrations.table.unassignedInspector')}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-3 border-t border-gray-100 text-xs text-gray-600">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <span className="text-gray-500">{t('admin:registrations.table.provider')}:</span>
+                    <span className="font-semibold text-gray-900 truncate">
+                      {facility.provider?.full_name || 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 min-w-0 text-gray-500">
+                    {facility.provider?.email && (
+                      <span className="flex items-center gap-1.5 truncate" title={facility.provider.email}>
+                        <Mail className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span className="truncate">{facility.provider.email}</span>
+                      </span>
+                    )}
+                    {facility.provider?.phone_number && (
+                      <span className="flex items-center gap-1 shrink-0">
+                        <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                        <span>{facility.provider.phone_number}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 sm:justify-start lg:justify-end text-xs">
+                    <span className="font-semibold text-gray-800 flex items-center gap-1">
+                      <Car className="w-3.5 h-3.5 text-neighbor-600" />
+                      {t('admin:registrations.table.vehicleCount', { count: facility.capacity })}
+                    </span>
+                    <span className="text-gray-300">•</span>
+                    <span className="font-bold text-neighbor-700 flex items-center gap-0.5">
+                      <DollarSign className="w-3.5 h-3.5 text-neighbor-600" />
+                      {Number(facility.system_fee || 0).toLocaleString('vi-VN')} {t('admin:registrations.table.currency')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-2 pt-2.5 border-t border-gray-50">
+                  <button
+                    onClick={() => navigate(`/admin/registrations/${facility.id}`)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer shadow-2xs"
+                    title={t('admin:registrations.actions.viewDetailTitle')}
+                  >
+                    <Eye className="w-3.5 h-3.5 text-gray-500" /> {t('admin:registrations.actions.viewDetail')}
+                  </button>
+
+                  {isPending && (
+                    <>
+                      <button
+                        onClick={() => handleOpenPrepareModal(facility.id)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition cursor-pointer shadow-xs"
+                        title={t('admin:registrations.actions.preliminaryTitle')}
+                      >
+                        <UserCheck className="w-3.5 h-3.5" /> {t('admin:registrations.actions.preliminary')}
+                      </button>
+                      <button
+                        onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition cursor-pointer"
+                        title={t('admin:registrations.actions.rejectTitle')}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> {t('admin:registrations.actions.reject')}
+                      </button>
+                    </>
+                  )}
+
+                  {isInspected && (
+                    <>
+                      <button
+                        onClick={() => setActionModal({ type: 'FINALIZE', id: facility.id })}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-neighbor-600 hover:bg-neighbor-700 rounded-lg transition cursor-pointer shadow-xs"
+                        title={t('admin:registrations.actions.finalizeTitle')}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {t('admin:registrations.actions.finalize')}
+                      </button>
+                      <button
+                        onClick={() => setActionModal({ type: 'REJECT', id: facility.id })}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition cursor-pointer"
+                        title={t('admin:registrations.actions.rejectTitle')}
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> {t('admin:registrations.actions.reject')}
+                      </button>
+                    </>
+                  )}
+
+                  {isPreparing && (
+                    <button
+                      onClick={() => handleOpenReassignModal(facility.id)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition cursor-pointer shadow-2xs"
+                      title={t('admin:registrations.actions.reassignTitle')}
+                    >
+                      <UserCheck className="w-3.5 h-3.5 text-neighbor-600" /> {t('admin:registrations.actions.reassign')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-600">
-          <div>
+      {filteredRegistrations.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 pt-4 mt-2 text-xs text-gray-500 gap-3">
+          <div className="font-medium">
             {t('admin:registrations.pagination.summary', { current: currentPage, total: totalPages, count: filteredRegistrations.length })}
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <button
               disabled={currentPage <= 1 || loading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold text-gray-700 shadow-2xs cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" /> {t('admin:registrations.pagination.previous')}
             </button>
+            <span className="px-3 py-1.5 bg-neighbor-50 text-neighbor-800 font-bold rounded-lg border border-neighbor-200">
+              {currentPage} / {totalPages}
+            </span>
             <button
               disabled={currentPage >= totalPages || loading}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
+              className="px-3 py-1.5 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold text-gray-700 shadow-2xs cursor-pointer"
             >
               {t('admin:registrations.pagination.next')} <ChevronRight className="w-4 h-4" />
             </button>
@@ -526,7 +502,6 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {}
       <AssignInspectorModal
         isOpen={actionModal?.type === 'PREPARE' || actionModal?.type === 'REASSIGN'}
         onClose={() => setActionModal(null)}
@@ -551,13 +526,13 @@ const AdminRegistrationsPanel = () => {
               await adminService.approveRegistration(actionModal.id, inspectorId);
               showToast(
                 'success',
-                 t('admin:registrations.messages.preliminarySuccess')
+                t('admin:registrations.messages.preliminarySuccess')
               );
             } else {
               await adminService.assignInspector(actionModal.id, inspectorId);
               showToast(
                 'success',
-                 t('admin:registrations.messages.reassignSuccess')
+                t('admin:registrations.messages.reassignSuccess')
               );
             }
             setActionModal(null);
@@ -567,14 +542,14 @@ const AdminRegistrationsPanel = () => {
               err.response?.data?.message ||
               err.response?.data?.errors?.[0] ||
               err.message;
-             showToast('error', backendMessage || t('admin:registrations.messages.processError'));
+            showToast('error', backendMessage || t('admin:registrations.messages.processError'));
           } finally {
             setIsSubmitting(false);
           }
         }}
       />
 
-      {}
+      { }
       {actionModal && (actionModal.type === 'FINALIZE' || actionModal.type === 'REJECT') && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-xl p-6 md:p-8 max-w-md w-full shadow-2xl my-auto transition-all">
@@ -584,24 +559,24 @@ const AdminRegistrationsPanel = () => {
                   <CheckCircle2 className="w-8 h-8 text-neighbor-600" />
                 </div>
                 <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
-                   {t('admin:registrations.confirm.finalizeTitle')}
+                  {t('admin:registrations.confirm.finalizeTitle')}
                 </h3>
                 <p className="text-center text-gray-500 text-sm mb-6">
-                   {t('admin:registrations.confirm.finalizeDescription')}
+                  {t('admin:registrations.confirm.finalizeDescription')}
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setActionModal(null)}
                     className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-xs"
                   >
-                     {t('admin:registrations.confirm.cancel')}
+                    {t('admin:registrations.confirm.cancel')}
                   </button>
                   <button
                     disabled={isSubmitting}
                     onClick={confirmAction}
                     className="flex-1 py-3 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
                   >
-                     {isSubmitting ? t('admin:registrations.confirm.processing') : t('admin:registrations.confirm.finalizeSubmit')}
+                    {isSubmitting ? t('admin:registrations.confirm.processing') : t('admin:registrations.confirm.finalizeSubmit')}
                   </button>
                 </div>
               </>
@@ -613,44 +588,44 @@ const AdminRegistrationsPanel = () => {
                   <XCircle className="w-8 h-8 text-rose-600" />
                 </div>
                 <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
-                   {t('admin:registrations.confirm.rejectTitle')}
+                  {t('admin:registrations.confirm.rejectTitle')}
                 </h3>
                 <p className="text-center text-gray-500 text-sm mb-4">
-                   {t('admin:registrations.confirm.rejectDescription')}
+                  {t('admin:registrations.confirm.rejectDescription')}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-3 justify-center">
                   <button
                     type="button"
                     onClick={() =>
-                       setRejectReason(t('admin:registrations.confirm.reasons.missingInformation'))
+                      setRejectReason(t('admin:registrations.confirm.reasons.missingInformation'))
                     }
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
-                     {t('admin:registrations.confirm.reasonLabels.missingInformation')}
+                    {t('admin:registrations.confirm.reasonLabels.missingInformation')}
                   </button>
                   <button
                     type="button"
                     onClick={() =>
-                       setRejectReason(t('admin:registrations.confirm.reasons.locationOrPrice'))
+                      setRejectReason(t('admin:registrations.confirm.reasons.locationOrPrice'))
                     }
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
-                     {t('admin:registrations.confirm.reasonLabels.locationOrPrice')}
+                    {t('admin:registrations.confirm.reasonLabels.locationOrPrice')}
                   </button>
                   <button
                     type="button"
                     onClick={() =>
-                       setRejectReason(t('admin:registrations.confirm.reasons.safetyStandards'))
+                      setRejectReason(t('admin:registrations.confirm.reasons.safetyStandards'))
                     }
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium rounded-full transition"
                   >
-                     {t('admin:registrations.confirm.reasonLabels.safetyStandards')}
+                    {t('admin:registrations.confirm.reasonLabels.safetyStandards')}
                   </button>
                 </div>
                 <textarea
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                   placeholder={t('admin:registrations.confirm.reasonPlaceholder')}
+                  placeholder={t('admin:registrations.confirm.reasonPlaceholder')}
                   className="w-full p-3 border border-gray-200 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-rose-500 resize-none h-24 text-xs"
                 />
                 <div className="flex gap-3">
@@ -661,14 +636,14 @@ const AdminRegistrationsPanel = () => {
                     }}
                     className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition text-xs"
                   >
-                     {t('admin:registrations.confirm.cancel')}
+                    {t('admin:registrations.confirm.cancel')}
                   </button>
                   <button
                     disabled={isSubmitting}
                     onClick={confirmAction}
                     className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs"
                   >
-                     {isSubmitting ? t('admin:registrations.confirm.rejecting') : t('admin:registrations.confirm.rejectSubmit')}
+                    {isSubmitting ? t('admin:registrations.confirm.rejecting') : t('admin:registrations.confirm.rejectSubmit')}
                   </button>
                 </div>
               </>
@@ -677,7 +652,7 @@ const AdminRegistrationsPanel = () => {
         </div>
       )}
 
-      {}
+      { }
       {toast && (
         <Toast
           message={toast.message}
