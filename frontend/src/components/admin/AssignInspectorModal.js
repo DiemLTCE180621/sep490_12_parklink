@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import fieldInspectorService from '../../services/fieldInspectorService';
 import {
   UserCheck,
@@ -23,9 +24,10 @@ const AssignInspectorModal = ({
   facilityAddress,
   currentInspectorId = null,
   isSubmitting = false,
-  title = 'Duyệt Sơ Bộ & Phân Công Khảo Sát',
-  confirmText = 'Xác nhận duyệt & Giao việc'
+  title,
+  confirmText
 }) => {
+  const { t } = useTranslation('admin');
   const [inspectors, setInspectors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,7 +63,7 @@ const AssignInspectorModal = ({
       } catch (err) {
         console.error('Lỗi khi tải danh sách nhân viên khảo sát:', err);
         if (isMounted) {
-          setError('Không thể tải danh sách nhân viên khảo sát. Vui lòng thử lại!');
+          setError('registrations.inspectorModal.loadError');
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -180,16 +182,16 @@ const AssignInspectorModal = ({
               <UserCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg md:text-xl font-bold text-gray-900">{title}</h3>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900">{title || t('registrations.assign.assignTitle')}</h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                Chỉ định nhân viên khảo sát thực địa phụ trách cơ sở bãi đỗ xe
+                {t('registrations.inspectorModal.description')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="w-9 h-9 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition flex items-center justify-center shrink-0"
-            title="Đóng"
+            title={t('registrations.inspectorModal.close')}
           >
             <X className="w-4 h-4" />
           </button>
@@ -204,7 +206,7 @@ const AssignInspectorModal = ({
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-900 truncate">
-                {facilityName || 'Cơ sở bãi đỗ xe'}
+                 {facilityName || t('registrations.table.facilityName')}
               </div>
               {facilityAddress && (
                 <div className="text-gray-600 text-[11px] flex items-center gap-1.5 mt-0.5">
@@ -224,7 +226,7 @@ const AssignInspectorModal = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Tìm nhân viên theo tên, email, SĐT, địa chỉ..."
+                 placeholder={t('registrations.inspectorModal.searchPlaceholder')}
                 className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition shadow-sm"
               />
               {searchQuery && (
@@ -246,7 +248,7 @@ const AssignInspectorModal = ({
                   onChange={(e) => setSelectedArea(e.target.value)}
                   className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition appearance-none cursor-pointer truncate shadow-sm"
                 >
-                  <option value="ALL">Mọi khu vực</option>
+                   <option value="ALL">{t('registrations.inspectorModal.allAreas')}</option>
                   {availableAreas.map((area, idx) => (
                     <option key={idx} value={area}>
                       {area}
@@ -264,9 +266,9 @@ const AssignInspectorModal = ({
                 onChange={(e) => setWorkloadFilter(e.target.value)}
                 className="w-full pl-7 pr-6 py-2 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-500 transition appearance-none cursor-pointer shadow-sm"
               >
-                <option value="ALL">Mọi tải việc</option>
-                <option value="IDLE">Rảnh (0 việc)</option>
-                <option value="BUSY">Đang có bãi</option>
+                 <option value="ALL">{t('registrations.inspectorModal.allWorkloads')}</option>
+                 <option value="IDLE">{t('registrations.inspectorModal.idleFilter')}</option>
+                 <option value="BUSY">{t('registrations.inspectorModal.busyFilter')}</option>
               </select>
             </div>
           </div>
@@ -274,7 +276,7 @@ const AssignInspectorModal = ({
           {}
           <div className="flex items-center justify-between text-[11px] text-gray-500 px-1 pt-0.5">
             <span>
-              Tìm thấy <strong>{filteredInspectors.length}</strong> / {inspectors.length} nhân viên phù hợp
+               {t('registrations.inspectorModal.results', { count: filteredInspectors.length, total: inspectors.length })}
             </span>
             {(searchQuery || selectedArea !== 'ALL' || workloadFilter !== 'ALL') && (
               <button
@@ -282,7 +284,7 @@ const AssignInspectorModal = ({
                 onClick={handleResetFilters}
                 className="text-neighbor-700 hover:text-neighbor-800 font-semibold hover:underline flex items-center gap-1"
               >
-                <RotateCcw className="w-3 h-3" /> Đặt lại
+                 <RotateCcw className="w-3 h-3" /> {t('common.reset')}
               </button>
             )}
           </div>
@@ -299,38 +301,38 @@ const AssignInspectorModal = ({
           {loading ? (
             <div className="py-20 text-center text-gray-400 text-xs flex flex-col items-center justify-center gap-2">
               <RotateCcw className="w-6 h-6 animate-spin text-neighbor-600" />
-              <span>Đang tải danh sách nhân viên khảo sát...</span>
+               <span>{t('registrations.inspectorModal.loading')}</span>
             </div>
           ) : error ? (
             <div className="p-4 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 text-xs text-center space-y-2">
-              <p className="font-semibold">{error}</p>
+               <p className="font-semibold">{t(error)}</p>
               <button
                 onClick={onClose}
                 className="px-3 py-1 bg-white border border-rose-300 rounded-lg text-rose-700 font-bold hover:bg-rose-50 transition"
               >
-                Đóng
+                 {t('registrations.inspectorModal.close')}
               </button>
             </div>
           ) : inspectors.length === 0 ? (
             <div className="p-8 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 text-center space-y-2 my-auto">
               <AlertCircle className="w-8 h-8 text-amber-600 mx-auto" />
-              <p className="font-bold text-sm">Chưa có nhân viên khảo sát nào trong hệ thống!</p>
+               <p className="font-bold text-sm">{t('registrations.inspectorModal.noInspectors')}</p>
               <p className="text-[11px] text-amber-700 max-w-md mx-auto">
-                Hiện chưa có tài khoản nhân viên khảo sát thực địa nào đang ở trạng thái Hoạt Động (ACTIVE). Vui lòng vào trang <strong>Quản lý nhân viên</strong> để tạo tài khoản trước khi phân công.
+                 {t('registrations.inspectorModal.noInspectorsHint')}
               </p>
             </div>
           ) : filteredInspectors.length === 0 ? (
             <div className="py-16 text-center text-gray-400 text-xs space-y-2 bg-gray-50/60 rounded-xl border border-dashed border-gray-200">
               <Search className="w-8 h-8 mx-auto text-gray-300" />
               <p className="font-semibold text-gray-600">
-                Không tìm thấy nhân viên nào phù hợp với bộ lọc.
+                 {t('registrations.inspectorModal.noMatches')}
               </p>
               <button
                 type="button"
                 onClick={handleResetFilters}
                 className="text-neighbor-700 hover:underline font-semibold"
               >
-                Xóa bộ lọc để xem tất cả ({inspectors.length})
+                 {t('registrations.inspectorModal.clearFilters', { count: inspectors.length })}
               </button>
             </div>
           ) : (
@@ -368,11 +370,11 @@ const AssignInspectorModal = ({
                             {inspector.full_name}
                           </span>
                           <span className="text-[10px] font-semibold text-neighbor-700 bg-neighbor-100/80 px-2 py-0.5 rounded-full shrink-0">
-                            NV Khảo sát
+                             {t('registrations.inspectorModal.inspector')}
                           </span>
                           {isCurrent && (
                             <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
-                              Đang phụ trách
+                               {t('registrations.inspectorModal.currentAssignee')}
                             </span>
                           )}
                         </div>
@@ -381,11 +383,11 @@ const AssignInspectorModal = ({
                         <div>
                           {activeCount === 0 ? (
                             <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full inline-block">
-                              Đang rảnh (0 việc)
+                               {t('registrations.inspectorModal.idle')}
                             </span>
                           ) : (
                             <span className="text-[10px] font-semibold text-sky-800 bg-sky-50 border border-sky-200/80 px-2 py-0.5 rounded-full inline-block">
-                              Đang khảo sát {activeCount} bãi
+                               {t('registrations.inspectorModal.activeFacilities', { count: activeCount })}
                             </span>
                           )}
                         </div>
@@ -408,7 +410,7 @@ const AssignInspectorModal = ({
                         <div className="pt-1 flex items-start gap-1.5 text-xs text-gray-700">
                           <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
                           <span className="font-medium text-gray-700 line-clamp-2">
-                            <strong>Địa chỉ:</strong> {inspector.address || 'Chưa cập nhật địa chỉ'}
+                             <strong>{t('registrations.inspectorModal.address')}:</strong> {inspector.address || t('registrations.inspectorModal.addressMissing')}
                           </span>
                         </div>
                       </div>
@@ -438,13 +440,13 @@ const AssignInspectorModal = ({
           <div className="text-xs text-gray-500 hidden sm:block">
             {selectedId ? (
               <span>
-                Đang chọn nhân viên:{' '}
+                 {t('registrations.inspectorModal.selectedInspector')}{' '}
                 <strong className="text-neighbor-700">
                   {inspectors.find((i) => String(i.id) === String(selectedId))?.full_name}
                 </strong>
               </span>
             ) : (
-              <span>Vui lòng chọn 1 nhân viên khảo sát</span>
+               <span>{t('registrations.inspectorModal.selectInspector')}</span>
             )}
           </div>
           <div className="flex gap-3 w-full sm:w-auto sm:min-w-[320px]">
@@ -453,7 +455,7 @@ const AssignInspectorModal = ({
               onClick={onClose}
               className="flex-1 py-2.5 px-4 bg-white hover:bg-gray-100 text-gray-700 font-bold rounded-xl border border-gray-200 transition text-xs shadow-sm"
             >
-              Hủy
+               {t('registrations.confirm.cancel')}
             </button>
             <button
               type="button"
@@ -461,7 +463,7 @@ const AssignInspectorModal = ({
               onClick={handleConfirm}
               className="flex-1 py-2.5 px-6 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg transition disabled:opacity-50 text-xs font-semibold whitespace-nowrap"
             >
-              {isSubmitting ? 'Đang xử lý...' : confirmText}
+               {isSubmitting ? t('registrations.confirm.processing') : (confirmText || t('registrations.assign.assignConfirm'))}
             </button>
           </div>
         </div>

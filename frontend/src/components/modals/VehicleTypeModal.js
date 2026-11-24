@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, Car, Loader2, AlertCircle } from 'lucide-react';
 import vehicleTypeService from '../../services/vehicleTypeService';
 
@@ -12,6 +13,7 @@ const VehicleTypeModal = ({
   onSuccess,
   vehicleType = null 
 }) => {
+  const { t } = useTranslation('admin');
   const isEdit = Boolean(vehicleType && vehicleType.id);
 
   const [formData, setFormData] = useState({
@@ -72,27 +74,27 @@ const VehicleTypeModal = ({
     const cleanName = formData.name.trim();
 
     if (!cleanCode) {
-      setError('Vui lòng nhập mã loại phương tiện (VD: CAR_16_SEATER).');
+      setError(t('vehicleTypes.form.errors.codeRequired'));
       return;
     }
 
     if (!/^[A-Z0-9_]{2,50}$/.test(cleanCode)) {
-      setError('Mã loại phương tiện chỉ được chứa chữ cái, số, gạch dưới (_) và từ 2-50 ký tự.');
+      setError(t('vehicleTypes.form.errors.codeInvalid'));
       return;
     }
 
     if (!cleanName) {
-      setError('Vui lòng nhập tên loại phương tiện.');
+      setError(t('vehicleTypes.form.errors.nameRequired'));
       return;
     }
 
     if (cleanName.length < 2 || cleanName.length > 100) {
-      setError('Tên loại phương tiện phải có độ dài từ 2 đến 100 ký tự.');
+      setError(t('vehicleTypes.form.errors.nameInvalid'));
       return;
     }
 
     if (formData.description && formData.description.length > 500) {
-      setError('Mô tả không được vượt quá 500 ký tự.');
+      setError(t('vehicleTypes.form.errors.descriptionTooLong'));
       return;
     }
 
@@ -108,15 +110,15 @@ const VehicleTypeModal = ({
       if (isEdit) {
         // Cập nhật
         await vehicleTypeService.updateVehicleType(vehicleType.id, payload);
-        onSuccess(`Cập nhật loại phương tiện "${cleanName}" thành công!`);
+        onSuccess(t('vehicleTypes.form.updateSuccess', { name: cleanName }));
       } else {
         // Tạo mới
         await vehicleTypeService.createVehicleType(payload);
-        onSuccess(`Tạo mới loại phương tiện "${cleanName}" thành công!`);
+        onSuccess(t('vehicleTypes.form.createSuccess', { name: cleanName }));
       }
       onClose();
     } catch (err) {
-      setError(err.message || 'Đã xảy ra lỗi khi lưu thông tin loại phương tiện.');
+      setError(t('vehicleTypes.form.errors.saveFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -135,20 +137,20 @@ const VehicleTypeModal = ({
           <div>
             <div className="mb-1 flex items-center gap-2 text-sm font-medium text-neighbor-700">
               <Car className="h-4 w-4" />
-              Danh mục loại phương tiện
+              {t('vehicleTypes.form.category')}
             </div>
             <h3 id="vehicle-type-modal-title" className="text-xl font-semibold text-gray-900 sm:text-2xl">
-              {isEdit ? 'Chỉnh sửa loại phương tiện' : 'Thêm loại phương tiện'}
+              {t(isEdit ? 'vehicleTypes.form.editTitle' : 'vehicleTypes.form.createTitle')}
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {isEdit ? 'Cập nhật thông tin hiển thị trong danh mục.' : 'Nhập thông tin cho loại phương tiện mới.'}
+              {t(isEdit ? 'vehicleTypes.form.editDescription' : 'vehicleTypes.form.createDescription')}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            aria-label="Đóng"
+            aria-label={t('vehicleTypes.form.close')}
             className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-800 disabled:opacity-50"
           >
             <X className="h-5 w-5" />
@@ -167,30 +169,30 @@ const VehicleTypeModal = ({
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="vehicle-type-code" className="mb-2 block text-sm font-medium text-gray-700">
-                Mã loại phương tiện <span className="text-red-600">*</span>
+                {t('vehicleTypes.form.code')} <span className="text-red-600">*</span>
               </label>
               <input
                 id="vehicle-type-code"
                 type="text"
                 value={formData.type_code}
                 onChange={handleCodeChange}
-                placeholder="Ví dụ: CAR_16_SEATER"
+                placeholder={t('vehicleTypes.form.codePlaceholder')}
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 font-mono text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-100"
                 required
               />
-              <p className="mt-2 text-xs text-gray-500">Viết hoa, không dấu, dùng dấu gạch dưới để ngăn cách.</p>
+              <p className="mt-2 text-xs text-gray-500">{t('vehicleTypes.form.codeHint')}</p>
             </div>
 
             <div>
               <label htmlFor="vehicle-type-name" className="mb-2 block text-sm font-medium text-gray-700">
-                Tên loại phương tiện <span className="text-red-600">*</span>
+                {t('vehicleTypes.form.name')} <span className="text-red-600">*</span>
               </label>
               <input
                 id="vehicle-type-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
-                placeholder="Ví dụ: Xe khách 16 chỗ"
+                placeholder={t('vehicleTypes.form.namePlaceholder')}
                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-100"
                 required
               />
@@ -199,35 +201,35 @@ const VehicleTypeModal = ({
 
           <div>
             <label htmlFor="vehicle-type-description" className="mb-2 block text-sm font-medium text-gray-700">
-              Mô tả <span className="font-normal text-gray-500">(không bắt buộc)</span>
+              {t('vehicleTypes.form.description')} <span className="font-normal text-gray-500">({t('vehicleTypes.form.optional')})</span>
             </label>
             <textarea
               id="vehicle-type-description"
               rows="5"
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Thông tin nhận biết hoặc các mẫu xe thuộc loại này"
+              placeholder={t('vehicleTypes.form.descriptionPlaceholder')}
               className="w-full resize-y rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 placeholder-gray-400 outline-none transition focus:border-neighbor-600 focus:ring-2 focus:ring-neighbor-100"
               maxLength="500"
             />
             <div className="mt-1 text-right text-xs text-gray-500">
-              {formData.description.length}/500 ký tự
+              {t('vehicleTypes.form.characterCount', { count: formData.description.length })}
             </div>
           </div>
 
           <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-5">
             <div>
-              <span className="block text-sm font-medium text-gray-800">Đang hoạt động</span>
+              <span className="block text-sm font-medium text-gray-800">{t('vehicleTypes.form.active')}</span>
               <span className="text-xs text-gray-500">
                 {formData.is_active
-                  ? 'Chủ bãi xe có thể chọn loại phương tiện này.'
-                  : 'Ẩn khỏi danh mục đăng ký mới.'}
+                  ? t('vehicleTypes.form.activeHint')
+                  : t('vehicleTypes.form.inactiveHint')}
               </span>
             </div>
             <label className="relative inline-flex shrink-0 cursor-pointer items-center">
               <input
                 type="checkbox"
-                aria-label="Đang hoạt động"
+                aria-label={t('vehicleTypes.form.active')}
                 checked={formData.is_active}
                 onChange={(e) => handleChange('is_active', e.target.checked)}
                 className="sr-only peer"
@@ -244,7 +246,7 @@ const VehicleTypeModal = ({
               disabled={submitting}
               className="rounded-lg px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50"
             >
-              Hủy
+              {t('vehicleTypes.form.cancel')}
             </button>
             <button
               type="submit"
@@ -254,10 +256,10 @@ const VehicleTypeModal = ({
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Đang lưu...
+                  {t('vehicleTypes.form.saving')}
                 </>
               ) : (
-                isEdit ? 'Lưu thay đổi' : 'Thêm loại phương tiện'
+                t(isEdit ? 'vehicleTypes.form.saveChanges' : 'vehicleTypes.form.addVehicleType')
               )}
             </button>
           </div>

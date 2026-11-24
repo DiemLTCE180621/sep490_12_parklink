@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Car, Plus, Edit2, CheckCircle2, XCircle, RefreshCw,
   Search, Power, Building2
@@ -10,6 +11,7 @@ import Toast from '../common/Toast';
 
 
 const AdminVehicleTypesPanel = () => {
+  const { t } = useTranslation('admin');
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -40,13 +42,13 @@ const AdminVehicleTypesPanel = () => {
       setVehicleTypes(Array.isArray(list) ? list : []);
     } catch (err) {
       setToast({
-        message: err.message || 'Không thể tải danh mục loại phương tiện',
+        message: t('vehicleTypes.messages.loadError'),
         type: 'error'
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchVehicleTypes();
@@ -112,17 +114,17 @@ const AdminVehicleTypesPanel = () => {
 
     try {
       setConfirmToggleState((prev) => ({ ...prev, loading: true }));
-      const res = await vehicleTypeService.toggleVehicleTypeStatus(vt.id);
+      await vehicleTypeService.toggleVehicleTypeStatus(vt.id);
       setConfirmToggleState({ isOpen: false, vehicleType: null, loading: false });
       setToast({
-        message: res?.message || `Đã ${vt.is_active ? 'vô hiệu hóa' : 'kích hoạt'} loại phương tiện "${vt.name}" thành công!`,
+        message: t(vt.is_active ? 'vehicleTypes.messages.deactivateSuccess' : 'vehicleTypes.messages.activateSuccess', { name: vt.name }),
         type: 'success'
       });
       fetchVehicleTypes();
     } catch (err) {
       setConfirmToggleState((prev) => ({ ...prev, loading: false }));
       setToast({
-        message: err.message || 'Không thể thay đổi trạng thái loại phương tiện',
+        message: t('vehicleTypes.messages.toggleError'),
         type: 'error'
       });
     }
@@ -144,10 +146,10 @@ const AdminVehicleTypesPanel = () => {
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <Car className="w-6 h-6 text-neighbor-600" />
-            Quản Lý Danh Mục Loại Phương Tiện
+            {t('vehicleTypes.title')}
           </h2>
           <p className="text-gray-500 text-xs mt-1">
-            Quản trị các loại phương tiện mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.
+            {t('vehicleTypes.subtitle')}
           </p>
         </div>
 
@@ -156,10 +158,10 @@ const AdminVehicleTypesPanel = () => {
             onClick={fetchVehicleTypes}
             disabled={loading}
             className="p-2.5 text-gray-600 hover:text-neighbor-600 hover:bg-gray-50 border border-gray-200 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold"
-            title="Làm mới danh sách"
+            title={t('vehicleTypes.refreshTitle')}
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
-            Làm mới
+            {t('common.refresh')}
           </button>
 
           {}
@@ -167,7 +169,7 @@ const AdminVehicleTypesPanel = () => {
             onClick={handleOpenCreateModal}
             className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> Thêm Loại Phương Tiện Mới
+            <Plus className="w-4 h-4" /> {t('vehicleTypes.addNew')}
           </button>
         </div>
       </div>
@@ -176,7 +178,7 @@ const AdminVehicleTypesPanel = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gray-50 border border-gray-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-gray-500">Tổng Số Loại Phương Tiện</p>
+            <p className="text-xs font-medium text-gray-500">{t('vehicleTypes.stats.total')}</p>
             <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-neighbor-100/60 text-neighbor-700 flex items-center justify-center font-bold">
@@ -186,7 +188,7 @@ const AdminVehicleTypesPanel = () => {
 
         <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-emerald-700">Đang Hoạt Động (Active)</p>
+            <p className="text-xs font-medium text-emerald-700">{t('vehicleTypes.stats.active')}</p>
             <p className="text-2xl font-bold text-emerald-800 mt-1">{stats.active}</p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
@@ -196,7 +198,7 @@ const AdminVehicleTypesPanel = () => {
 
         <div className="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium text-amber-700">Đã Vô Hiệu Hóa (Inactive)</p>
+            <p className="text-xs font-medium text-amber-700">{t('vehicleTypes.stats.inactive')}</p>
             <p className="text-2xl font-bold text-amber-800 mt-1">{stats.inactive}</p>
           </div>
           <div className="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
@@ -214,7 +216,7 @@ const AdminVehicleTypesPanel = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm theo tên, mã (type_code)..."
+            placeholder={t('vehicleTypes.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-neighbor-500 focus:bg-white transition"
           />
         </div>
@@ -228,7 +230,7 @@ const AdminVehicleTypesPanel = () => {
               : 'text-gray-600 hover:text-gray-900'
               }`}
           >
-            Tất Cả ({stats.total})
+            {t('vehicleTypes.filters.all')} ({stats.total})
           </button>
           <button
             onClick={() => setStatusFilter('ACTIVE')}
@@ -237,7 +239,7 @@ const AdminVehicleTypesPanel = () => {
               : 'text-gray-600 hover:text-gray-900'
               }`}
           >
-            Hoạt Động ({stats.active})
+            {t('vehicleTypes.filters.active')} ({stats.active})
           </button>
           <button
             onClick={() => setStatusFilter('INACTIVE')}
@@ -246,7 +248,7 @@ const AdminVehicleTypesPanel = () => {
               : 'text-gray-600 hover:text-gray-900'
               }`}
           >
-            Đã Vô Hiệu Hóa ({stats.inactive})
+            {t('vehicleTypes.filters.inactive')} ({stats.inactive})
           </button>
         </div>
       </div>
@@ -256,12 +258,12 @@ const AdminVehicleTypesPanel = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-              <th className="py-3.5 px-4">Mã Loại (Code)</th>
-              <th className="py-3.5 px-4">Tên Loại Phương Tiện</th>
-              <th className="py-3.5 px-4">Mô Tả Chi Tiết</th>
-              <th className="py-3.5 px-4 text-center">Bãi Xe Áp Dụng</th>
-              <th className="py-3.5 px-4 text-center">Trạng Thái</th>
-              <th className="py-3.5 px-4 text-center">Thao Tác</th>
+              <th className="py-3.5 px-4">{t('vehicleTypes.table.code')}</th>
+              <th className="py-3.5 px-4">{t('vehicleTypes.table.name')}</th>
+              <th className="py-3.5 px-4">{t('vehicleTypes.table.description')}</th>
+              <th className="py-3.5 px-4 text-center">{t('vehicleTypes.table.facilities')}</th>
+              <th className="py-3.5 px-4 text-center">{t('vehicleTypes.table.status')}</th>
+              <th className="py-3.5 px-4 text-center">{t('vehicleTypes.table.actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
@@ -269,16 +271,16 @@ const AdminVehicleTypesPanel = () => {
               <tr>
                 <td colSpan="6" className="py-12 text-center text-gray-400">
                   <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-neighbor-600" />
-                  <span>Đang tải danh mục loại phương tiện...</span>
+                  <span>{t('vehicleTypes.messages.loading')}</span>
                 </td>
               </tr>
             ) : filteredVehicleTypes.length === 0 ? (
               <tr>
                 <td colSpan="6" className="py-12 text-center text-gray-400">
                   <Car className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p className="font-medium text-gray-600">Không tìm thấy loại phương tiện nào</p>
+                  <p className="font-medium text-gray-600">{t('vehicleTypes.messages.empty')}</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    Thử thay đổi từ khóa tìm kiếm hoặc bấm &quot;Thêm Loại Phương Tiện Mới&quot;
+                    {t('vehicleTypes.messages.emptyHint')}
                   </p>
                 </td>
               </tr>
@@ -307,7 +309,7 @@ const AdminVehicleTypesPanel = () => {
                     {vt.description ? (
                       <p className="line-clamp-2">{vt.description}</p>
                     ) : (
-                      <span className="text-gray-400 italic">Chưa có mô tả</span>
+                      <span className="text-gray-400 italic">{t('vehicleTypes.table.noDescription')}</span>
                     )}
                   </td>
 
@@ -315,7 +317,7 @@ const AdminVehicleTypesPanel = () => {
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
                       <Building2 className="w-3 h-3" />
-                      {vt._count?.facility_vehicle_types || 0} bãi xe
+                      {t('vehicleTypes.table.facilityCount', { count: vt._count?.facility_vehicle_types || 0 })}
                     </span>
                   </td>
 
@@ -324,12 +326,12 @@ const AdminVehicleTypesPanel = () => {
                     {vt.is_active ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                        Đang Hoạt Động
+                        {t('vehicleTypes.filters.active')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full text-xs font-bold">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                        Đã Vô Hiệu Hóa
+                        {t('vehicleTypes.filters.inactive')}
                       </span>
                     )}
                   </td>
@@ -340,7 +342,7 @@ const AdminVehicleTypesPanel = () => {
                       <button
                         onClick={() => handleOpenEditModal(vt)}
                         className="p-1.5 text-gray-600 hover:text-neighbor-600 hover:bg-gray-100 rounded-lg transition"
-                        title="Chỉnh sửa thông tin loại phương tiện"
+                        title={t('vehicleTypes.actions.editTitle')}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -352,7 +354,7 @@ const AdminVehicleTypesPanel = () => {
                           ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
                           : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
                           }`}
-                        title={vt.is_active ? 'Vô hiệu hóa loại xe này' : 'Kích hoạt lại loại xe này'}
+                        title={t(vt.is_active ? 'vehicleTypes.actions.deactivateTitle' : 'vehicleTypes.actions.activateTitle')}
                       >
                         <Power className="w-4 h-4" />
                       </button>
@@ -385,18 +387,18 @@ const AdminVehicleTypesPanel = () => {
         type={confirmToggleState.vehicleType?.is_active ? 'warning' : 'info'}
         title={
           confirmToggleState.vehicleType?.is_active
-            ? 'Xác Nhận Vô Hiệu Hóa Loại Phương Tiện'
-            : 'Xác Nhận Kích Hoạt Lại Loại Phương Tiện'
+            ? t('vehicleTypes.confirm.deactivateTitle')
+            : t('vehicleTypes.confirm.activateTitle')
         }
         message={
           confirmToggleState.vehicleType?.is_active
-            ? `Bạn có chắc chắn muốn vô hiệu hóa loại phương tiện "${confirmToggleState.vehicleType?.name}"? Các bãi xe mới sẽ không thể lựa chọn loại phương tiện này khi đăng ký.`
-            : `Bạn có muốn kích hoạt lại loại phương tiện "${confirmToggleState.vehicleType?.name}" để các bãi xe có thể đăng ký dịch vụ?`
+            ? t('vehicleTypes.confirm.deactivateMessage', { name: confirmToggleState.vehicleType?.name })
+            : t('vehicleTypes.confirm.activateMessage', { name: confirmToggleState.vehicleType?.name })
         }
         confirmText={
-          confirmToggleState.vehicleType?.is_active ? 'Vô Hiệu Hóa' : 'Kích Hoạt Lại'
+          t(confirmToggleState.vehicleType?.is_active ? 'vehicleTypes.confirm.deactivate' : 'vehicleTypes.confirm.activate')
         }
-        cancelText="Bỏ Qua"
+        cancelText={t('vehicleTypes.confirm.cancel')}
       />
     </div>
   );

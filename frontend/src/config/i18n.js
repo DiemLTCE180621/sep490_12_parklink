@@ -41,6 +41,7 @@ const getInitialLanguage = () => {
 const syncDocumentLanguage = (lng) => {
   if (typeof document !== 'undefined') {
     document.documentElement.lang = lng;
+    document.title = i18n.t('common:app.title', { lng });
   }
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, lng);

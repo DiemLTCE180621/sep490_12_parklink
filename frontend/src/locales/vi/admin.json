@@ -5,6 +5,7 @@
   "sidebar": {
     "title": "Menu Quản Trị",
     "subtitle": "Hệ thống ParkLink",
+    "roleTitle": "Ban Quản Trị Hệ Thống",
     "itemsCount": "{{count}} mục",
     "viewing": "Đang xem mục",
     "close": "Đóng",
@@ -128,15 +129,99 @@
       "submittedDate": "Ngày gửi hồ sơ",
       "status": "Trạng thái",
       "actions": "Thao tác",
-      "scaleAndFee": "Quy mô & Phí"
+      "scaleAndFee": "Quy mô & Phí",
+      "approvalProgress": "Tiến trình xét duyệt",
+      "vehicleCount": "{{count}} xe",
+      "currency": "VNĐ",
+      "unassignedInspector": "Chưa gán NV"
     },
     "actions": {
       "viewDetail": "Xem chi tiết",
       "assignInspector": "Phân công khảo sát",
       "finalize": "Duyệt chính thức",
-      "reject": "Từ chối hồ sơ"
+      "reject": "Từ chối",
+      "viewDetailTitle": "Xem chi tiết đơn này",
+      "preliminary": "Duyệt sơ bộ",
+      "preliminaryTitle": "Duyệt sơ bộ & Giao khảo sát",
+      "rejectTitle": "Từ chối đơn này",
+      "finalizeTitle": "Hoàn tất phê duyệt & Cấp mật khẩu",
+      "reassign": "Đổi NV",
+      "reassignTitle": "Đổi nhân viên khảo sát phụ trách"
     },
-    "empty": "Không tìm thấy hồ sơ đăng ký nào phù hợp!"
+    "empty": "Không tìm thấy hồ sơ đăng ký nào phù hợp!",
+    "filters": {
+      "allStatuses": "Tất cả Trạng thái",
+      "refreshTitle": "Làm mới bộ lọc"
+    },
+    "pagination": {
+      "summary": "Trang {{current}} / {{total}} (Tổng {{count}} hồ sơ)",
+      "previous": "Trước",
+      "next": "Sau"
+    },
+    "assign": {
+      "reassignTitle": "Thay Đổi Nhân Viên Khảo Sát",
+      "assignTitle": "Duyệt Sơ Bộ & Phân Công Khảo Sát",
+      "reassignConfirm": "Cập nhật phân công",
+      "assignConfirm": "Xác nhận duyệt & Giao việc"
+    },
+    "inspectorModal": {
+      "description": "Chỉ định nhân viên khảo sát thực địa phụ trách cơ sở bãi đỗ xe",
+      "close": "Đóng",
+      "loadError": "Không thể tải danh sách nhân viên khảo sát. Vui lòng thử lại!",
+      "searchPlaceholder": "Tìm nhân viên theo tên, email, SĐT, địa chỉ...",
+      "allAreas": "Mọi khu vực",
+      "allWorkloads": "Mọi tải việc",
+      "idleFilter": "Rảnh (0 việc)",
+      "busyFilter": "Đang có bãi",
+      "results": "Tìm thấy {{count}} / {{total}} nhân viên phù hợp",
+      "loading": "Đang tải danh sách nhân viên khảo sát...",
+      "noInspectors": "Chưa có nhân viên khảo sát nào trong hệ thống!",
+      "noInspectorsHint": "Hiện chưa có tài khoản nhân viên khảo sát thực địa nào đang ở trạng thái Hoạt Động (ACTIVE). Vui lòng vào trang Quản lý nhân viên để tạo tài khoản trước khi phân công.",
+      "noMatches": "Không tìm thấy nhân viên nào phù hợp với bộ lọc.",
+      "clearFilters": "Xóa bộ lọc để xem tất cả ({{count}})",
+      "inspector": "NV Khảo sát",
+      "currentAssignee": "Đang phụ trách",
+      "idle": "Đang rảnh (0 việc)",
+      "activeFacilities": "Đang khảo sát {{count}} bãi",
+      "address": "Địa chỉ",
+      "addressMissing": "Chưa cập nhật địa chỉ",
+      "selectedInspector": "Đang chọn nhân viên:",
+      "selectInspector": "Vui lòng chọn 1 nhân viên khảo sát"
+    },
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách đăng ký chờ duyệt",
+      "loading": "Đang tải danh sách phê duyệt bãi đỗ xe...",
+      "emptyHint": "Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm.",
+      "finalizeSuccess": "Đã duyệt chính thức! Email kèm mật khẩu đã được gửi cho Provider.",
+      "rejectReasonRequired": "Vui lòng nhập lý do từ chối!",
+      "rejectSuccess": "Từ chối đăng ký thành công!",
+      "actionFailed": "Thao tác thất bại: {{message}}",
+      "preliminarySuccess": "Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.",
+      "reassignSuccess": "Đã phân công lại nhân viên khảo sát thành công!",
+      "processError": "Có lỗi xảy ra khi xử lý!"
+    },
+    "confirm": {
+      "finalizeTitle": "Phê Duyệt Chính Thức",
+      "finalizeDescription": "Nhân viên khảo sát đã hoàn tất báo cáo và hình ảnh thực địa. Bạn có chắc chắn muốn hoàn tất duyệt và cấp tài khoản cho cơ sở này?",
+      "cancel": "Hủy",
+      "processing": "Đang xử lý...",
+      "finalizeSubmit": "Duyệt & Cấp Mật Khẩu",
+      "rejectTitle": "Từ Chối Đăng Ký",
+      "rejectDescription": "Vui lòng cung cấp lý do từ chối để thông báo cho Provider.",
+      "reasonLabels": {
+        "missingInformation": "Thiếu thông tin",
+        "locationOrPrice": "Vị trí/Giá sai",
+        "safetyStandards": "Không đạt tiêu chuẩn"
+      },
+      "reasons": {
+        "missingInformation": "Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.",
+        "locationOrPrice": "Vị trí hoặc mức giá đăng ký không phù hợp quy định.",
+        "safetyStandards": "Khảo sát thực địa không đáp ứng tiêu chuẩn an toàn."
+      },
+      "reasonPlaceholder": "Nhập lý do chi tiết...",
+      "rejecting": "Đang từ chối...",
+      "rejectSubmit": "Xác nhận Từ Chối"
+    }
   },
   "facilities": {
     "title": "Tất Cả Cơ Sở Bãi Đỗ Xe",
@@ -347,8 +432,88 @@
     "subtitle": "Quản lý mức phí hoa hồng và biểu phí dịch vụ ParkLink"
   },
   "vehicleTypes": {
-    "title": "Loại Phương Tiện Hỗ Trợ",
-    "subtitle": "Quản lý danh mục loại xe và kích thước vị trí đỗ"
+    "title": "Quản Lý Danh Mục Loại Phương Tiện",
+    "subtitle": "Quản trị các loại phương tiện mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.",
+    "refreshTitle": "Làm mới danh sách",
+    "addNew": "Thêm Loại Phương Tiện Mới",
+    "searchPlaceholder": "Tìm theo tên, mã (type_code)...",
+    "stats": {
+      "total": "Tổng Số Loại Phương Tiện",
+      "active": "Đang Hoạt Động (Active)",
+      "inactive": "Đã Vô Hiệu Hóa (Inactive)"
+    },
+    "filters": {
+      "all": "Tất Cả",
+      "active": "Hoạt Động",
+      "inactive": "Đã Vô Hiệu Hóa"
+    },
+    "table": {
+      "code": "Mã Loại (Code)",
+      "name": "Tên Loại Phương Tiện",
+      "description": "Mô Tả Chi Tiết",
+      "facilities": "Bãi Xe Áp Dụng",
+      "status": "Trạng Thái",
+      "actions": "Thao Tác",
+      "noDescription": "Chưa có mô tả",
+      "facilityCount": "{{count}} bãi xe"
+    },
+    "actions": {
+      "editTitle": "Chỉnh sửa thông tin loại phương tiện",
+      "deactivateTitle": "Vô hiệu hóa loại xe này",
+      "activateTitle": "Kích hoạt lại loại xe này"
+    },
+    "messages": {
+      "loadError": "Không thể tải danh mục loại phương tiện",
+      "loading": "Đang tải danh mục loại phương tiện...",
+      "empty": "Không tìm thấy loại phương tiện nào",
+      "emptyHint": "Thử thay đổi từ khóa tìm kiếm hoặc bấm Thêm Loại Phương Tiện Mới.",
+      "deactivateSuccess": "Đã vô hiệu hóa loại phương tiện \"{{name}}\" thành công!",
+      "activateSuccess": "Đã kích hoạt loại phương tiện \"{{name}}\" thành công!",
+      "toggleError": "Không thể thay đổi trạng thái loại phương tiện"
+    },
+    "confirm": {
+      "deactivateTitle": "Xác Nhận Vô Hiệu Hóa Loại Phương Tiện",
+      "activateTitle": "Xác Nhận Kích Hoạt Lại Loại Phương Tiện",
+      "deactivateMessage": "Bạn có chắc chắn muốn vô hiệu hóa loại phương tiện \"{{name}}\"? Các bãi xe mới sẽ không thể lựa chọn loại phương tiện này khi đăng ký.",
+      "activateMessage": "Bạn có muốn kích hoạt lại loại phương tiện \"{{name}}\" để các bãi xe có thể đăng ký dịch vụ?",
+      "deactivate": "Vô Hiệu Hóa",
+      "activate": "Kích Hoạt Lại",
+      "cancel": "Bỏ Qua"
+    },
+    "form": {
+      "category": "Danh mục loại phương tiện",
+      "editTitle": "Chỉnh sửa loại phương tiện",
+      "createTitle": "Thêm loại phương tiện",
+      "editDescription": "Cập nhật thông tin hiển thị trong danh mục.",
+      "createDescription": "Nhập thông tin cho loại phương tiện mới.",
+      "close": "Đóng",
+      "code": "Mã loại phương tiện",
+      "codePlaceholder": "Ví dụ: CAR_16_SEATER",
+      "codeHint": "Viết hoa, không dấu, dùng dấu gạch dưới để ngăn cách.",
+      "name": "Tên loại phương tiện",
+      "namePlaceholder": "Ví dụ: Xe khách 16 chỗ",
+      "description": "Mô tả",
+      "optional": "không bắt buộc",
+      "descriptionPlaceholder": "Thông tin nhận biết hoặc các mẫu xe thuộc loại này",
+      "characterCount": "{{count}}/500 ký tự",
+      "active": "Đang hoạt động",
+      "activeHint": "Chủ bãi xe có thể chọn loại phương tiện này.",
+      "inactiveHint": "Ẩn khỏi danh mục đăng ký mới.",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu thay đổi",
+      "addVehicleType": "Thêm loại phương tiện",
+      "updateSuccess": "Cập nhật loại phương tiện \"{{name}}\" thành công!",
+      "createSuccess": "Tạo mới loại phương tiện \"{{name}}\" thành công!",
+      "errors": {
+        "codeRequired": "Vui lòng nhập mã loại phương tiện (VD: CAR_16_SEATER).",
+        "codeInvalid": "Mã loại phương tiện chỉ được chứa chữ cái, số, gạch dưới (_) và từ 2-50 ký tự.",
+        "nameRequired": "Vui lòng nhập tên loại phương tiện.",
+        "nameInvalid": "Tên loại phương tiện phải có độ dài từ 2 đến 100 ký tự.",
+        "descriptionTooLong": "Mô tả không được vượt quá 500 ký tự.",
+        "saveFailed": "Đã xảy ra lỗi khi lưu thông tin loại phương tiện."
+      }
+    }
   },
   "amenities": {
     "title": "Quản Lý Tiện Ích Cơ Sở",
