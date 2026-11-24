@@ -201,9 +201,9 @@ const DashboardPage = () => {
                   {roleName === 'PROVIDER'
                     ? t('portal.roleTitle')
                     : roleName === 'ADMIN'
-                      ? 'Ban Quản Trị Hệ Thống'
+                       ? t('admin:sidebar.roleTitle')
                       : roleName === 'FIELD_INSPECTOR'
-                        ? 'Nhân Viên Khảo Sát'
+                         ? t('common:roles.FIELD_INSPECTOR')
                         : t('customer:dashboard.roleTitle')}
                 </p>
               </div>
@@ -330,7 +330,7 @@ const DashboardPage = () => {
                     </div>
                   </div>
                   <span className="text-[11px] font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100 shrink-0 whitespace-nowrap">
-                    {adminTabs.length} mục
+                    {t('admin:sidebar.itemsCount', { count: adminTabs.length })}
                   </span>
                 </div>
 

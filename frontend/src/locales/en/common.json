@@ -1,5 +1,6 @@
 {
   "app": {
+    "title": "ParkLink - Monthly Parking Rental Platform",
     "loading": "Loading ParkLink...",
     "tagline": "Monthly Parking Rental"
   },
@@ -35,6 +36,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "processing": "Processing...",
     "close": "Close",
     "edit": "Edit",
     "delete": "Delete",

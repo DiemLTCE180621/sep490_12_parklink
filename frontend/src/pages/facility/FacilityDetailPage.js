@@ -114,7 +114,7 @@ const FacilityDetailPage = () => {
       setToastType('error');
       return;
     }
-    navigate(`/customer/reservations/create?facilityId=${facilityId}`, {
+    navigate(`/facilities/${facilityId}/reserve`, {
       state: {
         facility,
         availability,

@@ -5,6 +5,7 @@
   "sidebar": {
     "title": "Admin Menu",
     "subtitle": "ParkLink System",
+    "roleTitle": "System Administration",
     "itemsCount": "{{count}} items",
     "viewing": "Viewing section",
     "close": "Close",
@@ -128,15 +129,99 @@
       "submittedDate": "Submission Date",
       "status": "Status",
       "actions": "Actions",
-      "scaleAndFee": "Scale & Fee"
+      "scaleAndFee": "Capacity & Fee",
+      "approvalProgress": "Approval Progress",
+      "vehicleCount": "{{count}} vehicles",
+      "currency": "VND",
+      "unassignedInspector": "No inspector assigned"
     },
     "actions": {
       "viewDetail": "View Details",
       "assignInspector": "Assign Inspector",
       "finalize": "Finalize & Approve",
-      "reject": "Reject Application"
+      "reject": "Reject",
+      "viewDetailTitle": "View this application",
+      "preliminary": "Preliminary approval",
+      "preliminaryTitle": "Approve preliminary review and assign an inspector",
+      "rejectTitle": "Reject this application",
+      "finalizeTitle": "Finalize approval and issue a password",
+      "reassign": "Reassign",
+      "reassignTitle": "Change the assigned inspector"
     },
-    "empty": "No matching registration records found!"
+    "empty": "No matching registration records found!",
+    "filters": {
+      "allStatuses": "All statuses",
+      "refreshTitle": "Refresh filters"
+    },
+    "pagination": {
+      "summary": "Page {{current}} / {{total}} ({{count}} applications)",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "assign": {
+      "reassignTitle": "Change Assigned Inspector",
+      "assignTitle": "Preliminary Approval & Inspector Assignment",
+      "reassignConfirm": "Update assignment",
+      "assignConfirm": "Approve and assign"
+    },
+    "inspectorModal": {
+      "description": "Assign an inspector to survey this parking facility",
+      "close": "Close",
+      "loadError": "Unable to load inspectors. Please try again.",
+      "searchPlaceholder": "Search inspectors by name, email, phone or address...",
+      "allAreas": "All areas",
+      "allWorkloads": "All workloads",
+      "idleFilter": "Available (0 assignments)",
+      "busyFilter": "Has assignments",
+      "results": "{{count}} of {{total}} matching inspectors",
+      "loading": "Loading inspectors...",
+      "noInspectors": "No inspectors are available in the system.",
+      "noInspectorsHint": "There are no active field inspector accounts. Create one in Inspector Management before assigning this facility.",
+      "noMatches": "No inspectors match the selected filters.",
+      "clearFilters": "Clear filters to see all ({{count}})",
+      "inspector": "Inspector",
+      "currentAssignee": "Currently assigned",
+      "idle": "Available (0 assignments)",
+      "activeFacilities": "Surveying {{count}} facilities",
+      "address": "Address",
+      "addressMissing": "Address not updated",
+      "selectedInspector": "Selected inspector:",
+      "selectInspector": "Please select an inspector"
+    },
+    "messages": {
+      "loadError": "Unable to load pending applications.",
+      "loading": "Loading facility applications...",
+      "emptyHint": "Try changing the search term or filters.",
+      "finalizeSuccess": "Application approved. An email with a password was sent to the provider.",
+      "rejectReasonRequired": "Please enter a reason for rejection.",
+      "rejectSuccess": "Application rejected successfully.",
+      "actionFailed": "Action failed: {{message}}",
+      "preliminarySuccess": "Preliminary approval and inspector assignment completed. The provider was notified by email.",
+      "reassignSuccess": "Inspector reassigned successfully.",
+      "processError": "Unable to process this request."
+    },
+    "confirm": {
+      "finalizeTitle": "Final Approval",
+      "finalizeDescription": "The inspector has completed the report and site photos. Are you sure you want to approve this facility and issue an account?",
+      "cancel": "Cancel",
+      "processing": "Processing...",
+      "finalizeSubmit": "Approve & Issue Password",
+      "rejectTitle": "Reject Application",
+      "rejectDescription": "Please provide a rejection reason to notify the provider.",
+      "reasonLabels": {
+        "missingInformation": "Missing information",
+        "locationOrPrice": "Location/price issue",
+        "safetyStandards": "Does not meet standards"
+      },
+      "reasons": {
+        "missingInformation": "The facility information is incomplete or inaccurate.",
+        "locationOrPrice": "The registered location or price does not meet the requirements.",
+        "safetyStandards": "The site inspection did not meet safety standards."
+      },
+      "reasonPlaceholder": "Enter a detailed reason...",
+      "rejecting": "Rejecting...",
+      "rejectSubmit": "Confirm Rejection"
+    }
   },
   "facilities": {
     "title": "All Parking Facilities",
@@ -347,8 +432,88 @@
     "subtitle": "Manage platform commission rates and service fee schedules"
   },
   "vehicleTypes": {
-    "title": "Supported Vehicle Types",
-    "subtitle": "Manage vehicle categories and parking space dimensions"
+    "title": "Vehicle Type Management",
+    "subtitle": "Manage vehicle categories supported by the platform for facility matching and parking capacity.",
+    "refreshTitle": "Refresh vehicle types",
+    "addNew": "Add New Vehicle Type",
+    "searchPlaceholder": "Search by name or type code...",
+    "stats": {
+      "total": "Total Vehicle Types",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "code": "Type Code",
+      "name": "Vehicle Type Name",
+      "description": "Description",
+      "facilities": "Facilities Using",
+      "status": "Status",
+      "actions": "Actions",
+      "noDescription": "No description",
+      "facilityCount": "{{count}} facilities"
+    },
+    "actions": {
+      "editTitle": "Edit vehicle type",
+      "deactivateTitle": "Deactivate this vehicle type",
+      "activateTitle": "Reactivate this vehicle type"
+    },
+    "messages": {
+      "loadError": "Unable to load vehicle types.",
+      "loading": "Loading vehicle types...",
+      "empty": "No vehicle types found.",
+      "emptyHint": "Try a different search or add a new vehicle type.",
+      "deactivateSuccess": "Vehicle type \"{{name}}\" was deactivated.",
+      "activateSuccess": "Vehicle type \"{{name}}\" was activated.",
+      "toggleError": "Unable to change vehicle type status."
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate Vehicle Type",
+      "activateTitle": "Reactivate Vehicle Type",
+      "deactivateMessage": "Deactivate \"{{name}}\"? New facilities will no longer be able to select this type during registration.",
+      "activateMessage": "Reactivate \"{{name}}\" so facilities can select it again?",
+      "deactivate": "Deactivate",
+      "activate": "Reactivate",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "category": "Vehicle Type Catalog",
+      "editTitle": "Edit Vehicle Type",
+      "createTitle": "Add Vehicle Type",
+      "editDescription": "Update the information shown in the catalog.",
+      "createDescription": "Enter details for the new vehicle type.",
+      "close": "Close",
+      "code": "Vehicle Type Code",
+      "codePlaceholder": "Example: CAR_16_SEATER",
+      "codeHint": "Use uppercase letters, numbers and underscores.",
+      "name": "Vehicle Type Name",
+      "namePlaceholder": "Example: 16-seat minibus",
+      "description": "Description",
+      "optional": "optional",
+      "descriptionPlaceholder": "Identifying details or example vehicle models",
+      "characterCount": "{{count}}/500 characters",
+      "active": "Active",
+      "activeHint": "Providers can select this vehicle type.",
+      "inactiveHint": "Hidden from new registrations.",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "addVehicleType": "Add Vehicle Type",
+      "updateSuccess": "Vehicle type \"{{name}}\" updated successfully.",
+      "createSuccess": "Vehicle type \"{{name}}\" created successfully.",
+      "errors": {
+        "codeRequired": "Enter a vehicle type code (for example, CAR_16_SEATER).",
+        "codeInvalid": "The code must contain 2–50 uppercase letters, numbers or underscores.",
+        "nameRequired": "Enter a vehicle type name.",
+        "nameInvalid": "The name must be 2–100 characters long.",
+        "descriptionTooLong": "The description cannot exceed 500 characters.",
+        "saveFailed": "Unable to save the vehicle type."
+      }
+    }
   },
   "amenities": {
     "title": "Facility Amenities Management",

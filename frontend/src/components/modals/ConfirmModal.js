@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X, Loader2, Ban, CheckCircle2, Info } from 'lucide-react';
 
 
@@ -13,6 +14,7 @@ const ConfirmModal = ({
   type = 'danger', 
   loading = false
 }) => {
+  const { t } = useTranslation('common');
   if (!isOpen) return null;
 
   const getTypeStyles = () => {
@@ -91,7 +93,7 @@ const ConfirmModal = ({
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Đang Xử Lý...
+                <Loader2 className="w-4 h-4 animate-spin" /> {t('actions.processing')}
               </>
             ) : (
               <>
