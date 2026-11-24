@@ -244,7 +244,10 @@
       "viewTerminationCustomer": "View Return",
       "terminate": "Return Slot",
       "complaint": "Complaint",
-      "details": "Details"
+      "details": "Details",
+      "hasBeenRenewed": "Renewed (New Contract: {{code}})",
+      "hasBeenRenewedSimple": "Renewed into new contract",
+      "renewedDisabledTooltip": "This contract has been renewed into a new contract"
     }
   },
   "contractDetail": {

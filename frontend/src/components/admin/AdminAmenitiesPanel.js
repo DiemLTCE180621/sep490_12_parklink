@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Layers, Plus, Edit2, RefreshCw, Search, Eye, EyeOff,
   Building2, ShieldCheck, Camera, Umbrella, UserCheck,
@@ -33,7 +34,22 @@ const renderIcon = (iconName) => {
   return <IconComp className="w-4 h-4 text-neighbor-600" />;
 };
 
+const STATUS_FILTERS = [
+  { value: 'ALL', key: 'all', defaultLabel: 'Tất cả trạng thái' },
+  { value: 'ACTIVE', key: 'visible', defaultLabel: 'Đang hiển thị' },
+  { value: 'INACTIVE', key: 'hidden', defaultLabel: 'Đang ẩn' }
+];
+
+const CATEGORY_FILTERS = [
+  { value: 'ALL', key: 'all', defaultLabel: 'Tất cả nhóm' },
+  { value: 'SECURITY', key: 'SECURITY', defaultLabel: 'An ninh & An toàn' },
+  { value: 'SERVICE', key: 'SERVICE', defaultLabel: 'Dịch vụ tiện ích' },
+  { value: 'INFRASTRUCTURE', key: 'INFRASTRUCTURE', defaultLabel: 'Cơ sở hạ tầng' },
+  { value: 'CONVENIENCE', key: 'CONVENIENCE', defaultLabel: 'Tiện nghi bổ sung' }
+];
+
 const AdminAmenitiesPanel = () => {
+  const { t } = useTranslation('admin');
   const [amenities, setAmenities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -61,13 +77,13 @@ const AdminAmenitiesPanel = () => {
       setAmenities(Array.isArray(list) ? list : []);
     } catch (err) {
       setToast({
-        message: err.message || 'Không thể tải danh sách tiện ích',
+        message: err.message || t('amenitySettings.messages.loadError', 'Không thể tải danh sách tiện ích'),
         type: 'error'
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchAmenities();
@@ -122,14 +138,17 @@ const AdminAmenitiesPanel = () => {
       const res = await amenityService.toggleAmenityStatus(item.id);
       setConfirmState({ isOpen: false, amenity: null, loading: false });
       setToast({
-        message: res?.message || `Đã cập nhật trạng thái tiện ích "${item.name}"!`,
+        message: res?.message || t('amenitySettings.messages.updateStatusSuccess', {
+          name: item.name,
+          defaultValue: `Đã cập nhật trạng thái tiện ích "${item.name}"!`
+        }),
         type: 'success'
       });
       fetchAmenities();
     } catch (err) {
       setConfirmState((prev) => ({ ...prev, loading: false }));
       setToast({
-        message: err.message || 'Lỗi khi thay đổi trạng thái tiện ích',
+        message: err.message || t('amenitySettings.messages.updateStatusError', 'Lỗi khi thay đổi trạng thái tiện ích'),
         type: 'error'
       });
     }
@@ -145,31 +164,37 @@ const AdminAmenitiesPanel = () => {
         />
       )}
 
+      {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-5">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2.5">
             <Layers className="w-6 h-6 sm:w-7 sm:h-7 text-neighbor-600" />
-            Quản Lý Tiện Ích Bãi Xe
+            {t('amenitySettings.title', 'Quản Lý Tiện Ích Bãi Xe')}
           </h2>
           <p className="text-gray-500 text-sm mt-1">
-            Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.
+            {t('amenitySettings.subtitle', 'Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.')}
           </p>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
           <span className="text-sm font-semibold bg-gray-100 px-3.5 py-2 rounded-xl text-gray-700">
-            Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{filteredAmenities.length}</strong> tiện ích
+            {t('amenitySettings.totalCount', {
+              count: filteredAmenities.length,
+              defaultValue: `Tổng cộng: ${filteredAmenities.length} tiện ích`
+            })}
           </span>
 
           <button
             onClick={handleOpenCreate}
             className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-sm font-semibold shadow-xs transition flex items-center gap-2 cursor-pointer active:scale-95"
           >
-            <Plus className="w-4 h-4" /> Thêm tiện ích
+            <Plus className="w-4 h-4" />
+            {t('amenitySettings.addBtn', 'Thêm tiện ích')}
           </button>
         </div>
       </div>
 
+      {/* Search and Filters */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -179,7 +204,7 @@ const AdminAmenitiesPanel = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm theo tên tiện ích, nhóm phân loại..."
+            placeholder={t('amenitySettings.searchPlaceholder', 'Tìm theo tên tiện ích, nhóm phân loại...')}
             className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 transition"
           />
         </div>
@@ -190,9 +215,11 @@ const AdminAmenitiesPanel = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white font-medium text-gray-700"
           >
-            <option value="ALL">Tất cả trạng thái</option>
-            <option value="ACTIVE">Đang hiển thị</option>
-            <option value="INACTIVE">Đang ẩn</option>
+            {STATUS_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {t(`amenitySettings.statuses.${f.key}`, f.defaultLabel)}
+              </option>
+            ))}
           </select>
 
           <select
@@ -200,34 +227,35 @@ const AdminAmenitiesPanel = () => {
             onChange={(e) => setTypeFilter(e.target.value)}
             className="px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500/20 focus:border-neighbor-600 bg-white font-medium text-gray-700"
           >
-            <option value="ALL">Tất cả nhóm</option>
-            <option value="SECURITY">An ninh & An toàn</option>
-            <option value="SERVICE">Dịch vụ tiện ích</option>
-            <option value="INFRASTRUCTURE">Cơ sở hạ tầng</option>
-            <option value="CONVENIENCE">Tiện nghi bổ sung</option>
+            {CATEGORY_FILTERS.map((f) => (
+              <option key={f.value} value={f.value}>
+                {t(`amenitySettings.types.${f.key}`, f.defaultLabel)}
+              </option>
+            ))}
           </select>
 
           <button
             onClick={fetchAmenities}
             disabled={loading}
             className="p-2.5 text-gray-600 hover:text-neighbor-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer"
-            title="Tải lại dữ liệu"
+            title={t('amenitySettings.reloadTooltip', 'Tải lại dữ liệu')}
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
           </button>
         </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-gray-200">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-              <th className="py-3.5 px-4 w-16">ID</th>
-              <th className="py-3.5 px-4">Tên tiện ích</th>
-              <th className="py-3.5 px-4">Nhóm danh mục</th>
-              <th className="py-3.5 px-4 text-center">Bãi xe áp dụng</th>
-              <th className="py-3.5 px-4 text-center">Trạng thái</th>
-              <th className="py-3.5 px-4 text-center w-28">Thao tác</th>
+              <th className="py-3.5 px-4 w-16">{t('amenitySettings.table.id', 'ID')}</th>
+              <th className="py-3.5 px-4">{t('amenitySettings.table.name', 'Tên tiện ích')}</th>
+              <th className="py-3.5 px-4">{t('amenitySettings.table.category', 'Nhóm danh mục')}</th>
+              <th className="py-3.5 px-4 text-center">{t('amenitySettings.table.facilities', 'Bãi xe áp dụng')}</th>
+              <th className="py-3.5 px-4 text-center">{t('amenitySettings.table.status', 'Trạng thái')}</th>
+              <th className="py-3.5 px-4 text-center w-28">{t('amenitySettings.table.actions', 'Thao tác')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
@@ -235,14 +263,20 @@ const AdminAmenitiesPanel = () => {
               <tr>
                 <td colSpan="6" className="py-14 text-center text-gray-400">
                   <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-neighbor-600" />
-                  <span className="text-sm font-medium">Đang tải danh sách tiện ích...</span>
+                  <span className="text-sm font-medium">
+                    {t('amenitySettings.empty.loading', 'Đang tải danh sách tiện ích...')}
+                  </span>
                 </td>
               </tr>
             ) : filteredAmenities.length === 0 ? (
               <tr>
                 <td colSpan="6" className="py-12 text-center text-gray-400">
-                  <p className="font-semibold text-gray-600 text-sm">Không tìm thấy tiện ích nào phù hợp</p>
-                  <p className="text-xs text-gray-400 mt-1">Thử thay đổi từ khóa tìm kiếm hoặc lọc theo trạng thái khác</p>
+                  <p className="font-semibold text-gray-600 text-sm">
+                    {t('amenitySettings.empty.noData', 'Không tìm thấy tiện ích nào phù hợp')}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {t('amenitySettings.empty.noDataDesc', 'Thử thay đổi từ khóa tìm kiếm hoặc lọc theo trạng thái khác')}
+                  </p>
                 </td>
               </tr>
             ) : (
@@ -263,14 +297,17 @@ const AdminAmenitiesPanel = () => {
 
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-semibold border border-gray-200 uppercase tracking-wide">
-                      {item.type || 'CHUNG'}
+                      {t(`amenitySettings.types.${item.type}`, item.type || t('amenitySettings.types.GENERAL', 'CHUNG'))}
                     </span>
                   </td>
 
                   <td className="py-3.5 px-4 text-center whitespace-nowrap">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-neighbor-50 text-neighbor-700 border border-neighbor-200">
                       <Building2 className="w-3.5 h-3.5 text-neighbor-600" />
-                      {item._count?.facility_amenities || 0} bãi xe
+                      {t('amenitySettings.appliedFacilities', {
+                        count: item._count?.facility_amenities || 0,
+                        defaultValue: `${item._count?.facility_amenities || 0} bãi xe`
+                      })}
                     </span>
                   </td>
 
@@ -278,12 +315,12 @@ const AdminAmenitiesPanel = () => {
                     {item.is_active ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                        Hiển thị
+                        {t('amenitySettings.statuses.active', 'Hiển thị')}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded-full text-xs font-bold">
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                        Đang ẩn
+                        {t('amenitySettings.statuses.hidden', 'Đang ẩn')}
                       </span>
                     )}
                   </td>
@@ -293,7 +330,7 @@ const AdminAmenitiesPanel = () => {
                       <button
                         onClick={() => handleOpenEdit(item)}
                         className="p-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition cursor-pointer"
-                        title="Chỉnh sửa thông tin"
+                        title={t('amenitySettings.tooltips.edit', 'Chỉnh sửa thông tin')}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -305,7 +342,11 @@ const AdminAmenitiesPanel = () => {
                             ? 'text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border-rose-200'
                             : 'text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
                         }`}
-                        title={item.is_active ? 'Ẩn tiện ích này' : 'Hiện lại tiện ích này'}
+                        title={
+                          item.is_active
+                            ? t('amenitySettings.tooltips.hide', 'Ẩn tiện ích này')
+                            : t('amenitySettings.tooltips.show', 'Hiện lại tiện ích này')
+                        }
                       >
                         {item.is_active ? (
                           <EyeOff className="w-4 h-4" />
@@ -322,6 +363,7 @@ const AdminAmenitiesPanel = () => {
         </table>
       </div>
 
+      {/* Modals */}
       <AmenityModal
         isOpen={modalState.isOpen}
         onClose={() => setModalState({ isOpen: false, amenity: null })}
@@ -338,14 +380,28 @@ const AdminAmenitiesPanel = () => {
         onClose={() => setConfirmState({ isOpen: false, amenity: null, loading: false })}
         onConfirm={handleConfirmToggle}
         type={confirmState.amenity?.is_active ? 'warning' : 'info'}
-        title={confirmState.amenity?.is_active ? 'Xác nhận ẩn tiện ích' : 'Xác nhận kích hoạt tiện ích'}
+        title={
+          confirmState.amenity?.is_active
+            ? t('amenitySettings.confirm.hideTitle', 'Xác nhận ẩn tiện ích')
+            : t('amenitySettings.confirm.showTitle', 'Xác nhận kích hoạt tiện ích')
+        }
         message={
           confirmState.amenity?.is_active
-            ? `Bạn có chắc muốn ẩn tiện ích "${confirmState.amenity?.name}"? Tiện ích này sẽ không xuất hiện để bãi xe mới lựa chọn.`
-            : `Kích hoạt lại tiện ích "${confirmState.amenity?.name}" để các cơ sở bãi xe có thể chọn?`
+            ? t('amenitySettings.confirm.hideMessage', {
+                name: confirmState.amenity?.name,
+                defaultValue: `Bạn có chắc muốn ẩn tiện ích "${confirmState.amenity?.name}"? Tiện ích này sẽ không xuất hiện để bãi xe mới lựa chọn.`
+              })
+            : t('amenitySettings.confirm.showMessage', {
+                name: confirmState.amenity?.name,
+                defaultValue: `Kích hoạt lại tiện ích "${confirmState.amenity?.name}" để các cơ sở bãi xe có thể chọn?`
+              })
         }
-        confirmText={confirmState.amenity?.is_active ? 'Ẩn tiện ích' : 'Kích hoạt'}
-        cancelText="Bỏ qua"
+        confirmText={
+          confirmState.amenity?.is_active
+            ? t('amenitySettings.confirm.hideBtn', 'Ẩn tiện ích')
+            : t('amenitySettings.confirm.showBtn', 'Kích hoạt')
+        }
+        cancelText={t('amenitySettings.confirm.cancelBtn', 'Bỏ qua')}
       />
     </div>
   );
