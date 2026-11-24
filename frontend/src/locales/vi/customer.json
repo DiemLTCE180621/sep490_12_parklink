@@ -244,7 +244,10 @@
       "viewTerminationCustomer": "Xem trả chỗ",
       "terminate": "Trả chỗ",
       "complaint": "Khiếu nại",
-      "details": "Chi tiết"
+      "details": "Chi tiết",
+      "hasBeenRenewed": "Đã gia hạn (HĐ mới: {{code}})",
+      "hasBeenRenewedSimple": "Đã gia hạn tạo HĐ mới",
+      "renewedDisabledTooltip": "Hợp đồng này đã được gia hạn tạo hợp đồng mới"
     }
   },
   "contractDetail": {

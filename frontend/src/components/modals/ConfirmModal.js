@@ -1,6 +1,6 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X, Loader2, Ban, CheckCircle2, Info } from 'lucide-react';
-
 
 const ConfirmModal = ({
   isOpen,
@@ -10,9 +10,11 @@ const ConfirmModal = ({
   message = 'Bạn có chắc chắn muốn thực hiện hành động này không?',
   confirmText = 'Xác Nhận Hủy',
   cancelText = 'Bỏ Qua',
+  loadingText,
   type = 'danger', 
   loading = false
 }) => {
+  const { i18n } = useTranslation();
   if (!isOpen) return null;
 
   const getTypeStyles = () => {
@@ -91,7 +93,7 @@ const ConfirmModal = ({
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Đang Xử Lý...
+                <Loader2 className="w-4 h-4 animate-spin" /> {loadingText || (i18n?.language?.startsWith('en') ? 'Processing...' : 'Đang Xử Lý...')}
               </>
             ) : (
               <>
