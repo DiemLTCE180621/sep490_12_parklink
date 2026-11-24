@@ -44,7 +44,7 @@
       "formatHint": "Administrative format",
       "areaLabel": "Administrative Area",
       "streetDetailLabel": "House number, street name, alley details",
-      "streetDetailPlaceholder": "e.g., No. 123/45, 30 Thang 4 Street",
+      "streetDetailPlaceholder": "Enter house number, street name, alley details",
       "contractPreview": "Full address on contract: ",
       "notSet": "Not set"
     },

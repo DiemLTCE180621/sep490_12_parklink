@@ -72,21 +72,21 @@ const ForceChangePasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white p-8 sm:p-10 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto mb-3 border border-amber-100">
-            <Key className="w-6 h-6" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-xl w-full p-8 sm:p-10">
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center mx-auto mb-3 border border-neighbor-100 shadow-xs">
+            <Key className="w-6 h-6 text-neighbor-700" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             {t('forceChangePasswordPage.title')}
           </h2>
-          <p className="mt-1.5 text-xs text-gray-500">
+          <p className="mt-1 text-sm text-gray-500">
             {t('forceChangePasswordPage.subtitle')}
           </p>
         </div>
 
-        <div className="mb-5 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+        <div className="mb-5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs sm:text-sm flex items-start gap-2.5">
           <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold">{t('forceChangePasswordPage.requirements')}</p>
@@ -97,22 +97,22 @@ const ForceChangePasswordPage = () => {
         </div>
 
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2.5">
+          <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="mb-5 p-3 rounded-lg bg-neighbor-50 border border-neighbor-200 text-neighbor-800 text-xs flex items-center gap-2.5">
+          <div className="mb-5 p-3.5 rounded-xl bg-neighbor-50 border border-neighbor-200 text-neighbor-800 text-xs sm:text-sm flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-neighbor-600 shrink-0" />
             <span>{t('forceChangePasswordPage.success')}</span>
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               {t('forceChangePasswordPage.newPasswordLabel')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -125,43 +125,43 @@ const ForceChangePasswordPage = () => {
                 value={formData.newPassword}
                 onChange={handleChange}
                 placeholder={t('forceChangePasswordPage.newPasswordPlaceholder')}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                className="w-full pl-11 pr-11 py-3 border border-gray-300 rounded-lg text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
               >
                 {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-1">
-            <p className="font-semibold text-gray-700 mb-1">{t('forceChangePasswordPage.requirements')}</p>
-            <div className="grid grid-cols-2 gap-1.5 text-gray-600">
-              <div className={`flex items-center gap-1.5 ${hasMinLength ? 'text-neighbor-700 font-semibold' : ''}`}>
+          <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs sm:text-sm space-y-2">
+            <p className="font-semibold text-gray-700">{t('forceChangePasswordPage.requirements')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-gray-600">
+              <div className={`flex items-center gap-2 ${hasMinLength ? 'text-neighbor-700 font-semibold' : ''}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${hasMinLength ? 'bg-neighbor-600' : 'bg-gray-300'}`} />
-                {t('forceChangePasswordPage.ruleLength')}
+                <span>{t('forceChangePasswordPage.ruleLength')}</span>
               </div>
-              <div className={`flex items-center gap-1.5 ${hasUpperCase ? 'text-neighbor-700 font-semibold' : ''}`}>
+              <div className={`flex items-center gap-2 ${hasUpperCase ? 'text-neighbor-700 font-semibold' : ''}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${hasUpperCase ? 'bg-neighbor-600' : 'bg-gray-300'}`} />
-                {t('forceChangePasswordPage.ruleUpper')}
+                <span>{t('forceChangePasswordPage.ruleUpper')}</span>
               </div>
-              <div className={`flex items-center gap-1.5 ${hasLowerCase ? 'text-neighbor-700 font-semibold' : ''}`}>
+              <div className={`flex items-center gap-2 ${hasLowerCase ? 'text-neighbor-700 font-semibold' : ''}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${hasLowerCase ? 'bg-neighbor-600' : 'bg-gray-300'}`} />
-                {t('forceChangePasswordPage.ruleLower')}
+                <span>{t('forceChangePasswordPage.ruleLower')}</span>
               </div>
-              <div className={`flex items-center gap-1.5 ${hasNumber ? 'text-neighbor-700 font-semibold' : ''}`}>
+              <div className={`flex items-center gap-2 ${hasNumber ? 'text-neighbor-700 font-semibold' : ''}`}>
                 <div className={`w-1.5 h-1.5 rounded-full ${hasNumber ? 'bg-neighbor-600' : 'bg-gray-300'}`} />
-                {t('forceChangePasswordPage.ruleNumber')}
+                <span>{t('forceChangePasswordPage.ruleNumber')}</span>
               </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               {t('forceChangePasswordPage.confirmPasswordLabel')} <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -174,20 +174,20 @@ const ForceChangePasswordPage = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder={t('forceChangePasswordPage.confirmPasswordPlaceholder')}
-                className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
+                className="w-full pl-11 pr-11 py-3 border border-gray-300 rounded-lg text-sm sm:text-base text-gray-900 placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-neighbor-500 focus:border-neighbor-500 transition-colors"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-hidden cursor-pointer"
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             {formData.confirmPassword && (
-              <p className={`mt-1 text-xs ${isMatch ? 'text-neighbor-600 font-medium' : 'text-red-500'}`}>
-                {isMatch ? '✓ Mật khẩu mới trùng khớp' : '✗ Mật khẩu nhập lại chưa khớp'}
+              <p className={`mt-1.5 text-xs sm:text-sm font-medium ${isMatch ? 'text-neighbor-600' : 'text-red-500'}`}>
+                {isMatch ? t('forceChangePasswordPage.matchSuccess') : t('forceChangePasswordPage.matchError')}
               </p>
             )}
           </div>
@@ -195,7 +195,7 @@ const ForceChangePasswordPage = () => {
           <button
             type="submit"
             disabled={loading || success}
-            className="w-full py-2.5 px-4 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white font-medium text-sm rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full py-3 px-4 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white font-bold text-base rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             {loading ? (
               t('forceChangePasswordPage.submitting')
@@ -211,7 +211,7 @@ const ForceChangePasswordPage = () => {
           <button
             type="button"
             onClick={handleLogout}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-red-600 transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" /> {t('forceChangePasswordPage.backToLogin')}
           </button>

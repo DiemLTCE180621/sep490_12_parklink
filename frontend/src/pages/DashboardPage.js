@@ -211,7 +211,9 @@ const DashboardPage = () => {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            <LanguageSwitcher variant="dark" />
+            {(roleName === 'ADMIN' || roleName === 'FIELD_INSPECTOR') && (
+              <LanguageSwitcher variant="dark" />
+            )}
             <button
               onClick={() => navigate('/profile')}
               className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
