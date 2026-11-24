@@ -43,7 +43,6 @@ const FILTER_TABS = [
   { id: 'PENDING_ADMIN' },
   { id: 'WAITING_PROVIDER' },
   { id: 'PROVIDER_REPLIED' },
-  { id: 'RESOLVED' },
   { id: 'REJECTED' }
 ];
 

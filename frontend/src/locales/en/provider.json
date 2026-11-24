@@ -531,7 +531,11 @@
       "cancel": "Cancel",
       "sending": "Sending...",
       "sendReply": "Send Reply",
-      "replyAction": "Reply to this review"
+      "replyAction": "Reply to this review",
+      "validation": {
+        "required": "Please enter a reply.",
+        "maxLength": "Your reply must be 1,000 characters or fewer."
+      }
     },
     "toasts": {
       "replySuccess": "Reply posted successfully!",
@@ -588,13 +592,17 @@
     "subtitle": "One-time platform fee based on facility slot capacity (Min – Max package) after field inspection",
     "refresh": "Refresh",
     "refreshTitle": "Refresh list",
+    "create": "Add Fee Package",
+    "createTitle": "Create a platform fee package",
     "bannerNote": "One-time activation fee upon facility approval",
     "loadError": "Unable to load platform fee packages",
+    "toggleError": "Unable to change fee package status.",
     "columns": {
       "nameAndDesc": "Package Name & Description",
       "slotTier": "Slot Capacity Range",
       "oneTimeFee": "One-Time Fee",
-      "status": "Status"
+      "status": "Status",
+      "actions": "Actions"
     },
     "loading": "Loading platform fee packages...",
     "empty": "No platform fee packages have been configured on the system.",
@@ -602,6 +610,21 @@
     "slotFrom": "{{min}}+ slots",
     "currency": "VND",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "editTitle": "Edit package on a separate page",
+    "activateTitle": "Activate fee package",
+    "deactivateTitle": "Deactivate fee package",
+    "toast": {
+      "activated": "Activated fee package \"{{name}}\".",
+      "deactivated": "Deactivated fee package \"{{name}}\"."
+    },
+    "confirm": {
+      "activateTitle": "Activate fee package",
+      "deactivateTitle": "Deactivate fee package",
+      "message": "Are you sure you want to {{action}} \"{{name}}\"?",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "cancel": "Cancel"
+    }
   }
 }
