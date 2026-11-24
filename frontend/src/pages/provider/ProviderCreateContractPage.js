@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getReservationDetail } from '../../services/reservationService';
 import { createConfirmationRecord } from '../../services/confirmationRecordService';
 import timelineSettingService from '../../services/timelineSettingService';
 import { useAuth } from '../../context/AuthContext';
 import Toast from '../../components/common/Toast';
+import { translateDurationText, translateVehicleTypeToVi } from '../../utils/translations';
 import {
   FileText,
   Calendar,
@@ -22,7 +24,7 @@ import {
   Mail,
   MapPin,
   Clock,
-  Eye
+  Eye,
 } from 'lucide-react';
 
 const ProviderCreateContractPage = () => {
@@ -31,6 +33,9 @@ const ProviderCreateContractPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation('provider');
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const [reservation, setReservation] = useState(location.state?.reservation || null);
   const [loadingReservation, setLoadingReservation] = useState(!location.state?.reservation);
@@ -41,27 +46,27 @@ const ProviderCreateContractPage = () => {
   const [toastInfo, setToastInfo] = useState({ message: '', type: 'success' });
   const [timelineSettings, setTimelineSettings] = useState(null);
 
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+
   useEffect(() => {
-    timelineSettingService.getSettings()
+    timelineSettingService
+      .getSettings()
       .then((res) => {
         if (res?.data?.calculated) {
           setTimelineSettings(res.data.calculated);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const defaultTerms = useMemo(() => {
     const noticeText = timelineSettings?.terminationNoticeText || '15 ngày';
     return {
-      owner_obligations:
-        `- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất ${noticeText}.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.`,
-      customer_obligations:
-        `- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất ${noticeText}.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.`,
-      termination_conditions:
-        `- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất ${noticeText}.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`,
+      owner_obligations: `- Yêu cầu bên gửi trả tiền dịch vụ trông giữ xe theo thỏa thuận.\n- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên B ít nhất ${noticeText}.\n- Bảo quản xe ô tô theo đúng thỏa thuận, trả lại xe ô tô cho bên gửi theo đúng tình trạng như khi nhận giữ.\n- Chỉ được thay đổi cách bảo quản xe ô tô nếu việc thay đổi là cần thiết nhằm bảo quản tốt hơn xe ô tô đó, nhưng phải báo ngay cho bên gửi biết về việc thay đổi.\n- Thông báo kịp thời cho bên gửi biết về nguy cơ hư hỏng, tiêu hủy xe ô tô do tính chất của xe ô tô đó và yêu cầu bên gửi cho biết cách giải quyết trong một thời hạn; nếu hết thời hạn đó mà bên gửi không trả lời thì bên giữ có quyền thực hiện các biện pháp cần thiết để bảo quản và yêu cầu bên gửi thanh toán chi phí.\n- Quá thời gian thanh toán, bên A có quyền thu hồi vị trí gửi xe và yêu cầu bên B trả phí giữ xe.\n- Phải bồi thường thiệt hại, nếu làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Bảo quản cẩn thận xe gửi giữ, không được sử dụng xe trong thời gian bảo quản.`,
+      customer_obligations: `- Được chấm dứt hợp đồng trước thời hạn, nhưng phải báo trước cho bên A ít nhất ${noticeText}.\n- Yêu cầu bồi thường thiệt hại, nếu bên giữ làm mất, hư hỏng xe ô tô gửi giữ, trừ trường hợp bất khả kháng.\n- Phải trả đủ tiền dịch vụ trông giữ xe đúng thời hạn và đúng phương thức đã thỏa thuận. Trường hợp đóng tiền trễ so với thời gian quy định hợp đồng quá 3 lần/năm thì mặc định thanh lý hợp đồng trước thời hạn và khách hàng phải nộp tiền nợ (nếu có).\n- Trả phí giữ xe khi hết hạn hợp đồng mà không kịp thời nhận lại xe đã gửi.\n- Bên B tự bảo quản chìa khoá xe, thẻ xe, tài sản, tư trang trong xe ô tô.\n- Thực hiện theo đúng nội quy của bãi đậu xe.`,
+      termination_conditions: `- Hợp đồng này có hiệu lực từ ngày bắt đầu đến ngày kết thúc thỏa thuận. Hợp đồng đương nhiên được thanh lý khi hai bên hoàn thành toàn bộ các nghĩa vụ theo nội dung Hợp đồng và hai bên không có nhu cầu thỏa thuận gia hạn hợp đồng.\n- Mỗi bên có quyền chấm dứt hợp đồng trước thời hạn nhưng phải báo trước cho bên kia ít nhất ${noticeText}.\n- Hợp đồng này được lập dưới dạng hợp đồng điện tử có giá trị pháp lý theo quy định của Luật Giao dịch điện tử và Bộ luật Dân sự 2015 nước CHXHCN Việt Nam; mỗi bên lưu giữ một bản có giá trị như nhau để thực hiện.`,
       dispute_resolution:
-        '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.'
+        '- Hai bên cần chủ động thông báo cho nhau biết tình hình thực hiện hợp đồng, nếu có gì bất lợi phát sinh, các bên phải kịp thời thông báo cho nhau biết và tích cực giải quyết trên cơ sở thương lượng, bình đẳng, có lợi (có lập biên bản).\n- Trường hợp các bên không tự giải quyết được mới đưa việc tranh chấp ra Tòa án giải quyết.',
     };
   }, [timelineSettings?.terminationNoticeText]);
 
@@ -75,15 +80,17 @@ const ProviderCreateContractPage = () => {
     license_plate: '',
     customer_address: '',
     customer_id_card: '',
-    ...defaultTerms
+    ...defaultTerms,
   });
 
   const [activeTermsTab, setActiveTermsTab] = useState('customer');
+
   const parseCleanNumber = (val) => {
     if (val === null || val === undefined) return 0;
     const cleanStr = String(val).replace(/[^0-9.]/g, '');
     return parseFloat(cleanStr) || 0;
   };
+
   const fetchReservation = useCallback(async () => {
     if (!targetId) return;
     try {
@@ -92,11 +99,11 @@ const ProviderCreateContractPage = () => {
       const res = await getReservationDetail(targetId);
       const data = res.data?.reservation || res.reservation;
       if (!data) {
-        throw new Error('Không tìm thấy thông tin yêu cầu thuê xe này.');
+        throw new Error(tRef.current('createContract.error.notFound'));
       }
       setReservation(data);
     } catch (err) {
-      setReservationError(err.message || 'Không thể tải thông tin yêu cầu thuê!');
+      setReservationError(err.message || tRef.current('createContract.error.loadFailed'));
     } finally {
       setLoadingReservation(false);
     }
@@ -107,6 +114,7 @@ const ProviderCreateContractPage = () => {
       fetchReservation();
     }
   }, [reservation, targetId, fetchReservation]);
+
   useEffect(() => {
     if (reservation) {
       let initialPrice = '';
@@ -169,11 +177,11 @@ const ProviderCreateContractPage = () => {
         start_date: prev.start_date || startDateVal,
         end_date: prev.end_date || endDateVal,
         parking_spot: prev.parking_spot || 'Chỗ đỗ tự do trong bãi',
-        vehicle_type: extractedVehicleType || prev.vehicle_type || 'Phương tiện đăng ký đỗ',
+        vehicle_type: translateVehicleTypeToVi(extractedVehicleType) || prev.vehicle_type || 'Phương tiện đăng ký đỗ',
         license_plate: extractedLicensePlate || prev.license_plate || reservation.vehicle_info || '',
         customer_address: extractedAddress || prev.customer_address || reservation.customer?.address || '',
         customer_id_card: extractedIdCard || prev.customer_id_card || '',
-        ...defaultTerms
+        ...defaultTerms,
       }));
     }
   }, [reservation, defaultTerms]);
@@ -184,14 +192,23 @@ const ProviderCreateContractPage = () => {
       setFormData((prev) => ({
         ...prev,
         owner_obligations: prev.owner_obligations
-          ? prev.owner_obligations.replace(/báo trước cho bên B ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `báo trước cho bên B ít nhất ${noticeText}`)
+          ? prev.owner_obligations.replace(
+              /báo trước cho bên B ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g,
+              `báo trước cho bên B ít nhất ${noticeText}`
+            )
           : defaultTerms.owner_obligations,
         customer_obligations: prev.customer_obligations
-          ? prev.customer_obligations.replace(/báo trước cho bên A ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `báo trước cho bên A ít nhất ${noticeText}`)
+          ? prev.customer_obligations.replace(
+              /báo trước cho bên A ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g,
+              `báo trước cho bên A ít nhất ${noticeText}`
+            )
           : defaultTerms.customer_obligations,
         termination_conditions: prev.termination_conditions
-          ? prev.termination_conditions.replace(/báo trước cho bên kia ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g, `báo trước cho bên kia ít nhất ${noticeText}`)
-          : defaultTerms.termination_conditions
+          ? prev.termination_conditions.replace(
+              /báo trước cho bên kia ít nhất (?:15 ngày|\d+\s*(?:ngày|phút|giờ))/g,
+              `báo trước cho bên kia ít nhất ${noticeText}`
+            )
+          : defaultTerms.termination_conditions,
       }));
     }
   }, [timelineSettings?.terminationNoticeText, defaultTerms]);
@@ -200,6 +217,7 @@ const ProviderCreateContractPage = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const getDurationMonths = () => {
     if (!formData.start_date || !formData.end_date) return null;
     const start = new Date(formData.start_date);
@@ -208,7 +226,7 @@ const ProviderCreateContractPage = () => {
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const approxMonths = Math.round(diffDays / 30);
-    return `${approxMonths} tháng (${diffDays} ngày)`;
+    return t('createContract.article2.durationValue', { months: approxMonths, days: diffDays });
   };
 
   const handleSubmit = async (e) => {
@@ -217,27 +235,27 @@ const ProviderCreateContractPage = () => {
 
     const priceNum = parseCleanNumber(formData.agreed_price);
     if (priceNum <= 0) {
-      setFormError('Vui lòng nhập giá thuê thỏa thuận hợp lệ (lớn hơn 0 VNĐ)!');
+      setFormError(t('createContract.validation.invalidPrice'));
       return;
     }
 
     if (!formData.start_date || !formData.end_date) {
-      setFormError('Vui lòng chọn ngày bắt đầu và ngày kết thúc hợp đồng!');
+      setFormError(t('createContract.validation.datesRequired'));
       return;
     }
 
     if (new Date(formData.end_date) <= new Date(formData.start_date)) {
-      setFormError('Ngày kết thúc hợp đồng phải diễn ra sau ngày bắt đầu!');
+      setFormError(t('createContract.validation.endAfterStart'));
       return;
     }
 
     if (!formData.customer_id_card || !formData.customer_id_card.trim()) {
-      setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của Bên B để lập hợp đồng!');
+      setFormError(t('createContract.validation.idCardRequired'));
       return;
     }
 
     if (!formData.customer_address || !formData.customer_address.trim()) {
-      setFormError('Vui lòng nhập Địa chỉ liên hệ / thường trú của Bên B để lập hợp đồng!');
+      setFormError(t('createContract.validation.addressRequired'));
       return;
     }
 
@@ -250,7 +268,7 @@ const ProviderCreateContractPage = () => {
         start_date: formData.start_date,
         end_date: formData.end_date,
         parking_spot: formData.parking_spot ? formData.parking_spot.trim() : 'Chỗ đỗ tự do',
-        vehicle_type: formData.vehicle_type ? formData.vehicle_type.trim() : 'Phương tiện đỗ',
+        vehicle_type: formData.vehicle_type ? translateVehicleTypeToVi(formData.vehicle_type.trim()) : 'Phương tiện đỗ',
         license_plate: formData.license_plate ? formData.license_plate.trim() : reservation.vehicle_info,
         customer_address: formData.customer_address.trim(),
         customer_id_card: formData.customer_id_card.trim(),
@@ -258,16 +276,16 @@ const ProviderCreateContractPage = () => {
           customer_obligations: formData.customer_obligations,
           owner_obligations: formData.owner_obligations,
           termination_conditions: formData.termination_conditions,
-          dispute_resolution: formData.dispute_resolution
-        }
+          dispute_resolution: formData.dispute_resolution,
+        },
       };
 
       const res = await createConfirmationRecord(payload);
       const createdRecord = res.data?.confirmation_record || res.confirmation_record;
 
       setToastInfo({
-        message: 'Tạo và gửi hợp đồng điện tử thành công! Đang chuyển đến văn bản hợp đồng...',
-        type: 'success'
+        message: t('createContract.validation.createSuccess'),
+        type: 'success',
       });
 
       setTimeout(() => {
@@ -278,7 +296,7 @@ const ProviderCreateContractPage = () => {
         }
       }, 1200);
     } catch (err) {
-      const errMsg = err.response?.data?.message || err.message || 'Không thể tạo hợp đồng điện tử. Vui lòng thử lại!';
+      const errMsg = err.response?.data?.message || err.message || t('createContract.validation.createError');
       setFormError(errMsg);
       setToastInfo({ message: errMsg, type: 'error' });
       if (errMsg.includes('24 giờ') || errMsg.includes('hết thời hạn') || errMsg.includes('tự động hủy')) {
@@ -289,7 +307,10 @@ const ProviderCreateContractPage = () => {
     }
   };
 
-  const formattedPricePreview = parseCleanNumber(formData.agreed_price).toLocaleString('vi-VN');
+  const formattedPricePreview = parseCleanNumber(formData.agreed_price).toLocaleString(numberLocale);
+  const cancelledDuration = timelineSettings?.contractCreationText
+    ? translateDurationText(timelineSettings.contractCreationText, i18n.language)
+    : t('createContract.cancelled.defaultDuration');
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 px-3 sm:px-6 lg:px-8 font-sans antialiased">
@@ -300,134 +321,126 @@ const ProviderCreateContractPage = () => {
       />
 
       <div className="w-full max-w-[1600px] mx-auto space-y-6">
-        
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 flex-wrap">
             <Link
               to="/dashboard"
               className="font-medium text-slate-600 hover:text-teal-700 transition"
             >
-              Bảng Điều Khiển
+              {t('createContract.breadcrumbs.dashboard')}
             </Link>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="font-medium text-slate-600 hover:text-teal-700 transition"
+              className="font-medium text-slate-600 hover:text-teal-700 transition cursor-pointer"
             >
-              Duyệt Yêu Cầu Thuê
+              {t('createContract.breadcrumbs.reservations')}
             </button>
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-bold text-teal-800">Thiết Lập Hợp Đồng</span>
+            <span className="font-bold text-teal-800">{t('createContract.breadcrumbs.current')}</span>
           </div>
 
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Quay Lại
+            <ArrowLeft className="w-3.5 h-3.5" /> {t('createContract.back')}
           </button>
         </div>
 
-        
         {loadingReservation ? (
           <div className="bg-white rounded-3xl p-16 text-center border border-slate-200 shadow-sm space-y-4">
             <Loader2 className="w-10 h-10 animate-spin text-teal-600 mx-auto" />
             <p className="text-slate-600 font-semibold text-sm">
-              Đang tải dữ liệu yêu cầu thuê xe #{targetId}...
+              {t('createContract.loading', { id: targetId })}
             </p>
           </div>
         ) : reservationError ? (
           <div className="bg-white rounded-3xl p-10 border border-red-200 shadow-sm text-center space-y-4">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
-            <h3 className="text-lg font-bold text-slate-900">Không tìm thấy yêu cầu thuê</h3>
+            <h3 className="text-lg font-bold text-slate-900">{t('createContract.error.title')}</h3>
             <p className="text-sm text-slate-600 max-w-md mx-auto">{reservationError}</p>
             <button
               onClick={fetchReservation}
-              className="px-5 py-2.5 bg-teal-600 text-white font-bold text-xs rounded-xl shadow hover:bg-teal-700 transition"
+              className="px-5 py-2.5 bg-teal-600 text-white font-bold text-xs rounded-xl shadow hover:bg-teal-700 transition cursor-pointer"
             >
-              Thử Lại
+              {t('createContract.error.retry')}
             </button>
           </div>
         ) : reservation?.status === 'CANCELLED' ? (
-          
           <div className="bg-white rounded-3xl p-10 border border-rose-200 shadow-md text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
               <AlertCircle className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">
-              Đã hết thời hạn làm hợp đồng – Yêu cầu đặt chỗ đã tự động hủy!
+              {t('createContract.cancelled.title')}
             </h3>
             <p className="text-sm text-slate-600 max-w-lg mx-auto">
-              Quá thời hạn {timelineSettings?.contractCreationText || 'quy định'} kể từ khi chấp nhận yêu cầu đặt chỗ mà chưa hoàn tất tạo hợp đồng điện tử, hệ thống đã tự động hủy yêu cầu đặt chỗ này.
+              {t('createContract.cancelled.desc', { duration: cancelledDuration })}
             </p>
             <div className="pt-2 flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate('/dashboard', { state: { providerTab: 'reservations' } })}
-                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition"
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition cursor-pointer"
               >
-                Quay Lại Danh Sách Yêu Cầu
+                {t('createContract.cancelled.backToList')}
               </button>
             </div>
           </div>
         ) : reservation?.confirmation_record ? (
-          
           <div className="bg-white rounded-3xl p-10 border border-teal-200 shadow-md text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">
-              Yêu cầu thuê này đã có hợp đồng điện tử!
+              {t('createContract.alreadyExists.title')}
             </h3>
             <p className="text-sm text-slate-600 max-w-lg mx-auto">
-              Hợp đồng cho yêu cầu thuê này đã được khởi tạo trước đó. Bạn có thể xem chi tiết
-              văn bản hợp đồng hoặc theo dõi trạng thái ký kết.
+              {t('createContract.alreadyExists.desc')}
             </p>
             <div className="pt-2 flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition cursor-pointer"
               >
-                Quay Lại
+                {t('createContract.back')}
               </button>
               <button
                 type="button"
                 onClick={() => navigate(`/contracts/${reservation.confirmation_record.id}`)}
-                className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2"
+                className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
               >
-                <Eye className="w-4 h-4" /> Xem Hợp Đồng #{reservation.confirmation_record.id}
+                <Eye className="w-4 h-4" />
+                {t('createContract.alreadyExists.viewContract', { id: reservation.confirmation_record.id })}
               </button>
             </div>
           </div>
         ) : reservation?.status !== 'APPROVED' ? (
-          
           <div className="bg-white rounded-3xl p-10 border border-amber-200 shadow-md text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
               <Clock className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">
-              Yêu cầu thuê chưa được phê duyệt chấp nhận
+              {t('createContract.notApproved.title')}
             </h3>
             <p className="text-sm text-slate-600 max-w-lg mx-auto">
-              Hợp đồng điện tử chỉ có thể thiết lập sau khi yêu cầu thuê được phê duyệt (Trạng
-              thái hiện tại:{' '}
+              {t('createContract.notApproved.descBefore')}{' '}
               <span className="font-bold text-slate-800">{reservation?.status}</span>).
             </p>
             <button
               type="button"
               onClick={() => navigate(`/provider/reservations/${reservation.id}`)}
-              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition"
+              className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
             >
-              Xem Chi Tiết Yêu Cầu Để Phê Duyệt
+              {t('createContract.notApproved.viewDetail')}
             </button>
           </div>
         ) : (
-          
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-lg overflow-hidden">
-            
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 px-6 sm:px-8 py-6 text-white border-b border-slate-800">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -437,16 +450,16 @@ const ProviderCreateContractPage = () => {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h1 className="text-lg sm:text-2xl font-black tracking-tight text-white">
-                        Thiết Lập Hợp Đồng Gửi Giữ Xe Ô Tô
+                        {t('createContract.header.title')}
                       </h1>
                       <span className="text-[10px] uppercase font-extrabold tracking-wider px-2.5 py-1 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                        Hợp đồng dịch vụ điện tử
+                        {t('createContract.header.badge')}
                       </span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-300 mt-1">
-                      Cơ sở bãi xe:{' '}
-                      <strong className="text-teal-300">{reservation.facility?.name}</strong> • Khách
-                      thuê:{' '}
+                      {t('createContract.header.facilityLabel')}{' '}
+                      <strong className="text-teal-300">{reservation.facility?.name}</strong> •{' '}
+                      {t('createContract.header.customerLabel')}{' '}
                       <strong className="text-white">{reservation.customer?.full_name}</strong>
                     </p>
                   </div>
@@ -454,7 +467,6 @@ const ProviderCreateContractPage = () => {
               </div>
             </div>
 
-            
             <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8 bg-slate-50/40 text-xs sm:text-sm">
               {formError && (
                 <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-3 shadow-xs">
@@ -463,26 +475,24 @@ const ProviderCreateContractPage = () => {
                 </div>
               )}
 
-              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between">
                   <span className="flex items-center gap-2 text-teal-900">
-                    <Building2 className="w-4 h-4 text-teal-600" /> I. Thông Tin Các Bên Giao Dịch
+                    <Building2 className="w-4 h-4 text-teal-600" /> {t('createContract.parties.sectionTitle')}
                   </span>
                   <span className="text-[11px] text-slate-400 font-normal">
-                    Tự động trích xuất từ tài khoản
+                    {t('createContract.parties.autoExtracted')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
-                  
                   <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
                     <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
                       <span className="text-[11px] font-extrabold uppercase text-slate-600">
-                        Bên A (Chủ Bãi Đỗ Xe)
+                        {t('createContract.parties.partyATitle')}
                       </span>
                       <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-2 py-0.5 rounded">
-                        Bên Cho Thuê
+                        {t('createContract.parties.partyABadge')}
                       </span>
                     </div>
                     <p className="font-extrabold text-sm text-slate-900 pt-1">
@@ -493,20 +503,24 @@ const ProviderCreateContractPage = () => {
                       {reservation.facility?.address}
                     </p>
                     <p className="text-slate-600 pt-1 border-t border-slate-200/50">
-                      Đại diện:{' '}
+                      {t('createContract.parties.representative')}{' '}
                       <strong className="text-slate-800">
-                        {reservation.facility?.provider?.full_name || user?.full_name || 'Chủ cơ sở'}
+                        {reservation.facility?.provider?.full_name ||
+                          user?.full_name ||
+                          t('createContract.parties.ownerFallback')}
                       </strong>
                     </p>
                     <p className="text-slate-600 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" /> SĐT:{' '}
+                      <Phone className="w-3.5 h-3.5 text-slate-400" /> {t('createContract.parties.phone')}{' '}
                       <span className="font-semibold text-slate-800">
-                        {reservation.facility?.provider?.phone_number || user?.phone_number || 'Chưa cập nhật'}
+                        {reservation.facility?.provider?.phone_number ||
+                          user?.phone_number ||
+                          t('createContract.parties.notUpdated')}
                       </span>
                     </p>
                     {(reservation.facility?.provider?.email || user?.email) && (
                       <p className="text-slate-600 flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-slate-400" /> Email:{' '}
+                        <Mail className="w-3.5 h-3.5 text-slate-400" /> {t('createContract.parties.email')}{' '}
                         <span className="font-semibold text-slate-800">
                           {reservation.facility?.provider?.email || user?.email}
                         </span>
@@ -514,33 +528,32 @@ const ProviderCreateContractPage = () => {
                     )}
                   </div>
 
-                  
                   <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200/80 space-y-2">
                     <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
                       <span className="text-[11px] font-extrabold uppercase text-slate-600">
-                        Bên B (Khách Hàng Thuê)
+                        {t('createContract.parties.partyBTitle')}
                       </span>
                       <span className="text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded">
-                        Bên Thuê
+                        {t('createContract.parties.partyBBadge')}
                       </span>
                     </div>
                     <p className="font-extrabold text-sm text-slate-900 pt-1">
                       {reservation.customer?.full_name}
                     </p>
                     <p className="text-slate-600 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-slate-400" /> Mã khách hàng:{' '}
+                      <User className="w-3.5 h-3.5 text-slate-400" /> {t('createContract.parties.customerId')}{' '}
                       <span className="font-mono font-semibold text-slate-800">
                         #{reservation.customer?.id}
                       </span>
                     </p>
                     <p className="text-slate-600 flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" /> Số điện thoại:{' '}
+                      <Phone className="w-3.5 h-3.5 text-slate-400" /> {t('createContract.parties.customerPhone')}{' '}
                       <span className="font-semibold text-slate-800">
-                        {reservation.customer?.phone_number || 'Chưa cập nhật'}
+                        {reservation.customer?.phone_number || t('createContract.parties.notUpdated')}
                       </span>
                     </p>
                     <p className="text-slate-600 flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5 text-slate-400" /> Email trực tuyến:{' '}
+                      <Mail className="w-3.5 h-3.5 text-slate-400" /> {t('createContract.parties.customerEmail')}{' '}
                       <span className="font-semibold text-slate-800">
                         {reservation.customer?.email}
                       </span>
@@ -549,14 +562,14 @@ const ProviderCreateContractPage = () => {
                     <div className="pt-2.5 border-t border-slate-200/80 space-y-2.5">
                       <div>
                         <label className="block text-xs font-bold text-slate-800 mb-1">
-                          Số CMND / Thẻ Căn cước công dân (CCCD) Bên B <span className="text-red-500">*</span>
+                          {t('createContract.parties.idCardLabel')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           name="customer_id_card"
                           value={formData.customer_id_card}
                           readOnly
-                          placeholder="Chưa có thông tin CCCD"
+                          placeholder={t('createContract.parties.idCardPlaceholder')}
                           required
                           className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
                         />
@@ -564,14 +577,14 @@ const ProviderCreateContractPage = () => {
 
                       <div>
                         <label className="block text-xs font-bold text-slate-800 mb-1">
-                          Địa chỉ thường trú / liên hệ Bên B <span className="text-red-500">*</span>
+                          {t('createContract.parties.addressLabel')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           name="customer_address"
                           value={formData.customer_address}
                           readOnly
-                          placeholder="Chưa có thông tin địa chỉ"
+                          placeholder={t('createContract.parties.addressPlaceholder')}
                           required
                           className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
                         />
@@ -581,65 +594,63 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
-                    <Car className="w-4 h-4 text-teal-600" /> Điều 1: Đối Tượng Gửi, Giữ
+                    <Car className="w-4 h-4 text-teal-600" /> {t('createContract.article1.title')}
                   </span>
                   <span className="text-[11px] text-teal-800 font-bold bg-teal-50 px-2.5 py-0.5 rounded border border-teal-200">
-                    Phương tiện đăng ký
+                    {t('createContract.article1.badge')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Loại phương tiện / Hãng xe <span className="text-red-500">*</span>
+                      {t('createContract.article1.vehicleTypeLabel')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="vehicle_type"
                       value={formData.vehicle_type}
                       readOnly
-                      placeholder="VD: Ô tô (4-7 chỗ)"
+                      placeholder={t('createContract.article1.vehicleTypePlaceholder')}
                       required
                       className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 cursor-not-allowed select-none focus:outline-none"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Chủng loại xe khách hàng đã đăng ký khi gửi yêu cầu thuê chỗ.
+                      {t('createContract.article1.vehicleTypeHint')}
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Biển kiểm soát / Biển số xe đăng ký <span className="text-red-500">*</span>
+                      {t('createContract.article1.plateLabel')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="license_plate"
                       value={formData.license_plate}
                       readOnly
-                      placeholder="VD: 65A-563.94"
+                      placeholder={t('createContract.article1.platePlaceholder')}
                       required
                       className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 font-mono cursor-not-allowed select-none focus:outline-none"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Biển số kiểm soát xe gửi giữ tại bãi theo đăng ký của khách hàng.
+                      {t('createContract.article1.plateHint')}
                     </p>
                   </div>
                 </div>
               </div>
 
-              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-5">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
-                    <Calendar className="w-4 h-4 text-teal-600" /> Điều 2: Giá Cả Và Phương Thức Và Thời Hạn Thanh Toán
+                    <Calendar className="w-4 h-4 text-teal-600" /> {t('createContract.article2.title')}
                   </span>
                   {getDurationMonths() && (
                     <span className="text-xs text-teal-800 font-extrabold bg-teal-50 px-3 py-1 rounded-lg border border-teal-200">
-                      Thời hạn: {getDurationMonths()}
+                      {t('createContract.article2.durationBadge', { duration: getDurationMonths() })}
                     </span>
                   )}
                 </div>
@@ -647,7 +658,7 @@ const ProviderCreateContractPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Giá dịch vụ trông giữ xe thỏa thuận (VNĐ) <span className="text-red-500">*</span>
+                      {t('createContract.article2.priceLabel')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <input
@@ -655,24 +666,24 @@ const ProviderCreateContractPage = () => {
                         name="agreed_price"
                         value={formData.agreed_price}
                         onChange={handleChange}
-                        placeholder="VD: 850000"
+                        placeholder={t('createContract.article2.pricePlaceholder')}
                         required
                         className="w-full px-3.5 py-2.5 pr-24 bg-white border border-slate-300 rounded-xl text-sm font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition"
                       />
                       <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">
-                        VNĐ / tháng
+                        {t('createContract.article2.priceUnit')}
                       </span>
                     </div>
                     {parseCleanNumber(formData.agreed_price) > 0 && (
                       <p className="text-xs text-teal-700 font-bold mt-1.5">
-                        Bằng chữ: {formattedPricePreview} VNĐ / tháng
+                        {t('createContract.article2.pricePreview', { price: formattedPricePreview })}
                       </p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Hạn thanh toán hàng tháng (Ngày 1 - 31)
+                      {t('createContract.article2.deadlineLabel')}
                     </label>
                     <input
                       type="number"
@@ -681,17 +692,17 @@ const ProviderCreateContractPage = () => {
                       max="31"
                       value={formData.payment_deadline_day}
                       onChange={handleChange}
-                      placeholder="Mặc định trước ngày 5 hoặc 10 hàng tháng"
+                      placeholder={t('createContract.article2.deadlinePlaceholder')}
                       className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition"
                     />
                     <p className="text-[11px] text-slate-500 mt-1.5">
-                      Định kỳ thanh toán từ ngày 01 đến ngày {formData.payment_deadline_day || 5} mỗi tháng.
+                      {t('createContract.article2.deadlineHint', { day: formData.payment_deadline_day || 5 })}
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Thời gian gửi: Ngày bắt đầu hiệu lực <span className="text-red-500">*</span>
+                      {t('createContract.article2.startDateLabel')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -705,7 +716,7 @@ const ProviderCreateContractPage = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Thời gian gửi: Ngày kết thúc hợp đồng <span className="text-red-500">*</span>
+                      {t('createContract.article2.endDateLabel')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
@@ -719,101 +730,107 @@ const ProviderCreateContractPage = () => {
 
                   <div className="sm:col-span-2 lg:col-span-4">
                     <label className="block text-xs font-bold text-slate-800 mb-1.5">
-                      Vị trí gửi / Ô đỗ phân công trong bãi
+                      {t('createContract.article2.spotLabel')}
                     </label>
                     <input
                       type="text"
                       name="parking_spot"
                       value={formData.parking_spot}
                       onChange={handleChange}
-                      placeholder="VD: Bãi xe Trung tâm hoặc Slot #A-12"
+                      placeholder={t('createContract.article2.spotPlaceholder')}
                       className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600 transition"
                     />
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Vị trí ô đỗ cụ thể được phân công cho Bên B tại khuôn viên bãi xe của Bên A.
+                      {t('createContract.article2.spotHint')}
                     </p>
                   </div>
                 </div>
 
-                
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
-                  <p className="font-bold text-slate-800">Phương thức thanh toán áp dụng trong hợp đồng:</p>
-                  <p>• <strong>Chuyển khoản</strong> vào tài khoản Bên A: Nội dung chuyển khoản ghi rõ <em>Họ tên, Biển số xe, Tháng đóng tiền</em>.</p>
-                  <p>• <strong>Tiền mặt</strong>: Nộp trực tiếp tại bộ phận Văn thư - Thủ quỹ / Ban Quản lý bãi xe.</p>
+                  <p className="font-bold text-slate-800">{t('createContract.article2.paymentMethodsTitle')}</p>
+                  <p>
+                    • <strong>{t('createContract.article2.bankTransferBefore')}</strong>{' '}
+                    {t('createContract.article2.bankTransferMid')}{' '}
+                    <em>{t('createContract.article2.bankTransferNote')}</em>.
+                  </p>
+                  <p>
+                    • <strong>{t('createContract.article2.cashBefore')}</strong>
+                    {t('createContract.article2.cashAfter')}
+                  </p>
                 </div>
               </div>
 
-              
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-3 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
                   <span className="flex items-center gap-2 text-teal-900">
-                    <ShieldCheck className="w-4 h-4 text-teal-600" /> Các Điều Khoản Thỏa Thuận (Điều 3 - Điều 6)
+                    <ShieldCheck className="w-4 h-4 text-teal-600" /> {t('createContract.terms.title')}
                   </span>
-                  
                 </div>
 
                 <div className="p-3 bg-teal-50/60 rounded-xl border border-teal-200/60 text-xs text-teal-900 flex items-center gap-2">
                   <Info className="w-4 h-4 text-teal-600 shrink-0" />
                   <span>
-                    <strong>Điều 1</strong> (Đối tượng xe gửi) và <strong>Điều 2</strong> (Giá cả, phương thức & thời hạn thanh toán) đã được thiết lập ở 2 mục phía trên. Dưới đây là nội dung chi tiết của <strong>Điều 3, 4, 5 và 6</strong>:
+                    <strong>{t('createContract.terms.infoNoticeBefore')}</strong>{' '}
+                    {t('createContract.terms.infoNoticeMid1')}{' '}
+                    <strong>{t('createContract.terms.infoNoticeMid2')}</strong>{' '}
+                    {t('createContract.terms.infoNoticeMid3')}{' '}
+                    <strong>{t('createContract.terms.infoNoticeEnd')}</strong>
                   </span>
                 </div>
 
                 <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
-                  
                   <div className="flex border-b border-slate-200 bg-slate-100/90 overflow-x-auto text-xs font-bold">
                     <button
                       type="button"
                       onClick={() => setActiveTermsTab('owner')}
-                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition ${
+                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
                         activeTermsTab === 'owner'
                           ? 'border-teal-700 text-teal-900 bg-white shadow-xs font-black'
                           : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                       }`}
                     >
-                      Điều 3. Nghĩa vụ Bên A (Chủ Bãi)
+                      {t('createContract.terms.tabOwner')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTermsTab('customer')}
-                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition ${
+                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
                         activeTermsTab === 'customer'
                           ? 'border-teal-700 text-teal-900 bg-white shadow-xs font-black'
                           : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                       }`}
                     >
-                      Điều 4. Nghĩa vụ Bên B (Khách Thuê)
+                      {t('createContract.terms.tabCustomer')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTermsTab('dispute')}
-                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition ${
+                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
                         activeTermsTab === 'dispute'
                           ? 'border-teal-700 text-teal-900 bg-white shadow-xs font-black'
                           : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                       }`}
                     >
-                      Điều 5. Giải Quyết Tranh Chấp
+                      {t('createContract.terms.tabDispute')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setActiveTermsTab('termination')}
-                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition ${
+                      className={`px-5 py-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
                         activeTermsTab === 'termination'
                           ? 'border-teal-700 text-teal-900 bg-white shadow-xs font-black'
                           : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                       }`}
                     >
-                      Điều 6. Hiệu Lực Của Hợp Đồng
+                      {t('createContract.terms.tabTermination')}
                     </button>
                   </div>
 
-                  
                   <div className="p-4 sm:p-5 bg-white">
                     {activeTermsTab === 'owner' && (
                       <div className="space-y-2">
                         <label className="block text-xs font-bold text-slate-700">
-                          Điều 3: Quyền và nghĩa vụ của Bên A (Bên giữ xe ô tô):
+                          {t('createContract.terms.ownerLabel')}
                         </label>
                         <textarea
                           name="owner_obligations"
@@ -828,7 +845,7 @@ const ProviderCreateContractPage = () => {
                     {activeTermsTab === 'customer' && (
                       <div className="space-y-2">
                         <label className="block text-xs font-bold text-slate-700">
-                          Điều 4: Quyền và nghĩa vụ của Bên B (Bên gửi xe ô tô):
+                          {t('createContract.terms.customerLabel')}
                         </label>
                         <textarea
                           name="customer_obligations"
@@ -843,7 +860,7 @@ const ProviderCreateContractPage = () => {
                     {activeTermsTab === 'dispute' && (
                       <div className="space-y-2">
                         <label className="block text-xs font-bold text-slate-700">
-                          Điều 5: Cơ chế giải quyết tranh chấp:
+                          {t('createContract.terms.disputeLabel')}
                         </label>
                         <textarea
                           name="dispute_resolution"
@@ -858,7 +875,7 @@ const ProviderCreateContractPage = () => {
                     {activeTermsTab === 'termination' && (
                       <div className="space-y-2">
                         <label className="block text-xs font-bold text-slate-700">
-                          Điều 6: Hiệu lực và điều kiện chấm dứt hợp đồng:
+                          {t('createContract.terms.terminationLabel')}
                         </label>
                         <textarea
                           name="termination_conditions"
@@ -873,39 +890,36 @@ const ProviderCreateContractPage = () => {
                 </div>
               </div>
 
-              
               <div className="p-4 bg-teal-50/80 rounded-2xl border border-teal-200/80 flex items-start gap-3 text-teal-950 text-xs font-medium leading-relaxed">
                 <Info className="w-5 h-5 text-teal-700 shrink-0 mt-0.5" />
                 <div>
-                  Hợp đồng sau khi tạo sẽ được lưu trữ với trạng thái{' '}
-                  <strong className="text-teal-900">CHỜ KÝ (PENDING_SIGNATURE)</strong>. Khách
-                  hàng thuê sẽ nhận được thông báo để kiểm tra toàn bộ điều khoản và ký xác nhận
-                  điện tử trước khi hợp đồng chính thức có hiệu lực thi hành.
+                  {t('createContract.pendingNotice.before')}{' '}
+                  <strong className="text-teal-900">{t('createContract.pendingNotice.status')}</strong>
+                  {t('createContract.pendingNotice.after')}
                 </div>
               </div>
 
-              
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-3.5">
                 <button
                   type="button"
                   onClick={() => navigate(-1)}
-                  className="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition text-center"
+                  className="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition text-center cursor-pointer"
                 >
-                  Hủy Bỏ / Quay Lại
+                  {t('createContract.actions.cancelBack')}
                 </button>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full sm:w-auto px-7 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Đang Khởi Tạo Hợp Đồng...
+                      <Loader2 className="w-4 h-4 animate-spin" /> {t('createContract.actions.submitting')}
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-4 h-4" /> Tạo & Gửi Hợp Đồng Điện Tử
+                      <CheckCircle2 className="w-4 h-4" /> {t('createContract.actions.submit')}
                     </>
                   )}
                 </button>

@@ -1,11 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { sendReservationRequest, getMyReservations } from '../../services/reservationService';
 import facilityService from '../../services/facilityService';
 import timelineSettingService from '../../services/timelineSettingService';
 import Toast from '../../components/common/Toast';
 import { getFacilitySupportedTypes } from '../../constants/vehicleTypes';
+import {
+  translateAmenityName,
+  translateDurationText,
+  translateVehicleTypeName,
+} from '../../utils/translations';
 import {
   ArrowLeft,
   Calendar,
@@ -22,7 +28,7 @@ import {
   ChevronRight,
   CreditCard,
   FileText,
-  Clock
+  Clock,
 } from 'lucide-react';
 
 const CreateReservationPage = () => {
@@ -30,6 +36,9 @@ const CreateReservationPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation('customer');
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const [facility, setFacility] = useState(location.state?.facility || null);
   const [availability, setAvailability] = useState(null);
@@ -54,6 +63,7 @@ const CreateReservationPage = () => {
   const minDate = new Date().toISOString().split('T')[0];
   const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
   const hasAddress = Boolean(user?.address && user.address.trim());
+  const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
 
   const fetchFacilityData = useCallback(async () => {
     const idToFetch = facilityId || location.state?.facility?.id;
@@ -74,7 +84,7 @@ const CreateReservationPage = () => {
       }
     } catch (err) {
       console.error('Error fetching facility details:', err);
-      setFacilityError(err.message || 'Không thể tải thông tin bãi đỗ xe.');
+      setFacilityError(err.message || tRef.current('createReservation.loadError'));
     } finally {
       setFetchingFacility(false);
     }
@@ -127,13 +137,14 @@ const CreateReservationPage = () => {
     }
   }, [facilityId, facility, fetchFacilityData, availability]);
 
-  const supportedVehicleTypes = (facility?.facility_vehicle_types && facility.facility_vehicle_types.length > 0)
-    ? facility.facility_vehicle_types.map(fvt => ({
-        id: fvt.vehicle_type.type_code,
-        label: fvt.vehicle_type.name,
-        shortLabel: fvt.vehicle_type.name
-      }))
-    : getFacilitySupportedTypes(facility?.vehicle_types);
+  const supportedVehicleTypes =
+    facility?.facility_vehicle_types && facility.facility_vehicle_types.length > 0
+      ? facility.facility_vehicle_types.map((fvt) => ({
+          id: fvt.vehicle_type.type_code,
+          label: translateVehicleTypeName(fvt.vehicle_type, i18n.language),
+          shortLabel: translateVehicleTypeName(fvt.vehicle_type, i18n.language),
+        }))
+      : getFacilitySupportedTypes(facility?.vehicle_types);
 
   const handleQuickPreset = (presetText) => {
     setVehicleBrand((prev) => {
@@ -148,62 +159,66 @@ const CreateReservationPage = () => {
     setFormError(null);
 
     if (!facility) {
-      setFormError('Không có thông tin bãi đỗ xe để tạo yêu cầu.');
+      setFormError(t('createReservation.validation.noFacility'));
       return;
     }
 
     if (user?.role?.name === 'PROVIDER') {
-      setFormError('Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng dùng tài khoản Khách hàng.');
+      setFormError(t('createReservation.validation.providerNotAllowed'));
       return;
     }
 
     if (availability && availability.available_slots <= 0) {
-      setFormError('Rất tiếc, bãi xe này hiện tại đã hết chỗ trống!');
+      setFormError(t('createReservation.validation.noSlots'));
       return;
     }
 
     if (activeReservation) {
-      setFormError(`Bạn đang có một yêu cầu thuê tại cơ sở "${activeReservation.facility?.name || 'khác'}" đang trong quá trình xử lý. Mỗi khách hàng chỉ được gửi tối đa 1 yêu cầu tại 1 thời điểm. Vui lòng hoàn tất hoặc hủy yêu cầu hiện tại để gửi yêu cầu mới!`);
+      setFormError(
+        t('createReservation.validation.hasActiveReservation', {
+          facilityName: activeReservation.facility?.name || t('createReservation.activeAlert.otherFacility'),
+        })
+      );
       return;
     }
 
-    const hasPhone = Boolean(user?.phone_number && user.phone_number.trim());
-    const hasAddress = Boolean(user?.address && user.address.trim());
+    const userHasPhone = Boolean(user?.phone_number && user.phone_number.trim());
+    const userHasAddress = Boolean(user?.address && user.address.trim());
 
-    if (!hasPhone || !hasAddress) {
+    if (!userHasPhone || !userHasAddress) {
       setFormError(
-        !hasPhone && !hasAddress
-          ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng cập nhật đầy đủ trong Hồ sơ trước khi gửi yêu cầu thuê!'
-          : !hasPhone
-            ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
-            : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!'
+        !userHasPhone && !userHasAddress
+          ? t('createReservation.validation.missingBoth')
+          : !userHasPhone
+            ? t('createReservation.validation.missingPhone')
+            : t('createReservation.validation.missingAddress')
       );
       return;
     }
 
     if (!customerIdCard?.trim()) {
-      setFormError('Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của bạn.');
+      setFormError(t('createReservation.validation.idCardRequired'));
       return;
     }
 
     const cleanIdCard = customerIdCard.trim();
     if (!/^\d{9}$|^\d{12}$/.test(cleanIdCard)) {
-      setFormError('Số CMND / CCCD không hợp lệ (phải gồm đúng 9 hoặc 12 chữ số).');
+      setFormError(t('createReservation.validation.idCardInvalid'));
       return;
     }
 
     if (!vehicleBrand?.trim() || vehicleBrand.trim().length < 2) {
-      setFormError('Vui lòng nhập Hãng xe / Dòng xe (Ví dụ: Toyota Camry, Honda City...).');
+      setFormError(t('createReservation.validation.brandRequired'));
       return;
     }
 
     if (!licensePlate?.trim() || licensePlate.trim().length < 3) {
-      setFormError('Vui lòng nhập Biển kiểm soát / Biển số xe (Ví dụ: 65A-123.45).');
+      setFormError(t('createReservation.validation.plateRequired'));
       return;
     }
 
     if (!desiredStartDate) {
-      setFormError('Vui lòng chọn ngày mong muốn bắt đầu thuê bãi xe.');
+      setFormError(t('createReservation.validation.startDateRequired'));
       return;
     }
 
@@ -221,20 +236,23 @@ const CreateReservationPage = () => {
       const response = await sendReservationRequest({
         facility_id: facility.id,
         vehicle_info: fullVehicleInfo,
-        desired_start_date: desiredStartDate
+        desired_start_date: desiredStartDate,
       });
 
       const resData = response.data?.reservation || response.reservation || { id: 'NEW' };
       const resTimeline = response.data?.timeline || timelineSettings;
-      const effectiveResponseTime =
+      const rawResponseTime =
         resTimeline?.reservationResponseText ||
         resTimeline?.response_time_text ||
-        timelineSettings?.reservationResponseText ||
-        'thời hạn quy định';
+        timelineSettings?.reservationResponseText;
+      const effectiveResponseTime = rawResponseTime
+        ? translateDurationText(rawResponseTime, i18n.language)
+        : t('createReservation.defaultResponseTime');
+
       const resMsg =
         response.message ||
         response.data?.message ||
-        `Gửi yêu cầu thuê bãi đỗ xe thành công! Chủ bãi có ${effectiveResponseTime} để phản hồi duyệt hoặc từ chối.`;
+        t('createReservation.validation.submitSuccess', { duration: effectiveResponseTime });
 
       setCreatedReservation(resData);
       if (resTimeline) {
@@ -244,22 +262,24 @@ const CreateReservationPage = () => {
           reservationResponseText:
             resTimeline.reservationResponseText ||
             resTimeline.response_time_text ||
-            prev?.reservationResponseText
+            prev?.reservationResponseText,
         }));
       }
       setToastInfo({ message: resMsg, type: 'success' });
     } catch (err) {
       console.error('Error creating reservation:', err);
-      setFormError(err.message || 'Không thể gửi yêu cầu thuê bãi xe. Vui lòng thử lại!');
+      setFormError(err.message || t('createReservation.validation.submitError'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const responseTimeText =
+  const rawResponseTimeText =
     timelineSettings?.reservationResponseText ||
-    timelineSettings?.response_time_text ||
-    'thời hạn quy định';
+    timelineSettings?.response_time_text;
+  const responseTimeText = rawResponseTimeText
+    ? translateDurationText(rawResponseTimeText, i18n.language)
+    : t('createReservation.defaultResponseTime');
 
   const primaryImage =
     facility?.images?.find((img) => img.is_primary)?.image_url ||
@@ -267,11 +287,11 @@ const CreateReservationPage = () => {
     null;
 
   const monthlyPrice = facility?.price_per_month
-    ? Number(facility.price_per_month).toLocaleString('vi-VN')
+    ? Number(facility.price_per_month).toLocaleString(numberLocale)
     : '0';
 
   const providerName =
-    facility?.provider?.full_name || facility?.provider?.name || 'Chủ cơ sở bãi xe';
+    facility?.provider?.full_name || facility?.provider?.name || t('createReservation.providerFallback');
 
   return (
     <div className="min-h-screen bg-slate-50 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 w-full">
@@ -284,11 +304,11 @@ const CreateReservationPage = () => {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <nav className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
             <Link to="/" className="hover:text-teal-700 transition">
-              Trang chủ
+              {t('createReservation.breadcrumbs.home')}
             </Link>
             <ChevronRight className="w-4 h-4 text-slate-400" />
             <Link to="/search" className="hover:text-teal-700 transition">
-              Tìm bãi đỗ
+              {t('createReservation.breadcrumbs.search')}
             </Link>
             {facility && (
               <>
@@ -302,7 +322,7 @@ const CreateReservationPage = () => {
               </>
             )}
             <ChevronRight className="w-4 h-4 text-slate-400" />
-            <span className="text-slate-900 font-semibold">Đăng ký thuê chỗ</span>
+            <span className="text-slate-900 font-semibold">{t('createReservation.breadcrumbs.current')}</span>
           </nav>
 
           <button
@@ -311,31 +331,31 @@ const CreateReservationPage = () => {
               if (facility?.id) navigate(`/facility/${facility.id}`);
               else navigate(-1);
             }}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-2xs transition cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 text-slate-500" />
-            Quay lại bãi xe
+            {t('createReservation.backToFacility')}
           </button>
         </div>
 
         {fetchingFacility ? (
           <div className="bg-white rounded-2xl p-16 text-center border border-slate-200 shadow-xs">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-3" />
-            <p className="text-sm font-medium text-slate-600">Đang tải thông tin bãi đỗ xe...</p>
+            <p className="text-sm font-medium text-slate-600">{t('createReservation.loadingFacility')}</p>
           </div>
         ) : facilityError ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 shadow-xs space-y-3">
             <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-slate-900">Không tìm thấy thông tin bãi xe</h2>
+            <h2 className="text-lg font-bold text-slate-900">{t('createReservation.notFoundTitle')}</h2>
             <p className="text-sm text-slate-600 max-w-md mx-auto">{facilityError}</p>
             <div className="pt-2">
               <Link
                 to="/search"
                 className="inline-flex items-center px-5 py-2.5 rounded-xl bg-teal-600 text-white font-semibold text-sm hover:bg-teal-700 transition"
               >
-                Tìm bãi xe khác
+                {t('createReservation.findAnother')}
               </Link>
             </div>
           </div>
@@ -347,20 +367,24 @@ const CreateReservationPage = () => {
               </div>
               <div className="space-y-2 flex-1">
                 <span className="inline-block text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-md">
-                  Gửi yêu cầu thành công
+                  {t('createReservation.success.badge')}
                 </span>
                 <h1 className="text-xl font-bold text-slate-900">
-                  Đã gửi đăng ký thuê chỗ đỗ xe
+                  {t('createReservation.success.title')}
                 </h1>
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  Yêu cầu của bạn đã được chuyển đến chủ bãi <strong className="text-slate-900">{facility?.name}</strong>.
+                  {t('createReservation.success.subtitleBefore')} <strong className="text-slate-900">{facility?.name}</strong>.
                 </p>
 
                 <div className="p-3.5 bg-white rounded-xl border border-emerald-200/90 shadow-2xs text-xs sm:text-sm text-slate-800 flex items-start gap-3 mt-2">
                   <Clock className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <div className="leading-relaxed">
-                    <span className="font-bold text-emerald-950">Thời hạn phản hồi của chủ bãi: </span>
-                    Chủ bãi có <strong className="text-emerald-700 font-bold px-1.5 py-0.5 bg-emerald-50 rounded border border-emerald-200">{responseTimeText}</strong> để xem xét duyệt hoặc từ chối yêu cầu của bạn. Quá thời hạn này mà chủ bãi không phản hồi, hệ thống sẽ tự động hủy yêu cầu để bảo đảm quyền lợi cho bạn.
+                    <span className="font-bold text-emerald-950">{t('createReservation.success.deadlineTitle')} </span>
+                    {t('createReservation.success.deadlineBefore')}{' '}
+                    <strong className="text-emerald-700 font-bold px-1.5 py-0.5 bg-emerald-50 rounded border border-emerald-200">
+                      {responseTimeText}
+                    </strong>{' '}
+                    {t('createReservation.success.deadlineAfter')}
                   </div>
                 </div>
               </div>
@@ -369,36 +393,38 @@ const CreateReservationPage = () => {
             <div className="p-6 sm:p-8 space-y-6">
               <div className="rounded-xl border border-slate-200 divide-y divide-slate-100 text-sm">
                 <div className="flex justify-between py-3 px-4">
-                  <span className="text-slate-500">Bãi đỗ xe</span>
+                  <span className="text-slate-500">{t('createReservation.success.facility')}</span>
                   <span className="font-semibold text-slate-900">{facility?.name}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
-                  <span className="text-slate-500">Phương tiện</span>
+                  <span className="text-slate-500">{t('createReservation.success.vehicle')}</span>
                   <span className="font-semibold text-slate-900">{vehicleBrand}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
-                  <span className="text-slate-500">Biển kiểm soát</span>
+                  <span className="text-slate-500">{t('createReservation.success.licensePlate')}</span>
                   <span className="font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
                     {licensePlate.toUpperCase()}
                   </span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
-                  <span className="text-slate-500">Số CCCD / CMND</span>
+                  <span className="text-slate-500">{t('createReservation.success.idCard')}</span>
                   <span className="font-medium text-slate-900">{customerIdCard}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4 gap-4">
-                  <span className="text-slate-500 shrink-0">Địa chỉ</span>
+                  <span className="text-slate-500 shrink-0">{t('createReservation.success.address')}</span>
                   <span className="font-medium text-slate-900 text-right">{user?.address}</span>
                 </div>
                 <div className="flex justify-between py-3 px-4">
-                  <span className="text-slate-500">Ngày bắt đầu dự kiến</span>
+                  <span className="text-slate-500">{t('createReservation.success.startDate')}</span>
                   <span className="font-semibold text-slate-900">
-                    {new Date(desiredStartDate).toLocaleDateString('vi-VN')}
+                    {new Date(desiredStartDate).toLocaleDateString(numberLocale)}
                   </span>
                 </div>
                 <div className="flex justify-between py-3.5 px-4 bg-slate-50/80 rounded-b-xl">
-                  <span className="text-slate-700 font-medium">Giá thuê niêm yết</span>
-                  <span className="font-bold text-teal-700 text-base">{monthlyPrice} VNĐ / tháng</span>
+                  <span className="text-slate-700 font-medium">{t('createReservation.success.monthlyPrice')}</span>
+                  <span className="font-bold text-teal-700 text-base">
+                    {t('createReservation.success.monthlyPriceValue', { price: monthlyPrice })}
+                  </span>
                 </div>
               </div>
 
@@ -407,14 +433,14 @@ const CreateReservationPage = () => {
                   to={`/facility/${facility?.id}`}
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-sm text-center transition"
                 >
-                  Quay lại bãi xe
+                  {t('createReservation.success.backToFacility')}
                 </Link>
                 <Link
                   to="/my-reservations"
                   className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm text-center shadow-xs transition flex items-center justify-center gap-2"
                 >
                   <FileText className="w-4 h-4" />
-                  Xem yêu cầu của tôi
+                  {t('createReservation.success.viewMyReservations')}
                 </Link>
               </div>
             </div>
@@ -426,10 +452,10 @@ const CreateReservationPage = () => {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      Đăng ký thuê chỗ đỗ xe theo tháng
+                      {t('createReservation.header.title')}
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">
-                      Vui lòng điền chính xác thông tin để chủ bãi thiết lập hợp đồng gửi giữ xe.
+                      {t('createReservation.header.subtitle')}
                     </p>
                   </div>
                 </div>
@@ -439,19 +465,19 @@ const CreateReservationPage = () => {
                     <span className="w-5 h-5 rounded-full bg-teal-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                       1
                     </span>
-                    <span className="truncate">Gửi thông tin đăng ký</span>
+                    <span className="truncate">{t('createReservation.steps.step1')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-500">
                     <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-semibold flex items-center justify-center shrink-0">
                       2
                     </span>
-                    <span className="truncate">Chủ bãi duyệt & soạn HĐ</span>
+                    <span className="truncate">{t('createReservation.steps.step2')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-500">
                     <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-semibold flex items-center justify-center shrink-0">
                       3
                     </span>
-                    <span className="truncate">Xác nhận HĐ & nhận chỗ</span>
+                    <span className="truncate">{t('createReservation.steps.step3')}</span>
                   </div>
                 </div>
               </div>
@@ -464,10 +490,12 @@ const CreateReservationPage = () => {
                         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                         <div>
                           <p className="font-bold text-amber-900">
-                            Bạn đang có yêu cầu thuê đang chờ xử lý #{activeReservation.id}
+                            {t('createReservation.activeAlert.title', { id: activeReservation.id })}
                           </p>
                           <p className="text-xs text-amber-800 mt-0.5">
-                            Bạn đã gửi yêu cầu tại cơ sở <strong>"{activeReservation.facility?.name}"</strong>. Hệ thống chỉ cho phép mỗi khách hàng gửi tối đa 1 yêu cầu tại 1 thời điểm trên hệ thống. Vui lòng hoàn tất hoặc hủy yêu cầu đó trước khi gửi yêu cầu tại bãi xe này.
+                            {t('createReservation.activeAlert.descBefore')}{' '}
+                            <strong>"{activeReservation.facility?.name || t('createReservation.activeAlert.otherFacility')}"</strong>.{' '}
+                            {t('createReservation.activeAlert.descAfter')}
                           </p>
                         </div>
                       </div>
@@ -475,7 +503,7 @@ const CreateReservationPage = () => {
                         to="/my-reservations"
                         className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg whitespace-nowrap transition"
                       >
-                        Quản lý yêu cầu
+                        {t('createReservation.activeAlert.manageButton')}
                       </Link>
                     </div>
                   </div>
@@ -494,7 +522,7 @@ const CreateReservationPage = () => {
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
                     <h2 className="text-base font-bold text-slate-900">
-                      Thông tin người đăng ký (Bên thuê)
+                      {t('createReservation.applicantSection.title')}
                     </h2>
                   </div>
 
@@ -507,18 +535,22 @@ const CreateReservationPage = () => {
                               src={user.avatar_url}
                               alt={user?.full_name || 'User'}
                               referrerPolicy="no-referrer"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
                               className="w-full h-full object-cover"
                             />
+                          ) : user?.full_name ? (
+                            user.full_name.charAt(0).toUpperCase()
                           ) : (
-                            user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'
+                            'U'
                           )}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-900">
-                            {user?.full_name || 'Khách hàng'}
+                            {user?.full_name || t('createReservation.customerFallback')}
                           </p>
-                          <p className="text-xs text-slate-500">Tài khoản Bên thuê ghi trên Hợp đồng</p>
+                          <p className="text-xs text-slate-500">{t('createReservation.applicantSection.roleNote')}</p>
                         </div>
                       </div>
 
@@ -526,7 +558,7 @@ const CreateReservationPage = () => {
                         <span className="inline-flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-teal-600" />
                           <span className={`font-medium ${hasPhone ? 'text-slate-800' : 'text-amber-600 font-semibold'}`}>
-                            {user?.phone_number || 'Chưa cập nhật SĐT'}
+                            {user?.phone_number || t('createReservation.applicantSection.noPhone')}
                           </span>
                         </span>
                         <span className="inline-flex items-center gap-1.5">
@@ -539,9 +571,11 @@ const CreateReservationPage = () => {
                     <div className="pt-2.5 border-t border-slate-200/60 flex items-start gap-2 text-xs text-slate-600">
                       <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0 mt-0.5" />
                       <div>
-                        <span className="font-semibold text-slate-700">Địa chỉ: </span>
+                        <span className="font-semibold text-slate-700">
+                          {t('createReservation.applicantSection.addressLabel')}{' '}
+                        </span>
                         <span className={hasAddress ? 'text-slate-900 font-medium' : 'text-amber-600 font-semibold italic'}>
-                          {user?.address || 'Chưa cập nhật địa chỉ trong hồ sơ'}
+                          {user?.address || t('createReservation.applicantSection.noAddress')}
                         </span>
                       </div>
                     </div>
@@ -553,24 +587,24 @@ const CreateReservationPage = () => {
                         <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
                         <span>
                           {!hasPhone && !hasAddress
-                            ? 'Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc và lập Hợp đồng thuê.'
+                            ? t('createReservation.applicantSection.missingBoth')
                             : !hasPhone
-                              ? 'Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc khi nhận chỗ.'
-                              : 'Hồ sơ của bạn chưa có Địa chỉ. Vui lòng bổ sung để ghi trên Hợp đồng thuê bãi xe.'}
+                              ? t('createReservation.applicantSection.missingPhone')
+                              : t('createReservation.applicantSection.missingAddress')}
                         </span>
                       </div>
                       <Link
                         to="/profile"
                         className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shrink-0 transition text-center shadow-sm"
                       >
-                        Cập nhật hồ sơ
+                        {t('createReservation.applicantSection.updateProfile')}
                       </Link>
                     </div>
                   )}
 
                   <div className="pt-1">
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Số CCCD / CMND <span className="text-red-500">*</span>
+                      {t('createReservation.applicantSection.idCardLabel')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <CreditCard className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -579,13 +613,13 @@ const CreateReservationPage = () => {
                         required
                         value={customerIdCard}
                         onChange={(e) => setCustomerIdCard(e.target.value.replace(/\D/g, ''))}
-                        placeholder="Nhập 9 hoặc 12 chữ số ghi trên thẻ CCCD / CMND"
+                        placeholder={t('createReservation.applicantSection.idCardPlaceholder')}
                         maxLength={12}
                         className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
                       />
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">
-                      Số CCCD/CMND được dùng để xác lập hợp đồng thuê bãi xe.
+                      {t('createReservation.applicantSection.idCardHint')}
                     </p>
                   </div>
                 </div>
@@ -594,14 +628,14 @@ const CreateReservationPage = () => {
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
                     <h2 className="text-base font-bold text-slate-900">
-                      Thông tin phương tiện gửi giữ
+                      {t('createReservation.vehicleSection.title')}
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Hãng xe / Dòng xe <span className="text-red-500">*</span>
+                        {t('createReservation.vehicleSection.brandLabel')} <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <Car className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -610,20 +644,22 @@ const CreateReservationPage = () => {
                           required
                           value={vehicleBrand}
                           onChange={(e) => setVehicleBrand(e.target.value)}
-                          placeholder="VD: Toyota Camry, Mazda CX-5..."
+                          placeholder={t('createReservation.vehicleSection.brandPlaceholder')}
                           className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
                         />
                       </div>
 
                       {supportedVehicleTypes && supportedVehicleTypes.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                          <span className="text-xs text-slate-400">Gợi ý loại xe:</span>
+                          <span className="text-xs text-slate-400">
+                            {t('createReservation.vehicleSection.presetHint')}
+                          </span>
                           {supportedVehicleTypes.map((preset) => (
                             <button
                               key={preset.id}
                               type="button"
                               onClick={() => handleQuickPreset(preset.shortLabel || preset.label)}
-                              className="px-2.5 py-1 bg-slate-50 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium transition"
+                              className="px-2.5 py-1 bg-slate-50 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium transition cursor-pointer"
                             >
                               + {preset.shortLabel || preset.label}
                             </button>
@@ -634,18 +670,18 @@ const CreateReservationPage = () => {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Biển kiểm soát (Biển số xe) <span className="text-red-500">*</span>
+                        {t('createReservation.vehicleSection.plateLabel')} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={licensePlate}
                         onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
-                        placeholder="VD: 65A-123.45"
+                        placeholder={t('createReservation.vehicleSection.platePlaceholder')}
                         className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-bold text-slate-900 tracking-wider uppercase placeholder:font-sans placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition"
                       />
                       <p className="text-[11px] text-slate-400 mt-1.5">
-                        Biển số dùng để đối chiếu xe ra vào bãi và ghi nhận trên hợp đồng.
+                        {t('createReservation.vehicleSection.plateHint')}
                       </p>
                     </div>
                   </div>
@@ -655,14 +691,14 @@ const CreateReservationPage = () => {
                   <div className="flex items-center gap-2.5">
                     <div className="w-1 h-5 bg-teal-600 rounded-full" />
                     <h2 className="text-base font-bold text-slate-900">
-                      Thời gian bắt đầu gửi xe
+                      {t('createReservation.startDateSection.title')}
                     </h2>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Ngày bắt đầu nhận chỗ <span className="text-red-500">*</span>
+                        {t('createReservation.startDateSection.startDateLabel')} <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <Calendar className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
@@ -680,20 +716,22 @@ const CreateReservationPage = () => {
                     <div className="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200/70 text-xs text-slate-700 space-y-1.5">
                       <div className="flex items-center gap-1.5 font-bold text-teal-900">
                         <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        Thời hạn phản hồi yêu cầu
+                        {t('createReservation.startDateSection.deadlineTitle')}
                       </div>
                       <p className="leading-relaxed text-slate-600">
-                        Sau khi gửi, chủ bãi có tối đa <strong className="text-teal-800 font-semibold">{responseTimeText}</strong> để xem xét chấp nhận hoặc từ chối. Quá thời hạn này, hệ thống sẽ tự động hủy yêu cầu.
+                        {t('createReservation.startDateSection.deadlineBefore')}{' '}
+                        <strong className="text-teal-800 font-semibold">{responseTimeText}</strong>{' '}
+                        {t('createReservation.startDateSection.deadlineAfter')}
                       </p>
                     </div>
 
                     <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 space-y-1.5">
                       <div className="flex items-center gap-1.5 font-semibold text-slate-800">
                         <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                        Lưu ý về kỳ hạn thuê
+                        {t('createReservation.startDateSection.termTitle')}
                       </div>
                       <p className="leading-relaxed text-slate-500">
-                        Hợp đồng gửi giữ xe tính theo tháng kể từ ngày bắt đầu. Bạn có thể kiểm tra chi tiết các điều khoản trước khi xác nhận hợp đồng điện tử.
+                        {t('createReservation.startDateSection.termDesc')}
                       </p>
                     </div>
                   </div>
@@ -703,11 +741,13 @@ const CreateReservationPage = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5 text-teal-800 font-medium bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200/60">
                       <Clock className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                      <span>Thời hạn chủ bãi phản hồi: <strong>{responseTimeText}</strong></span>
+                      <span>
+                        {t('createReservation.footer.deadlineLabel')} <strong>{responseTimeText}</strong>
+                      </span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                      <span>Thông tin được bảo mật để lập hợp đồng.</span>
+                      <span>{t('createReservation.footer.privacyNote')}</span>
                     </div>
                   </div>
 
@@ -719,25 +759,25 @@ const CreateReservationPage = () => {
                         else navigate(-1);
                       }}
                       disabled={submitting}
-                      className="px-5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition"
+                      className="px-5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition cursor-pointer"
                     >
-                      Hủy bỏ
+                      {t('createReservation.footer.cancel')}
                     </button>
 
                     <button
                       type="submit"
                       disabled={submitting || Boolean(activeReservation)}
-                      className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold text-sm shadow-xs transition flex items-center gap-2"
+                      className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-semibold text-sm shadow-xs transition flex items-center gap-2 cursor-pointer"
                     >
                       {submitting ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          Đang gửi...
+                          {t('createReservation.footer.submitting')}
                         </>
                       ) : activeReservation ? (
-                        'Đã có yêu cầu chờ xử lý'
+                        t('createReservation.footer.alreadyPending')
                       ) : (
-                        'Gửi yêu cầu thuê'
+                        t('createReservation.footer.submit')
                       )}
                     </button>
                   </div>
@@ -758,7 +798,7 @@ const CreateReservationPage = () => {
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                         <Building2 className="w-10 h-10 mb-1.5" />
-                        <span className="text-xs font-medium">Chưa có hình ảnh bãi xe</span>
+                        <span className="text-xs font-medium">{t('createReservation.sidebar.noImage')}</span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
@@ -772,8 +812,8 @@ const CreateReservationPage = () => {
                         }`}
                       >
                         {availability.available_slots > 0
-                          ? `Còn ${availability.available_slots} chỗ trống`
-                          : 'Hết chỗ trống'}
+                          ? t('createReservation.sidebar.slotsLeft', { count: availability.available_slots })
+                          : t('createReservation.sidebar.fullSlots')}
                       </span>
                     )}
                   </div>
@@ -792,11 +832,13 @@ const CreateReservationPage = () => {
 
                   <div className="p-4 rounded-xl bg-teal-50/60 border border-teal-200/70 flex items-baseline justify-between">
                     <span className="text-xs font-semibold text-slate-600">
-                      Giá thuê theo tháng
+                      {t('createReservation.sidebar.monthlyRate')}
                     </span>
                     <div className="text-right">
                       <span className="text-xl font-bold text-teal-800">{monthlyPrice}</span>
-                      <span className="text-xs text-slate-500 ml-1">VNĐ/tháng</span>
+                      <span className="text-xs text-slate-500 ml-1">
+                        {t('createReservation.sidebar.currencyUnit')}
+                      </span>
                     </div>
                   </div>
 
@@ -804,7 +846,7 @@ const CreateReservationPage = () => {
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-slate-400" />
-                        Chủ bãi xe
+                        {t('createReservation.sidebar.provider')}
                       </span>
                       <span className="font-semibold text-slate-800">{providerName}</span>
                     </div>
@@ -813,7 +855,7 @@ const CreateReservationPage = () => {
                       <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                         <span className="text-slate-500 flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          Điện thoại
+                          {t('createReservation.sidebar.phone')}
                         </span>
                         <span className="font-semibold text-slate-800">
                           {facility.provider.phone_number}
@@ -825,10 +867,10 @@ const CreateReservationPage = () => {
                       <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                         <span className="text-slate-500 flex items-center gap-1.5">
                           <Car className="w-3.5 h-3.5 text-slate-400" />
-                          Tổng quy mô
+                          {t('createReservation.sidebar.totalCapacity')}
                         </span>
                         <span className="font-semibold text-slate-800">
-                          {facility.total_slots} chỗ đỗ
+                          {t('createReservation.sidebar.slotsUnit', { count: facility.total_slots })}
                         </span>
                       </div>
                     )}
@@ -836,7 +878,7 @@ const CreateReservationPage = () => {
                     <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
                       <span className="text-slate-500 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-teal-600" />
-                        Hạn phản hồi
+                        {t('createReservation.sidebar.responseDeadline')}
                       </span>
                       <span className="font-semibold text-teal-800">
                         {responseTimeText}
@@ -847,14 +889,17 @@ const CreateReservationPage = () => {
                   <div className="p-3 bg-teal-50/70 border border-teal-200/80 rounded-xl text-xs text-teal-900 flex items-start gap-2">
                     <Clock className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />
                     <div className="leading-relaxed">
-                      <span className="font-bold">Thời hạn phản hồi:</span> Sau khi gửi yêu cầu, chủ bãi có <strong className="font-semibold underline">{responseTimeText}</strong> để phản hồi duyệt hoặc từ chối.
+                      <span className="font-bold">{t('createReservation.sidebar.deadlineBannerTitle')}</span>{' '}
+                      {t('createReservation.sidebar.deadlineBannerBefore')}{' '}
+                      <strong className="font-semibold underline">{responseTimeText}</strong>{' '}
+                      {t('createReservation.sidebar.deadlineBannerAfter')}
                     </div>
                   </div>
 
                   {facility?.facility_amenities && facility.facility_amenities.length > 0 && (
                     <div className="space-y-2 pt-1">
                       <span className="text-xs font-semibold text-slate-700 block">
-                        Tiện ích tại bãi
+                        {t('createReservation.sidebar.amenitiesTitle')}
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {facility.facility_amenities.map((fa) => (
@@ -863,7 +908,8 @@ const CreateReservationPage = () => {
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-slate-700 text-xs"
                           >
                             <CheckCircle2 className="w-3 h-3 text-teal-600 shrink-0" />
-                            {fa.amenity?.name || 'Tiện ích'}
+                            {translateAmenityName(fa.amenity?.name, i18n.language) ||
+                              t('createReservation.sidebar.amenityFallback')}
                           </span>
                         ))}
                       </div>

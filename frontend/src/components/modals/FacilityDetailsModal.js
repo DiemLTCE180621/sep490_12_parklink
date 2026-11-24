@@ -22,7 +22,7 @@ const FacilityDetailsModal = ({ facility, onClose, title = 'Chi Tiết Cơ Sở 
           {}
           <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
             <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-3 text-sm">
-              <User className="w-4 h-4 text-neighbor-600" /> Thông tin Chủ bãi (Provider)
+              <User className="w-4 h-4 text-neighbor-600" /> Thông tin Chủ bãi
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>

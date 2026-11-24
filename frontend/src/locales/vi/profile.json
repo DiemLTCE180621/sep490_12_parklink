@@ -23,7 +23,8 @@
   },
   "fields": {
     "email": {
-      "label": "Địa Chỉ Email (Không thể thay đổi)"
+      "label": "Địa Chỉ Email (Không thể thay đổi)",
+      "cannotChange": "Không thể thay đổi"
     },
     "fullName": {
       "label": "Họ Và Tên",
@@ -36,7 +37,9 @@
     },
     "assignedAddress": {
       "label": "ĐỊA CHỈ PHÂN CÔNG",
+      "badge": "Cố định",
       "empty": "Chưa cập nhật địa chỉ",
+      "emptyFallback": "Chưa cập nhật địa chỉ",
       "note": "Do Quản trị viên phân công"
     },
     "address": {
@@ -46,10 +49,20 @@
       "streetDetailLabel": "Số nhà, tên đường, hẻm / ngõ chi tiết",
       "streetDetailPlaceholder": "Nhập số nhà, tên đường, ngõ/hẻm chi tiết",
       "contractPreview": "Địa chỉ đầy đủ ghi trên hợp đồng: ",
+      "customerPreview": "Địa chỉ ghi trên thông tin thuê bãi: ",
+      "providerPreview": "Địa chỉ liên hệ: ",
       "notSet": "Chưa thiết lập"
     },
     "accountRole": {
       "label": "Vai Trò Hệ Thống:"
+    },
+    "accountStatus": {
+      "label": "Trạng thái tài khoản",
+      "active": "Hoạt động"
+    },
+    "security": {
+      "title": "Bảo mật thông tin ParkLink",
+      "desc": "Thông tin cá nhân và số điện thoại của bạn được dùng để xác thực hợp đồng điện tử và kết nối an toàn với đối tác bãi xe."
     },
     "authMethod": {
       "label": "Phương Thức Đăng Nhập:",

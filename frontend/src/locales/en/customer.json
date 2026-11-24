@@ -801,5 +801,127 @@
     "signing": "Signing Contract...",
     "signNow": "Confirm & Sign Now",
     "close": "Close"
+  },
+  "createReservation": {
+    "breadcrumbs": {
+      "home": "Home",
+      "search": "Find Parking",
+      "current": "Reserve Spot"
+    },
+    "backToFacility": "Back to Facility",
+    "loadingFacility": "Loading parking facility details...",
+    "notFoundTitle": "Parking facility not found",
+    "loadError": "Unable to load parking facility details.",
+    "findAnother": "Find another facility",
+    "defaultResponseTime": "the specified deadline",
+    "providerFallback": "Parking Provider",
+    "customerFallback": "Customer",
+    "header": {
+      "title": "Monthly Parking Spot Registration",
+      "subtitle": "Please provide accurate details so the Parking Provider can prepare your parking contract."
+    },
+    "steps": {
+      "step1": "Submit Registration",
+      "step2": "Provider Review & Contract",
+      "step3": "Sign Contract & Park"
+    },
+    "activeAlert": {
+      "title": "You have an active pending request #{{id}}",
+      "descBefore": "You already have a request at",
+      "descAfter": "The system allows at most 1 active request per customer at a time. Please complete or cancel your existing request before submitting a new one.",
+      "otherFacility": "another facility",
+      "manageButton": "Manage Request"
+    },
+    "applicantSection": {
+      "title": "Applicant Information (Lessee)",
+      "roleNote": "Lessee account listed on the Contract",
+      "noPhone": "Phone number not updated",
+      "addressLabel": "Address:",
+      "noAddress": "Address not updated in profile",
+      "missingBoth": "Your profile is missing both Phone Number and Address. Please complete them so the Provider can contact you and prepare your contract.",
+      "missingPhone": "Your profile is missing a Phone Number. Please add it so the Provider can contact you regarding your reservation.",
+      "missingAddress": "Your profile is missing an Address. Please add it for inclusion in your parking rental contract.",
+      "updateProfile": "Update Profile",
+      "idCardLabel": "National ID / Citizen ID",
+      "idCardPlaceholder": "Enter 9 or 12 digits on your National ID / CCCD",
+      "idCardHint": "Your National ID / CCCD is used to establish the parking rental contract."
+    },
+    "vehicleSection": {
+      "title": "Vehicle Information",
+      "brandLabel": "Vehicle Make / Model",
+      "brandPlaceholder": "e.g., Toyota Camry, Mazda CX-5...",
+      "presetHint": "Quick presets:",
+      "plateLabel": "License Plate Number",
+      "platePlaceholder": "e.g., 65A-123.45",
+      "plateHint": "Used for entry/exit verification and recorded on your contract."
+    },
+    "startDateSection": {
+      "title": "Parking Start Date",
+      "startDateLabel": "Desired Start Date",
+      "deadlineTitle": "Request Response Deadline",
+      "deadlineBefore": "After submission, the Provider has up to",
+      "deadlineAfter": "to approve or decline. If unanswered after this deadline, the system will automatically cancel the request.",
+      "termTitle": "Rental Term Note",
+      "termDesc": "Monthly parking contracts are billed monthly from your start date. You can review all terms before signing the electronic contract."
+    },
+    "footer": {
+      "deadlineLabel": "Provider response deadline:",
+      "privacyNote": "Your details are secured for contract preparation.",
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "alreadyPending": "Pending Request Exists",
+      "submit": "Submit Rental Request"
+    },
+    "sidebar": {
+      "noImage": "No facility photo available",
+      "slotsLeft": "{{count}} spots left",
+      "fullSlots": "No spots left",
+      "monthlyRate": "Monthly Rental Rate",
+      "currencyUnit": "VND/month",
+      "provider": "Provider",
+      "phone": "Phone",
+      "totalCapacity": "Total Capacity",
+      "slotsUnit": "{{count}} spots",
+      "responseDeadline": "Response Deadline",
+      "deadlineBannerTitle": "Response Deadline:",
+      "deadlineBannerBefore": "After submission, the Provider has",
+      "deadlineBannerAfter": "to approve or decline your request.",
+      "amenitiesTitle": "Facility Amenities",
+      "amenityFallback": "Amenity"
+    },
+    "success": {
+      "badge": "Request Submitted",
+      "title": "Monthly Parking Registration Sent",
+      "subtitleBefore": "Your request has been sent to",
+      "deadlineTitle": "Provider Response Deadline:",
+      "deadlineBefore": "The Provider has",
+      "deadlineAfter": "to review and approve or decline your request. If no response is received within this period, the system will automatically cancel the request to protect your interests.",
+      "facility": "Parking Facility",
+      "vehicle": "Vehicle",
+      "licensePlate": "License Plate",
+      "idCard": "National ID / CCCD",
+      "address": "Address",
+      "startDate": "Desired Start Date",
+      "monthlyPrice": "Listed Monthly Rate",
+      "monthlyPriceValue": "{{price}} VND / month",
+      "backToFacility": "Back to Facility",
+      "viewMyReservations": "View My Reservations"
+    },
+    "validation": {
+      "noFacility": "Missing parking facility details to create a request.",
+      "providerNotAllowed": "Provider accounts cannot submit rental requests! Please use a Customer account.",
+      "noSlots": "Sorry, this parking facility currently has no available spots!",
+      "hasActiveReservation": "You already have a pending request at \"{{facilityName}}\". Only 1 active request is allowed at a time. Please complete or cancel it before submitting a new one!",
+      "missingBoth": "Your profile is missing both Phone Number and Address. Please update your profile before submitting a request!",
+      "missingPhone": "Your profile is missing a Phone Number. Please update your profile before submitting a request!",
+      "missingAddress": "Your profile is missing an Address. Please update your profile before submitting a request!",
+      "idCardRequired": "Please enter your National ID / Citizen ID number.",
+      "idCardInvalid": "Invalid National ID / CCCD (must be exactly 9 or 12 digits).",
+      "brandRequired": "Please enter your vehicle make / model (e.g., Toyota Camry, Honda City...).",
+      "plateRequired": "Please enter your vehicle license plate (e.g., 65A-123.45).",
+      "startDateRequired": "Please select your desired parking start date.",
+      "submitSuccess": "Parking reservation request sent! The Provider has {{duration}} to approve or decline.",
+      "submitError": "Failed to submit rental request. Please try again!"
+    }
   }
 }

@@ -626,5 +626,130 @@
       "deactivate": "Deactivate",
       "cancel": "Cancel"
     }
+  },
+  "createContract": {
+    "breadcrumbs": {
+      "dashboard": "Dashboard",
+      "reservations": "Review Reservations",
+      "current": "Create Contract"
+    },
+    "back": "Back",
+    "loading": "Loading reservation #{{id}}...",
+    "error": {
+      "notFound": "Reservation details not found.",
+      "loadFailed": "Unable to load reservation details!",
+      "title": "Reservation Not Found",
+      "retry": "Retry"
+    },
+    "cancelled": {
+      "title": "Contract Creation Deadline Expired – Reservation Cancelled!",
+      "desc": "The {{duration}} window to create an electronic contract after approving this reservation has elapsed, so the system has automatically cancelled the request.",
+      "defaultDuration": "specified",
+      "backToList": "Back to Reservations"
+    },
+    "alreadyExists": {
+      "title": "An electronic contract already exists for this reservation!",
+      "desc": "A contract for this reservation has already been created. You can view the contract document or track its signature status.",
+      "viewContract": "View Contract #{{id}}"
+    },
+    "notApproved": {
+      "title": "Reservation has not been approved yet",
+      "descBefore": "An electronic contract can only be created after the reservation is approved (Current status:",
+      "viewDetail": "View Request Details to Approve"
+    },
+    "header": {
+      "title": "Create Vehicle Parking Contract",
+      "badge": "Electronic Service Contract",
+      "facilityLabel": "Facility:",
+      "customerLabel": "Customer:"
+    },
+    "parties": {
+      "sectionTitle": "I. Contracting Parties",
+      "autoExtracted": "Auto-extracted from account",
+      "partyATitle": "Party A (Parking Provider)",
+      "partyABadge": "Lessor",
+      "representative": "Representative:",
+      "ownerFallback": "Facility Owner",
+      "phone": "Phone:",
+      "email": "Email:",
+      "notUpdated": "Not updated",
+      "partyBTitle": "Party B (Customer)",
+      "partyBBadge": "Lessee",
+      "customerId": "Customer ID:",
+      "customerPhone": "Phone:",
+      "customerEmail": "Online Email:",
+      "idCardLabel": "Party B National ID / CCCD",
+      "idCardPlaceholder": "No ID card details",
+      "addressLabel": "Party B Permanent / Contact Address",
+      "addressPlaceholder": "No address details"
+    },
+    "article1": {
+      "title": "Article 1: Subject of Parking",
+      "badge": "Registered Vehicle",
+      "vehicleTypeLabel": "Vehicle Type / Make",
+      "vehicleTypePlaceholder": "e.g., Car (4-7 seats)",
+      "vehicleTypeHint": "Vehicle category registered by the customer in their reservation request.",
+      "plateLabel": "Registered License Plate",
+      "platePlaceholder": "e.g., 65A-563.94",
+      "plateHint": "License plate used for entry/exit control as registered by the customer."
+    },
+    "article2": {
+      "title": "Article 2: Pricing, Payment Method & Schedule",
+      "durationBadge": "Duration: {{duration}}",
+      "durationValue": "{{months}} months ({{days}} days)",
+      "priceLabel": "Agreed Monthly Parking Fee (VND)",
+      "pricePlaceholder": "e.g., 850000",
+      "priceUnit": "VND / month",
+      "pricePreview": "Formatted: {{price}} VND / month",
+      "deadlineLabel": "Monthly Payment Deadline (Day 1 - 31)",
+      "deadlinePlaceholder": "Default before day 5 or 10 each month",
+      "deadlineHint": "Recurring monthly payment window from day 01 to day {{day}}.",
+      "startDateLabel": "Start Date",
+      "endDateLabel": "Contract End Date",
+      "spotLabel": "Assigned Parking Spot / Slot",
+      "spotPlaceholder": "e.g., Central Lot or Slot #A-12",
+      "spotHint": "Specific parking slot assigned to Party B at Party A's facility.",
+      "paymentMethodsTitle": "Applicable payment methods in this contract:",
+      "bankTransferBefore": "Bank Transfer",
+      "bankTransferMid": "to Party A's account: Transfer note must include",
+      "bankTransferNote": "Full Name, License Plate, Payment Month",
+      "cashBefore": "Cash",
+      "cashAfter": ": Paid directly to the facility's Management / Cashier."
+    },
+    "terms": {
+      "title": "Agreed Terms (Articles 3 - 6)",
+      "infoNoticeBefore": "Article 1",
+      "infoNoticeMid1": "(Parked Vehicle) and",
+      "infoNoticeMid2": "Article 2",
+      "infoNoticeMid3": "(Pricing, Payment Method & Schedule) are configured above. Below are the detailed clauses for",
+      "infoNoticeEnd": "Articles 3, 4, 5, and 6 (contract terms default to Vietnamese):",
+      "tabOwner": "Article 3. Party A Obligations",
+      "tabCustomer": "Article 4. Party B Obligations",
+      "tabDispute": "Article 5. Dispute Resolution",
+      "tabTermination": "Article 6. Contract Validity",
+      "ownerLabel": "Article 3: Rights and Obligations of Party A (Parking Provider):",
+      "customerLabel": "Article 4: Rights and Obligations of Party B (Customer):",
+      "disputeLabel": "Article 5: Dispute Resolution Mechanism:",
+      "terminationLabel": "Article 6: Contract Validity and Termination Conditions:"
+    },
+    "pendingNotice": {
+      "before": "Once created, the contract will be stored with status",
+      "status": "PENDING_SIGNATURE",
+      "after": ". The customer will receive a notification to review all clauses and sign electronically before the contract takes official effect."
+    },
+    "actions": {
+      "cancelBack": "Cancel / Go Back",
+      "submitting": "Creating Contract...",
+      "submit": "Create & Send Electronic Contract"
+    },
+    "validation": {
+      "invalidPrice": "Please enter a valid agreed rental fee (greater than 0 VND)!",
+      "datesRequired": "Please select both contract start and end dates!",
+      "endAfterStart": "Contract end date must be after the start date!",
+      "idCardRequired": "Please enter Party B's National ID / CCCD to create the contract!",
+      "addressRequired": "Please enter Party B's permanent / contact address to create the contract!",
+      "createSuccess": "Electronic contract created and sent successfully! Redirecting to the contract document...",
+      "createError": "Unable to create electronic contract. Please try again!"
+    }
   }
 }

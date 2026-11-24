@@ -55,6 +55,24 @@ export const translateVehicleTypeName = (vehicleType, language = 'vi') => {
   return VEHICLE_TYPE_BY_NAME_EN[normalizeKey(vehicleType.name)] || vehicleType.name || '';
 };
 
+const VEHICLE_TYPE_EN_TO_VI = [
+  ['4–5 Seater Car (Sedan, Hatchback, CUV)', 'Ô tô 4 - 5 chỗ (Sedan, Hatchback, CUV)'],
+  ['4-5 Seater Car (Sedan, Hatchback, CUV)', 'Ô tô 4 - 5 chỗ (Sedan, Hatchback, CUV)'],
+  ['7-Seater Car (SUV, MPV)', 'Ô tô 7 chỗ (SUV, MPV)'],
+  ['Pickup / Light Truck (Under 1.5 tons)', 'Xe bán tải / Xe tải nhỏ (dưới 1.5 tấn)'],
+  ['Electric Car (EV)', 'Xe ô tô điện (EV)'],
+];
+
+export const translateVehicleTypeToVi = (value) => {
+  if (!value || typeof value !== 'string') return value || '';
+  let result = value.trim();
+  VEHICLE_TYPE_EN_TO_VI.forEach(([enText, viText]) => {
+    const escaped = enText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    result = result.replace(new RegExp(escaped, 'gi'), viText);
+  });
+  return result;
+};
+
 
 export const translateAmenityName = (amenityName, language = 'vi') => {
   if (!amenityName) return '';
