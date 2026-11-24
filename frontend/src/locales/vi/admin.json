@@ -270,8 +270,77 @@
     "subtitle": "Báo cáo doanh thu bãi đỗ xe và đối soát phí nền tảng"
   },
   "reviews": {
-    "title": "Quản Lý Đánh Giá Cơ Sở",
-    "subtitle": "Theo dõi và kiểm duyệt đánh giá, nhận xét của khách hàng"
+    "title": "Quản Lý Đánh Giá",
+    "subtitle": "Theo dõi phản hồi của khách hàng và quản lý trạng thái hiển thị đánh giá.",
+    "kpis": {
+      "total": "Tổng đánh giá",
+      "totalSub": "Toàn bộ hệ thống",
+      "average": "Điểm trung bình",
+      "averageSub": "Mức độ hài lòng",
+      "flagged": "Đánh giá cần xem xét",
+      "flaggedPending": "Cần Admin kiểm tra",
+      "flaggedClear": "Không có đánh giá bị gắn cờ",
+      "hidden": "Đang bị ẩn",
+      "hiddenSub": "Không hiển thị với khách hàng"
+    },
+    "filters": {
+      "search": "Tìm theo bãi xe, khách hàng hoặc nội dung...",
+      "allStatuses": "Tất cả trạng thái",
+      "flagged": "Cần xem xét",
+      "hidden": "Đã ẩn",
+      "visible": "Đang hiển thị",
+      "allFacilities": "Tất cả cơ sở bãi xe",
+      "allRatings": "Tất cả số sao",
+      "starOption": "{{count}} sao"
+    },
+    "errors": {
+      "load": "Không thể tải danh sách đánh giá. Vui lòng thử lại."
+    },
+    "empty": {
+      "title": "Không tìm thấy đánh giá",
+      "filtered": "Không có đánh giá phù hợp với bộ lọc. Hãy thử thay đổi từ khóa hoặc bộ lọc.",
+      "default": "Hệ thống chưa có đánh giá nào từ khách hàng."
+    },
+    "pagination": {
+      "range": "Hiển thị {{from}}–{{to}} / {{total}}",
+      "previous": "Trang trước",
+      "next": "Trang sau"
+    },
+    "card": {
+      "facilityFallback": "Bãi xe #{{id}}",
+      "addressFallback": "Chưa cập nhật địa chỉ",
+      "hide": "Ẩn vĩnh viễn",
+      "hideTitle": "Ẩn đánh giá này khỏi hệ thống",
+      "unhide": "Bỏ ẩn đánh giá",
+      "unhideTitle": "Hiển thị lại đánh giá này",
+      "dismissFlag": "Gỡ cờ",
+      "dismissFlagTitle": "Xác nhận đánh giá an toàn và hiển thị lại",
+      "confirmViolation": "Ẩn vĩnh viễn",
+      "confirmViolationTitle": "Xác nhận vi phạm và ẩn đánh giá này",
+      "defaultCustomer": "Khách hàng",
+      "noEmail": "Không có",
+      "reviewReason": "Nội dung cần xem xét:",
+      "defaultReason": "Nội dung có thể không phù hợp."
+    },
+    "toasts": {
+      "dismissSuccess": "Đã gỡ cờ và hiển thị lại đánh giá.",
+      "dismissError": "Không thể gỡ cờ đánh giá.",
+      "unhideSuccess": "Đã hiển thị lại đánh giá.",
+      "unhideError": "Không thể bỏ ẩn đánh giá.",
+      "hideSuccess": "Đã ẩn đánh giá vĩnh viễn.",
+      "hideError": "Không thể ẩn đánh giá."
+    },
+    "confirm": {
+      "unhideTitle": "Xác nhận bỏ ẩn đánh giá",
+      "unhideMessage": "Bạn có chắc muốn hiển thị lại đánh giá của khách hàng {{customer}} không?",
+      "unhideFallback": "Bạn có chắc muốn hiển thị lại đánh giá này không?",
+      "unhideConfirm": "Bỏ ẩn",
+      "hideTitle": "Xác nhận ẩn đánh giá",
+      "hideMessage": "Bạn có chắc muốn ẩn vĩnh viễn đánh giá của khách hàng {{customer}} không?",
+      "hideFallback": "Bạn có chắc muốn ẩn vĩnh viễn đánh giá này không?",
+      "hideConfirm": "Ẩn vĩnh viễn",
+      "cancel": "Hủy"
+    }
   },
   "platformFees": {
     "title": "Cấu Hình Phí Nền Tảng",

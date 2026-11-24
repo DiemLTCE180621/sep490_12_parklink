@@ -531,7 +531,11 @@
       "cancel": "Hủy",
       "sending": "Đang gửi...",
       "sendReply": "Gửi phản hồi",
-      "replyAction": "Phản hồi đánh giá này"
+      "replyAction": "Phản hồi đánh giá này",
+      "validation": {
+        "required": "Vui lòng nhập nội dung phản hồi.",
+        "maxLength": "Nội dung phản hồi không được vượt quá 1000 ký tự."
+      }
     },
     "toasts": {
       "replySuccess": "Gửi phản hồi thành công!",
@@ -588,13 +592,17 @@
     "subtitle": "Phí nền tảng thu 1 lần dựa trên quy mô bãi đỗ (Khung Min – Max) sau khi khảo sát thực địa",
     "refresh": "Làm mới",
     "refreshTitle": "Làm mới danh sách",
+    "create": "Thêm gói biểu phí",
+    "createTitle": "Tạo gói biểu phí mới",
     "bannerNote": "Thu 1 lần khi duyệt đưa cơ sở lên sàn",
     "loadError": "Không thể tải danh sách biểu phí nền tảng",
+    "toggleError": "Không thể thay đổi trạng thái gói phí.",
     "columns": {
       "nameAndDesc": "Tên Gói & Mô Tả",
       "slotTier": "Khung Quy Mô Slot",
       "oneTimeFee": "Mức Phí Thu 1 Lần",
-      "status": "Trạng Thái"
+      "status": "Trạng Thái",
+      "actions": "Thao tác"
     },
     "loading": "Đang tải danh sách biểu phí nền tảng...",
     "empty": "Chưa có gói biểu phí nào được tạo trên hệ thống.",
@@ -602,6 +610,21 @@
     "slotFrom": "Từ {{min}} chỗ trở lên",
     "currency": "VNĐ",
     "active": "Đang áp dụng",
-    "inactive": "Tạm ngưng"
+    "inactive": "Tạm ngưng",
+    "editTitle": "Chỉnh sửa trên trang riêng",
+    "activateTitle": "Kích hoạt gói phí",
+    "deactivateTitle": "Ngừng áp dụng gói phí",
+    "toast": {
+      "activated": "Đã kích hoạt gói \"{{name}}\".",
+      "deactivated": "Đã ngừng áp dụng gói \"{{name}}\"."
+    },
+    "confirm": {
+      "activateTitle": "Kích hoạt gói biểu phí",
+      "deactivateTitle": "Ngừng áp dụng gói biểu phí",
+      "message": "Bạn có chắc muốn {{action}} gói biểu phí \"{{name}}\" không?",
+      "activate": "Kích hoạt",
+      "deactivate": "Ngừng áp dụng",
+      "cancel": "Hủy"
+    }
   }
 }

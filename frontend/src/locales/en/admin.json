@@ -20,7 +20,7 @@
     "providerRevenue": "Facility Revenue",
     "transactions": "Transaction History",
     "complaints": "Complaint Management",
-    "reviews": "Reviews & Ratings",
+    "reviews": "Reviews Management",
     "platformFees": "Platform Fees",
     "vehicleTypes": "Vehicle Types",
     "amenities": "Facility Amenities",
@@ -270,8 +270,77 @@
     "subtitle": "Parking revenue reports and platform fee reconciliations"
   },
   "reviews": {
-    "title": "Facility Reviews Management",
-    "subtitle": "Monitor and moderate customer reviews and ratings"
+    "title": "Review Management",
+    "subtitle": "Monitor customer feedback and manage review visibility.",
+    "kpis": {
+      "total": "Total reviews",
+      "totalSub": "Across the platform",
+      "average": "Average rating",
+      "averageSub": "Customer satisfaction",
+      "flagged": "Flagged for review",
+      "flaggedPending": "Needs admin review",
+      "flaggedClear": "No flagged reviews",
+      "hidden": "Hidden",
+      "hiddenSub": "Not visible to customers"
+    },
+    "filters": {
+      "search": "Search facility, customer, or review...",
+      "allStatuses": "All statuses",
+      "flagged": "Flagged for review",
+      "hidden": "Hidden",
+      "visible": "Visible",
+      "allFacilities": "All facilities",
+      "allRatings": "All ratings",
+      "starOption": "{{count}} stars"
+    },
+    "errors": {
+      "load": "Unable to load reviews. Please try again."
+    },
+    "empty": {
+      "title": "No reviews found",
+      "filtered": "No reviews match the current filters. Try changing your search or filters.",
+      "default": "No customer reviews have been submitted yet."
+    },
+    "pagination": {
+      "range": "Showing {{from}}–{{to}} of {{total}}",
+      "previous": "Previous page",
+      "next": "Next page"
+    },
+    "card": {
+      "facilityFallback": "Facility #{{id}}",
+      "addressFallback": "Address not provided",
+      "hide": "Hide permanently",
+      "hideTitle": "Hide this review from the platform",
+      "unhide": "Unhide review",
+      "unhideTitle": "Make this review visible again",
+      "dismissFlag": "Remove flag",
+      "dismissFlagTitle": "Mark this review as safe and make it visible",
+      "confirmViolation": "Hide permanently",
+      "confirmViolationTitle": "Confirm the violation and hide this review",
+      "defaultCustomer": "Customer",
+      "noEmail": "N/A",
+      "reviewReason": "Review needed:",
+      "defaultReason": "Review content may be inappropriate."
+    },
+    "toasts": {
+      "dismissSuccess": "Flag removed and review made visible.",
+      "dismissError": "Unable to remove the flag.",
+      "unhideSuccess": "Review is visible again.",
+      "unhideError": "Unable to unhide the review.",
+      "hideSuccess": "Review hidden permanently.",
+      "hideError": "Unable to hide the review."
+    },
+    "confirm": {
+      "unhideTitle": "Unhide review",
+      "unhideMessage": "Make {{customer}}'s review visible to customers again?",
+      "unhideFallback": "Make this review visible again?",
+      "unhideConfirm": "Unhide",
+      "hideTitle": "Hide review permanently",
+      "hideMessage": "Permanently hide {{customer}}'s review from the facility?",
+      "hideFallback": "Permanently hide this review?",
+      "hideConfirm": "Hide permanently",
+      "cancel": "Cancel"
+    }
   },
   "platformFees": {
     "title": "Platform Fee Configuration",

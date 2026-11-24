@@ -35,7 +35,10 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    const error = validateReplyForm(replyText);
+    const error = validateReplyForm(replyText, {
+      required: t('reviews.item.validation.required'),
+      maxLength: t('reviews.item.validation.maxLength')
+    });
     if (error) {
       setValError(error);
       return;
@@ -45,7 +48,7 @@ const ProviderReviewItem = memo(({ review, onReplySubmit, submittingId }) => {
     if (success) {
       setIsReplying(false);
     }
-  }, [replyText, review.id, onReplySubmit]);
+  }, [replyText, review.id, onReplySubmit, t]);
 
   return (
     <div className="bg-white p-5 sm:p-6 rounded-xl border border-gray-200/90 shadow-sm hover:shadow-md transition-shadow space-y-4">

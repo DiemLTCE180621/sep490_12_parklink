@@ -13,8 +13,9 @@ import ConfirmModal from '../modals/ConfirmModal';
 
 const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
   const { t, i18n } = useTranslation('provider');
-  const tp = (viText, key, opts) => (isReadOnly ? t(key, opts) : viText);
-  const feeLanguage = isReadOnly ? i18n.language : 'vi';
+  const { t: adminT } = useTranslation('admin');
+  const tp = (viText, key, opts) => t(key, { ...opts, defaultValue: viText });
+  const feeLanguage = i18n.language;
   const navigate = useNavigate();
   const [fees, setFees] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -66,14 +67,16 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
       await platformFeeService.togglePlatformFeeStatus(fee.id);
       setConfirmToggleState({ isOpen: false, fee: null, loading: false });
       setToast({
-        message: `Đã ${fee.is_active ? 'vô hiệu hóa' : 'kích hoạt'} gói "${fee.name}" thành công!`,
+        message: t(`platformFees.toast.${fee.is_active ? 'deactivated' : 'activated'}`, {
+          name: fee.name
+        }),
         type: 'success'
       });
       fetchFees();
     } catch (err) {
       setConfirmToggleState((prev) => ({ ...prev, loading: false }));
       setToast({
-        message: err.message || 'Không thể thay đổi trạng thái gói phí',
+        message: err.message || tp('Không thể thay đổi trạng thái gói phí', 'platformFees.toggleError'),
         type: 'error'
       });
     }
@@ -95,12 +98,12 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
             <DollarSign className="w-6 h-6 text-neighbor-600" />
-            {isReadOnly ? t('platformFees.title') : 'Quản Lý Gói Biểu Phí Nền Tảng'}
+            {isReadOnly ? t('platformFees.title') : adminT('platformFees.title')}
           </h2>
           <p className="text-gray-500 text-xs mt-1">
             {isReadOnly
               ? t('platformFees.subtitle')
-              : 'Cấu hình các gói phí nền tảng thu 1 lần theo quy mô bãi đỗ sau khi khảo sát thực địa'}
+              : adminT('platformFees.subtitle')}
           </p>
         </div>
 
@@ -119,9 +122,9 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
             <button
               onClick={() => navigate('/admin/platform-fees/create')}
               className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-2"
-              title="Tạo gói biểu phí mới"
+              title={tp('Tạo gói biểu phí mới', 'platformFees.createTitle')}
             >
-              <Plus className="w-4 h-4" /> Thêm Gói Biểu Phí Mới
+              <Plus className="w-4 h-4" /> {tp('Thêm gói biểu phí mới', 'platformFees.create')}
             </button>
           )}
         </div>
@@ -141,7 +144,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
               <th className="py-3.5 px-4 text-center">{tp('Khung Quy Mô Slot', 'platformFees.columns.slotTier')}</th>
               <th className="py-3.5 px-4 text-right">{tp('Mức Phí Thu 1 Lần', 'platformFees.columns.oneTimeFee')}</th>
               <th className="py-3.5 px-4 text-center">{tp('Trạng Thái', 'platformFees.columns.status')}</th>
-              {!isReadOnly && <th className="py-3.5 px-4 text-center">Thao Tác</th>}
+              {!isReadOnly && <th className="py-3.5 px-4 text-center">{tp('Thao tác', 'platformFees.columns.actions')}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 text-sm">
@@ -179,7 +182,9 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
 
                   <td className="py-4 px-4 text-right whitespace-nowrap">
                     <span className="text-base font-extrabold text-neighbor-800">
-                      {Number(fee.fee_amount).toLocaleString('vi-VN')}
+                      {Number(fee.fee_amount).toLocaleString(
+                        feeLanguage?.startsWith('en') ? 'en-US' : 'vi-VN'
+                      )}
                     </span>
                     <span className="text-xs font-semibold text-gray-500 ml-1">{tp('VNĐ', 'platformFees.currency')}</span>
                   </td>
@@ -203,7 +208,7 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
                         <button
                           onClick={() => navigate(`/admin/platform-fees/${fee.id}`)}
                           className="p-2 text-gray-600 hover:text-neighbor-600 hover:bg-neighbor-50 rounded-lg transition"
-                          title="Chỉnh sửa trên trang riêng"
+                          title={tp('Chỉnh sửa trên trang riêng', 'platformFees.editTitle')}
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -215,7 +220,10 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
                             ? 'text-amber-600 hover:bg-amber-50 hover:text-amber-700'
                             : 'text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700'
                             }`}
-                          title={fee.is_active ? 'Ngừng áp dụng gói phí' : 'Kích hoạt gói phí'}
+                          title={tp(
+                            fee.is_active ? 'Ngừng áp dụng gói phí' : 'Kích hoạt gói phí',
+                            fee.is_active ? 'platformFees.deactivateTitle' : 'platformFees.activateTitle'
+                          )}
                         >
                           <Power className="w-4 h-4" />
                         </button>
@@ -236,14 +244,21 @@ const AdminPlatformFeesPanel = ({ isReadOnly = false }) => {
         onConfirm={handleConfirmToggle}
         loading={confirmToggleState.loading}
         type={confirmToggleState.fee?.is_active ? 'warning' : 'success'}
-        title={confirmToggleState.fee?.is_active ? 'Ngừng Áp Dụng Biểu Phí' : 'Kích Hoạt Biểu Phí'}
+        title={t(
+          `platformFees.confirm.${confirmToggleState.fee?.is_active ? 'deactivateTitle' : 'activateTitle'}`
+        )}
         message={
           confirmToggleState.fee
-            ? `Bạn có chắc chắn muốn ${confirmToggleState.fee.is_active ? 'ngừng áp dụng (vô hiệu hóa)' : 'kích hoạt áp dụng'} gói biểu phí "${confirmToggleState.fee.name}" không?`
+            ? t('platformFees.confirm.message', {
+                action: t(`platformFees.confirm.${confirmToggleState.fee.is_active ? 'deactivate' : 'activate'}`),
+                name: confirmToggleState.fee.name
+              })
             : ''
         }
-        confirmText={confirmToggleState.fee?.is_active ? 'Ngừng Áp Dụng' : 'Kích Hoạt Ngay'}
-        cancelText="Hủy Bỏ"
+        confirmText={t(
+          `platformFees.confirm.${confirmToggleState.fee?.is_active ? 'deactivate' : 'activate'}`
+        )}
+        cancelText={t('platformFees.confirm.cancel')}
       />
     </div>
   );
