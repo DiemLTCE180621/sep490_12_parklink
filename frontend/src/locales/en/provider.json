@@ -567,11 +567,13 @@
       "transactionId": "Transaction ID",
       "paymentTime": "Payment Timestamp",
       "facilityName": "Facility",
+      "provider": "Provider",
       "transactionType": "Type",
       "amount": "Fee Amount",
       "status": "Status"
     },
     "providerSubtitle": "Monitor platform fee payment transactions for your managed parking facilities.",
+    "adminSubtitle": "Monitor platform fee transactions across the system.",
     "currency": "VND",
     "errors": {
       "loadFailed": "Unable to load payment transaction history.",

@@ -567,11 +567,13 @@
       "transactionId": "Mã GD",
       "paymentTime": "Thời gian",
       "facilityName": "Bãi xe",
+      "provider": "Chủ bãi",
       "transactionType": "Loại",
       "amount": "Số tiền",
       "status": "Trạng thái"
     },
     "providerSubtitle": "Theo dõi các giao dịch phí nền tảng của bãi xe bạn quản lý.",
+    "adminSubtitle": "Theo dõi các giao dịch phí nền tảng trên hệ thống.",
     "currency": "đ",
     "errors": {
       "loadFailed": "Không tải được lịch sử giao dịch.",

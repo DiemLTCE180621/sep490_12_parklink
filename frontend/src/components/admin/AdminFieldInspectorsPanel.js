@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, Plus, Edit, UserCheck, RefreshCw, RotateCcw, ChevronLeft, ChevronRight, CheckCircle2, AlertTriangle, Mail, Phone, User, X, MapPin, Lock, Unlock, KeyRound } from 'lucide-react';
 import fieldInspectorService from '../../services/fieldInspectorService';
 import userService from '../../services/userService';
@@ -6,6 +7,7 @@ import addressService from '../../services/addressService';
 import AddressSelector from '../common/AddressSelector';
 
 const AdminFieldInspectorsPanel = () => {
+  const { t } = useTranslation('admin');
   const [inspectors, setInspectors] = useState([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -131,11 +133,11 @@ const AdminFieldInspectorsPanel = () => {
         setPagination(payload.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, limit: 10 });
       }
     } catch (err) {
-      setError(err.errors?.[0] || err.message || 'Lỗi khi tải danh sách nhân viên khảo sát');
+      setError(t('inspectors.errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [search, addressFilter]);
+  }, [search, addressFilter, t]);
 
   useEffect(() => {
     fetchInspectors(1);
@@ -146,19 +148,19 @@ const AdminFieldInspectorsPanel = () => {
     setCreateError('');
 
     if (!createForm.email || !createForm.full_name || !createForm.phone_number) {
-      setCreateError('Vui lòng nhập đầy đủ Email, Họ tên và Số điện thoại!');
+      setCreateError(t('inspectors.errors.requiredFields'));
       return;
     }
 
     try {
       setCreateLoading(true);
-      const res = await fieldInspectorService.createFieldInspector(createForm);
-      setSuccessMessage(res.data?.message || 'Tạo tài khoản nhân viên khảo sát thành công. Mật khẩu tạm thời đã được gửi qua email.');
+      await fieldInspectorService.createFieldInspector(createForm);
+      setSuccessMessage(t('inspectors.messages.createSuccess'));
       setIsCreateModalOpen(false);
       setCreateForm({ email: '', full_name: '', phone_number: '', address: '' });
       fetchInspectors(1);
     } catch (err) {
-      setCreateError(err.errors?.[0] || err.message || 'Lỗi khi tạo tài khoản nhân viên khảo sát');
+      setCreateError(t('inspectors.errors.create'));
     } finally {
       setCreateLoading(false);
     }
@@ -181,19 +183,19 @@ const AdminFieldInspectorsPanel = () => {
     setEditError('');
 
     if (!editForm.full_name || !editForm.phone_number) {
-      setEditError('Họ tên và Số điện thoại không được để trống!');
+      setEditError(t('inspectors.errors.nameAndPhoneRequired'));
       return;
     }
 
     try {
       setEditLoading(true);
-      const res = await fieldInspectorService.updateFieldInspector(editingInspector.id, editForm);
-      setSuccessMessage(res.data?.message || 'Cập nhật thông tin thành công!');
+      await fieldInspectorService.updateFieldInspector(editingInspector.id, editForm);
+      setSuccessMessage(t('inspectors.messages.editSuccess'));
       setIsEditModalOpen(false);
       setEditingInspector(null);
       fetchInspectors(pagination.currentPage);
     } catch (err) {
-      setEditError(err.errors?.[0] || err.message || 'Lỗi khi cập nhật thông tin');
+      setEditError(t('inspectors.errors.edit'));
     } finally {
       setEditLoading(false);
     }
@@ -225,21 +227,19 @@ const AdminFieldInspectorsPanel = () => {
       setError('');
 
       if (type === 'LOCK' || type === 'UNLOCK') {
-        const res = await userService.toggleUserStatus(inspector.id);
-        const actionMsg = res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.');
-        setSuccessMessage(actionMsg);
+        await userService.toggleUserStatus(inspector.id);
+        setSuccessMessage(t(type === 'LOCK' ? 'inspectors.messages.lockSuccess' : 'inspectors.messages.unlockSuccess'));
         setInspectors((prev) =>
           prev.map((i) => (i.id === inspector.id ? { ...i, status: type === 'LOCK' ? 'BLOCKED' : 'ACTIVE' } : i))
         );
       } else if (type === 'RESET_PASSWORD') {
-        const res = await userService.forceResetPassword(inspector.id);
-        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi qua email.';
-        setSuccessMessage(msg);
+        await userService.forceResetPassword(inspector.id);
+        setSuccessMessage(t('inspectors.messages.resetPasswordSuccess'));
       }
 
       setConfirmDialog({ isOpen: false, type: '', inspector: null });
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Thao tác thất bại!');
+      setError(t('inspectors.errors.action'));
     } finally {
       setActionLoading(false);
     }
@@ -249,9 +249,9 @@ const AdminFieldInspectorsPanel = () => {
     const s = (statusStr || '').toUpperCase();
     switch (s) {
       case 'ACTIVE':
-        return <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Hoạt động</span>;
+        return <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> {t('statuses.active')}</span>;
       case 'BLOCKED':
-        return <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> Đã khóa</span>;
+        return <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> {t('statuses.blocked')}</span>;
       default:
         return <span className="bg-gray-100 text-gray-700 text-xs font-bold px-2.5 py-0.5 rounded-full">{s}</span>;
     }
@@ -263,16 +263,16 @@ const AdminFieldInspectorsPanel = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <UserCheck className="w-6 h-6 text-neighbor-600" /> Quản Lý Nhân Viên Khảo Sát Thực Địa
+            <UserCheck className="w-6 h-6 text-neighbor-600" /> {t('inspectors.title')}
           </h2>
           <p className="text-gray-500 text-xs mt-1">
-            Danh sách nhân viên khảo sát có nhiệm vụ kiểm tra và xác nhận bãi đỗ xe ngoài thực tế
+            {t('inspectors.subtitle')}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
-            Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{pagination.totalItems}</strong> nhân viên
+            {t('inspectors.totalCount', { count: pagination.totalItems })}
           </div>
 
           <button
@@ -282,7 +282,7 @@ const AdminFieldInspectorsPanel = () => {
             }}
             className="px-4 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> Thêm Nhân Viên Khảo Sát
+            <Plus className="w-4 h-4" /> {t('inspectors.actions.add')}
           </button>
         </div>
       </div>
@@ -308,7 +308,7 @@ const AdminFieldInspectorsPanel = () => {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo họ tên, email, SĐT..."
+              placeholder={t('inspectors.filters.searchPlaceholder')}
               className="w-full pl-9 pr-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium"
             />
           </div>
@@ -320,7 +320,7 @@ const AdminFieldInspectorsPanel = () => {
               disabled={loadingProvinces}
               className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700 disabled:bg-gray-100 cursor-pointer"
             >
-              <option value="">-- Tất cả Tỉnh / Thành Phố --</option>
+              <option value="">{t('inspectors.filters.allProvinces')}</option>
               {provinces.map((p) => (
                 <option key={p.code} value={p.code}>
                   {p.name}
@@ -336,7 +336,7 @@ const AdminFieldInspectorsPanel = () => {
               disabled={!selectedProvinceCode || loadingWards}
               className="w-full px-3 py-2 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700 disabled:bg-gray-100 disabled:text-gray-400 cursor-pointer"
             >
-              <option value="">-- Tất cả Phường / Xã --</option>
+              <option value="">{t('inspectors.filters.allWards')}</option>
               {wards.map((w) => (
                 <option key={w.code} value={w.code}>
                   {w.name}
@@ -348,19 +348,19 @@ const AdminFieldInspectorsPanel = () => {
           <button
             type="button"
             onClick={handleResetFilters}
-            title="Đặt lại bộ lọc & Tải lại danh sách"
+            title={t('inspectors.filters.refreshTitle')}
             className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> Làm mới
+            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> {t('common.refresh')}
           </button>
         </div>
 
         {(search || addressFilter) && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 pt-1 border-t border-gray-200/60">
-            <span className="font-semibold">Đang lọc theo:</span>
+            <span className="font-semibold">{t('inspectors.filters.activeFilters')}</span>
             {search && (
               <span className="bg-neighbor-50 text-neighbor-700 px-2.5 py-0.5 rounded-lg border border-neighbor-200 font-medium flex items-center gap-1">
-                Từ khóa: "{search}"
+                {t('inspectors.filters.keyword')}: "{search}"
                 <button onClick={() => setSearch('')} className="hover:text-neighbor-900 ml-1">
                   <X className="w-3 h-3" />
                 </button>
@@ -369,7 +369,7 @@ const AdminFieldInspectorsPanel = () => {
             {addressFilter && (
               <span className="bg-neighbor-50 text-neighbor-700 px-2.5 py-0.5 rounded-lg border border-neighbor-200 font-medium flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-neighbor-600" />
-                Địa chỉ: "{addressFilter}"
+                {t('inspectors.table.address')}: "{addressFilter}"
                 <button
                   onClick={() => {
                     setSelectedProvinceCode('');
@@ -387,7 +387,7 @@ const AdminFieldInspectorsPanel = () => {
               onClick={handleResetFilters}
               className="text-xs text-rose-600 hover:text-rose-800 underline ml-2 font-semibold"
             >
-              Xóa tất cả bộ lọc
+              {t('inspectors.filters.clearAll')}
             </button>
           </div>
         )}
@@ -403,25 +403,25 @@ const AdminFieldInspectorsPanel = () => {
       {loading ? (
         <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
           <RefreshCw className="w-8 h-8 animate-spin text-neighbor-600" />
-          <span>Đang tải danh sách nhân viên khảo sát...</span>
+          <span>{t('inspectors.messages.loading')}</span>
         </div>
       ) : inspectors.length === 0 ? (
         <div className="py-16 text-center text-gray-400">
           <UserCheck className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="font-semibold text-sm">
             {search || addressFilter
-              ? 'Không tìm thấy nhân viên khảo sát nào phù hợp với bộ lọc tìm kiếm!'
-              : 'Chưa có Nhân viên khảo sát thực địa nào trong hệ thống!'}
+              ? t('inspectors.empty.filtered')
+              : t('inspectors.empty.default')}
           </p>
           {search || addressFilter ? (
             <button
               onClick={handleResetFilters}
               className="text-xs text-neighbor-600 hover:text-neighbor-700 font-bold mt-2 underline"
             >
-              Xóa bộ lọc tìm kiếm
+              {t('inspectors.filters.clearSearch')}
             </button>
           ) : (
-            <p className="text-xs text-gray-400 mt-1">Nhấn "Thêm Nhân Viên Khảo Sát" ở trên để tạo tài khoản mới.</p>
+            <p className="text-xs text-gray-400 mt-1">{t('inspectors.empty.hint')}</p>
           )}
         </div>
       ) : (
@@ -430,12 +430,12 @@ const AdminFieldInspectorsPanel = () => {
             <thead>
               <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                 <th className="py-3 px-4">ID</th>
-                <th className="py-3 px-4">Họ và Tên</th>
-                <th className="py-3 px-4">Email Đăng Nhập</th>
-                <th className="py-3 px-4">Số Điện Thoại</th>
-                <th className="py-3 px-4">Địa Chỉ</th>
-                <th className="py-3 px-4">Trạng Thái</th>
-                <th className="py-3 px-4 text-center">Thao tác</th>
+                <th className="py-3 px-4">{t('inspectors.table.fullName')}</th>
+                <th className="py-3 px-4">{t('inspectors.table.email')}</th>
+                <th className="py-3 px-4">{t('inspectors.table.phone')}</th>
+                <th className="py-3 px-4">{t('inspectors.table.address')}</th>
+                <th className="py-3 px-4">{t('inspectors.table.status')}</th>
+                <th className="py-3 px-4 text-center">{t('inspectors.table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -449,7 +449,7 @@ const AdminFieldInspectorsPanel = () => {
                     {inspector.address ? (
                       inspector.address.split(',').map((p) => p.trim()).filter(Boolean).pop() || inspector.address
                     ) : (
-                      <span className="text-gray-400 italic text-xs">Chưa cập nhật</span>
+                    <span className="text-gray-400 italic text-xs">{t('inspectors.table.notUpdated')}</span>
                     )}
                   </td>
                   <td className="py-3 px-4">{getStatusBadge(inspector.status)}</td>
@@ -457,7 +457,7 @@ const AdminFieldInspectorsPanel = () => {
                     <div className="flex items-center justify-center gap-2">
                       <button
                         onClick={() => handleOpenEditModal(inspector)}
-                        title="Chỉnh sửa thông tin"
+                        title={t('inspectors.actions.edit')}
                         className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition"
                       >
                         <Edit className="w-3.5 h-3.5" />
@@ -465,7 +465,7 @@ const AdminFieldInspectorsPanel = () => {
 
                       <button
                         onClick={() => handleOpenResetPassword(inspector)}
-                        title="Đặt lại mật khẩu"
+                        title={t('inspectors.actions.resetPassword')}
                         className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg border border-amber-200 transition"
                       >
                         <KeyRound className="w-3.5 h-3.5" />
@@ -473,7 +473,7 @@ const AdminFieldInspectorsPanel = () => {
 
                       <button
                         onClick={() => handleOpenToggleStatus(inspector)}
-                        title={(inspector.status || '').toUpperCase() === 'BLOCKED' ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                        title={t((inspector.status || '').toUpperCase() === 'BLOCKED' ? 'inspectors.actions.unlock' : 'inspectors.actions.lock')}
                         className={`p-1.5 rounded-lg border transition ${
                           (inspector.status || '').toUpperCase() === 'BLOCKED'
                             ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -498,7 +498,7 @@ const AdminFieldInspectorsPanel = () => {
       {pagination.totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-600">
           <div>
-            Trang <strong>{pagination.currentPage}</strong> / {pagination.totalPages} (Tổng: {pagination.totalItems})
+            {t('inspectors.pagination.summary', { current: pagination.currentPage, total: pagination.totalPages, count: pagination.totalItems })}
           </div>
           <div className="flex gap-2">
             <button
@@ -506,14 +506,14 @@ const AdminFieldInspectorsPanel = () => {
               onClick={() => fetchInspectors(pagination.currentPage - 1)}
               className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
-              <ChevronLeft className="w-4 h-4" /> Trước
+              <ChevronLeft className="w-4 h-4" /> {t('inspectors.pagination.previous')}
             </button>
             <button
               disabled={pagination.currentPage >= pagination.totalPages || loading}
               onClick={() => fetchInspectors(pagination.currentPage + 1)}
               className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
-              Sau <ChevronRight className="w-4 h-4" />
+              {t('inspectors.pagination.next')} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -524,7 +524,7 @@ const AdminFieldInspectorsPanel = () => {
           <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
             <div className="flex justify-between items-center border-b border-gray-200 pb-4">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <UserCheck className="w-6 h-6 text-neighbor-600" /> Tạo Tài Khoản Nhân Viên Khảo Sát
+                <UserCheck className="w-6 h-6 text-neighbor-600" /> {t('inspectors.create.title')}
               </h3>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
@@ -543,12 +543,12 @@ const AdminFieldInspectorsPanel = () => {
             <form onSubmit={handleCreateSubmit} className="space-y-5 text-sm">
               <div>
                 <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <User className="w-4 h-4 text-neighbor-600" /> Họ và Tên Nhân Viên <span className="text-red-500">*</span>
+                  <User className="w-4 h-4 text-neighbor-600" /> {t('inspectors.create.fullName')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Nhập họ và tên"
+                  placeholder={t('inspectors.form.namePlaceholder')}
                   value={createForm.full_name}
                   onChange={(e) => setCreateForm({ ...createForm, full_name: e.target.value })}
                   className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
@@ -557,12 +557,12 @@ const AdminFieldInspectorsPanel = () => {
 
               <div>
                 <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-neighbor-600" /> Email Đăng Nhập <span className="text-red-500">*</span>
+                  <Mail className="w-4 h-4 text-neighbor-600" /> {t('inspectors.table.email')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="Nhập email"
+                  placeholder={t('inspectors.form.emailPlaceholder')}
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                   className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
@@ -571,12 +571,12 @@ const AdminFieldInspectorsPanel = () => {
 
               <div>
                 <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-neighbor-600" /> Số Điện Thoại <span className="text-red-500">*</span>
+                  <Phone className="w-4 h-4 text-neighbor-600" /> {t('inspectors.table.phone')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Nhập số điện thoại"
+                  placeholder={t('inspectors.form.phonePlaceholder')}
                   value={createForm.phone_number}
                   onChange={(e) => setCreateForm({ ...createForm, phone_number: e.target.value })}
                   className="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
@@ -585,7 +585,7 @@ const AdminFieldInspectorsPanel = () => {
 
               <div>
                 <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-neighbor-600" /> Địa Chỉ
+                  <MapPin className="w-4 h-4 text-neighbor-600" /> {t('inspectors.table.address')}
                 </label>
                 <AddressSelector
                   value={createForm.address}
@@ -594,7 +594,7 @@ const AdminFieldInspectorsPanel = () => {
               </div>
 
               <div className="p-4 bg-neighbor-50/80 rounded-xl border border-neighbor-100 text-neighbor-800 text-xs leading-relaxed">
-                <strong>Lưu ý:</strong> Mật khẩu sẽ được sinh tự động ngẫu nhiên và gửi tới Email trên. Nhân viên sẽ được yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.
+                {t('inspectors.create.passwordNote')}
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
@@ -603,14 +603,14 @@ const AdminFieldInspectorsPanel = () => {
                   onClick={() => setIsCreateModalOpen(false)}
                   className="px-5 py-2.5 border border-gray-200 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-50 transition"
                 >
-                  Hủy
+                  {t('common:actions.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={createLoading}
                   className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
                 >
-                  {createLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Tạo Tài Khoản'}
+                  {createLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : t('inspectors.create.submit')}
                 </button>
               </div>
             </form>
@@ -623,7 +623,7 @@ const AdminFieldInspectorsPanel = () => {
           <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
             <div className="flex justify-between items-center border-b border-gray-200 pb-4">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Edit className="w-6 h-6 text-neighbor-600" /> Chỉnh Sửa Nhân Viên Khảo Sát (#{editingInspector.id})
+                <Edit className="w-6 h-6 text-neighbor-600" /> {t('inspectors.edit.title', { id: editingInspector.id })}
               </h3>
               <button
                 onClick={() => setIsEditModalOpen(false)}
@@ -641,7 +641,7 @@ const AdminFieldInspectorsPanel = () => {
 
             <form onSubmit={handleEditSubmit} className="space-y-5 text-sm">
               <div>
-                <label className="block font-bold text-gray-500 mb-1.5">Email (Không thể thay đổi)</label>
+                <label className="block font-bold text-gray-500 mb-1.5">{t('inspectors.edit.emailReadOnly')}</label>
                 <input
                   type="text"
                   disabled
@@ -651,11 +651,11 @@ const AdminFieldInspectorsPanel = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1.5">Họ và Tên</label>
+                <label className="block font-bold text-gray-700 mb-1.5">{t('inspectors.table.fullName')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Nhập họ và tên"
+                  placeholder={t('inspectors.form.namePlaceholder')}
                   value={editForm.full_name}
                   onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 text-sm transition"
@@ -663,11 +663,11 @@ const AdminFieldInspectorsPanel = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1.5">Số Điện Thoại</label>
+                <label className="block font-bold text-gray-700 mb-1.5">{t('inspectors.table.phone')}</label>
                 <input
                   type="text"
                   required
-                  placeholder="Nhập số điện thoại"
+                  placeholder={t('inspectors.form.phonePlaceholder')}
                   value={editForm.phone_number}
                   onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 text-sm transition"
@@ -676,7 +676,7 @@ const AdminFieldInspectorsPanel = () => {
 
               <div>
                 <label className="block font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-neighbor-600" /> Địa Chỉ
+                  <MapPin className="w-4 h-4 text-neighbor-600" /> {t('inspectors.table.address')}
                 </label>
                 <AddressSelector
                   value={editForm.address}
@@ -685,14 +685,14 @@ const AdminFieldInspectorsPanel = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1.5">Trạng Thái Tài Khoản</label>
+                <label className="block font-bold text-gray-700 mb-1.5">{t('inspectors.edit.accountStatus')}</label>
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-bold text-sm transition"
                 >
-                  <option value="ACTIVE">Hoạt động</option>
-                  <option value="BLOCKED">Khóa tài khoản</option>
+                  <option value="ACTIVE">{t('statuses.active')}</option>
+                  <option value="BLOCKED">{t('statuses.blocked')}</option>
                 </select>
               </div>
 
@@ -702,14 +702,14 @@ const AdminFieldInspectorsPanel = () => {
                   onClick={() => setIsEditModalOpen(false)}
                   className="px-5 py-2.5 border border-gray-200 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-50 transition"
                 >
-                  Hủy
+                  {t('common:actions.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={editLoading}
                   className="px-6 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white font-bold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
                 >
-                  {editLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Lưu Thay Đổi'}
+                  {editLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : t('inspectors.edit.submit')}
                 </button>
               </div>
             </form>
@@ -742,10 +742,10 @@ const AdminFieldInspectorsPanel = () => {
               <div>
                 <h3 className="text-xl font-bold text-gray-900">
                   {confirmDialog.type === 'LOCK'
-                    ? 'Xác nhận Khóa tài khoản'
+                     ? t('inspectors.confirm.lockTitle')
                     : confirmDialog.type === 'UNLOCK'
-                    ? 'Xác nhận Mở khóa tài khoản'
-                    : 'Đặt lại mật khẩu'}
+                     ? t('inspectors.confirm.unlockTitle')
+                     : t('inspectors.confirm.resetTitle')}
                 </h3>
                 <p className="text-sm text-gray-500 mt-0.5">#{confirmDialog.inspector.id} — {confirmDialog.inspector.email}</p>
               </div>
@@ -755,21 +755,21 @@ const AdminFieldInspectorsPanel = () => {
               {confirmDialog.type === 'LOCK' && (
                 <div>
                   <p>
-                    Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{confirmDialog.inspector.full_name}</strong>? Khi bị khóa, nhân viên khảo sát này sẽ ngay lập tức bị từ chối đăng nhập và không thể thực hiện khảo sát trên hệ thống.
+                     {t('inspectors.confirm.lockMessage', { name: confirmDialog.inspector.full_name })}
                   </p>
                   <p className="text-amber-700 font-semibold text-sm mt-2">
-                    ⚠️ Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.
+                     {t('inspectors.confirm.lockWarning')}
                   </p>
                 </div>
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>
-                  Bạn có chắc chắn muốn <strong>mở khóa tài khoản</strong> của <strong>{confirmDialog.inspector.full_name}</strong>? Nhân viên sẽ có thể đăng nhập bình thường trở lại.
+                   {t('inspectors.confirm.unlockMessage', { name: confirmDialog.inspector.full_name })}
                 </p>
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  Hệ thống sẽ tự động tạo một mật khẩu ngẫu nhiên mới và gửi thông báo qua email tới <strong>{confirmDialog.inspector.email}</strong>. Nhân viên sẽ bị bắt buộc đổi mật khẩu mới ở lần đăng nhập tiếp theo.
+                   {t('inspectors.confirm.resetMessage', { email: confirmDialog.inspector.email })}
                 </p>
               )}
             </div>
@@ -781,7 +781,7 @@ const AdminFieldInspectorsPanel = () => {
                 disabled={actionLoading}
                 className="px-6 py-2.5 border border-gray-200 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 transition"
               >
-                Hủy
+                 {t('common:actions.cancel')}
               </button>
               <button
                 type="button"
@@ -797,10 +797,10 @@ const AdminFieldInspectorsPanel = () => {
               >
                 {actionLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
                 {confirmDialog.type === 'LOCK'
-                  ? 'Khóa Tài Khoản'
+                   ? t('inspectors.actions.lock')
                   : confirmDialog.type === 'UNLOCK'
-                  ? 'Mở Khóa Tài Khoản'
-                  : 'Đặt lại mật khẩu'}
+                   ? t('inspectors.actions.unlock')
+                   : t('inspectors.actions.resetPassword')}
               </button>
             </div>
           </div>

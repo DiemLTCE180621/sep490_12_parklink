@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DollarSign,
   TrendingUp,
@@ -22,13 +23,17 @@ import {
 } from 'lucide-react';
 import adminService from '../../services/adminService';
 
-const formatMoney = (value) => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
-const formatDate = (val) => {
+const formatMoney = (value, locale) => `${Number(value || 0).toLocaleString(locale)} ${locale === 'en-US' ? 'VND' : 'đ'}`;
+const formatDate = (val, locale) => {
   if (!val) return '';
-  return new Date(val).toLocaleDateString('vi-VN', { timeZone: 'UTC' });
+  return new Date(val).toLocaleDateString(locale, { timeZone: 'UTC' });
 };
 
 const AdminProviderRevenuePanel = () => {
+  const { t, i18n } = useTranslation('admin');
+  const locale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+  const money = (value) => formatMoney(value, locale);
+  const date = (value) => formatDate(value, locale);
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
@@ -58,11 +63,11 @@ const AdminProviderRevenuePanel = () => {
       setData(payload);
     } catch (err) {
       console.error('Lỗi tải thống kê doanh thu:', err);
-      setError(err.response?.data?.message || err.message || 'Không thể tải thống kê doanh thu bãi xe.');
+      setError(t('providerRevenue.ui.loadError'));
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedMonth, selectedFacilityId]);
+  }, [selectedYear, selectedMonth, selectedFacilityId, t]);
 
   useEffect(() => {
     fetchRevenueData();
@@ -113,7 +118,7 @@ const AdminProviderRevenuePanel = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                  Thống Kê Doanh Thu Chủ Bãi Đỗ Xe
+                  {t('providerRevenue.ui.title')}
                 </h2>
                 <span
                   className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
@@ -124,17 +129,17 @@ const AdminProviderRevenuePanel = () => {
                 >
                   {isCurrentOrPast ? (
                     <>
-                      <CheckCircle className="w-3 h-3" /> Số liệu thực tế
+                      <CheckCircle className="w-3 h-3" /> {t('providerRevenue.ui.actualData')}
                     </>
                   ) : (
                     <>
-                      <Clock className="w-3 h-3" /> Dự kiến theo HĐ hiệu lực
+                      <Clock className="w-3 h-3" /> {t('providerRevenue.ui.forecastByContracts')}
                     </>
                   )}
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Theo dõi và quản lý dòng tiền cho thuê theo tháng của các đối tác bãi đỗ xe trên toàn hệ thống
+                {t('providerRevenue.ui.subtitle')}
               </p>
             </div>
           </div>
@@ -147,7 +152,7 @@ const AdminProviderRevenuePanel = () => {
               className="px-4 py-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl border border-gray-300 transition-all flex items-center gap-2 shadow-sm disabled:opacity-60"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
-              Làm mới số liệu
+              {t('providerRevenue.ui.refresh')}
             </button>
           </div>
         </div>
@@ -155,7 +160,7 @@ const AdminProviderRevenuePanel = () => {
         <div className="mt-5 pt-5 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Năm báo cáo
+              {t('providerRevenue.ui.reportYear')}
             </label>
             <div className="relative">
               <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -169,7 +174,7 @@ const AdminProviderRevenuePanel = () => {
               >
                 {availableYearsList.map((yr) => (
                   <option key={yr} value={yr}>
-                    Năm {yr} {yr > currentYear ? '(Dự kiến)' : ''}
+                    {t(yr > currentYear ? 'providerRevenue.ui.yearFuture' : 'providerRevenue.ui.year', { year: yr })}
                   </option>
                 ))}
               </select>
@@ -178,7 +183,7 @@ const AdminProviderRevenuePanel = () => {
 
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Tháng xem số liệu
+              {t('providerRevenue.ui.reportMonth')}
             </label>
             <select
               value={selectedMonth}
@@ -190,7 +195,7 @@ const AdminProviderRevenuePanel = () => {
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                 <option key={m} value={m}>
-                  Tháng {m} / {selectedYear}
+                  {t('providerRevenue.ui.month', { month: m, year: selectedYear })}
                 </option>
               ))}
             </select>
@@ -198,7 +203,7 @@ const AdminProviderRevenuePanel = () => {
 
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Lọc theo bãi xe
+              {t('providerRevenue.ui.filterFacility')}
             </label>
             <div className="relative">
               <Building2 className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -210,7 +215,7 @@ const AdminProviderRevenuePanel = () => {
                 }}
                 className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition truncate cursor-pointer"
               >
-                <option value="">Tất cả cơ sở ({data?.filter_options?.facilities?.length || 0})</option>
+                <option value="">{t('providerRevenue.ui.allFacilities', { count: data?.filter_options?.facilities?.length || 0 })}</option>
                 {(data?.filter_options?.facilities || []).map((fac) => (
                   <option key={fac.id} value={fac.id}>
                     {fac.name} {fac.provider_name ? `(${fac.provider_name})` : ''}
@@ -222,13 +227,13 @@ const AdminProviderRevenuePanel = () => {
 
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
-              Tìm theo tên / chủ bãi
+              {t('providerRevenue.ui.searchLabel')}
             </label>
             <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Tìm tên bãi, chủ bãi, SĐT..."
+                placeholder={t('providerRevenue.ui.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -252,15 +257,14 @@ const AdminProviderRevenuePanel = () => {
         <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              {isCurrentOrPast ? 'Doanh thu tháng ' : 'Doanh thu dự kiến T'}
-              {selectedMonth}/{selectedYear}
+              {t(isCurrentOrPast ? 'providerRevenue.ui.monthRevenue' : 'providerRevenue.ui.projectedRevenue', { month: selectedMonth, year: selectedYear })}
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl font-black text-gray-900 tracking-tight">
-            {formatMoney(data?.summary?.total_revenue)}
+            {money(data?.summary?.total_revenue)}
           </div>
           <div className="mt-1.5 text-[11px] text-gray-500 flex items-center gap-1">
             <span
@@ -269,15 +273,15 @@ const AdminProviderRevenuePanel = () => {
               }`}
             />
             {isCurrentOrPast
-              ? 'Số tiền thực tế từ hợp đồng đang active'
-              : 'Dự kiến theo hợp đồng có hiệu lực'}
+              ? t('providerRevenue.ui.actualAmountHint')
+              : t('providerRevenue.ui.forecastAmountHint')}
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Hợp đồng có hiệu lực
+              {t('providerRevenue.ui.activeContracts')}
             </span>
             <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <FileText className="w-4 h-4" />
@@ -285,17 +289,17 @@ const AdminProviderRevenuePanel = () => {
           </div>
           <div className="mt-3 text-2xl font-black text-gray-900 tracking-tight">
             {data?.summary?.total_active_contracts || 0}
-            <span className="text-xs font-semibold text-gray-400 ml-1.5">hợp đồng</span>
+            <span className="text-xs font-semibold text-gray-400 ml-1.5">{t('providerRevenue.ui.contractsUnit')}</span>
           </div>
           <div className="mt-1.5 text-[11px] text-gray-500">
-            Số lượng vị trí đỗ đang có khách thuê gửi
+            {t('providerRevenue.ui.activeContractsHint')}
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Cơ sở phát sinh doanh thu
+              {t('providerRevenue.ui.earningFacilities')}
             </span>
             <div className="w-9 h-9 rounded-xl bg-neighbor-50 text-neighbor-600 flex items-center justify-center">
               <Building2 className="w-4 h-4" />
@@ -304,11 +308,11 @@ const AdminProviderRevenuePanel = () => {
           <div className="mt-3 text-2xl font-black text-gray-900 tracking-tight">
             {data?.summary?.facilities_with_revenue_count || 0}
             <span className="text-xs font-semibold text-gray-400 ml-1.5">
-              / {data?.summary?.total_facilities_count || 0} bãi xe
+              / {t('providerRevenue.ui.facilityCount', { count: data?.summary?.total_facilities_count || 0 })}
             </span>
           </div>
           <div className="mt-1.5 text-[11px] text-gray-500">
-            Tỷ lệ hoạt động:{' '}
+            {t('providerRevenue.ui.activityRate')}{' '}
             {data?.summary?.total_facilities_count > 0
               ? Math.round(
                   (data.summary.facilities_with_revenue_count /
@@ -323,17 +327,17 @@ const AdminProviderRevenuePanel = () => {
         <div className="bg-white p-5 rounded-xl border border-gray-200/90 shadow-sm relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Doanh thu TB / cơ sở
+              {t('providerRevenue.ui.averageRevenue')}
             </span>
             <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
               <BarChart3 className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl font-black text-gray-900 tracking-tight text-purple-700">
-            {formatMoney(data?.summary?.average_revenue_per_facility)}
+            {money(data?.summary?.average_revenue_per_facility)}
           </div>
           <div className="mt-1.5 text-[11px] text-gray-500">
-            Tính trên các bãi đang phát sinh tiền thuê
+            {t('providerRevenue.ui.averageHint')}
           </div>
         </div>
       </div>
@@ -343,20 +347,20 @@ const AdminProviderRevenuePanel = () => {
           <div>
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-neighbor-600" />
-              Biểu Đồ Xu Hướng Doanh Thu Các Bãi Đỗ Xe Năm {selectedYear}
+              {t('providerRevenue.ui.chartTitle', { year: selectedYear })}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Biểu đồ trực quan 12 tháng. Bấm vào bất kỳ cột tháng nào để nạp dữ liệu chi tiết.
+              {t('providerRevenue.ui.chartHint')}
             </p>
           </div>
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5 text-gray-600 font-medium">
               <span className="w-3 h-3 rounded bg-neighbor-500 inline-block" />
-              <span>Thực tế</span>
+              <span>{t('providerRevenue.ui.actual')}</span>
             </div>
             <div className="flex items-center gap-1.5 text-gray-600 font-medium">
               <span className="w-3 h-3 rounded bg-indigo-400 inline-block" />
-              <span>Dự kiến tương lai</span>
+              <span>{t('providerRevenue.ui.future')}</span>
             </div>
           </div>
         </div>
@@ -379,9 +383,7 @@ const AdminProviderRevenuePanel = () => {
                       ? 'text-neighbor-700 bg-neighbor-100/70 font-extrabold'
                       : 'text-gray-400 group-hover:text-gray-800'
                   }`}
-                  title={`${item.contract_count} HĐ - ${formatMoney(item.revenue)} (${
-                    item.is_future ? 'Dự kiến' : 'Thực tế'
-                  })`}
+                  title={t('providerRevenue.ui.contractTooltip', { count: item.contract_count, amount: money(item.revenue), kind: t(item.is_future ? 'providerRevenue.ui.projected' : 'providerRevenue.ui.actual') })}
                 >
                   {item.revenue > 0
                     ? item.revenue >= 1000000
@@ -414,7 +416,7 @@ const AdminProviderRevenuePanel = () => {
                       : 'text-gray-500 group-hover:text-gray-700'
                   }`}
                 >
-                  T{item.month}
+                  {t('providerRevenue.ui.monthShort', { month: item.month })}
                 </span>
               </button>
             );
@@ -427,10 +429,10 @@ const AdminProviderRevenuePanel = () => {
           <div>
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-neighbor-600" />
-              Chi Tiết Doanh Thu Từng Cơ Sở Bãi Đỗ Xe (Tháng {selectedMonth}/{selectedYear})
+              {t('providerRevenue.ui.facilityDetails', { month: selectedMonth, year: selectedYear })}
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              Danh sách {filteredFacilities.length} cơ sở bãi xe cùng hiệu suất cho thuê
+              {t('providerRevenue.ui.facilityList', { count: filteredFacilities.length })}
             </p>
           </div>
         </div>
@@ -439,22 +441,21 @@ const AdminProviderRevenuePanel = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                <th className="py-3 px-4">Cơ sở bãi đỗ xe</th>
-                <th className="py-3 px-4">Chủ bãi</th>
-                <th className="py-3 px-4 text-center">Xe thuê / Sức chứa</th>
-                <th className="py-3 px-4 text-center">Tỷ lệ lấp đầy</th>
+                <th className="py-3 px-4">{t('providerRevenue.ui.facility')}</th>
+                <th className="py-3 px-4">{t('providerRevenue.ui.provider')}</th>
+                <th className="py-3 px-4 text-center">{t('providerRevenue.ui.occupancy')}</th>
+                <th className="py-3 px-4 text-center">{t('providerRevenue.ui.occupancyRate')}</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap">
-                  {isCurrentOrPast ? 'Doanh thu tháng ' : 'Doanh thu dự kiến T'}
-                  {selectedMonth}
+                  {t(isCurrentOrPast ? 'providerRevenue.ui.monthRevenueShort' : 'providerRevenue.ui.projectedRevenueShort', { month: selectedMonth })}
                 </th>
-                <th className="py-3 px-4 text-center whitespace-nowrap min-w-[100px]">Thao tác</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap min-w-[100px]">{t('providerRevenue.ui.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs text-gray-700">
               {filteredFacilities.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-gray-400 text-xs">
-                    Không tìm thấy cơ sở bãi đỗ xe nào phù hợp với bộ lọc hiện tại.
+                    {t('providerRevenue.ui.empty')}
                   </td>
                 </tr>
               ) : (
@@ -474,7 +475,7 @@ const AdminProviderRevenuePanel = () => {
                               </span>
                               <span className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
                                 <MapPin className="w-3 h-3 shrink-0 text-gray-400" />
-                                {fac.facility_address || 'Chưa cập nhật'}
+                                {fac.facility_address || t('providerRevenue.ui.notUpdated')}
                               </span>
                             </div>
                           </div>
@@ -488,7 +489,7 @@ const AdminProviderRevenuePanel = () => {
                             </span>
                             <span className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5">
                               <Phone className="w-3 h-3 text-gray-400" />
-                              {fac.provider_phone || 'Chưa cập nhật'}
+                              {fac.provider_phone || t('providerRevenue.ui.notUpdated')}
                             </span>
                           </div>
                         </td>
@@ -499,7 +500,7 @@ const AdminProviderRevenuePanel = () => {
                           </span>
                           <span className="text-gray-400 mx-1">/</span>
                           <span className="text-gray-600 font-medium">
-                            {fac.capacity} ô đỗ
+                            {t('providerRevenue.ui.capacity', { count: fac.capacity })}
                           </span>
                         </td>
 
@@ -537,7 +538,7 @@ const AdminProviderRevenuePanel = () => {
                               fac.monthly_revenue > 0 ? 'text-neighbor-700' : 'text-gray-400'
                             }`}
                           >
-                            {formatMoney(fac.monthly_revenue)}
+                            {money(fac.monthly_revenue)}
                           </span>
                         </td>
 
@@ -554,7 +555,7 @@ const AdminProviderRevenuePanel = () => {
                             }`}
                           >
                             <Eye className="w-3.5 h-3.5 text-neighbor-600 shrink-0" />
-                            <span className="whitespace-nowrap">{fac.contracts?.length || 0} HĐ</span>
+                            <span className="whitespace-nowrap">{t('providerRevenue.ui.contractCount', { count: fac.contracts?.length || 0 })}</span>
                             {isExpanded ? (
                               <ChevronUp className="w-3.5 h-3.5 text-gray-300 shrink-0" />
                             ) : (
@@ -571,28 +572,28 @@ const AdminProviderRevenuePanel = () => {
                               <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
                                   <FileText className="w-3.5 h-3.5 text-neighbor-600" />
-                                  Hợp đồng có hiệu lực tại {fac.facility_name} trong tháng {selectedMonth}/{selectedYear}
+                                  {t('providerRevenue.ui.facilityContracts', { name: fac.facility_name, month: selectedMonth, year: selectedYear })}
                                 </h4>
                                 <span className="text-[11px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
-                                  Tổng: {fac.contracts?.length || 0} hợp đồng
+                                  {t('providerRevenue.ui.totalContracts', { count: fac.contracts?.length || 0 })}
                                 </span>
                               </div>
 
                               {(!fac.contracts || fac.contracts.length === 0) ? (
                                 <p className="text-xs text-gray-400 italic py-2">
-                                  Chưa có hợp đồng nào đang có hiệu lực trong tháng này.
+                                  {t('providerRevenue.ui.emptyContracts')}
                                 </p>
                               ) : (
                                 <div className="overflow-x-auto">
                                   <table className="w-full text-left text-xs">
                                     <thead>
                                       <tr className="border-b border-gray-200 text-[10px] font-bold uppercase text-gray-400">
-                                        <th className="py-2 px-3">Mã HĐ</th>
-                                        <th className="py-2 px-3">Khách hàng</th>
-                                        <th className="py-2 px-3">Số điện thoại</th>
-                                        <th className="py-2 px-3">Thời hạn hợp đồng</th>
-                                        <th className="py-2 px-3 text-right">Tiền thuê / tháng</th>
-                                        <th className="py-2 px-3 text-center">Trạng thái</th>
+                                        <th className="py-2 px-3">{t('providerRevenue.ui.code')}</th>
+                                        <th className="py-2 px-3">{t('providerRevenue.ui.customer')}</th>
+                                        <th className="py-2 px-3">{t('providerRevenue.ui.phone')}</th>
+                                        <th className="py-2 px-3">{t('providerRevenue.ui.contractTerm')}</th>
+                                        <th className="py-2 px-3 text-right">{t('providerRevenue.ui.monthlyRent')}</th>
+                                        <th className="py-2 px-3 text-center">{t('providerRevenue.ui.status')}</th>
                                       </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -609,15 +610,15 @@ const AdminProviderRevenuePanel = () => {
                                           </td>
                                           <td className="py-2.5 px-3 text-gray-600">
                                             <span className="font-medium text-gray-800">
-                                              {formatDate(ct.start_date)}
+                                              {date(ct.start_date)}
                                             </span>
                                             <span className="text-gray-400 mx-1">→</span>
                                             <span className="font-medium text-gray-800">
-                                              {formatDate(ct.end_date)}
+                                              {date(ct.end_date)}
                                             </span>
                                           </td>
                                           <td className="py-2.5 px-3 text-right font-black text-neighbor-700">
-                                            {formatMoney(ct.agreed_price)}
+                                            {money(ct.agreed_price)}
                                           </td>
                                           <td className="py-2.5 px-3 text-center">
                                             <span
@@ -627,7 +628,7 @@ const AdminProviderRevenuePanel = () => {
                                                   : 'bg-amber-50 text-amber-700 border border-amber-200'
                                               }`}
                                             >
-                                              {ct.status === 'ACTIVE' ? 'Đang hiệu lực' : 'Đã chấm dứt'}
+                                              {t(ct.status === 'ACTIVE' ? 'providerRevenue.ui.active' : 'providerRevenue.ui.terminated')}
                                             </span>
                                           </td>
                                         </tr>
@@ -651,8 +652,7 @@ const AdminProviderRevenuePanel = () => {
         {filteredFacilities.length > 0 && (
           <div className="px-5 py-3.5 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
             <div className="text-xs text-gray-600">
-              Trang <strong>{currentPage}</strong> / {totalPages} (Tổng cộng{' '}
-              <strong className="text-neighbor-700">{filteredFacilities.length}</strong> cơ sở bãi xe)
+              {t('providerRevenue.ui.pageSummary', { current: currentPage, total: totalPages, count: filteredFacilities.length })}
             </div>
 
             {totalPages > 1 && (
@@ -663,7 +663,7 @@ const AdminProviderRevenuePanel = () => {
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold text-gray-700 shadow-xs cursor-pointer"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" /> Trước
+                  <ChevronLeft className="w-3.5 h-3.5" /> {t('providerRevenue.ui.previous')}
                 </button>
                 <div className="px-2.5 py-1 text-xs font-bold text-gray-700">
                   {currentPage} / {totalPages}
@@ -674,7 +674,7 @@ const AdminProviderRevenuePanel = () => {
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   className="px-3 py-1.5 border border-gray-200 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 font-semibold text-gray-700 shadow-xs cursor-pointer"
                 >
-                  Sau <ChevronRight className="w-3.5 h-3.5" />
+                  {t('providerRevenue.ui.next')} <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
