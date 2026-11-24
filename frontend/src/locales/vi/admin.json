@@ -642,5 +642,150 @@
       "manageFacilities": "Quản lý cơ sở bãi xe",
       "manageFacilitiesDesc": "Kiểm duyệt và thiết lập danh sách cơ sở bãi xe"
     }
+  },
+  "timelineSettings": {
+    "badge": "Quản Trị Hệ Thống",
+    "title": "Cấu Hình Thời Hạn Quy Trình Thuê Bãi Xe",
+    "subtitle": "Thiết lập thời hạn tự động xử lý cho chu trình thuê bãi xe: thời gian phản hồi yêu cầu đặt chỗ, lập hợp đồng điện tử, ký hợp đồng và thời hạn báo trước khi hủy.",
+    "lastUpdated": "Cập nhật gần nhất:",
+    "by": "bởi {{name}}",
+    "system": "Hệ thống",
+    "you": "Bạn",
+    "loading": "Đang tải cấu hình thời hạn...",
+    "duration": "Thời lượng:",
+    "unit": "Đơn vị:",
+    "units": {
+      "MINUTES": "Phút",
+      "HOURS": "Giờ",
+      "DAYS": "Ngày"
+    },
+    "targets": {
+      "provider": "Áp dụng cho chủ bãi xe",
+      "customer": "Áp dụng cho khách thuê",
+      "both": "Áp dụng cho cả hai bên"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Thời hạn phản hồi yêu cầu đặt chỗ",
+        "description": "Thời gian tối đa để chủ bãi phản hồi (Chấp nhận hoặc Từ chối) yêu cầu thuê của khách. Nếu quá thời gian này, hệ thống sẽ tự động hủy yêu cầu."
+      },
+      "contractCreation": {
+        "title": "Thời hạn lập hợp đồng sau khi duyệt",
+        "description": "Thời gian để chủ bãi khởi tạo hợp đồng điện tử sau khi đã chấp nhận yêu cầu. Nếu quá hạn này, yêu cầu thuê sẽ tự động hủy."
+      },
+      "contractSigning": {
+        "title": "Thời hạn khách hàng ký hợp đồng",
+        "description": "Thời gian để khách hàng kiểm tra và ký xác nhận hợp đồng điện tử. Quá hạn này mà khách chưa ký, hợp đồng và yêu cầu thuê sẽ tự động hủy."
+      },
+      "terminationNotice": {
+        "title": "Thời hạn báo trước khi chấm dứt hợp đồng",
+        "description": "Khoảng thời gian tối thiểu một bên cần gửi thông báo trước khi muốn chấm dứt hợp đồng thuê trước thời hạn thỏa thuận."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Khôi phục mặc định",
+      "saving": "Đang lưu cấu hình...",
+      "save": "Lưu Cấu Hình Thời Hạn"
+    },
+    "messages": {
+      "loadError": "Không thể tải cấu hình thời hạn hệ thống!",
+      "resetSuccess": "Đã đặt lại các giá trị mặc định. Nhấn \"Lưu Cấu Hình Thời Hạn\" để xác nhận.",
+      "validationError": "Các giá trị thời hạn phải là số dương lớn hơn 0!",
+      "updateSuccess": "Cập nhật cấu hình thời hạn hệ thống thành công!",
+      "updateError": "Lỗi khi lưu cấu hình thời hạn!"
+    }
+  },
+  "amenitySettings": {
+    "title": "Quản Lý Tiện Ích Bãi Xe",
+    "subtitle": "Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.",
+    "totalCount": "Tổng cộng: {{count}} tiện ích",
+    "addBtn": "Thêm tiện ích",
+    "searchPlaceholder": "Tìm theo tên tiện ích, nhóm phân loại...",
+    "reloadTooltip": "Tải lại dữ liệu",
+    "appliedFacilities": "{{count}} bãi xe",
+    "statuses": {
+      "all": "Tất cả trạng thái",
+      "visible": "Đang hiển thị",
+      "hidden": "Đang ẩn",
+      "active": "Hiển thị"
+    },
+    "types": {
+      "all": "Tất cả nhóm",
+      "SECURITY": "An ninh & An toàn",
+      "SERVICE": "Dịch vụ tiện ích",
+      "INFRASTRUCTURE": "Cơ sở hạ tầng",
+      "CONVENIENCE": "Tiện nghi bổ sung",
+      "GENERAL": "Chung"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Tên tiện ích",
+      "category": "Nhóm danh mục",
+      "facilities": "Bãi xe áp dụng",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "empty": {
+      "loading": "Đang tải danh sách tiện ích...",
+      "noData": "Không tìm thấy tiện ích nào phù hợp",
+      "noDataDesc": "Thử thay đổi từ khóa tìm kiếm hoặc lọc theo trạng thái khác"
+    },
+    "tooltips": {
+      "edit": "Chỉnh sửa thông tin",
+      "hide": "Ẩn tiện ích này",
+      "show": "Hiện lại tiện ích này"
+    },
+    "confirm": {
+      "hideTitle": "Xác nhận ẩn tiện ích",
+      "showTitle": "Xác nhận kích hoạt tiện ích",
+      "hideMessage": "Bạn có chắc muốn ẩn tiện ích \"{{name}}\"? Tiện ích này sẽ không xuất hiện để bãi xe mới lựa chọn.",
+      "showMessage": "Kích hoạt lại tiện ích \"{{name}}\" để các cơ sở bãi xe có thể chọn?",
+      "hideBtn": "Ẩn tiện ích",
+      "showBtn": "Kích hoạt",
+      "cancelBtn": "Bỏ qua"
+    },
+    "modal": {
+      "categoryBadge": "Danh mục tiện ích",
+      "createTitle": "Thêm Tiện Ích Mới",
+      "editTitle": "Chỉnh Sửa Tiện Ích",
+      "nameLabel": "Tên tiện ích",
+      "namePlaceholder": "VD: Mái che mưa nắng, Camera an ninh...",
+      "categoryLabel": "Nhóm danh mục",
+      "iconLabel": "Biểu tượng hiển thị",
+      "activeCheckbox": "Kích hoạt hiển thị cho các cơ sở bãi xe lựa chọn",
+      "activeCheckboxDesc": "Cho phép chủ bãi xe lựa chọn tiện ích này khi thiết lập tiện nghi cơ sở.",
+      "cancelBtn": "Hủy",
+      "createBtn": "Tạo tiện ích",
+      "saveBtn": "Lưu thay đổi",
+      "close": "Đóng"
+    },
+    "icons": {
+      "shieldCheck": "Bảo vệ / An toàn",
+      "camera": "Camera an ninh",
+      "umbrella": "Mái che mưa nắng",
+      "userCheck": "Bảo vệ trực trực tiếp",
+      "sun": "Hệ thống chiếu sáng",
+      "flame": "PCCC đạt chuẩn",
+      "batteryCharging": "Trạm sạc xe điện",
+      "zap": "Nguồn điện sạc",
+      "wifi": "Wifi miễn phí",
+      "car": "Chỗ đỗ cố định",
+      "coffee": "Phòng chờ / Nghỉ ngơi",
+      "lock": "Khóa an ninh",
+      "clock": "Hoạt động 24/7",
+      "mapPin": "Vị trí thuận tiện",
+      "wrench": "Hỗ trợ cứu hộ / Bảo dưỡng",
+      "default": "Tiện ích chung"
+    },
+    "messages": {
+      "loadError": "Không thể tải danh sách tiện ích",
+      "updateStatusSuccess": "Đã cập nhật trạng thái tiện ích \"{{name}}\"!",
+      "updateStatusError": "Lỗi khi thay đổi trạng thái tiện ích",
+      "nameRequired": "Vui lòng nhập tên tiện ích.",
+      "nameLength": "Tên tiện ích phải từ 2 đến 100 ký tự.",
+      "createSuccess": "Tạo mới tiện ích thành công!",
+      "updateSuccess": "Cập nhật tiện ích thành công!",
+      "actionFailed": "Thao tác không thành công!"
+    }
   }
 }

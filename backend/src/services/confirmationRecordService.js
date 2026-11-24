@@ -820,6 +820,9 @@ class ConfirmationRecordService {
     if (currentSnapshot.extension_request && currentSnapshot.extension_request.status === 'PENDING') {
       throw this.createError('Hợp đồng này đang có một yêu cầu gia hạn đang chờ chủ bãi phê duyệt! Vui lòng không gửi yêu cầu lặp lại.', 400);
     }
+    if (currentSnapshot.extension_request && currentSnapshot.extension_request.status === 'APPROVED') {
+      throw this.createError('Hợp đồng này đã được gia hạn tạo hợp đồng mới! Không thể tiếp tục gửi yêu cầu gia hạn cho hợp đồng cũ.', 400);
+    }
 
     const currentEndDate = new Date(record.end_date);
     let finalMonths = extensionMonths ? Number(extensionMonths) : null;
@@ -1271,6 +1274,9 @@ class ConfirmationRecordService {
 
     const checkedRecord = await this.checkAndCancelExpiredTerminationForRecord(record);
     const currentSnapshot = checkedRecord.contract_snapshot || {};
+    if (currentSnapshot.extension_request && currentSnapshot.extension_request.status === 'APPROVED') {
+      throw this.createError('Hợp đồng này đã được gia hạn tạo hợp đồng mới! Không thể yêu cầu chấm dứt hợp đồng cũ đã gia hạn.', 400);
+    }
     if (currentSnapshot.termination_request && currentSnapshot.termination_request.status === 'PENDING') {
       const existingRequestedBy = currentSnapshot.termination_request.requested_by || 'CUSTOMER';
       const errorMsg = existingRequestedBy === finalRole

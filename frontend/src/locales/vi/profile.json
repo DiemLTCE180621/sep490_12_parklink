@@ -44,7 +44,7 @@
       "formatHint": "Chuẩn hành chính",
       "areaLabel": "Khu vực hành chính",
       "streetDetailLabel": "Số nhà, tên đường, hẻm / ngõ chi tiết",
-      "streetDetailPlaceholder": "Ví dụ: Số 123/45, Đường 30 Tháng 4",
+      "streetDetailPlaceholder": "Nhập số nhà, tên đường, ngõ/hẻm chi tiết",
       "contractPreview": "Địa chỉ đầy đủ ghi trên hợp đồng: ",
       "notSet": "Chưa thiết lập"
     },

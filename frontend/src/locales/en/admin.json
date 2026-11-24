@@ -642,5 +642,150 @@
       "manageFacilities": "Manage Facilities",
       "manageFacilitiesDesc": "Audit and configure parking facilities"
     }
+  },
+  "timelineSettings": {
+    "badge": "System Administration",
+    "title": "Rental Process Timeline Configuration",
+    "subtitle": "Configure automated processing deadlines for the parking rental cycle: reservation request response time, electronic contract creation, contract signing, and termination notice period.",
+    "lastUpdated": "Last updated:",
+    "by": "by {{name}}",
+    "system": "System",
+    "you": "You",
+    "loading": "Loading timeline configuration...",
+    "duration": "Duration:",
+    "unit": "Unit:",
+    "units": {
+      "MINUTES": "Minutes",
+      "HOURS": "Hours",
+      "DAYS": "Days"
+    },
+    "targets": {
+      "provider": "Applies to parking provider",
+      "customer": "Applies to tenant / customer",
+      "both": "Applies to both parties"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Reservation response deadline",
+        "description": "Maximum time for provider to respond (Accept or Reject) to rental request. If expired, system will automatically cancel the request."
+      },
+      "contractCreation": {
+        "title": "Contract creation deadline after approval",
+        "description": "Time for provider to generate e-contract after accepting the request. If expired, rental request will automatically cancel."
+      },
+      "contractSigning": {
+        "title": "Customer contract signing deadline",
+        "description": "Time for customer to review and sign e-contract. If expired without signature, contract and rental request will automatically cancel."
+      },
+      "terminationNotice": {
+        "title": "Contract termination notice period",
+        "description": "Minimum advance notice period a party must provide before terminating a rental contract before agreed term."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Restore Defaults",
+      "saving": "Saving configuration...",
+      "save": "Save Timeline Configuration"
+    },
+    "messages": {
+      "loadError": "Unable to load system timeline configuration!",
+      "resetSuccess": "Default values restored. Click \"Save Timeline Configuration\" to confirm.",
+      "validationError": "Timeline values must be positive numbers greater than 0!",
+      "updateSuccess": "System timeline configuration updated successfully!",
+      "updateError": "Error saving timeline configuration!"
+    }
+  },
+  "amenitySettings": {
+    "title": "Parking Amenities Management",
+    "subtitle": "List of amenities that parking facilities can select when registering in ParkLink.",
+    "totalCount": "Total: {{count}} amenities",
+    "addBtn": "Add Amenity",
+    "searchPlaceholder": "Search by amenity name, category...",
+    "reloadTooltip": "Reload data",
+    "appliedFacilities": "{{count}} facilities",
+    "statuses": {
+      "all": "All Statuses",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "active": "Visible"
+    },
+    "types": {
+      "all": "All Categories",
+      "SECURITY": "Security & Safety",
+      "SERVICE": "Utility Services",
+      "INFRASTRUCTURE": "Infrastructure",
+      "CONVENIENCE": "Additional Conveniences",
+      "GENERAL": "General"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Amenity Name",
+      "category": "Category",
+      "facilities": "Applied Facilities",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "empty": {
+      "loading": "Loading amenities list...",
+      "noData": "No matching amenities found",
+      "noDataDesc": "Try changing your search keyword or filters"
+    },
+    "tooltips": {
+      "edit": "Edit amenity",
+      "hide": "Hide this amenity",
+      "show": "Show this amenity"
+    },
+    "confirm": {
+      "hideTitle": "Confirm Hide Amenity",
+      "showTitle": "Confirm Activate Amenity",
+      "hideMessage": "Are you sure you want to hide the amenity \"{{name}}\"? It will not be available for new parking facilities.",
+      "showMessage": "Reactivate amenity \"{{name}}\" for parking facilities to select?",
+      "hideBtn": "Hide Amenity",
+      "showBtn": "Activate",
+      "cancelBtn": "Cancel"
+    },
+    "modal": {
+      "categoryBadge": "Amenity Category",
+      "createTitle": "Add New Amenity",
+      "editTitle": "Edit Amenity",
+      "nameLabel": "Amenity Name",
+      "namePlaceholder": "e.g. Weather shelter, Security camera...",
+      "categoryLabel": "Category",
+      "iconLabel": "Display Icon",
+      "activeCheckbox": "Enable display for parking facilities to choose",
+      "activeCheckboxDesc": "Allows parking providers to select this amenity when setting up facility features.",
+      "cancelBtn": "Cancel",
+      "createBtn": "Create Amenity",
+      "saveBtn": "Save Changes",
+      "close": "Close"
+    },
+    "icons": {
+      "shieldCheck": "Security / Safety",
+      "camera": "Security camera",
+      "umbrella": "Weather shelter",
+      "userCheck": "On-site security guard",
+      "sun": "Lighting system",
+      "flame": "Fire protection certified",
+      "batteryCharging": "EV charging station",
+      "zap": "Power outlet",
+      "wifi": "Free Wifi",
+      "car": "Dedicated parking spot",
+      "coffee": "Lounge / Rest area",
+      "lock": "Security lock",
+      "clock": "24/7 Operations",
+      "mapPin": "Convenient location",
+      "wrench": "Roadside assistance / Maintenance",
+      "default": "General amenity"
+    },
+    "messages": {
+      "loadError": "Unable to load amenities list",
+      "updateStatusSuccess": "Amenity \"{{name}}\" status updated successfully!",
+      "updateStatusError": "Error updating amenity status",
+      "nameRequired": "Please enter the amenity name.",
+      "nameLength": "Amenity name must be between 2 and 100 characters.",
+      "createSuccess": "Amenity created successfully!",
+      "updateSuccess": "Amenity updated successfully!",
+      "actionFailed": "Action failed!"
+    }
   }
 }

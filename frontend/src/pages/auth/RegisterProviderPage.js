@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import authService from '../../services/authService';
 import platformFeeService from '../../services/platformFeeService';
 import vehicleTypeService from '../../services/vehicleTypeService';
-import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, Calculator, CheckSquare, Square, Phone, Mail } from 'lucide-react';
+import { Building2, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Car, CheckSquare, Square, Phone, Mail } from 'lucide-react';
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
 import { cleanText, isValidName, isValidPhone, isValidEmail, isValidFacilityName } from '../../utils/validators';
 import PolicyDetailModal from '../../components/modals/PolicyDetailModal';
@@ -240,13 +240,17 @@ const RegisterProviderPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white p-8 sm:p-12 rounded-2xl shadow-sm border border-gray-200 max-w-5xl w-full">
-        <div className="text-center mb-8">
+      <div className={`bg-white p-8 sm:p-12 rounded-2xl shadow-sm border border-gray-200 w-full transition-all duration-200 ${successResult ? 'max-w-2xl' : 'max-w-5xl'}`}>
+        <div className="text-center mb-6">
           <div className="w-12 h-12 rounded-xl bg-neighbor-50 text-neighbor-700 flex items-center justify-center mx-auto mb-3 border border-neighbor-100 shadow-xs">
-            <Building2 className="w-6 h-6" />
+            {successResult ? (
+              <CheckCircle2 className="w-6 h-6 text-neighbor-600" />
+            ) : (
+              <Building2 className="w-6 h-6" />
+            )}
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-            {t('provider.title')}
+            {successResult ? t('provider.success.title') : t('provider.title')}
           </h2>
         </div>
 
@@ -276,30 +280,34 @@ const RegisterProviderPage = () => {
         )}
 
         {successResult ? (
-          <div className="space-y-5">
-            <div className="p-5 rounded-xl bg-neighbor-50 border border-neighbor-200 text-neighbor-900 space-y-3">
-              <div className="flex items-center gap-2 text-neighbor-800 font-bold text-base">
-                <CheckCircle2 className="w-5 h-5 text-neighbor-600 shrink-0" />
-                <span>{t('provider.success.title')}</span>
-              </div>
-
-              <p className="text-sm leading-relaxed text-neighbor-800">
-                {t('provider.success.descriptionPart1')}<strong>{formData.full_name}</strong>{t('provider.success.descriptionPart2')}<strong>{formData.facility_name}</strong>{t('provider.success.descriptionPart3', { capacity: formData.capacity })}
+          <div className="space-y-6">
+            <div className="p-5 sm:p-6 rounded-xl bg-neighbor-50 border border-neighbor-200 text-neighbor-900 space-y-4">
+              <p className="text-sm sm:text-base leading-relaxed text-neighbor-900">
+                {t('provider.success.descriptionPart1')}{' '}
+                <strong className="text-neighbor-950 font-bold">{formData.full_name}</strong>{' '}
+                {t('provider.success.descriptionPart2')}{' '}
+                <strong className="text-neighbor-950 font-bold">{formData.facility_name}</strong>{' '}
+                {t('provider.success.descriptionPart3', { capacity: formData.capacity })}
               </p>
 
-              <div className="p-4 bg-white rounded-lg border border-neighbor-100 space-y-1.5 text-sm">
-                <p className="font-bold text-neighbor-900 flex items-center gap-1.5">
-                  <Calculator className="w-4 h-4 text-neighbor-600" /> {t('provider.success.estimatedFeeLabel')} {Number(successResult.system_fee).toLocaleString('vi-VN')} {isEnglish ? 'VND' : 'VNĐ'}
+              <div className="p-4 bg-white rounded-xl border border-neighbor-100 space-y-2">
+                <p className="text-sm sm:text-base font-bold text-neighbor-900">
+                  {t('provider.success.estimatedFeeLabel')}{' '}
+                  <span className="text-neighbor-700">
+                    {Number(successResult.system_fee).toLocaleString('vi-VN')} {isEnglish ? 'VND' : 'VNĐ'}
+                  </span>
                 </p>
-                <p className="text-gray-500 text-xs">
-                  {t('provider.success.emailNoticeBefore')}<strong>{formData.email}</strong>{t('provider.success.emailNoticeAfter')}
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {t('provider.success.emailNoticeBefore')}{' '}
+                  <strong className="text-gray-900 font-semibold">{formData.email}</strong>{' '}
+                  {t('provider.success.emailNoticeAfter')}
                 </p>
               </div>
             </div>
 
             <Link
               to="/"
-              className="w-full py-3 px-4 bg-gray-900 hover:bg-gray-800 text-white font-medium text-sm rounded-lg shadow-xs transition-colors flex justify-center items-center gap-2 cursor-pointer"
+              className="w-full py-3 px-4 bg-neighbor-600 hover:bg-neighbor-700 active:bg-neighbor-800 text-white font-bold text-base rounded-lg shadow-xs transition-colors flex justify-center items-center gap-2 cursor-pointer"
             >
               {t('provider.success.backHome')} <ArrowRight className="w-4 h-4" />
             </Link>

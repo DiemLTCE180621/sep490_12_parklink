@@ -42,7 +42,7 @@ import ChangePasswordModal from '../components/modals/ChangePasswordModal';
 import Toast from '../components/common/Toast';
 
 const DashboardPage = () => {
-  const { t } = useTranslation(['provider', 'customer', 'common', 'admin', 'inspector']);
+  const { t, i18n } = useTranslation(['provider', 'customer', 'common', 'admin', 'inspector']);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -201,9 +201,9 @@ const DashboardPage = () => {
                   {roleName === 'PROVIDER'
                     ? t('portal.roleTitle')
                     : roleName === 'ADMIN'
-                       ? t('admin:sidebar.roleTitle')
+                      ? t('admin:header.roleTitle', 'Ban Quản Trị Hệ Thống')
                       : roleName === 'FIELD_INSPECTOR'
-                         ? t('common:roles.FIELD_INSPECTOR')
+                        ? t('admin:roles.fieldInspector', 'Nhân Viên Khảo Sát')
                         : t('customer:dashboard.roleTitle')}
                 </p>
               </div>
@@ -211,7 +211,9 @@ const DashboardPage = () => {
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            <LanguageSwitcher variant="dark" />
+            {(roleName === 'ADMIN' || roleName === 'FIELD_INSPECTOR') && (
+              <LanguageSwitcher variant="dark" />
+            )}
             <button
               onClick={() => navigate('/profile')}
               className="px-4 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-2"
@@ -793,22 +795,22 @@ const DashboardPage = () => {
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h5 className="text-base font-bold text-gray-900">
-                              {customerStats.latestReservation.facility?.name || 'Bãi đỗ xe đã đăng ký'}
+                              {customerStats.latestReservation.facility?.name || t('customer:dashboard.activity.defaultFacility', 'Bãi đỗ xe đã đăng ký')}
                             </h5>
                             <StatusBadge status={customerStats.latestReservation.status} />
                           </div>
                           <p className="text-xs text-gray-500 flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                            <span className="truncate">{customerStats.latestReservation.facility?.address || 'Địa chỉ bãi xe'}</span>
+                            <span className="truncate">{customerStats.latestReservation.facility?.address || t('customer:dashboard.activity.defaultAddress', 'Địa chỉ bãi xe')}</span>
                           </p>
                           <p className="text-xs text-gray-600 flex items-center gap-1.5 pt-0.5">
                             <Car className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                             <span className="font-medium text-gray-800">
-                              {t('customer:dashboard.activity.vehicle')}: {customerStats.latestReservation.vehicle_info || 'Phương tiện đăng ký'}
+                              {t('customer:dashboard.activity.vehicle')}: {customerStats.latestReservation.vehicle_info || t('customer:dashboard.activity.defaultVehicle', 'Phương tiện đăng ký')}
                             </span>
                             {customerStats.latestReservation.created_at && (
                               <span className="text-gray-400 text-xs ml-2">
-                                • {t('customer:dashboard.activity.submittedDate')}: {new Date(customerStats.latestReservation.created_at).toLocaleDateString()}
+                                • {t('customer:dashboard.activity.submittedDate')}: {new Date(customerStats.latestReservation.created_at).toLocaleDateString(i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN')}
                               </span>
                             )}
                           </p>

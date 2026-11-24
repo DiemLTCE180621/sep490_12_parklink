@@ -193,6 +193,8 @@ const ContractDetailPage = () => {
     }
   };
 
+  const isRenewed = snapshot?.extension_request?.status === 'APPROVED';
+
   const pendingExtension = snapshot.extension_request && snapshot.extension_request.status === 'PENDING'
     ? snapshot.extension_request
     : null;
@@ -355,7 +357,7 @@ const ContractDetailPage = () => {
               </span>
             )}
 
-            {isCustomer && ['ACTIVE', 'COMPLETED'].includes(contract?.status) && (
+            {isCustomer && ['ACTIVE', 'COMPLETED'].includes(contract?.status) && !isRenewed && (
               <button
                 type="button"
                 onClick={() => {
@@ -370,7 +372,7 @@ const ContractDetailPage = () => {
               </button>
             )}
 
-            {isCustomer && isActive && (
+            {isCustomer && isActive && !isRenewed && (
               <>
                 {pendingExtension ? (
                   <button
@@ -414,7 +416,7 @@ const ContractDetailPage = () => {
               </>
             )}
 
-            {isProvider && isActive && (
+            {isProvider && isActive && !isRenewed && (
               <>
                 {pendingTermination ? (
                   <button
