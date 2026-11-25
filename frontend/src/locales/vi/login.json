@@ -33,6 +33,7 @@
   "errors": {
     "missingCredentials": "Vui lòng điền đầy đủ email và mật khẩu!",
     "invalidCredentials": "Email hoặc mật khẩu không chính xác!",
+    "accountBlocked": "Tài khoản của bạn đã bị khóa hoặc bị từ chối!",
     "googleFailed": "Đăng nhập Google thất bại!"
   },
   "forgotPasswordPage": {

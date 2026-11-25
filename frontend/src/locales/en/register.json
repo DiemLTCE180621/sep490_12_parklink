@@ -132,8 +132,11 @@
       "emailInvalid": "Invalid notification email address format (e.g., provider@example.com).",
       "phoneInvalid": "Contact phone number must be exactly 10 digits starting with 0 (e.g., 0987654321).",
       "facilityNameInvalid": "Facility name must be at least 3 characters long and contain only letters, numbers, and spaces.",
+      "addressRequired": "Please enter the facility address or pick a location on the map.",
       "capacityInvalid": "Slot capacity must be a positive integer greater than 0.",
+      "capacityMin": "Slot capacity must be at least 1.",
       "priceInvalid": "Monthly rental price must be greater than 0 VND.",
+      "priceMin": "Monthly rental price must be at least 100,000 VND.",
       "policyRequired": "Please read and agree to ParkLink's Terms of Service and Parking Provider Policies.",
       "vehicleTypesRequired": "Please select at least one supported vehicle type.",
       "submitFailed": "Facility registration failed!"

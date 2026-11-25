@@ -85,7 +85,8 @@
       "noRecentRequest": "Không có yêu cầu thuê nào đang chờ xử lý.",
       "viewRequestDetail": "Xem Chi Tiết Yêu Cầu",
       "submittedDate": "Ngày gửi",
-      "vehicle": "Phương tiện"
+      "vehicle": "Phương tiện",
+      "parkingSpot": "Vị trí đỗ"
     }
   },
   "reservations": {

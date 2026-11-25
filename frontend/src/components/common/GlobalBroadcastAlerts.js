@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Radio,
   AlertTriangle,
@@ -19,8 +20,33 @@ import NotificationDetailModal from '../modals/NotificationDetailModal';
  *    - Hiển thị Pop-up Toast nổi ở góc màn hình Web
  */
 const GlobalBroadcastAlerts = () => {
+  const { t } = useTranslation('common');
   const socket = useSocket();
   const { user } = useAuth();
+
+  const translateCategory = (rawCategory, fallbackKey) => {
+    const trimmed = typeof rawCategory === 'string' ? rawCategory.trim() : '';
+    if (!trimmed) return t(`notifications.broadcast.categories.${fallbackKey}`);
+
+    const normalized = trimmed.toUpperCase();
+    if (normalized === 'THÔNG BÁO CHUNG') return t('notifications.broadcast.categories.general');
+    if (normalized === 'THÔNG BÁO KHẨN CẤP') return t('notifications.broadcast.categories.urgent');
+    if (normalized === 'THÔNG BÁO QUAN TRỌNG' || normalized === 'QUAN TRỌNG') {
+      return t('notifications.broadcast.categories.important');
+    }
+    if (normalized === 'HỆ THỐNG') return t('notifications.broadcast.categories.system');
+    if (normalized.includes('BẢO TRÌ') || normalized.includes('MAINTENANCE')) {
+      return t('notifications.broadcast.categories.maintenance');
+    }
+    if (normalized.includes('CHÍNH SÁCH') || normalized.includes('ĐIỀU KHOẢN')) {
+      return t('notifications.broadcast.categories.policy');
+    }
+    if (normalized.includes('KHUYẾN MÃI') || normalized.includes('SỰ KIỆN')) {
+      return t('notifications.broadcast.categories.promotion');
+    }
+
+    return trimmed;
+  };
 
   // State quản lý danh sách Toast nổi góc màn hình
   const [toasts, setToasts] = useState([]);
@@ -122,7 +148,7 @@ const GlobalBroadcastAlerts = () => {
               </span>
               <div className="min-w-0">
                 <span className="font-extrabold text-xs uppercase tracking-wider bg-slate-950 text-amber-300 px-2 py-0.5 mr-2">
-                  {bannerAlert.category || 'QUAN TRỌNG'}
+                  {translateCategory(bannerAlert.category, 'important')}
                 </span>
                 <span className="font-bold text-sm text-slate-950">
                   {bannerAlert.title}:
@@ -135,7 +161,7 @@ const GlobalBroadcastAlerts = () => {
                   onClick={() => setDetailModalNotification(bannerAlert)}
                   className="text-xs font-black text-slate-950 hover:underline ml-2 inline-flex items-center gap-0.5"
                 >
-                  [Xem chi tiết &rarr;]
+                  [{t('notifications.broadcast.viewDetails')} &rarr;]
                 </button>
               </div>
             </div>
@@ -143,7 +169,7 @@ const GlobalBroadcastAlerts = () => {
             <button
               onClick={() => setBannerAlert(null)}
               className="p-1.5 hover:bg-amber-600 transition text-slate-950 shrink-0"
-              title="Đóng banner"
+              title={t('notifications.broadcast.closeBanner')}
             >
               <X className="w-5 h-5" />
             </button>
@@ -163,10 +189,10 @@ const GlobalBroadcastAlerts = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                   <span className="px-3 py-0.5 rounded-none bg-rose-600 text-white text-xs font-black tracking-widest uppercase">
-                    {emergencyModal.category || 'THÔNG BÁO KHẨN CẤP'}
+                    {translateCategory(emergencyModal.category, 'urgent')}
                   </span>
                   <span className="text-xs text-rose-700 font-bold uppercase tracking-wider bg-rose-50 px-2 py-0.5 border border-rose-200">
-                    Mức độ: Khẩn cấp / Chặn tương tác
+                    {t('notifications.broadcast.emergencyLevel')}
                   </span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-black text-slate-900 leading-snug">
@@ -187,7 +213,7 @@ const GlobalBroadcastAlerts = () => {
                 onClick={() => setEmergencyModal(null)}
                 className="w-full sm:w-auto px-10 py-3.5 rounded-none bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest shadow-lg transition transform active:scale-[0.99] flex items-center justify-center gap-2"
               >
-                Tôi Đã Đọc Và Xác Nhận Đóng Thông Báo
+                {t('notifications.broadcast.acknowledgeEmergency')}
               </button>
             </div>
           </div>
@@ -240,7 +266,7 @@ const GlobalBroadcastAlerts = () => {
                         : 'bg-teal-600 text-white'
                     }`}
                   >
-                    {toast.category || 'HỆ THỐNG'}
+                    {translateCategory(toast.category, 'system')}
                   </span>
                 </div>
                 <h4 className="text-sm font-bold text-white leading-snug line-clamp-1">
@@ -261,7 +287,7 @@ const GlobalBroadcastAlerts = () => {
                     }}
                     className="text-[11px] font-bold text-teal-300 hover:text-white underline underline-offset-2 flex items-center gap-1"
                   >
-                    Chi tiết &rarr;
+                    {t('notifications.viewDetail')} &rarr;
                   </button>
                 </div>
               </div>
@@ -272,7 +298,7 @@ const GlobalBroadcastAlerts = () => {
                   removeToast(toast.id);
                 }}
                 className="text-slate-400 hover:text-white p-1 rounded-none transition shrink-0"
-                title="Đóng toast"
+                title={t('notifications.broadcast.closeToast')}
               >
                 <X className="w-4 h-4" />
               </button>

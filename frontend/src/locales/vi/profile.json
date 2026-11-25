@@ -51,6 +51,7 @@
       "contractPreview": "Địa chỉ đầy đủ ghi trên hợp đồng: ",
       "customerPreview": "Địa chỉ ghi trên thông tin thuê bãi: ",
       "providerPreview": "Địa chỉ liên hệ: ",
+      "contactPreview": "Địa chỉ liên hệ: ",
       "notSet": "Chưa thiết lập"
     },
     "accountRole": {
@@ -105,6 +106,7 @@
     },
     "actions": {
       "cancel": "Hủy",
+      "close": "Đóng",
       "submitting": "Đang cập nhật...",
       "submit": "Cập Nhật Mật Khẩu"
     },
