@@ -156,6 +156,22 @@
       "contentLabel": "Notification details:",
       "viewPolicy": "View Policy",
       "close": "Close"
+    },
+    "broadcast": {
+      "viewDetails": "View details",
+      "closeBanner": "Close banner",
+      "closeToast": "Close notification",
+      "emergencyLevel": "Severity: Urgent / Action Required",
+      "acknowledgeEmergency": "I Have Read and Acknowledge This Notice",
+      "categories": {
+        "general": "GENERAL ANNOUNCEMENT",
+        "urgent": "URGENT ANNOUNCEMENT",
+        "important": "IMPORTANT ANNOUNCEMENT",
+        "system": "SYSTEM",
+        "maintenance": "SYSTEM MAINTENANCE",
+        "policy": "POLICY & TERMS",
+        "promotion": "PROMOTION / EVENT"
+      }
     }
   },
   "addressSelector": {

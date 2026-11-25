@@ -51,6 +51,7 @@
       "contractPreview": "Full address on contract: ",
       "customerPreview": "Address on rental contract: ",
       "providerPreview": "Contact address: ",
+      "contactPreview": "Contact address: ",
       "notSet": "Not set"
     },
     "accountRole": {
@@ -105,6 +106,7 @@
     },
     "actions": {
       "cancel": "Cancel",
+      "close": "Close",
       "submitting": "Updating...",
       "submit": "Update Password"
     },

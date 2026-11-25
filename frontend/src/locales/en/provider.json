@@ -57,7 +57,7 @@
     },
     "kpis": {
       "availableSlots": {
-        "label": "Available Vacant Slots",
+        "label": "Current Available Slot",
         "unit": "slots",
         "hint": "Ready for tenants ({{percent}}%)"
       },
@@ -112,7 +112,7 @@
     },
     "editModal": {
       "title": "Update Facility Operational Information",
-      "subtitle": "Adjust live available vacant slots and monthly rental rate",
+      "subtitle": "Adjust current available slots and monthly rental rate",
       "closeTitle": "Close",
       "capacityLabel": "Slot Capacity",
       "fixedBadge": "Fixed",
@@ -120,7 +120,7 @@
       "occupiedLabel": "Currently Parked",
       "liveBadge": "Live",
       "vehiclesUnit": "vehicles",
-      "availableSlotsLabel": "Available Vacant Slots",
+      "availableSlotsLabel": "Current Available Slot",
       "percentVacant": "{{percent}}% vacant",
       "decreaseTitle": "Decrease 1 vacant slot (vehicle parked)",
       "increaseTitle": "Increase 1 vacant slot (vehicle departed)",
@@ -146,8 +146,8 @@
       "saving": "Saving...",
       "saveChanges": "Save Changes",
       "validation": {
-        "slotsNonNegative": "Available vacant slots must be 0 or greater!",
-        "slotsExceedCapacity": "Available vacant slots ({{slots}}) cannot exceed registered capacity ({{capacity}} slots)!"
+        "slotsNonNegative": "Current available slots must be 0 or greater!",
+        "slotsExceedCapacity": "Current available slots ({{slots}}) cannot exceed registered capacity ({{capacity}} slots)!"
       },
       "toasts": {
         "updateSuccess": "Updated successfully! Current availability: {{slots}}/{{capacity}} slots.",

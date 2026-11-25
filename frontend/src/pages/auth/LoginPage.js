@@ -73,7 +73,18 @@ const LoginPage = () => {
         navigate(redirectTo, { replace: true });
       }
     } catch (err) {
-      setError(err.message || t('errors.invalidCredentials'));
+      const msg = err?.message || '';
+      if (
+        err?.status === 401 ||
+        msg.includes('Email hoặc mật khẩu không chính xác') ||
+        msg.includes('Tài khoản chưa có mật khẩu')
+      ) {
+        setError(t('errors.invalidCredentials'));
+      } else if (err?.status === 403 || msg.includes('bị khóa hoặc bị từ chối')) {
+        setError(t('errors.accountBlocked'));
+      } else {
+        setError(msg || t('errors.invalidCredentials'));
+      }
     } finally {
       setLoading(false);
     }

@@ -156,6 +156,22 @@
       "contentLabel": "Nội dung thông báo chi tiết:",
       "viewPolicy": "Xem Chính Sách",
       "close": "Đóng thông báo"
+    },
+    "broadcast": {
+      "viewDetails": "Xem chi tiết",
+      "closeBanner": "Đóng banner",
+      "closeToast": "Đóng toast",
+      "emergencyLevel": "Mức độ: Khẩn cấp / Chặn tương tác",
+      "acknowledgeEmergency": "Tôi Đã Đọc Và Xác Nhận Đóng Thông Báo",
+      "categories": {
+        "general": "THÔNG BÁO CHUNG",
+        "urgent": "THÔNG BÁO KHẨN CẤP",
+        "important": "THÔNG BÁO QUAN TRỌNG",
+        "system": "HỆ THỐNG",
+        "maintenance": "BẢO TRÌ HỆ THỐNG",
+        "policy": "CHÍNH SÁCH & ĐIỀU KHOẢN",
+        "promotion": "KHUYẾN MÃI / SỰ KIỆN"
+      }
     }
   },
   "addressSelector": {

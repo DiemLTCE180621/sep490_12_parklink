@@ -33,6 +33,7 @@
   "errors": {
     "missingCredentials": "Please enter both your email address and password!",
     "invalidCredentials": "Invalid email address or password.",
+    "accountBlocked": "Your account has been blocked or rejected!",
     "googleFailed": "Google sign-in failed!"
   },
   "forgotPasswordPage": {
