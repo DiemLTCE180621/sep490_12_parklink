@@ -1,27 +1,30 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import reviewService from '../../services/reviewService';
 import { useSocket } from '../../context/SocketContext';
-import StarRating from '../common/StarRating';
 import Toast from '../common/Toast';
 import ConfirmModal from '../modals/ConfirmModal';
 import { 
   Star, 
-  Building2, 
   Search, 
   RotateCw, 
   MessageSquare, 
-  CheckCircle2, 
   AlertTriangle,
-  Calendar,
   Eye,
   EyeOff,
   ShieldAlert,
   Check,
   Filter,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import AdminReviewCard from './AdminReviewCard';
+
+const REVIEWS_PER_PAGE = 12;
 
 const AdminReviewsPanel = () => {
+  const { t } = useTranslation('admin');
   const socket = useSocket();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,7 @@ const AdminReviewsPanel = () => {
   const [statusFilter, setStatusFilter] = useState('ALL'); 
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const statusDropdownRef = useRef(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -56,11 +60,11 @@ const AdminReviewsPanel = () => {
         setReviews(res.data || []);
       }
     } catch (err) {
-      setError(err.message || 'Không thể tải danh sách đánh giá của hệ thống!');
+      setError(err.message || t('reviews.errors.load'));
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchReviews(true);
@@ -97,23 +101,21 @@ const AdminReviewsPanel = () => {
   
   const stats = useMemo(() => {
     const total = reviews.length;
-    if (total === 0) return { total: 0, avg: 0, positive: 0, negative: 0, flagged: 0, hidden: 0 };
+    if (total === 0) return { total: 0, avg: 0, flagged: 0, hidden: 0 };
     const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
     const avg = (sum / total).toFixed(1);
-    const positive = reviews.filter(r => r.rating >= 4).length;
-    const negative = reviews.filter(r => r.rating <= 2).length;
     const flagged = reviews.filter(r => r.is_flagged).length;
     const hidden = reviews.filter(r => r.status === 'HIDDEN').length;
-    return { total, avg, positive, negative, flagged, hidden };
+    return { total, avg, flagged, hidden };
   }, [reviews]);
 
   
   const statusOptions = useMemo(() => [
-    { value: 'ALL', label: 'Tất cả trạng thái', icon: Filter, color: 'text-gray-600', badge: null },
-    { value: 'FLAGGED', label: 'Bị AI cắm cờ', icon: ShieldAlert, color: 'text-rose-600', badge: stats.flagged, badgeColor: 'bg-rose-100 text-rose-700' },
-    { value: 'HIDDEN', label: 'Đã bị ẩn', icon: EyeOff, color: 'text-gray-600', badge: stats.hidden, badgeColor: 'bg-gray-200 text-gray-700' },
-    { value: 'VISIBLE', label: 'Đang hiển thị', icon: Eye, color: 'text-emerald-600', badge: null }
-  ], [stats.flagged, stats.hidden]);
+    { value: 'ALL', label: t('reviews.filters.allStatuses'), icon: Filter, color: 'text-gray-600', badge: null },
+    { value: 'FLAGGED', label: t('reviews.filters.flagged'), icon: ShieldAlert, color: 'text-rose-600', badge: stats.flagged, badgeColor: 'bg-rose-100 text-rose-700' },
+    { value: 'HIDDEN', label: t('reviews.filters.hidden'), icon: EyeOff, color: 'text-gray-600', badge: stats.hidden, badgeColor: 'bg-gray-200 text-gray-700' },
+    { value: 'VISIBLE', label: t('reviews.filters.visible'), icon: Eye, color: 'text-emerald-600', badge: null }
+  ], [stats.flagged, stats.hidden, t]);
 
   const currentStatus = statusOptions.find(o => o.value === statusFilter) || statusOptions[0];
   const CurrentStatusIcon = currentStatus.icon;
@@ -123,7 +125,7 @@ const AdminReviewsPanel = () => {
 
 
   
-  const handleDismissFlag = async (review) => {
+  const handleDismissFlag = useCallback(async (review) => {
     try {
       setActionLoadingId(review.id);
       
@@ -133,14 +135,14 @@ const AdminReviewsPanel = () => {
       });
       if (res.success) {
         setReviews(prev => prev.map(r => r.id === review.id ? { ...r, is_flagged: false, status: 'VISIBLE' } : r));
-        setToast({ message: 'Đã gỡ cắm cờ và hiển thị lại đánh giá thành công!', type: 'success' });
+        setToast({ message: t('reviews.toasts.dismissSuccess'), type: 'success' });
       }
     } catch (err) {
-      setToast({ message: err.message || 'Lỗi khi gỡ cắm cờ', type: 'error' });
+      setToast({ message: err.message || t('reviews.toasts.dismissError'), type: 'error' });
     } finally {
       setActionLoadingId(null);
     }
-  };
+  }, [t]);
 
   
   const [unhideModal, setUnhideModal] = useState({
@@ -149,13 +151,13 @@ const AdminReviewsPanel = () => {
     loading: false
   });
 
-  const handleOpenUnhideModal = (review) => {
+  const handleOpenUnhideModal = useCallback((review) => {
     setUnhideModal({
       isOpen: true,
       review,
       loading: false
     });
-  };
+  }, []);
 
   const handleCloseUnhideModal = () => {
     if (!unhideModal.loading) {
@@ -174,11 +176,11 @@ const AdminReviewsPanel = () => {
         setReviews(prev =>
           prev.map(r => r.id === review.id ? { ...r, status: 'VISIBLE', is_flagged: false, flagged_reason: null } : r)
         );
-        setToast({ message: 'Bỏ ẩn đánh giá thành công! Đánh giá đã được hiển thị công khai.', type: 'success' });
+        setToast({ message: t('reviews.toasts.unhideSuccess'), type: 'success' });
         setUnhideModal({ isOpen: false, review: null, loading: false });
       }
     } catch (err) {
-      setToast({ message: err.message || 'Lỗi khi bỏ ẩn đánh giá', type: 'error' });
+      setToast({ message: err.message || t('reviews.toasts.unhideError'), type: 'error' });
       setUnhideModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -190,13 +192,13 @@ const AdminReviewsPanel = () => {
     loading: false
   });
 
-  const handleOpenPermanentHideModal = (review) => {
+  const handleOpenPermanentHideModal = useCallback((review) => {
     setConfirmModal({
       isOpen: true,
       review,
       loading: false
     });
-  };
+  }, []);
 
   const handleCloseConfirmModal = () => {
     if (!confirmModal.loading) {
@@ -217,11 +219,11 @@ const AdminReviewsPanel = () => {
       });
       if (res.success) {
         setReviews(prev => prev.map(r => r.id === review.id ? { ...r, status: 'HIDDEN', is_flagged: false } : r));
-        setToast({ message: 'Đã xác nhận và ẩn vĩnh viễn đánh giá thành công!', type: 'success' });
+        setToast({ message: t('reviews.toasts.hideSuccess'), type: 'success' });
         setConfirmModal({ isOpen: false, review: null, loading: false });
       }
     } catch (err) {
-      setToast({ message: err.message || 'Lỗi khi ẩn vĩnh viễn đánh giá', type: 'error' });
+      setToast({ message: err.message || t('reviews.toasts.hideError'), type: 'error' });
       setConfirmModal(prev => ({ ...prev, loading: false }));
     }
   };
@@ -250,25 +252,36 @@ const AdminReviewsPanel = () => {
       return matchSearch && matchFacility && matchStar && matchStatus;
     });
   }, [reviews, searchTerm, facilityFilter, starFilter, statusFilter]);
+  const pageCount = Math.max(1, Math.ceil(filteredReviews.length / REVIEWS_PER_PAGE));
+  const paginatedReviews = useMemo(() => {
+    const start = (currentPage - 1) * REVIEWS_PER_PAGE;
+    return filteredReviews.slice(start, start + REVIEWS_PER_PAGE);
+  }, [filteredReviews, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, facilityFilter, starFilter, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, pageCount));
+  }, [pageCount]);
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {}
       <Toast
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ message: '', type: 'success' })}
       />
 
-      {}
       <div className="bg-white p-6 sm:p-7 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-gray-900 flex items-center gap-2.5">
             <Star className="w-6 h-6 text-amber-500 fill-amber-500" />
-            Quản Lý & Kiểm Duyệt Đánh Giá
+            {t('reviews.title')}
           </h2>
           <p className="text-sm text-gray-500 mt-1">
-            Theo dõi, kiểm duyệt nội dung tự động bằng AI và quản lý quyền ẩn/hiện đánh giá của toàn bộ hệ thống.
+            {t('reviews.subtitle')}
           </p>
         </div>
         <button
@@ -277,26 +290,25 @@ const AdminReviewsPanel = () => {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:text-neighbor-700 hover:bg-gray-50 text-sm font-semibold transition-all disabled:opacity-50 self-start sm:self-center"
         >
           <RotateCw className={`w-4 h-4 ${loading ? 'animate-spin text-neighbor-600' : ''}`} />
-          Làm mới
+          {t('common.refresh')}
         </button>
       </div>
 
-      {}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+      <div className="grid grid-cols-2 lg:grid-cols-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div className="min-w-0 border-b border-r border-gray-200 p-5 lg:border-b-0">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Tổng đánh giá</span>
+            <span className="text-xs font-bold text-gray-400 uppercase">{t('reviews.kpis.total')}</span>
             <div className="w-8 h-8 rounded-lg bg-neighbor-50 text-neighbor-600 flex items-center justify-center">
               <MessageSquare className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-gray-800">{stats.total}</div>
-          <span className="text-xs text-gray-400 mt-1 block">Toàn bộ hệ thống</span>
+          <span className="text-xs text-gray-400 mt-1 block">{t('reviews.kpis.totalSub')}</span>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+        <div className="min-w-0 border-b border-gray-200 p-5 lg:border-b-0 lg:border-r">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Điểm trung bình</span>
+            <span className="text-xs font-bold text-gray-400 uppercase">{t('reviews.kpis.average')}</span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
               <Star className="w-4 h-4 fill-amber-500" />
             </div>
@@ -304,65 +316,60 @@ const AdminReviewsPanel = () => {
           <div className="text-2xl font-black text-amber-600 flex items-baseline gap-1">
             {stats.avg} <span className="text-xs font-semibold text-gray-400">/ 5.0</span>
           </div>
-          <span className="text-xs text-gray-400 mt-1 block">Chỉ số hài lòng</span>
+          <span className="text-xs text-gray-400 mt-1 block">{t('reviews.kpis.averageSub')}</span>
         </div>
 
-        {}
         <div 
           onClick={() => setStatusFilter(statusFilter === 'FLAGGED' ? 'ALL' : 'FLAGGED')}
-          className={`p-5 rounded-xl border shadow-sm cursor-pointer transition-all ${
-            statusFilter === 'FLAGGED' 
-              ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-400' 
-              : 'bg-white border-gray-200 hover:border-rose-200'
+          className={`min-w-0 border-r border-gray-200 p-5 cursor-pointer transition-colors ${
+            statusFilter === 'FLAGGED'
+              ? 'bg-rose-50'
+              : 'hover:bg-rose-50/50'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-rose-600 uppercase">AI Cảnh báo vi phạm</span>
+            <span className="text-xs font-bold text-rose-600 uppercase">{t('reviews.kpis.flagged')}</span>
             <div className="w-8 h-8 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center">
               <ShieldAlert className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-rose-600">{stats.flagged}</div>
           <span className="text-xs text-rose-500/80 mt-1 block">
-            {stats.flagged > 0 ? 'Cần Admin duyệt ngay' : 'Không có vi phạm'}
+            {stats.flagged > 0 ? t('reviews.kpis.flaggedPending') : t('reviews.kpis.flaggedClear')}
           </span>
         </div>
 
-        {}
         <div 
           onClick={() => setStatusFilter(statusFilter === 'HIDDEN' ? 'ALL' : 'HIDDEN')}
-          className={`p-5 rounded-xl border shadow-sm cursor-pointer transition-all ${
-            statusFilter === 'HIDDEN' 
-              ? 'bg-gray-100 border-gray-300 ring-2 ring-gray-400' 
-              : 'bg-white border-gray-200 hover:border-gray-200'
+          className={`min-w-0 p-5 cursor-pointer transition-colors ${
+            statusFilter === 'HIDDEN'
+              ? 'bg-gray-100'
+              : 'hover:bg-gray-50'
           }`}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-gray-500 uppercase">Đang bị ẩn</span>
+            <span className="text-xs font-bold text-gray-500 uppercase">{t('reviews.kpis.hidden')}</span>
             <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center">
               <EyeOff className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-black text-gray-700">{stats.hidden}</div>
-          <span className="text-xs text-gray-400 mt-1 block">Đã chặn hiển thị ra ngoài</span>
+          <span className="text-xs text-gray-400 mt-1 block">{t('reviews.kpis.hiddenSub')}</span>
         </div>
       </div>
 
-      {}
       <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-3">
-        {}
         <div className="flex-1 relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Tìm theo tên bãi xe, khách hàng hoặc nội dung..."
+            placeholder={t('reviews.filters.search')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-neighbor-500 focus:ring-1 focus:ring-neighbor-500 bg-gray-50/50"
           />
         </div>
 
-        {}
         <div className="relative md:w-60" ref={statusDropdownRef}>
           <button
             type="button"
@@ -417,14 +424,13 @@ const AdminReviewsPanel = () => {
           )}
         </div>
 
-        {}
         <div className="md:w-56">
           <select
             value={facilityFilter}
             onChange={(e) => setFacilityFilter(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-neighbor-500 bg-gray-50/50 text-gray-700 font-medium"
           >
-            <option value="ALL">Tất cả cơ sở bãi xe</option>
+            <option value="ALL">{t('reviews.filters.allFacilities')}</option>
             {facilityOptions.map((f) => (
               <option key={f.id} value={f.id}>
                 {f.name}
@@ -433,24 +439,22 @@ const AdminReviewsPanel = () => {
           </select>
         </div>
 
-        {}
         <div className="md:w-40">
           <select
             value={starFilter}
             onChange={(e) => setStarFilter(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-neighbor-500 bg-gray-50/50 text-gray-700 font-medium"
           >
-            <option value="ALL">Tất cả số sao</option>
-            <option value="5">5 Sao</option>
-            <option value="4">4 Sao</option>
-            <option value="3">3 Sao</option>
-            <option value="2">2 Sao</option>
-            <option value="1">1 Sao</option>
+            <option value="ALL">{t('reviews.filters.allRatings')}</option>
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <option key={rating} value={rating}>
+                {t('reviews.filters.starOption', { count: rating })}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
-      {}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -458,7 +462,6 @@ const AdminReviewsPanel = () => {
         </div>
       )}
 
-      {}
       <div className="space-y-4">
         {loading ? (
           <div className="space-y-4">
@@ -475,212 +478,94 @@ const AdminReviewsPanel = () => {
             <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
               <MessageSquare className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-gray-700 text-base">Không tìm thấy đánh giá nào</h4>
+            <h4 className="font-bold text-gray-700 text-base">{t('reviews.empty.title')}</h4>
             <p className="text-sm text-gray-400 max-w-sm mx-auto">
               {searchTerm || facilityFilter !== 'ALL' || starFilter !== 'ALL' || statusFilter !== 'ALL'
-                ? 'Không có đánh giá nào phù hợp với bộ lọc hiện tại. Vui lòng thử lại.'
-                : 'Hệ thống hiện tại chưa ghi nhận đánh giá nào từ khách hàng.'}
+                ? t('reviews.empty.filtered')
+                : t('reviews.empty.default')}
             </p>
           </div>
         ) : (
-          filteredReviews.map((review) => {
-            const isHidden = review.status === 'HIDDEN';
-            const isFlagged = Boolean(review.is_flagged);
-            const isActionLoading = actionLoadingId === review.id;
-
-            return (
-              <div
-                key={review.id}
-                className={`bg-white p-5 sm:p-6 rounded-xl border shadow-sm hover:shadow-md transition-all space-y-3.5 ${
-                  isHidden 
-                    ? 'border-gray-300 bg-gray-50/70 opacity-90' 
-                    : isFlagged 
-                      ? 'border-rose-200 ring-1 ring-rose-200' 
-                      : 'border-gray-200/90'
-                }`}
-              >
-                {}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-gray-200">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
-                      isHidden 
-                        ? 'bg-gray-100 border-gray-200 text-gray-500' 
-                        : 'bg-neighbor-50 border-neighbor-100 text-neighbor-700'
-                    }`}>
-                      <Building2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-                        {review.facility?.name || `Bãi xe #${review.facility_id}`}
-                      </h4>
-                      <p className="text-xs text-gray-400 truncate max-w-md">
-                        {review.facility?.address || 'Chưa cập nhật địa chỉ'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {}
-                  <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
-                    {}
-                    {isHidden ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-200 text-gray-700 border border-gray-300">
-                        <EyeOff className="w-3.5 h-3.5" />
-                        Đã bị ẩn
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Đang hiển thị
-                      </span>
-                    )}
-
-                    {}
-                    {isFlagged && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 animate-pulse">
-                        <ShieldAlert className="w-3.5 h-3.5" />
-                        AI Cắm cờ
-                      </span>
-                    )}
-
-                    {}
-                    {!isHidden ? (
-                      
-                      <button
-                        onClick={() => handleOpenPermanentHideModal(review)}
-                        disabled={isActionLoading}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition-all disabled:opacity-50"
-                        title="Ẩn vĩnh viễn đánh giá này khỏi hệ thống"
-                      >
-                        <EyeOff className="w-3.5 h-3.5" />
-                        Ẩn vĩnh viễn
-                      </button>
-                    ) : (
-                      
-                      <>
-                        {}
-                        <button
-                          onClick={() => handleOpenUnhideModal(review)}
-                          disabled={isActionLoading}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-700 border border-neighbor-200 transition-all disabled:opacity-50"
-                          title="Bỏ ẩn và hiển thị lại đánh giá này"
-                        >
-                          {isActionLoading ? (
-                            <RotateCw className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Eye className="w-3.5 h-3.5" />
-                          )}
-                          Bỏ ẩn đánh giá
-                        </button>
-
-                        {}
-                        {isFlagged && (
-                          <>
-                            <button
-                              onClick={() => handleDismissFlag(review)}
-                              disabled={isActionLoading}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-all disabled:opacity-50"
-                              title="Xác nhận đánh giá an toàn, gỡ cờ và hiển thị lại"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              Gỡ cờ
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenPermanentHideModal(review)}
-                              disabled={isActionLoading}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-sm transition-all disabled:opacity-50"
-                              title="Xác nhận vi phạm và ẩn vĩnh viễn đánh giá này"
-                            >
-                              <EyeOff className="w-3.5 h-3.5" />
-                              Ẩn vĩnh viễn
-                            </button>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-bold text-xs">
-                      {review.customer?.full_name?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-gray-800 block leading-tight">
-                        {review.customer?.full_name || 'Khách hàng'}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {review.customer?.email || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <StarRating value={review.rating} disabled={true} />
-                    <span className="text-xs text-gray-400 inline-flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {new Date(review.created_at).toLocaleDateString('vi-VN')}
-                    </span>
-                  </div>
-                </div>
-
-                {}
-                {isFlagged && (
-                  <div className="flex items-start gap-2.5 bg-rose-50/90 border border-rose-200 text-rose-800 p-3 rounded-xl text-xs">
-                    <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold">AI phát hiện vi phạm: </span>
-                      <span>{review.flagged_reason || 'Nội dung chứa ngôn từ không phù hợp'}</span>
-                    </div>
-                  </div>
-                )}
-
-                {}
-                <div className={`p-3.5 rounded-xl border text-sm leading-relaxed ${
-                  isHidden 
-                    ? 'bg-gray-100/70 border-gray-200 text-gray-500 italic' 
-                    : 'bg-gray-50 border-gray-200 text-gray-700'
-                }`}>
-                  {review.comment}
-                </div>
-              </div>
-            );
-          })
+          paginatedReviews.map((review) => (
+            <AdminReviewCard
+              key={review.id}
+              review={review}
+              actionLoading={actionLoadingId === review.id}
+              onDismissFlag={handleDismissFlag}
+              onOpenUnhide={handleOpenUnhideModal}
+              onOpenPermanentHide={handleOpenPermanentHideModal}
+            />
+          ))
         )}
       </div>
 
-      {}
+      {!loading && filteredReviews.length > 0 && (
+        <div className="flex items-center justify-between gap-3 text-sm text-gray-500">
+          <span>
+            {t('reviews.pagination.range', {
+              from: (currentPage - 1) * REVIEWS_PER_PAGE + 1,
+              to: Math.min(currentPage * REVIEWS_PER_PAGE, filteredReviews.length),
+              total: filteredReviews.length
+            })}
+          </span>
+          {pageCount > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40"
+                aria-label={t('reviews.pagination.previous')}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span>{t('common.pagination', { current: currentPage, total: pageCount })}</span>
+              <button
+                type="button"
+                onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+                disabled={currentPage === pageCount}
+                className="p-2 rounded-lg border border-gray-200 disabled:opacity-40"
+                aria-label={t('reviews.pagination.next')}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <ConfirmModal
         isOpen={unhideModal.isOpen}
         onClose={handleCloseUnhideModal}
         onConfirm={handleConfirmUnhide}
-        title="Xác Nhận Bỏ Ẩn Đánh Giá"
+        title={t('reviews.confirm.unhideTitle')}
         message={
           unhideModal.review
-            ? `Bạn có chắc chắn muốn bỏ ẩn và hiển thị lại đánh giá của khách hàng "${unhideModal.review.customer?.full_name || 'Khách hàng'}" không? Bài viết sẽ xuất hiện công khai trở lại tại bãi đỗ xe.`
-            : 'Bạn có chắc chắn muốn bỏ ẩn đánh giá này không?'
+            ? t('reviews.confirm.unhideMessage', {
+                customer: unhideModal.review.customer?.full_name || t('reviews.card.defaultCustomer')
+              })
+            : t('reviews.confirm.unhideFallback')
         }
-        confirmText="Bỏ Ẩn Ngay"
-        cancelText="Hủy Bỏ"
+        confirmText={t('reviews.confirm.unhideConfirm')}
+        cancelText={t('reviews.confirm.cancel')}
         type="success"
         loading={unhideModal.loading}
       />
 
-      {}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={handleCloseConfirmModal}
         onConfirm={handleConfirmPermanentHide}
-        title="Xác Nhận Ẩn Vĩnh Viễn Đánh Giá"
+        title={t('reviews.confirm.hideTitle')}
         message={
           confirmModal.review
-            ? `Bạn có chắc chắn muốn ẩn vĩnh viễn đánh giá của khách hàng "${confirmModal.review.customer?.full_name || 'Khách hàng'}" không? Hành động này sẽ khóa hiển thị đánh giá này hoàn toàn khỏi bãi đỗ xe.`
-            : 'Bạn có chắc chắn muốn ẩn vĩnh viễn đánh giá này không?'
+            ? t('reviews.confirm.hideMessage', {
+                customer: confirmModal.review.customer?.full_name || t('reviews.card.defaultCustomer')
+              })
+            : t('reviews.confirm.hideFallback')
         }
-        confirmText="Ẩn Vĩnh Viễn"
-        cancelText="Hủy Bỏ"
+        confirmText={t('reviews.confirm.hideConfirm')}
+        cancelText={t('reviews.confirm.cancel')}
         type="danger"
         loading={confirmModal.loading}
       />

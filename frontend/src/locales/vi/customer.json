@@ -244,7 +244,10 @@
       "viewTerminationCustomer": "Xem trả chỗ",
       "terminate": "Trả chỗ",
       "complaint": "Khiếu nại",
-      "details": "Chi tiết"
+      "details": "Chi tiết",
+      "hasBeenRenewed": "Đã gia hạn (HĐ mới: {{code}})",
+      "hasBeenRenewedSimple": "Đã gia hạn tạo HĐ mới",
+      "renewedDisabledTooltip": "Hợp đồng này đã được gia hạn tạo hợp đồng mới"
     }
   },
   "contractDetail": {
@@ -465,7 +468,7 @@
     "providerRepliesTitle": "Phản hồi từ Chủ bãi xe:",
     "providerFallbackName": "Chủ bãi xe",
     "progress": {
-      "pending": "Ban Quản Trị ParkLink đã tiếp nhận khiếu nại và đang tiến hành thẩm tra hồ sơ hợp đồng.",
+      "pending": "Khiếu nại đã được gửi đến Ban Quản trị. Sau khi xem xét, khiếu nại sẽ được chuyển cho Chủ bãi xe để phản hồi.",
       "waitingProviderDeadline": "(Thời hạn phản hồi: trước {{date}})",
       "waitingProviderDefault": "(trong vòng 3 ngày)",
       "waitingProvider": "Ban Quản Trị đã yêu cầu Chủ bãi xe kiểm tra giải quyết {{deadline}}. Vui lòng chờ phản hồi.",
@@ -501,7 +504,7 @@
     "imageFormatsHint": "Hỗ trợ JPG, PNG, WEBP (tối đa 50MB mỗi ảnh)",
     "imageAlt": "Ảnh {{index}}",
     "removeImageAria": "Xóa ảnh",
-    "reviewNotice": "Ban quản trị sẽ xem xét khiếu nại và phản hồi lại bạn qua danh sách khiếu nại trong 24-48h làm việc.",
+    "reviewNotice": "Khiếu nại sẽ được Ban Quản trị tiếp nhận và chuyển đến Chủ bãi xe để xem xét, phản hồi. Bạn có thể theo dõi tiến trình trong Danh sách khiếu nại.",
     "cancel": "Hủy",
     "submitButton": "Gửi Khiếu Nại"
   },
@@ -798,5 +801,127 @@
     "signing": "Đang Ký Hợp Đồng...",
     "signNow": "Xác Nhận Ký Hợp Đồng Điện Tử Ngay",
     "close": "Đóng"
+  },
+  "createReservation": {
+    "breadcrumbs": {
+      "home": "Trang chủ",
+      "search": "Tìm bãi đỗ",
+      "current": "Đăng ký thuê chỗ"
+    },
+    "backToFacility": "Quay lại bãi xe",
+    "loadingFacility": "Đang tải thông tin bãi đỗ xe...",
+    "notFoundTitle": "Không tìm thấy thông tin bãi xe",
+    "loadError": "Không thể tải thông tin bãi đỗ xe.",
+    "findAnother": "Tìm bãi xe khác",
+    "defaultResponseTime": "thời hạn quy định",
+    "providerFallback": "Chủ cơ sở bãi xe",
+    "customerFallback": "Khách hàng",
+    "header": {
+      "title": "Đăng ký thuê chỗ đỗ xe theo tháng",
+      "subtitle": "Vui lòng điền chính xác thông tin để chủ bãi thiết lập hợp đồng gửi giữ xe."
+    },
+    "steps": {
+      "step1": "Gửi thông tin đăng ký",
+      "step2": "Chủ bãi duyệt & soạn HĐ",
+      "step3": "Xác nhận HĐ & nhận chỗ"
+    },
+    "activeAlert": {
+      "title": "Bạn đang có yêu cầu thuê đang chờ xử lý #{{id}}",
+      "descBefore": "Bạn đã gửi yêu cầu tại cơ sở",
+      "descAfter": "Hệ thống chỉ cho phép mỗi khách hàng gửi tối đa 1 yêu cầu tại 1 thời điểm trên hệ thống. Vui lòng hoàn tất hoặc hủy yêu cầu đó trước khi gửi yêu cầu tại bãi xe này.",
+      "otherFacility": "khác",
+      "manageButton": "Quản lý yêu cầu"
+    },
+    "applicantSection": {
+      "title": "Thông tin người đăng ký (Bên thuê)",
+      "roleNote": "Tài khoản Bên thuê ghi trên Hợp đồng",
+      "noPhone": "Chưa cập nhật SĐT",
+      "addressLabel": "Địa chỉ:",
+      "noAddress": "Chưa cập nhật địa chỉ trong hồ sơ",
+      "missingBoth": "Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc và lập Hợp đồng thuê.",
+      "missingPhone": "Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng bổ sung để Chủ bãi xe có thể liên lạc khi nhận chỗ.",
+      "missingAddress": "Hồ sơ của bạn chưa có Địa chỉ. Vui lòng bổ sung để ghi trên Hợp đồng thuê bãi xe.",
+      "updateProfile": "Cập nhật hồ sơ",
+      "idCardLabel": "Số CCCD / CMND",
+      "idCardPlaceholder": "Nhập 9 hoặc 12 chữ số ghi trên thẻ CCCD / CMND",
+      "idCardHint": "Số CCCD/CMND được dùng để xác lập hợp đồng thuê bãi xe."
+    },
+    "vehicleSection": {
+      "title": "Thông tin phương tiện gửi giữ",
+      "brandLabel": "Hãng xe / Dòng xe",
+      "brandPlaceholder": "VD: Toyota Camry, Mazda CX-5...",
+      "presetHint": "Gợi ý loại xe:",
+      "plateLabel": "Biển kiểm soát (Biển số xe)",
+      "platePlaceholder": "VD: 65A-123.45",
+      "plateHint": "Biển số dùng để đối chiếu xe ra vào bãi và ghi nhận trên hợp đồng."
+    },
+    "startDateSection": {
+      "title": "Thời gian bắt đầu gửi xe",
+      "startDateLabel": "Ngày bắt đầu nhận chỗ",
+      "deadlineTitle": "Thời hạn phản hồi yêu cầu",
+      "deadlineBefore": "Sau khi gửi, chủ bãi có tối đa",
+      "deadlineAfter": "để xem xét chấp nhận hoặc từ chối. Quá thời hạn này, hệ thống sẽ tự động hủy yêu cầu.",
+      "termTitle": "Lưu ý về kỳ hạn thuê",
+      "termDesc": "Hợp đồng gửi giữ xe tính theo tháng kể từ ngày bắt đầu. Bạn có thể kiểm tra chi tiết các điều khoản trước khi xác nhận hợp đồng điện tử."
+    },
+    "footer": {
+      "deadlineLabel": "Thời hạn chủ bãi phản hồi:",
+      "privacyNote": "Thông tin được bảo mật để lập hợp đồng.",
+      "cancel": "Hủy bỏ",
+      "submitting": "Đang gửi...",
+      "alreadyPending": "Đã có yêu cầu chờ xử lý",
+      "submit": "Gửi yêu cầu thuê"
+    },
+    "sidebar": {
+      "noImage": "Chưa có hình ảnh bãi xe",
+      "slotsLeft": "Còn {{count}} chỗ trống",
+      "fullSlots": "Hết chỗ trống",
+      "monthlyRate": "Giá thuê theo tháng",
+      "currencyUnit": "VNĐ/tháng",
+      "provider": "Chủ bãi xe",
+      "phone": "Điện thoại",
+      "totalCapacity": "Tổng quy mô",
+      "slotsUnit": "{{count}} chỗ đỗ",
+      "responseDeadline": "Hạn phản hồi",
+      "deadlineBannerTitle": "Thời hạn phản hồi:",
+      "deadlineBannerBefore": "Sau khi gửi yêu cầu, chủ bãi có",
+      "deadlineBannerAfter": "để phản hồi duyệt hoặc từ chối.",
+      "amenitiesTitle": "Tiện ích tại bãi",
+      "amenityFallback": "Tiện ích"
+    },
+    "success": {
+      "badge": "Gửi yêu cầu thành công",
+      "title": "Đã gửi đăng ký thuê chỗ đỗ xe",
+      "subtitleBefore": "Yêu cầu của bạn đã được chuyển đến chủ bãi",
+      "deadlineTitle": "Thời hạn phản hồi của chủ bãi:",
+      "deadlineBefore": "Chủ bãi có",
+      "deadlineAfter": "để xem xét duyệt hoặc từ chối yêu cầu của bạn. Quá thời hạn này mà chủ bãi không phản hồi, hệ thống sẽ tự động hủy yêu cầu để bảo đảm quyền lợi cho bạn.",
+      "facility": "Bãi đỗ xe",
+      "vehicle": "Phương tiện",
+      "licensePlate": "Biển kiểm soát",
+      "idCard": "Số CCCD / CMND",
+      "address": "Địa chỉ",
+      "startDate": "Ngày bắt đầu dự kiến",
+      "monthlyPrice": "Giá thuê niêm yết",
+      "monthlyPriceValue": "{{price}} VNĐ / tháng",
+      "backToFacility": "Quay lại bãi xe",
+      "viewMyReservations": "Xem yêu cầu của tôi"
+    },
+    "validation": {
+      "noFacility": "Không có thông tin bãi đỗ xe để tạo yêu cầu.",
+      "providerNotAllowed": "Tài khoản Chủ bãi xe không thể gửi yêu cầu thuê! Vui lòng dùng tài khoản Khách hàng.",
+      "noSlots": "Rất tiếc, bãi xe này hiện tại đã hết chỗ trống!",
+      "hasActiveReservation": "Bạn đang có một yêu cầu thuê tại cơ sở \"{{facilityName}}\" đang trong quá trình xử lý. Mỗi khách hàng chỉ được gửi tối đa 1 yêu cầu tại 1 thời điểm. Vui lòng hoàn tất hoặc hủy yêu cầu hiện tại để gửi yêu cầu mới!",
+      "missingBoth": "Hồ sơ của bạn chưa có Số điện thoại và Địa chỉ. Vui lòng cập nhật đầy đủ trong Hồ sơ trước khi gửi yêu cầu thuê!",
+      "missingPhone": "Hồ sơ của bạn chưa có Số điện thoại liên hệ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!",
+      "missingAddress": "Hồ sơ của bạn chưa có Địa chỉ. Vui lòng cập nhật trong Hồ sơ trước khi gửi yêu cầu thuê!",
+      "idCardRequired": "Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của bạn.",
+      "idCardInvalid": "Số CMND / CCCD không hợp lệ (phải gồm đúng 9 hoặc 12 chữ số).",
+      "brandRequired": "Vui lòng nhập Hãng xe / Dòng xe (Ví dụ: Toyota Camry, Honda City...).",
+      "plateRequired": "Vui lòng nhập Biển kiểm soát / Biển số xe (Ví dụ: 65A-123.45).",
+      "startDateRequired": "Vui lòng chọn ngày mong muốn bắt đầu thuê bãi xe.",
+      "submitSuccess": "Gửi yêu cầu thuê bãi đỗ xe thành công! Chủ bãi có {{duration}} để phản hồi duyệt hoặc từ chối.",
+      "submitError": "Không thể gửi yêu cầu thuê bãi xe. Vui lòng thử lại!"
+    }
   }
 }

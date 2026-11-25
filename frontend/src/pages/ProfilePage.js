@@ -117,7 +117,7 @@ const ProfilePage = () => {
 
     const cleanName = fullName.trim();
     const cleanPhone = phoneNumber.trim();
-    const cleanAddress = computeFullAddress(streetDetail, administrativeAddress);
+    const cleanAddress = roleName === 'FIELD_INSPECTOR' ? (user?.address || '') : computeFullAddress(streetDetail, administrativeAddress);
 
     if (!cleanName || cleanName.length < 2) {
       setError(t('messages.fullNameMinLength'));
@@ -246,9 +246,9 @@ const ProfilePage = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-1">
-                  <span className="text-gray-500 font-medium">Trạng thái tài khoản</span>
+                  <span className="text-gray-500 font-medium">{t('fields.accountStatus.label', 'Trạng thái tài khoản')}</span>
                   <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Hoạt động
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> {t('fields.accountStatus.active', 'Hoạt động')}
                   </span>
                 </div>
               </div>
@@ -256,10 +256,10 @@ const ProfilePage = () => {
 
             <div className="bg-neighbor-50/60 rounded-2xl p-5 border border-neighbor-100 text-xs text-neighbor-900 space-y-2">
               <div className="flex items-center gap-2 font-bold text-neighbor-800">
-                <Shield className="w-4 h-4 text-neighbor-600" /> Bảo mật thông tin ParkLink
+                <Shield className="w-4 h-4 text-neighbor-600" /> {t('fields.security.title', 'Bảo mật thông tin ParkLink')}
               </div>
               <p className="text-neighbor-700 leading-relaxed text-[11px]">
-                Thông tin cá nhân và số điện thoại của bạn được dùng để xác thực hợp đồng điện tử và kết nối an toàn với đối tác bãi xe.
+                {t('fields.security.desc', 'Thông tin cá nhân và số điện thoại của bạn được dùng để xác thực hợp đồng điện tử và kết nối an toàn với đối tác bãi xe.')}
               </p>
             </div>
           </div>
@@ -335,7 +335,9 @@ const ProfilePage = () => {
                     <label className="text-xs font-semibold text-gray-600 flex items-center gap-1.5">
                       <Mail className="w-4 h-4 text-gray-400" /> {t('fields.email.label')}
                     </label>
-                    <span className="text-[11px] text-gray-400 font-medium">Không thể thay đổi</span>
+                    <span className="text-[11px] text-gray-400 font-medium">
+                      {t('fields.email.cannotChange', 'Không thể thay đổi')}
+                    </span>
                   </div>
                   <input
                     type="email"
@@ -345,19 +347,19 @@ const ProfilePage = () => {
                   />
                 </div>
 
-                {roleName === 'PROVIDER' ? (
+                {roleName === 'FIELD_INSPECTOR' ? (
                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
                         <MapPin className="w-4 h-4 text-neighbor-600" /> {t('fields.assignedAddress.label')}
                       </label>
                       <span className="text-[11px] text-neighbor-700 font-semibold bg-neighbor-50 px-2 py-0.5 rounded-md border border-neighbor-200">
-                        {t('fields.assignedAddress.badge')}
+                        {t('fields.assignedAddress.badge', 'Cố định')}
                       </span>
                     </div>
                     <div className="p-3 bg-white rounded-lg border border-gray-200 text-xs text-gray-700 font-medium flex items-center justify-between gap-2">
                       <span className="truncate">
-                        {user?.address || t('fields.assignedAddress.emptyFallback')}
+                        {user?.address || t('fields.assignedAddress.emptyFallback', t('fields.assignedAddress.empty'))}
                       </span>
                       <span className="text-[11px] font-semibold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md shrink-0">
                         {t('fields.assignedAddress.note')}

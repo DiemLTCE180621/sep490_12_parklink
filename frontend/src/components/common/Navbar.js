@@ -128,11 +128,55 @@ const Navbar = () => {
     };
   }, [socket, canAccessChat]);
 
+  if (user?.requires_password_change) {
+    return (
+      <nav
+        className={`border-b sticky top-0 z-50 transition-all duration-200 ${
+          isScrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-md border-gray-200/90'
+            : 'bg-white shadow-xs border-gray-200'
+        }`}
+      >
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16 sm:h-20 items-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden bg-neighbor-600 text-white flex items-center justify-center shadow-xs">
+                <img
+                  src="/Logo.png"
+                  alt="ParkLink Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                  Park<span className="text-neighbor-600">Link</span>
+                </span>
+                <p className="text-xs text-gray-500 font-semibold tracking-wider leading-none uppercase mt-0.5">
+                  {t('app.tagline')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <LanguageSwitcher className="w-[74px] justify-center shrink-0" />
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">{t('nav.logout')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
   if (
     isAuthenticated &&
-    (user?.role?.name === 'ADMIN' ||
-      user?.role?.name === 'FIELD_INSPECTOR' ||
-      user?.requires_password_change)
+    (user?.role?.name === 'ADMIN' || user?.role?.name === 'FIELD_INSPECTOR')
   ) {
     return null;
   }

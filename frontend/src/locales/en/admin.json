@@ -5,6 +5,7 @@
   "sidebar": {
     "title": "Admin Menu",
     "subtitle": "ParkLink System",
+    "roleTitle": "System Administration",
     "itemsCount": "{{count}} items",
     "viewing": "Viewing section",
     "close": "Close",
@@ -20,7 +21,7 @@
     "providerRevenue": "Facility Revenue",
     "transactions": "Transaction History",
     "complaints": "Complaint Management",
-    "reviews": "Reviews & Ratings",
+    "reviews": "Reviews Management",
     "platformFees": "Platform Fees",
     "vehicleTypes": "Vehicle Types",
     "amenities": "Facility Amenities",
@@ -128,54 +129,642 @@
       "submittedDate": "Submission Date",
       "status": "Status",
       "actions": "Actions",
-      "scaleAndFee": "Scale & Fee"
+      "scaleAndFee": "Capacity & Fee",
+      "approvalProgress": "Approval Progress",
+      "vehicleCount": "{{count}} vehicles",
+      "currency": "VND",
+      "unassignedInspector": "No inspector assigned"
     },
     "actions": {
       "viewDetail": "View Details",
       "assignInspector": "Assign Inspector",
       "finalize": "Finalize & Approve",
-      "reject": "Reject Application"
+      "reject": "Reject",
+      "viewDetailTitle": "View this application",
+      "preliminary": "Preliminary approval",
+      "preliminaryTitle": "Approve preliminary review and assign an inspector",
+      "rejectTitle": "Reject this application",
+      "finalizeTitle": "Finalize approval and issue a password",
+      "reassign": "Reassign",
+      "reassignTitle": "Change the assigned inspector"
     },
-    "empty": "No matching registration records found!"
+    "empty": "No matching registration records found!",
+    "filters": {
+      "allStatuses": "All statuses",
+      "refreshTitle": "Refresh filters"
+    },
+    "pagination": {
+      "summary": "Page {{current}} / {{total}} ({{count}} applications)",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "assign": {
+      "reassignTitle": "Change Assigned Inspector",
+      "assignTitle": "Preliminary Approval & Inspector Assignment",
+      "reassignConfirm": "Update assignment",
+      "assignConfirm": "Approve and assign"
+    },
+    "inspectorModal": {
+      "description": "Assign an inspector to survey this parking facility",
+      "close": "Close",
+      "loadError": "Unable to load inspectors. Please try again.",
+      "searchPlaceholder": "Search inspectors by name, email, phone or address...",
+      "allAreas": "All areas",
+      "allWorkloads": "All workloads",
+      "idleFilter": "Available (0 assignments)",
+      "busyFilter": "Has assignments",
+      "results": "{{count}} of {{total}} matching inspectors",
+      "loading": "Loading inspectors...",
+      "noInspectors": "No inspectors are available in the system.",
+      "noInspectorsHint": "There are no active field inspector accounts. Create one in Inspector Management before assigning this facility.",
+      "noMatches": "No inspectors match the selected filters.",
+      "clearFilters": "Clear filters to see all ({{count}})",
+      "inspector": "Inspector",
+      "currentAssignee": "Currently assigned",
+      "idle": "Available (0 assignments)",
+      "activeFacilities": "Surveying {{count}} facilities",
+      "address": "Address",
+      "addressMissing": "Address not updated",
+      "selectedInspector": "Selected inspector:",
+      "selectInspector": "Please select an inspector"
+    },
+    "messages": {
+      "loadError": "Unable to load pending applications.",
+      "loading": "Loading facility applications...",
+      "emptyHint": "Try changing the search term or filters.",
+      "finalizeSuccess": "Application approved. An email with a password was sent to the provider.",
+      "rejectReasonRequired": "Please enter a reason for rejection.",
+      "rejectSuccess": "Application rejected successfully.",
+      "actionFailed": "Action failed: {{message}}",
+      "preliminarySuccess": "Preliminary approval and inspector assignment completed. The provider was notified by email.",
+      "reassignSuccess": "Inspector reassigned successfully.",
+      "processError": "Unable to process this request."
+    },
+    "confirm": {
+      "finalizeTitle": "Final Approval",
+      "finalizeDescription": "The inspector has completed the report and site photos. Are you sure you want to approve this facility and issue an account?",
+      "cancel": "Cancel",
+      "processing": "Processing...",
+      "finalizeSubmit": "Approve & Issue Password",
+      "rejectTitle": "Reject Application",
+      "rejectDescription": "Please provide a rejection reason to notify the provider.",
+      "reasonLabels": {
+        "missingInformation": "Missing information",
+        "locationOrPrice": "Location/price issue",
+        "safetyStandards": "Does not meet standards"
+      },
+      "reasons": {
+        "missingInformation": "The facility information is incomplete or inaccurate.",
+        "locationOrPrice": "The registered location or price does not meet the requirements.",
+        "safetyStandards": "The site inspection did not meet safety standards."
+      },
+      "reasonPlaceholder": "Enter a detailed reason...",
+      "rejecting": "Rejecting...",
+      "rejectSubmit": "Confirm Rejection"
+    }
   },
   "facilities": {
     "title": "All Parking Facilities",
     "subtitle": "Comprehensive list of all parking facilities operating in ParkLink",
     "totalCount": "Total: {{count}} facilities",
-    "searchPlaceholder": "Search by facility name or address..."
+    "searchPlaceholder": "Search by facility name, address, provider, or phone number...",
+    "allApprovalStatuses": "All approval statuses",
+    "allVisibilityStatuses": "All visibility statuses",
+    "preparing": "Preparing",
+    "visible": "Visible",
+    "hiddenLocked": "Hidden (Locked)",
+    "resetAndRefresh": "Reset filters and refresh the list",
+    "loading": "Loading facilities...",
+    "empty": "No matching facilities found.",
+    "facility": "Facility",
+    "provider": "Provider",
+    "approvalStatus": "Approval Status",
+    "visibility": "Visibility",
+    "viewDetails": "View facility details",
+    "editDetails": "Edit facility details",
+    "approvedOnly": "Only approved facilities can be locked or unlocked.",
+    "lockFacility": "Lock Facility",
+    "unlockFacility": "Unlock Facility",
+    "pageSummary": "Page {{current}} of {{total}} ({{count}} facilities)",
+    "previous": "Previous",
+    "next": "Next",
+    "detailsTitle": "Parking Facility Details",
+    "confirmLockTitle": "Confirm Facility Lock",
+    "confirmUnlockTitle": "Confirm Facility Unlock",
+    "confirmLockMessage": "Are you sure you want to lock \"{{name}}\"? It will be hidden from customer searches until unlocked.",
+    "confirmUnlockMessage": "Are you sure you want to unlock \"{{name}}\"? It will be visible to customers again.",
+    "cancel": "Cancel",
+    "lockSuccess": "Facility locked successfully!",
+    "unlockSuccess": "Facility unlocked successfully!",
+    "loadError": "Unable to load facilities.",
+    "actionError": "Unable to update the facility.",
+    "details": {
+      "providerInfo": "Provider Information",
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "email": "Email",
+      "notUpdated": "Not updated",
+      "facilityInfo": "Parking Facility Information",
+      "name": "Facility name",
+      "address": "Address",
+      "capacity": "Capacity",
+      "vehicles": "{{count}} vehicles",
+      "rentalPrice": "Rental price",
+      "pricePerMonth": "{{price}} VND/month",
+      "notPriced": "Price not set",
+      "images": "Facility Images ({{count}})",
+      "primaryImage": "Primary image",
+      "close": "Close"
+    }
   },
   "contracts": {
-    "title": "Platform Contract Management",
-    "subtitle": "Track all monthly parking rental contracts between Customers and Providers",
+    "title": "Rental Contract Management",
+    "subtitle": "List of all electronic confirmation records and rental contracts stored in the system.",
     "totalCount": "Total: {{count}} contracts",
-    "searchPlaceholder": "Search by contract code, facility name or customer..."
+    "refresh": "Refresh",
+    "loadError": "Unable to load rental contracts!",
+    "retry": "Retry",
+    "loading": "Loading rental contracts...",
+    "kpis": {
+      "total": "Total Contracts",
+      "totalSub": "All contracts on platform",
+      "active": "Active",
+      "activeSub": "Currently active contracts",
+      "pending": "Pending Signature",
+      "pendingSub": "Awaiting customer confirmation"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by contract code, customer, facility, plate...",
+      "searchButton": "Search",
+      "allStatuses": "All statuses",
+      "statusActive": "Active (ACTIVE)",
+      "statusPending": "Pending Signature (PENDING)",
+      "statusExpired": "Expired (EXPIRED)",
+      "statusCancelled": "Cancelled (CANCELLED)",
+      "statusTerminated": "Terminated (TERMINATED)",
+      "from": "From:",
+      "to": "To:",
+      "filterButton": "Filter",
+      "resetTitle": "Reset filters",
+      "resetButton": "Clear"
+    },
+    "statuses": {
+      "ACTIVE": "Active",
+      "PENDING_SIGNATURE": "Pending Signature",
+      "EXPIRED": "Expired",
+      "CANCELLED": "Cancelled",
+      "TERMINATED": "Terminated"
+    },
+    "empty": {
+      "title": "No contracts found",
+      "subtitle": "Try adjusting your filters or search keywords"
+    },
+    "table": {
+      "code": "Contract Code",
+      "customer": "Customer (Party B)",
+      "facility": "Parking Facility (Party A)",
+      "vehicle": "Vehicle / Spot",
+      "duration": "Term",
+      "status": "Status",
+      "actions": "Actions",
+      "createdAt": "Issued:",
+      "customerFallback": "Customer",
+      "facilityFallback": "Parking Facility",
+      "ownerPrefix": "Owner:",
+      "unknownPlate": "Unknown plate",
+      "spotLabel": "Spot:",
+      "spotFallback": "Free-choice",
+      "detailButton": "Details"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "contracts": "contracts",
+      "page": "Page",
+      "prev": "Prev",
+      "next": "Next"
+    }
   },
   "complaints": {
     "title": "Platform Complaints Management",
     "subtitle": "Monitor and resolve service complaints from customers and providers",
     "totalCount": "Total: {{count}} complaints",
-    "searchPlaceholder": "Search by title, ID or customer..."
+    "searchPlaceholder": "Search by title, ID, customer, or facility...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "close": "Close",
+    "errors": {
+      "loadTitle": "Unable to load data",
+      "load": "Unable to load complaints. Please try again.",
+      "forward": "Unable to forward the complaint to the parking provider.",
+      "updateStatus": "Unable to update the complaint status."
+    },
+    "toast": {
+      "forwardSuccess": "Complaint #{{id}} was forwarded to the parking provider.",
+      "statusSuccess": "Complaint #{{id}} status updated to \"{{status}}\"."
+    },
+    "statuses": {
+      "PENDING_ADMIN": "Pending admin review",
+      "PENDING": "Pending admin review",
+      "OPEN": "Pending admin review",
+      "WAITING_PROVIDER": "Awaiting provider response",
+      "PROVIDER_REPLIED": "Provider responded",
+      "PROCESSING": "Under review",
+      "ESCALATED": "Admin intervention required",
+      "RESOLVED": "Resolved",
+      "REJECTED": "Rejected",
+      "CLOSED": "Closed",
+      "overdue": "Provider response overdue"
+    },
+    "empty": {
+      "title": "No complaints yet",
+      "description": "There are no complaints yet. New complaints will appear here.",
+      "noMatchTitle": "No matching complaints found",
+      "noMatchDescription": "Try changing your search term or status filter."
+    },
+    "card": {
+      "submittedAt": "Submitted:",
+      "contentLabel": "Complaint details:",
+      "imageAlt": "Complaint photo {{index}}",
+      "customerLabel": "Customer:",
+      "facilityLabel": "Reported facility:",
+      "facilityShortLabel": "Facility:",
+      "providerLabel": "Provider:"
+    },
+    "history": {
+      "escalated": "[Customer requested admin intervention]: {{reason}}"
+    },
+    "statusInfo": {
+      "overdueTitle": "PROVIDER RESPONSE IS 3 DAYS OVERDUE",
+      "overdueDescription": "Deadline: {{date}}. The parking provider has not responded. The system has marked the complaint overdue; administrators may follow up or issue a decision.",
+      "overdueFallback": "Past due",
+      "waitingDescription": "Administrators have sent instructions. Response due: {{deadline}}.",
+      "deadlineBefore": "before {{date}}",
+      "deadlineDefault": "within 3 days",
+      "providerRepliedDescription": "Please review the response and make a final decision.",
+      "latestReplyTitle": "Latest response:"
+    },
+    "actions": {
+      "forward": "Forward to provider",
+      "forwardTitle": "Forward the complaint to the parking provider with instructions",
+      "reject": "Reject / Decide",
+      "rejectTitle": "Reject the complaint or update its status",
+      "verdict": "Review & decide",
+      "verdictTitle": "Review the provider's response and make a final decision",
+      "overdueVerdict": "Decide (Overdue)",
+      "overdueVerdictTitle": "The provider is 3 days overdue. An administrator may issue a decision.",
+      "updateStatus": "Update status",
+      "updateStatusTitle": "Update the complaint status",
+      "changeStatus": "Change status",
+      "changeStatusTitle": "Change or reopen the complaint"
+    },
+    "statusOptions": {
+      "RESOLVED": {
+        "description": "The complaint has been fully addressed and the parties have agreed on a resolution, refund, or compensation."
+      },
+      "REJECTED": {
+        "description": "The complaint is invalid, contains inaccurate information, or falls outside the parties' responsibility."
+      },
+      "PROCESSING": {
+        "description": "The administrator is verifying the details, requesting evidence, or reconciling information between the parties."
+      },
+      "CLOSED": {
+        "description": "Close the complaint after the parties have completed their discussions."
+      }
+    },
+    "forwardModal": {
+      "title": "Forward complaint to the parking provider",
+      "subtitle": "Complaint #{{id}} • Request an investigation and response",
+      "facilityLabel": "Facility:",
+      "deadline": "Response deadline: 3 days",
+      "instructionLabel": "Instructions / response request for the provider",
+      "instructionPlaceholder": "Enter what the provider should check, such as reviewing camera footage, verifying staff records, or clarifying the customer's report...",
+      "validation": "Enter instructions or a response request (at least 5 characters).",
+      "submitting": "Forwarding...",
+      "submit": "Forward to provider"
+    },
+    "statusModal": {
+      "title": "Update complaint status",
+      "subtitle": "Complaint #{{id}} • Role:",
+      "chooseStatus": "Select a status",
+      "noteLabel": "Administrator's decision note (optional)",
+      "notePlaceholder": "Enter the investigation conclusion, resolution, or reason to share with the customer and parking provider...",
+      "characterCount": "{{count}}/2000 characters",
+      "invalidData": "Invalid data. Please check the status and note.",
+      "submitting": "Updating...",
+      "submit": "Save status"
+    }
   },
   "inspectors": {
     "title": "Field Inspector Management",
     "subtitle": "List and dispatch field inspectors for on-site facility verification",
-    "totalCount": "Total: {{count}} inspectors"
+    "totalCount": "Total: {{count}} inspectors",
+    "actions": {
+      "add": "Add Field Inspector",
+      "edit": "Edit inspector information",
+      "resetPassword": "Reset password",
+      "lock": "Lock account",
+      "unlock": "Unlock account"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by name, email or phone...",
+      "allProvinces": "-- All Provinces / Cities --",
+      "allWards": "-- All Wards / Communes --",
+      "refreshTitle": "Reset filters and reload the list",
+      "activeFilters": "Filtering by:",
+      "keyword": "Keyword",
+      "clearAll": "Clear all filters",
+      "clearSearch": "Clear search filters"
+    },
+    "table": {
+      "fullName": "Full Name",
+      "email": "Login Email",
+      "phone": "Phone Number",
+      "address": "Address",
+      "status": "Status",
+      "actions": "Actions",
+      "notUpdated": "Not updated"
+    },
+    "pagination": {
+      "summary": "Page {{current}} / {{total}} (Total: {{count}})",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "empty": {
+      "filtered": "No field inspectors match the current filters.",
+      "default": "There are no field inspectors in the system yet.",
+      "hint": "Select Add Field Inspector above to create an account."
+    },
+    "form": {
+      "namePlaceholder": "Enter full name",
+      "emailPlaceholder": "Enter email",
+      "phonePlaceholder": "Enter phone number"
+    },
+    "create": {
+      "title": "Create Field Inspector Account",
+      "fullName": "Inspector Full Name",
+      "passwordNote": "Note: A temporary password will be generated and sent to the email above. The inspector must change it on first sign-in.",
+      "submit": "Create Account"
+    },
+    "edit": {
+      "title": "Edit Field Inspector (#{{id}})",
+      "emailReadOnly": "Email (cannot be changed)",
+      "accountStatus": "Account Status",
+      "submit": "Save Changes"
+    },
+    "confirm": {
+      "lockTitle": "Confirm Account Lock",
+      "unlockTitle": "Confirm Account Unlock",
+      "resetTitle": "Reset Password",
+      "lockMessage": "Lock {{name}}'s account? This inspector will immediately lose access and be unable to perform surveys.",
+      "lockWarning": "Warning: This inspector may have assigned facilities. Please review and reassign them after locking the account.",
+      "unlockMessage": "Unlock {{name}}'s account? The inspector will be able to sign in again.",
+      "resetMessage": "A new temporary password will be generated and sent to {{email}}. The inspector must change it on the next sign-in."
+    },
+    "messages": {
+      "loading": "Loading field inspectors...",
+      "createSuccess": "Inspector account created. A temporary password was sent by email.",
+      "editSuccess": "Inspector information updated.",
+      "lockSuccess": "Account locked successfully.",
+      "unlockSuccess": "Account unlocked successfully.",
+      "resetPasswordSuccess": "Password reset. A temporary password was sent by email."
+    },
+    "errors": {
+      "load": "Unable to load field inspectors.",
+      "requiredFields": "Enter email, full name and phone number.",
+      "create": "Unable to create the inspector account.",
+      "nameAndPhoneRequired": "Full name and phone number are required.",
+      "edit": "Unable to update inspector information.",
+      "action": "Action failed. Please try again."
+    }
   },
   "providerRevenue": {
     "title": "Facility Revenue",
-    "subtitle": "Parking revenue reports and platform fee reconciliations"
+    "subtitle": "Parking revenue reports and platform fee reconciliations",
+    "ui": {
+      "title": "Provider Revenue Statistics",
+      "actualData": "Actual data",
+      "forecastByContracts": "Projected from active contracts",
+      "subtitle": "Track monthly rental income from parking facility partners across the platform",
+      "refresh": "Refresh data",
+      "reportYear": "Report year",
+      "reportMonth": "View month",
+      "filterFacility": "Filter by facility",
+      "searchLabel": "Search by facility / provider",
+      "actualAmountHint": "Actual amount from active contracts",
+      "forecastAmountHint": "Projected from active contracts",
+      "activeContracts": "Active contracts",
+      "contractsUnit": "contracts",
+      "activeContractsHint": "Number of occupied parking spots",
+      "earningFacilities": "Revenue generating facilities",
+      "activityRate": "Activity rate:",
+      "averageRevenue": "Average revenue / facility",
+      "averageHint": "Based on facilities generating rental income",
+      "chartHint": "12 month overview. Select a month to load its details.",
+      "actual": "Actual",
+      "future": "Future projection",
+      "facility": "Parking facility",
+      "provider": "Provider",
+      "occupancy": "Rented / Capacity",
+      "occupancyRate": "Occupancy rate",
+      "actions": "Actions",
+      "empty": "No parking facilities match the current filters.",
+      "notUpdated": "Not updated",
+      "emptyContracts": "No active contracts for this month.",
+      "code": "Contract code",
+      "customer": "Customer",
+      "phone": "Phone number",
+      "contractTerm": "Contract term",
+      "monthlyRent": "Monthly rent",
+      "status": "Status",
+      "active": "Active",
+      "terminated": "Terminated",
+      "previous": "Previous",
+      "next": "Next",
+      "searchPlaceholder": "Search facility, provider, or phone...",
+      "loadError": "Unable to load facility revenue statistics.",
+      "year": "Year {{year}}",
+      "yearFuture": "Year {{year}} (Projected)",
+      "month": "Month {{month}} / {{year}}",
+      "allFacilities": "All facilities ({{count}})",
+      "monthRevenue": "Revenue for {{month}}/{{year}}",
+      "projectedRevenue": "Projected revenue for {{month}}/{{year}}",
+      "monthRevenueShort": "Revenue for month {{month}}",
+      "projectedRevenueShort": "Projected revenue for month {{month}}",
+      "facilityCount": "{{count}} facilities",
+      "chartTitle": "Facility Revenue Trend for {{year}}",
+      "contractTooltip": "{{count}} contracts - {{amount}} ({{kind}})",
+      "projected": "Projected",
+      "facilityDetails": "Revenue by Facility (Month {{month}}/{{year}})",
+      "facilityList": "{{count}} facilities and their rental performance",
+      "capacity": "{{count}} spaces",
+      "contractCount": "{{count}} contracts",
+      "facilityContracts": "Active contracts at {{name}} in {{month}}/{{year}}",
+      "totalContracts": "Total: {{count}} contracts",
+      "pageSummary": "Page {{current}} / {{total}} ({{count}} facilities)",
+      "monthShort": "M{{month}}"
+    }
   },
   "reviews": {
-    "title": "Facility Reviews Management",
-    "subtitle": "Monitor and moderate customer reviews and ratings"
+    "title": "Review Management",
+    "subtitle": "Monitor customer feedback and manage review visibility.",
+    "kpis": {
+      "total": "Total reviews",
+      "totalSub": "Across the platform",
+      "average": "Average rating",
+      "averageSub": "Customer satisfaction",
+      "flagged": "Flagged for review",
+      "flaggedPending": "Needs admin review",
+      "flaggedClear": "No flagged reviews",
+      "hidden": "Hidden",
+      "hiddenSub": "Not visible to customers"
+    },
+    "filters": {
+      "search": "Search facility, customer, or review...",
+      "allStatuses": "All statuses",
+      "flagged": "Flagged for review",
+      "hidden": "Hidden",
+      "visible": "Visible",
+      "allFacilities": "All facilities",
+      "allRatings": "All ratings",
+      "starOption": "{{count}} stars"
+    },
+    "errors": {
+      "load": "Unable to load reviews. Please try again."
+    },
+    "empty": {
+      "title": "No reviews found",
+      "filtered": "No reviews match the current filters. Try changing your search or filters.",
+      "default": "No customer reviews have been submitted yet."
+    },
+    "pagination": {
+      "range": "Showing {{from}}–{{to}} of {{total}}",
+      "previous": "Previous page",
+      "next": "Next page"
+    },
+    "card": {
+      "facilityFallback": "Facility #{{id}}",
+      "addressFallback": "Address not provided",
+      "hide": "Hide permanently",
+      "hideTitle": "Hide this review from the platform",
+      "unhide": "Unhide review",
+      "unhideTitle": "Make this review visible again",
+      "dismissFlag": "Remove flag",
+      "dismissFlagTitle": "Mark this review as safe and make it visible",
+      "confirmViolation": "Hide permanently",
+      "confirmViolationTitle": "Confirm the violation and hide this review",
+      "defaultCustomer": "Customer",
+      "noEmail": "N/A",
+      "reviewReason": "Review needed:",
+      "defaultReason": "Review content may be inappropriate."
+    },
+    "toasts": {
+      "dismissSuccess": "Flag removed and review made visible.",
+      "dismissError": "Unable to remove the flag.",
+      "unhideSuccess": "Review is visible again.",
+      "unhideError": "Unable to unhide the review.",
+      "hideSuccess": "Review hidden permanently.",
+      "hideError": "Unable to hide the review."
+    },
+    "confirm": {
+      "unhideTitle": "Unhide review",
+      "unhideMessage": "Make {{customer}}'s review visible to customers again?",
+      "unhideFallback": "Make this review visible again?",
+      "unhideConfirm": "Unhide",
+      "hideTitle": "Hide review permanently",
+      "hideMessage": "Permanently hide {{customer}}'s review from the facility?",
+      "hideFallback": "Permanently hide this review?",
+      "hideConfirm": "Hide permanently",
+      "cancel": "Cancel"
+    }
   },
   "platformFees": {
     "title": "Platform Fee Configuration",
     "subtitle": "Manage platform commission rates and service fee schedules"
   },
   "vehicleTypes": {
-    "title": "Supported Vehicle Types",
-    "subtitle": "Manage vehicle categories and parking space dimensions"
+    "title": "Vehicle Type Management",
+    "subtitle": "Manage vehicle categories supported by the platform for facility matching and parking capacity.",
+    "refreshTitle": "Refresh vehicle types",
+    "addNew": "Add New Vehicle Type",
+    "searchPlaceholder": "Search by name or type code...",
+    "stats": {
+      "total": "Total Vehicle Types",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "filters": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "code": "Type Code",
+      "name": "Vehicle Type Name",
+      "description": "Description",
+      "facilities": "Facilities Using",
+      "status": "Status",
+      "actions": "Actions",
+      "noDescription": "No description",
+      "facilityCount": "{{count}} facilities"
+    },
+    "actions": {
+      "editTitle": "Edit vehicle type",
+      "deactivateTitle": "Deactivate this vehicle type",
+      "activateTitle": "Reactivate this vehicle type"
+    },
+    "messages": {
+      "loadError": "Unable to load vehicle types.",
+      "loading": "Loading vehicle types...",
+      "empty": "No vehicle types found.",
+      "emptyHint": "Try a different search or add a new vehicle type.",
+      "deactivateSuccess": "Vehicle type \"{{name}}\" was deactivated.",
+      "activateSuccess": "Vehicle type \"{{name}}\" was activated.",
+      "toggleError": "Unable to change vehicle type status."
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate Vehicle Type",
+      "activateTitle": "Reactivate Vehicle Type",
+      "deactivateMessage": "Deactivate \"{{name}}\"? New facilities will no longer be able to select this type during registration.",
+      "activateMessage": "Reactivate \"{{name}}\" so facilities can select it again?",
+      "deactivate": "Deactivate",
+      "activate": "Reactivate",
+      "cancel": "Cancel"
+    },
+    "form": {
+      "category": "Vehicle Type Catalog",
+      "editTitle": "Edit Vehicle Type",
+      "createTitle": "Add Vehicle Type",
+      "editDescription": "Update the information shown in the catalog.",
+      "createDescription": "Enter details for the new vehicle type.",
+      "close": "Close",
+      "code": "Vehicle Type Code",
+      "codePlaceholder": "Example: CAR_16_SEATER",
+      "codeHint": "Use uppercase letters, numbers and underscores.",
+      "name": "Vehicle Type Name",
+      "namePlaceholder": "Example: 16-seat minibus",
+      "description": "Description",
+      "optional": "optional",
+      "descriptionPlaceholder": "Identifying details or example vehicle models",
+      "characterCount": "{{count}}/500 characters",
+      "active": "Active",
+      "activeHint": "Providers can select this vehicle type.",
+      "inactiveHint": "Hidden from new registrations.",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "addVehicleType": "Add Vehicle Type",
+      "updateSuccess": "Vehicle type \"{{name}}\" updated successfully.",
+      "createSuccess": "Vehicle type \"{{name}}\" created successfully.",
+      "errors": {
+        "codeRequired": "Enter a vehicle type code (for example, CAR_16_SEATER).",
+        "codeInvalid": "The code must contain 2–50 uppercase letters, numbers or underscores.",
+        "nameRequired": "Enter a vehicle type name.",
+        "nameInvalid": "The name must be 2–100 characters long.",
+        "descriptionTooLong": "The description cannot exceed 500 characters.",
+        "saveFailed": "Unable to save the vehicle type."
+      }
+    }
   },
   "amenities": {
     "title": "Facility Amenities Management",
@@ -183,15 +772,201 @@
   },
   "broadcast": {
     "title": "System Broadcast Announcements",
-    "subtitle": "Send urgent alerts or announcements to all ParkLink users"
+    "subtitle": "Send urgent alerts or announcements to all ParkLink users",
+    "tabs": {
+      "web": "Web Push Notification",
+      "email": "Email Broadcast"
+    },
+    "web": {
+      "headerTitle": "Send System Web Notification",
+      "headerSubtitle": "Send real-time notifications directly to active users on the platform",
+      "liveBadge": "Live Notification",
+      "targetLabel": "Target Audience",
+      "targets": {
+        "ALL": "All users",
+        "CUSTOMER": "Customers (Renters)",
+        "PROVIDER": "Parking Providers"
+      },
+      "categoryLabel": "Notification Type",
+      "categories": {
+        "maintenance": "System Maintenance",
+        "policy": "Policy & Terms Update",
+        "promo": "Promotions & Platform News",
+        "general": "General Announcement"
+      },
+      "priorityLabel": "Priority Level",
+      "priorities": {
+        "normal": "Normal",
+        "important": "Important",
+        "urgent": "Urgent"
+      },
+      "titleLabel": "Notification Title",
+      "titleCounter": "{{count}}/120 characters",
+      "titlePlaceholder": "e.g., Scheduled system maintenance 00:00 - 02:00 on Nov 25",
+      "contentLabel": "Notification Content",
+      "contentCounter": "{{count}}/500 characters",
+      "contentPlaceholder": "Enter detailed notification message to send to users...",
+      "optionsLabel": "Display options:",
+      "showToastOption": "Show floating toast alert on screen",
+      "saveToDbOption": "Save to notification history",
+      "summary": {
+        "title": "Notification sent successfully!",
+        "taskId": "Task ID:",
+        "recipients": "Recipients:",
+        "recipientsValue": "{{count}} users",
+        "time": "Timestamp:"
+      },
+      "reset": "Reset",
+      "testButton": "Send Test to Me",
+      "submitButton": "Send Notification",
+      "validation": {
+        "titleRequired": "Notification title cannot be empty!",
+        "contentRequired": "Notification content cannot be empty!",
+        "testSuccess": "Test notification sent successfully!",
+        "sendSuccess": "Notification sent successfully to {{count}} users!",
+        "allUsers": "all",
+        "sendError": "Failed to send notification!"
+      }
+    },
+    "email": {
+      "headerTitle": "Send Email Broadcast",
+      "headerSubtitle": "Compose and send announcements directly to users' email inboxes",
+      "serviceBadge": "Email Service",
+      "targetLabel": "Email Recipients",
+      "categoryLabel": "Announcement Type",
+      "categories": {
+        "maintenance": "Maintenance & Technical Updates",
+        "policy": "Policy Change Notice",
+        "newsletter": "ParkLink Newsletter & Promotions"
+      },
+      "subjectLabel": "Email Subject",
+      "subjectCounter": "{{count}}/120 characters",
+      "subjectPlaceholder": "e.g., [ParkLink] Policy Update and Scheduled System Maintenance",
+      "contentLabel": "Email Content",
+      "contentCounter": "{{count}}/5,000 characters",
+      "contentPlaceholder": "<p>Dear ParkLink Users and Partners,</p><p>We would like to inform you about our scheduled maintenance for the payment gateway and parking management infrastructure...</p>",
+      "htmlHint": "Supports plain text or basic HTML formatting tags (<p>, <strong>, <ul>, <li>, <a>, <br>...)",
+      "optionsLabel": "Additional options:",
+      "attachSignature": "Attach ParkLink signature & Hotline 1900",
+      "privacyNote": "Include security & privacy notice",
+      "summary": {
+        "title": "Email broadcast queued!",
+        "taskId": "Task ID:",
+        "queued": "Estimated emails queued:",
+        "queuedValue": "{{count}} addresses",
+        "time": "Created at:"
+      },
+      "reset": "Reset",
+      "testPlaceholder": "Test email (e.g., test@gmail.com)...",
+      "testButton": "Send Test",
+      "submitButton": "Send Email Broadcast",
+      "validation": {
+        "subjectRequired": "Email subject cannot be empty!",
+        "contentRequired": "Email content cannot be empty!",
+        "invalidTestEmail": "Invalid test email address (must contain @)!",
+        "testSuccess": "Test email sent successfully to {{email}}!",
+        "sendSuccess": "Email broadcast queued for {{count}} users!",
+        "sendError": "Failed to send email broadcast!"
+      }
+    }
   },
   "timelineSettings": {
-    "title": "System Timeline Settings",
-    "subtitle": "Configure automated deadlines for request cancellation, payments and renewals"
+    "badge": "System Administration",
+    "title": "Rental Process Timeline Configuration",
+    "subtitle": "Configure automated processing deadlines for the parking rental cycle: reservation request response time, electronic contract creation, contract signing, and termination notice period.",
+    "lastUpdated": "Last updated:",
+    "by": "by {{name}}",
+    "system": "System",
+    "you": "You",
+    "loading": "Loading timeline configuration...",
+    "duration": "Duration:",
+    "unit": "Unit:",
+    "units": {
+      "MINUTES": "Minutes",
+      "HOURS": "Hours",
+      "DAYS": "Days"
+    },
+    "targets": {
+      "provider": "Applies to parking provider",
+      "customer": "Applies to tenant / customer",
+      "both": "Applies to both parties"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Reservation response deadline",
+        "description": "Maximum time for provider to respond (Accept or Reject) to rental request. If expired, system will automatically cancel the request."
+      },
+      "contractCreation": {
+        "title": "Contract creation deadline after approval",
+        "description": "Time for provider to generate e-contract after accepting the request. If expired, rental request will automatically cancel."
+      },
+      "contractSigning": {
+        "title": "Customer contract signing deadline",
+        "description": "Time for customer to review and sign e-contract. If expired without signature, contract and rental request will automatically cancel."
+      },
+      "terminationNotice": {
+        "title": "Contract termination notice period",
+        "description": "Minimum advance notice period a party must provide before terminating a rental contract before agreed term."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Restore Defaults",
+      "saving": "Saving configuration...",
+      "save": "Save Timeline Configuration"
+    },
+    "messages": {
+      "loadError": "Unable to load system timeline configuration!",
+      "resetSuccess": "Default values restored. Click \"Save Timeline Configuration\" to confirm.",
+      "validationError": "Timeline values must be positive numbers greater than 0!",
+      "updateSuccess": "System timeline configuration updated successfully!",
+      "updateError": "Error saving timeline configuration!"
+    }
   },
   "policies": {
     "title": "System Policies & Terms",
-    "subtitle": "Manage platform terms of service, privacy policies and facility rules"
+    "subtitle": "Manage platform terms of service, privacy policies and facility rules",
+    "ui": {
+      "loadError": "Unable to load policies from the server.",
+      "total": "Total: {{count}} policies",
+      "loading": "Loading policies...",
+      "type": "Policy Type",
+      "policyTitle": "Title",
+      "status": "Status",
+      "updatedBy": "Updated By",
+      "lastUpdated": "Last Updated",
+      "inactive": "Inactive",
+      "system": "System",
+      "editTitle": "Edit policy",
+      "edit": "Edit"
+    },
+    "edit": {
+      "notFound": "The requested policy was not found.",
+      "loadError": "Unable to load the policy.",
+      "required": "Enter a policy title and content.",
+      "savedAndNotified": "Policy updated and users notified.",
+      "saved": "Policy updated successfully.",
+      "saveError": "Unable to update the policy.",
+      "loading": "Loading policy...",
+      "back": "Back to Policy Management",
+      "title": "Edit System Policy",
+      "subtitle": "Edit ParkLink terms and operating policies",
+      "customer": "Applies to Customers",
+      "provider": "Applies to Providers",
+      "policyTitle": "Policy title",
+      "policyContent": "Policy content",
+      "mandatory": "Required policy (always active)",
+      "platform": "Applies across ParkLink",
+      "notifyCustomer": "Automatically notify all customers in app",
+      "notifyProvider": "Automatically notify all providers in app",
+      "notifyCustomerHint": "All customer accounts will receive a notification about the new policy.",
+      "notifyProviderHint": "All provider accounts will receive a notification about the new policy.",
+      "changesHint": "Changes will take effect on ParkLink immediately.",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "titlePlaceholder": "Enter the displayed title...",
+      "contentPlaceholder": "Enter the terms and service rules..."
+    }
   },
   "userDetail": {
     "backToList": "Back to user list",
@@ -303,6 +1078,242 @@
       "viewReservationsDesc": "Track monthly parking request history",
       "manageFacilities": "Manage Facilities",
       "manageFacilitiesDesc": "Audit and configure parking facilities"
+    }
+  },
+  "amenitySettings": {
+    "title": "Parking Amenities Management",
+    "subtitle": "List of amenities that parking facilities can select when registering in ParkLink.",
+    "totalCount": "Total: {{count}} amenities",
+    "addBtn": "Add Amenity",
+    "searchPlaceholder": "Search by amenity name, category...",
+    "reloadTooltip": "Reload data",
+    "appliedFacilities": "{{count}} facilities",
+    "statuses": {
+      "all": "All Statuses",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "active": "Visible"
+    },
+    "types": {
+      "all": "All Categories",
+      "SECURITY": "Security & Safety",
+      "SERVICE": "Utility Services",
+      "INFRASTRUCTURE": "Infrastructure",
+      "CONVENIENCE": "Additional Conveniences",
+      "GENERAL": "General"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Amenity Name",
+      "category": "Category",
+      "facilities": "Applied Facilities",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "empty": {
+      "loading": "Loading amenities list...",
+      "noData": "No matching amenities found",
+      "noDataDesc": "Try changing your search keyword or filters"
+    },
+    "tooltips": {
+      "edit": "Edit amenity",
+      "hide": "Hide this amenity",
+      "show": "Show this amenity"
+    },
+    "confirm": {
+      "hideTitle": "Confirm Hide Amenity",
+      "showTitle": "Confirm Activate Amenity",
+      "hideMessage": "Are you sure you want to hide the amenity \"{{name}}\"? It will not be available for new parking facilities.",
+      "showMessage": "Reactivate amenity \"{{name}}\" for parking facilities to select?",
+      "hideBtn": "Hide Amenity",
+      "showBtn": "Activate",
+      "cancelBtn": "Cancel"
+    },
+    "modal": {
+      "categoryBadge": "Amenity Category",
+      "createTitle": "Add New Amenity",
+      "editTitle": "Edit Amenity",
+      "nameLabel": "Amenity Name",
+      "namePlaceholder": "e.g. Weather shelter, Security camera...",
+      "categoryLabel": "Category",
+      "iconLabel": "Display Icon",
+      "activeCheckbox": "Enable display for parking facilities to choose",
+      "activeCheckboxDesc": "Allows parking providers to select this amenity when setting up facility features.",
+      "cancelBtn": "Cancel",
+      "createBtn": "Create Amenity",
+      "saveBtn": "Save Changes",
+      "close": "Close"
+    },
+    "icons": {
+      "shieldCheck": "Security / Safety",
+      "camera": "Security camera",
+      "umbrella": "Weather shelter",
+      "userCheck": "On-site security guard",
+      "sun": "Lighting system",
+      "flame": "Fire protection certified",
+      "batteryCharging": "EV charging station",
+      "zap": "Power outlet",
+      "wifi": "Free Wifi",
+      "car": "Dedicated parking spot",
+      "coffee": "Lounge / Rest area",
+      "lock": "Security lock",
+      "clock": "24/7 Operations",
+      "mapPin": "Convenient location",
+      "wrench": "Roadside assistance / Maintenance",
+      "default": "General amenity"
+    },
+    "messages": {
+      "loadError": "Unable to load amenities list",
+      "updateStatusSuccess": "Amenity \"{{name}}\" status updated successfully!",
+      "updateStatusError": "Error updating amenity status",
+      "nameRequired": "Please enter the amenity name.",
+      "nameLength": "Amenity name must be between 2 and 100 characters.",
+      "createSuccess": "Amenity created successfully!",
+      "updateSuccess": "Amenity updated successfully!",
+      "actionFailed": "Action failed!"
+    }
+  },
+  "registrationDetail": {
+    "backToInspections": "Back to Inspection Tasks",
+    "backToRegistrations": "Back to Facility Approvals",
+    "registrationId": "Application ID:",
+    "recordBadge": "APPLICATION #{{id}}",
+    "submittedOn": "Submitted on:",
+    "statuses": {
+      "pendingReview": "Pending Review",
+      "preparing": "Pending Field Inspection",
+      "inspected": "Inspected - Pending Approval",
+      "approved": "Officially Approved",
+      "rejected": "Rejected",
+      "unknown": "Unknown"
+    },
+    "stepper": {
+      "title": "Application Approval Process",
+      "step1Title": "Application Submitted",
+      "step1Desc": "Provider submitted initial details",
+      "step2Title": "Preliminary Review",
+      "step2Desc": "Admin verified documents",
+      "step3Title": "Field Inspection",
+      "step3Desc": "On-site premises check & photos",
+      "step4Title": "Final Approval",
+      "step4Desc": "Activate facility account"
+    },
+    "facilityInfo": {
+      "title": "Parking Facility Details",
+      "facilityName": "Facility Name",
+      "capacityAfterSurvey": "Capacity after inspection",
+      "capacityProposed": "Initially proposed capacity",
+      "capacityUnit": "{{count}} parking spots",
+      "desiredPrice": "Desired Rental Price",
+      "priceUnit": "{{price}} VND / month",
+      "platformFee": "Platform Fee",
+      "feeUnit": "{{fee}} VND",
+      "addressAfterSurvey": "Address after inspection",
+      "addressRegistered": "Declared address",
+      "gps": "GPS Coordinates",
+      "openGoogleMaps": "Open Google Maps →",
+      "amenities": "Included Amenities",
+      "defaultAmenity": "Amenity"
+    },
+    "surveyReport": {
+      "title": "Field Inspection Survey Report",
+      "subtitle": "Enter surveyed capacity, verify actual location, and attach 4 mandatory photos of the premises",
+      "capacityLabel": "Actual Capacity (Vehicles)",
+      "capacityPlaceholder": "e.g. 30",
+      "capacityHint": "Actual number of parking spots verified and measured on site.",
+      "locationLabel": "Actual Facility Location",
+      "locationHint": "Review declared address, then drag pin or select precise location on map.",
+      "photosLabel": "Premises Photos (4 Angles Required)",
+      "photo1Title": "1. Entry Route",
+      "photo1Hint": "Clear view of driveway and entry width",
+      "photo2Title": "2. Facility Overview",
+      "photo2Hint": "Wide view of grounds and parking layout",
+      "photo3Title": "3. Entrance Gate",
+      "photo3Hint": "Gate, entrance barrier, or signage",
+      "photo4Title": "4. Alternate Angle / Surface",
+      "photo4Hint": "Ground surface, roofing, or special angles",
+      "selected": "Selected",
+      "changePhoto": "Change photo",
+      "deletePhoto": "Remove",
+      "choosePhoto": "Select or capture photo",
+      "photoTypes": "PNG, JPG, JPEG",
+      "additionalTitle": "5. Additional Photos (Optional)",
+      "additionalHint": "Upload additional angles or details if needed",
+      "additionalCount": "{{count}} photos",
+      "addMorePhoto": "Add photo",
+      "submitting": "Uploading to Cloudinary & Submitting...",
+      "submit": "Submit Inspection Report"
+    },
+    "gallery": {
+      "title": "Facility & Site Inspection Photos",
+      "totalPhotos": "Total: {{count}} photos",
+      "primary": "Primary",
+      "viewZoom": "Click to zoom",
+      "noPhotos": "No photos uploaded for this facility yet.",
+      "inspectorWillUpdate": "The field inspector will upload photos upon completing the on-site survey form above."
+    },
+    "provider": {
+      "title": "Provider Information",
+      "role": "Facility Owner Partner",
+      "unupdated": "Not updated",
+      "emailNA": "N/A"
+    },
+    "inspector": {
+      "title": "Field Inspector",
+      "unassigned": "Unassigned",
+      "notSpecified": "Not specified",
+      "change": "Reassign",
+      "assign": "Assign",
+      "addressNA": "Address not updated",
+      "waitingAssignment": "Application is pending preliminary review and inspector assignment.",
+      "noInspectorNotice": "No inspector has been assigned yet. You can assign one now."
+    },
+    "actions": {
+      "titleInspector": "Inspection Mission",
+      "titleAdmin": "Approval Decision",
+      "surveyWorkflowTitle": "On-site procedure:",
+      "surveyStep1": "Verify location and entrance road width",
+      "surveyStep2": "Measure actual vehicle capacity",
+      "surveyStep3": "Capture 4 mandatory premises photos",
+      "surveyStep4": "Fill survey report on the left and submit",
+      "goToReportForm": "Go to Survey Report Form ↓",
+      "fillReport": "Fill Inspection Report",
+      "surveyReportSubmitted": "Survey report submitted",
+      "surveyCompleted": "Survey Completed",
+      "waitingAdminApproval": "Field report submitted successfully. Awaiting Admin final review and approval.",
+      "approvedNotice": "Facility Approved!",
+      "currentStatus": "Current status:",
+      "pendingNotice": "Admin needs to verify application validity and assign an on-site field inspector.",
+      "pendingPreliminary": "Application pending preliminary review:",
+      "preliminaryAndAssign": "Approve Preliminary & Assign Inspector",
+      "rejectApplication": "Reject this application",
+      "inSurveyNotice": "Under Field Inspection:",
+      "assignedTo": "Assigned inspector: {{name}} (Phone: {{phone}}).",
+      "noInspectorAssignedYet": "No inspector has been assigned yet.",
+      "changeInspector": "Change Inspector",
+      "assignInspector": "Assign Inspector",
+      "surveyDoneNotice": "Field survey data has been uploaded. Admin can review and finalize approval to issue account credentials and payment instructions to the Provider.",
+      "finalizeAndIssue": "Finalize Approval & Issue Password",
+      "finalizeTitle": "Final Approval & Issue Password",
+      "approvedDesc": "The facility is approved and the Provider account has been granted access.",
+      "rejectedTitle": "Application Rejected",
+      "rejectedDesc": "The registration was rejected and notification with reasons has been emailed to the Provider."
+    },
+    "loading": "Loading application details...",
+    "notFoundTitle": "Information Not Found",
+    "notFoundDesc": "Application does not exist or has been deleted.",
+    "backToList": "Back to list",
+    "retry": "Try again",
+    "alerts": {
+      "reportSuccess": "Inspection report submitted successfully! Facility data updated.",
+      "reportError": "Error submitting report: {{message}}",
+      "finalizeSuccess": "Officially approved! Payment details and credentials have been emailed to Provider.",
+      "rejectReasonRequired": "Please enter a rejection reason!",
+      "rejectSuccess": "Application rejected successfully!",
+      "actionFailed": "Action failed: {{message}}",
+      "preliminarySuccess": "Preliminary approval and inspector assignment complete! Provider notified via email.",
+      "reassignSuccess": "Inspector reassigned successfully!",
+      "generalError": "An error occurred while processing!"
     }
   }
 }

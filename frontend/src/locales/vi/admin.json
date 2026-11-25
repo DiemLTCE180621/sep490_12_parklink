@@ -5,6 +5,7 @@
   "sidebar": {
     "title": "Menu Quản Trị",
     "subtitle": "Hệ thống ParkLink",
+    "roleTitle": "Ban Quản Trị Hệ Thống",
     "itemsCount": "{{count}} mục",
     "viewing": "Đang xem mục",
     "close": "Đóng",
@@ -110,7 +111,7 @@
   },
   "registrations": {
     "title": "Quản Lý Phê Duyệt Bãi Đỗ Xe",
-    "subtitle": "Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi (Provider)",
+    "subtitle": "Theo dõi tiến trình khảo sát thực địa và phê duyệt hồ sơ đăng ký bãi đỗ xe mới từ Chủ bãi",
     "totalCount": "Tổng cộng: {{count}} hồ sơ",
     "searchPlaceholder": "Tìm theo tên bãi xe, địa chỉ hoặc chủ bãi...",
     "tabs": {
@@ -124,58 +125,646 @@
     "table": {
       "id": "ID",
       "facilityName": "Cơ sở bãi đỗ xe",
-      "provider": "Chủ bãi (Provider)",
+      "provider": "Chủ bãi",
       "submittedDate": "Ngày gửi hồ sơ",
       "status": "Trạng thái",
       "actions": "Thao tác",
-      "scaleAndFee": "Quy mô & Phí"
+      "scaleAndFee": "Quy mô & Phí",
+      "approvalProgress": "Tiến trình xét duyệt",
+      "vehicleCount": "{{count}} xe",
+      "currency": "VNĐ",
+      "unassignedInspector": "Chưa gán NV"
     },
     "actions": {
       "viewDetail": "Xem chi tiết",
       "assignInspector": "Phân công khảo sát",
       "finalize": "Duyệt chính thức",
-      "reject": "Từ chối hồ sơ"
+      "reject": "Từ chối",
+      "viewDetailTitle": "Xem chi tiết đơn này",
+      "preliminary": "Duyệt sơ bộ",
+      "preliminaryTitle": "Duyệt sơ bộ & Giao khảo sát",
+      "rejectTitle": "Từ chối đơn này",
+      "finalizeTitle": "Hoàn tất phê duyệt & Cấp mật khẩu",
+      "reassign": "Đổi NV",
+      "reassignTitle": "Đổi nhân viên khảo sát phụ trách"
     },
-    "empty": "Không tìm thấy hồ sơ đăng ký nào phù hợp!"
+    "empty": "Không tìm thấy hồ sơ đăng ký nào phù hợp!",
+    "filters": {
+      "allStatuses": "Tất cả Trạng thái",
+      "refreshTitle": "Làm mới bộ lọc"
+    },
+    "pagination": {
+      "summary": "Trang {{current}} / {{total}} (Tổng {{count}} hồ sơ)",
+      "previous": "Trước",
+      "next": "Sau"
+    },
+    "assign": {
+      "reassignTitle": "Thay Đổi Nhân Viên Khảo Sát",
+      "assignTitle": "Duyệt Sơ Bộ & Phân Công Khảo Sát",
+      "reassignConfirm": "Cập nhật phân công",
+      "assignConfirm": "Xác nhận duyệt & Giao việc"
+    },
+    "inspectorModal": {
+      "description": "Chỉ định nhân viên khảo sát thực địa phụ trách cơ sở bãi đỗ xe",
+      "close": "Đóng",
+      "loadError": "Không thể tải danh sách nhân viên khảo sát. Vui lòng thử lại!",
+      "searchPlaceholder": "Tìm nhân viên theo tên, email, SĐT, địa chỉ...",
+      "allAreas": "Mọi khu vực",
+      "allWorkloads": "Mọi tải việc",
+      "idleFilter": "Rảnh (0 việc)",
+      "busyFilter": "Đang có bãi",
+      "results": "Tìm thấy {{count}} / {{total}} nhân viên phù hợp",
+      "loading": "Đang tải danh sách nhân viên khảo sát...",
+      "noInspectors": "Chưa có nhân viên khảo sát nào trong hệ thống!",
+      "noInspectorsHint": "Hiện chưa có tài khoản nhân viên khảo sát thực địa nào đang ở trạng thái Hoạt Động (ACTIVE). Vui lòng vào trang Quản lý nhân viên để tạo tài khoản trước khi phân công.",
+      "noMatches": "Không tìm thấy nhân viên nào phù hợp với bộ lọc.",
+      "clearFilters": "Xóa bộ lọc để xem tất cả ({{count}})",
+      "inspector": "NV Khảo sát",
+      "currentAssignee": "Đang phụ trách",
+      "idle": "Đang rảnh (0 việc)",
+      "activeFacilities": "Đang khảo sát {{count}} bãi",
+      "address": "Địa chỉ",
+      "addressMissing": "Chưa cập nhật địa chỉ",
+      "selectedInspector": "Đang chọn nhân viên:",
+      "selectInspector": "Vui lòng chọn 1 nhân viên khảo sát"
+    },
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách đăng ký chờ duyệt",
+      "loading": "Đang tải danh sách phê duyệt bãi đỗ xe...",
+      "emptyHint": "Thử thay đổi từ khóa hoặc bộ lọc tìm kiếm.",
+      "finalizeSuccess": "Đã duyệt chính thức! Email kèm mật khẩu đã được gửi cho Provider.",
+      "rejectReasonRequired": "Vui lòng nhập lý do từ chối!",
+      "rejectSuccess": "Từ chối đăng ký thành công!",
+      "actionFailed": "Thao tác thất bại: {{message}}",
+      "preliminarySuccess": "Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.",
+      "reassignSuccess": "Đã phân công lại nhân viên khảo sát thành công!",
+      "processError": "Có lỗi xảy ra khi xử lý!"
+    },
+    "confirm": {
+      "finalizeTitle": "Phê Duyệt Chính Thức",
+      "finalizeDescription": "Nhân viên khảo sát đã hoàn tất báo cáo và hình ảnh thực địa. Bạn có chắc chắn muốn hoàn tất duyệt và cấp tài khoản cho cơ sở này?",
+      "cancel": "Hủy",
+      "processing": "Đang xử lý...",
+      "finalizeSubmit": "Duyệt & Cấp Mật Khẩu",
+      "rejectTitle": "Từ Chối Đăng Ký",
+      "rejectDescription": "Vui lòng cung cấp lý do từ chối để thông báo cho Provider.",
+      "reasonLabels": {
+        "missingInformation": "Thiếu thông tin",
+        "locationOrPrice": "Vị trí/Giá sai",
+        "safetyStandards": "Không đạt tiêu chuẩn"
+      },
+      "reasons": {
+        "missingInformation": "Thông tin bãi đỗ xe không đầy đủ hoặc thiếu chính xác.",
+        "locationOrPrice": "Vị trí hoặc mức giá đăng ký không phù hợp quy định.",
+        "safetyStandards": "Khảo sát thực địa không đáp ứng tiêu chuẩn an toàn."
+      },
+      "reasonPlaceholder": "Nhập lý do chi tiết...",
+      "rejecting": "Đang từ chối...",
+      "rejectSubmit": "Xác nhận Từ Chối"
+    }
   },
   "facilities": {
     "title": "Tất Cả Cơ Sở Bãi Đỗ Xe",
     "subtitle": "Danh sách toàn bộ các bãi đỗ xe đang vận hành trong hệ thống ParkLink",
     "totalCount": "Tổng cộng: {{count}} cơ sở",
-    "searchPlaceholder": "Tìm theo tên bãi xe hoặc địa chỉ..."
+    "searchPlaceholder": "Tìm theo tên cơ sở, địa chỉ, chủ bãi hoặc số điện thoại...",
+    "allApprovalStatuses": "Tất cả trạng thái duyệt",
+    "allVisibilityStatuses": "Tất cả hiển thị",
+    "preparing": "Đang chuẩn bị",
+    "visible": "Hiện",
+    "hiddenLocked": "Ẩn (Khóa)",
+    "resetAndRefresh": "Đặt lại bộ lọc và tải lại danh sách",
+    "loading": "Đang tải danh sách cơ sở...",
+    "empty": "Không tìm thấy cơ sở nào phù hợp!",
+    "facility": "Cơ sở",
+    "provider": "Chủ bãi",
+    "approvalStatus": "Trạng thái duyệt",
+    "visibility": "Hiển thị",
+    "viewDetails": "Xem chi tiết cơ sở",
+    "editDetails": "Cập nhật thông tin cơ sở",
+    "approvedOnly": "Chỉ có thể khóa hoặc mở khóa cơ sở đã được phê duyệt.",
+    "lockFacility": "Khóa Cơ Sở",
+    "unlockFacility": "Mở Khóa Cơ Sở",
+    "pageSummary": "Trang {{current}} / {{total}} (Tổng cộng {{count}} cơ sở)",
+    "previous": "Trước",
+    "next": "Sau",
+    "detailsTitle": "Chi Tiết Cơ Sở Bãi Đỗ Xe",
+    "confirmLockTitle": "Xác nhận Khóa cơ sở",
+    "confirmUnlockTitle": "Xác nhận Mở khóa cơ sở",
+    "confirmLockMessage": "Bạn có chắc chắn muốn khóa cơ sở \"{{name}}\"? Khi bị khóa, cơ sở này sẽ ẩn khỏi kết quả tìm kiếm của khách thuê cho đến khi được mở khóa.",
+    "confirmUnlockMessage": "Bạn có chắc chắn muốn mở khóa cơ sở \"{{name}}\"? Cơ sở sẽ hiển thị công khai cho khách thuê trở lại.",
+    "cancel": "Hủy",
+    "lockSuccess": "Đã khóa cơ sở bãi xe thành công!",
+    "unlockSuccess": "Đã mở khóa cơ sở bãi xe thành công!",
+    "loadError": "Không thể tải danh sách cơ sở.",
+    "actionError": "Không thể cập nhật cơ sở.",
+    "details": {
+      "providerInfo": "Thông tin Chủ bãi",
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "notUpdated": "Chưa cập nhật",
+      "facilityInfo": "Thông tin Cơ sở Bãi đỗ xe",
+      "name": "Tên bãi đỗ xe",
+      "address": "Địa chỉ chi tiết",
+      "capacity": "Sức chứa",
+      "vehicles": "{{count}} xe",
+      "rentalPrice": "Giá thuê",
+      "pricePerMonth": "{{price}} VNĐ/tháng",
+      "notPriced": "Chưa định giá",
+      "images": "Hình ảnh cơ sở ({{count}})",
+      "primaryImage": "Ảnh chính",
+      "close": "Đóng"
+    }
   },
   "contracts": {
-    "title": "Quản Lý Hợp Đồng Hệ Thống",
-    "subtitle": "Theo dõi toàn bộ hợp đồng thuê bãi giữa Khách hàng và Chủ bãi xe",
+    "title": "Quản Lý Hợp Đồng Thuê",
+    "subtitle": "Danh sách tất cả hợp đồng và biên bản xác nhận điện tử được lưu trữ trên hệ thống.",
     "totalCount": "Tổng cộng: {{count}} hợp đồng",
-    "searchPlaceholder": "Tìm theo mã hợp đồng, tên bãi xe hoặc khách hàng..."
+    "refresh": "Làm mới",
+    "loadError": "Không thể tải danh sách hợp đồng!",
+    "retry": "Thử lại",
+    "loading": "Đang tải danh sách hợp đồng...",
+    "kpis": {
+      "total": "Tổng hợp đồng",
+      "totalSub": "Toàn bộ trên hệ thống",
+      "active": "Đang hiệu lực",
+      "activeSub": "Hợp đồng đang thực hiện",
+      "pending": "Chờ khách ký",
+      "pendingSub": "Chờ xác nhận từ người thuê"
+    },
+    "filters": {
+      "searchPlaceholder": "Tìm theo mã HĐ, khách hàng, bãi xe, biển số...",
+      "searchButton": "Tìm",
+      "allStatuses": "Tất cả trạng thái",
+      "statusActive": "Đang hiệu lực (ACTIVE)",
+      "statusPending": "Chờ khách ký (PENDING)",
+      "statusExpired": "Hết hạn (EXPIRED)",
+      "statusCancelled": "Đã hủy (CANCELLED)",
+      "statusTerminated": "Đã thanh lý (TERMINATED)",
+      "from": "Từ:",
+      "to": "Đến:",
+      "filterButton": "Lọc",
+      "resetTitle": "Đặt lại bộ lọc",
+      "resetButton": "Xóa lọc"
+    },
+    "statuses": {
+      "ACTIVE": "Đang hiệu lực",
+      "PENDING_SIGNATURE": "Chờ khách ký",
+      "EXPIRED": "Hết hạn",
+      "CANCELLED": "Đã hủy",
+      "TERMINATED": "Đã thanh lý"
+    },
+    "empty": {
+      "title": "Không tìm thấy hợp đồng nào",
+      "subtitle": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
+    },
+    "table": {
+      "code": "Mã Hợp Đồng",
+      "customer": "Khách Thuê (Bên B)",
+      "facility": "Bãi Đỗ Xe (Bên A)",
+      "vehicle": "Phương Tiện / Ô Đỗ",
+      "duration": "Thời Hạn",
+      "status": "Trạng Thái",
+      "actions": "Thao Tác",
+      "createdAt": "Lập:",
+      "customerFallback": "Khách hàng",
+      "facilityFallback": "Bãi đỗ xe",
+      "ownerPrefix": "Chủ bãi:",
+      "unknownPlate": "Chưa rõ biển số",
+      "spotLabel": "Ô đỗ:",
+      "spotFallback": "Tự do",
+      "detailButton": "Chi tiết"
+    },
+    "pagination": {
+      "showing": "Hiển thị",
+      "of": "/",
+      "contracts": "hợp đồng",
+      "page": "Trang",
+      "prev": "Trước",
+      "next": "Sau"
+    }
   },
   "complaints": {
     "title": "Quản Lý Khiếu Nại Hệ Thống",
     "subtitle": "Theo dõi và xử lý các phản ánh dịch vụ từ khách hàng và chủ bãi xe",
     "totalCount": "Tổng cộng: {{count}} khiếu nại",
-    "searchPlaceholder": "Tìm theo tiêu đề, ID hoặc khách hàng..."
+    "searchPlaceholder": "Tìm theo tiêu đề, ID, khách hàng hoặc bãi xe...",
+    "retry": "Thử lại",
+    "cancel": "Hủy bỏ",
+    "close": "Đóng",
+    "errors": {
+      "loadTitle": "Không thể tải dữ liệu",
+      "load": "Không thể tải danh sách khiếu nại. Vui lòng thử lại.",
+      "forward": "Không thể chuyển tiếp khiếu nại đến Chủ bãi xe.",
+      "updateStatus": "Không thể cập nhật trạng thái khiếu nại."
+    },
+    "toast": {
+      "forwardSuccess": "Đã chuyển khiếu nại #{{id}} đến Chủ bãi xe.",
+      "statusSuccess": "Đã cập nhật trạng thái khiếu nại #{{id}} thành \"{{status}}\"."
+    },
+    "statuses": {
+      "PENDING_ADMIN": "Chờ BQT tiếp nhận",
+      "PENDING": "Chờ BQT tiếp nhận",
+      "OPEN": "Chờ BQT tiếp nhận",
+      "WAITING_PROVIDER": "Chờ bãi xe giải trình",
+      "PROVIDER_REPLIED": "Bãi xe đã giải trình",
+      "PROCESSING": "Đang đối soát",
+      "ESCALATED": "Cần Admin can thiệp",
+      "RESOLVED": "Đã giải quyết",
+      "REJECTED": "Bác bỏ",
+      "CLOSED": "Đã đóng",
+      "overdue": "Quá hạn giải trình"
+    },
+    "empty": {
+      "title": "Chưa có khiếu nại nào",
+      "description": "Hệ thống chưa ghi nhận khiếu nại nào. Khi có khiếu nại mới, chúng sẽ hiển thị tại đây.",
+      "noMatchTitle": "Không tìm thấy khiếu nại phù hợp",
+      "noMatchDescription": "Thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái."
+    },
+    "card": {
+      "submittedAt": "Gửi ngày:",
+      "contentLabel": "Nội dung khiếu nại:",
+      "imageAlt": "Ảnh khiếu nại {{index}}",
+      "customerLabel": "Khách hàng:",
+      "facilityLabel": "Bãi xe bị khiếu nại:",
+      "facilityShortLabel": "Bãi xe:",
+      "providerLabel": "Chủ bãi:"
+    },
+    "history": {
+      "escalated": "[Khách hàng yêu cầu Admin can thiệp]: {{reason}}"
+    },
+    "statusInfo": {
+      "overdueTitle": "ĐÃ QUÁ HẠN 3 NGÀY CHƯA GIẢI TRÌNH",
+      "overdueDescription": "Hạn chót: {{date}}. Chủ bãi xe chưa gửi giải trình. Hệ thống đã ghi nhận quá hạn; BQT có thể tiếp tục đôn đốc hoặc đưa ra phán quyết.",
+      "overdueFallback": "Đã quá hạn",
+      "waitingDescription": "BQT đã gửi chỉ đạo. Thời hạn phản hồi: {{deadline}}.",
+      "deadlineBefore": "trước {{date}}",
+      "deadlineDefault": "3 ngày",
+      "providerRepliedDescription": "BQT vui lòng xem nội dung giải trình và đưa ra phán quyết cuối cùng.",
+      "latestReplyTitle": "Phản hồi gần nhất:"
+    },
+    "actions": {
+      "forward": "Chuyển bãi xe",
+      "forwardTitle": "Chuyển khiếu nại cho Chủ bãi xe kèm yêu cầu giải trình",
+      "reject": "Bác bỏ / Phán quyết",
+      "rejectTitle": "Bác bỏ hoặc cập nhật trạng thái khiếu nại",
+      "verdict": "Kết luận & Phán quyết",
+      "verdictTitle": "Xem xét giải trình và đưa ra phán quyết cuối cùng",
+      "overdueVerdict": "Phán quyết (Quá hạn)",
+      "overdueVerdictTitle": "Chủ bãi xe đã quá hạn 3 ngày. Admin có thể đưa ra phán quyết.",
+      "updateStatus": "Cập nhật trạng thái",
+      "updateStatusTitle": "Cập nhật trạng thái khiếu nại",
+      "changeStatus": "Đổi trạng thái",
+      "changeStatusTitle": "Điều chỉnh hoặc mở lại khiếu nại"
+    },
+    "statusOptions": {
+      "RESOLVED": {
+        "description": "Khiếu nại đã được xử lý dứt điểm và các bên đã thống nhất phương án, hoàn tiền hoặc bồi thường."
+      },
+      "REJECTED": {
+        "description": "Khiếu nại không hợp lệ, thông tin không chính xác hoặc không thuộc phạm vi trách nhiệm."
+      },
+      "PROCESSING": {
+        "description": "Admin đang xác minh thông tin, yêu cầu bổ sung bằng chứng hoặc đối soát giữa các bên."
+      },
+      "CLOSED": {
+        "description": "Đóng hồ sơ khiếu nại sau khi các bên đã kết thúc quá trình làm việc."
+      }
+    },
+    "forwardModal": {
+      "title": "Chuyển khiếu nại cho Chủ bãi xe",
+      "subtitle": "Khiếu nại #{{id}} • Yêu cầu kiểm tra và giải trình",
+      "facilityLabel": "Bãi xe tiếp nhận:",
+      "deadline": "Hạn giải trình: 3 ngày",
+      "instructionLabel": "Chỉ đạo / Yêu cầu giải trình gửi Chủ bãi xe",
+      "instructionPlaceholder": "Nhập yêu cầu kiểm tra, ví dụ: kiểm tra camera, đối soát nhân viên hoặc làm rõ phản ánh của khách...",
+      "validation": "Vui lòng nhập chỉ đạo hoặc yêu cầu giải trình (tối thiểu 5 ký tự).",
+      "submitting": "Đang chuyển...",
+      "submit": "Chuyển tiếp cho Chủ bãi xe"
+    },
+    "statusModal": {
+      "title": "Cập nhật trạng thái khiếu nại",
+      "subtitle": "Mã khiếu nại #{{id}} • Quyền hạn:",
+      "chooseStatus": "Chọn trạng thái cập nhật",
+      "noteLabel": "Ghi chú phán quyết của Admin (không bắt buộc)",
+      "notePlaceholder": "Nhập kết luận thẩm tra, hướng giải quyết hoặc căn cứ xử lý để thông báo đến Khách hàng và Chủ bãi xe...",
+      "characterCount": "{{count}}/2000 ký tự",
+      "invalidData": "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại trạng thái và ghi chú.",
+      "submitting": "Đang cập nhật...",
+      "submit": "Lưu trạng thái"
+    }
   },
   "inspectors": {
-    "title": "Quản Lý Nhân Viên Khảo Sát",
-    "subtitle": "Danh sách và phân công nhân viên kiểm tra thực địa bãi đỗ xe",
-    "totalCount": "Tổng cộng: {{count}} nhân viên"
+    "title": "Quản Lý Nhân Viên Khảo Sát Thực Địa",
+    "subtitle": "Danh sách nhân viên khảo sát có nhiệm vụ kiểm tra và xác nhận bãi đỗ xe ngoài thực tế",
+    "totalCount": "Tổng cộng: {{count}} nhân viên",
+    "actions": {
+      "add": "Thêm Nhân Viên Khảo Sát",
+      "edit": "Chỉnh sửa thông tin",
+      "resetPassword": "Đặt lại mật khẩu",
+      "lock": "Khóa tài khoản",
+      "unlock": "Mở khóa tài khoản"
+    },
+    "filters": {
+      "searchPlaceholder": "Tìm theo họ tên, email, SĐT...",
+      "allProvinces": "-- Tất cả Tỉnh / Thành Phố --",
+      "allWards": "-- Tất cả Phường / Xã --",
+      "refreshTitle": "Đặt lại bộ lọc & Tải lại danh sách",
+      "activeFilters": "Đang lọc theo:",
+      "keyword": "Từ khóa",
+      "clearAll": "Xóa tất cả bộ lọc",
+      "clearSearch": "Xóa bộ lọc tìm kiếm"
+    },
+    "table": {
+      "fullName": "Họ và Tên",
+      "email": "Email Đăng Nhập",
+      "phone": "Số Điện Thoại",
+      "address": "Địa Chỉ",
+      "status": "Trạng Thái",
+      "actions": "Thao tác",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "pagination": {
+      "summary": "Trang {{current}} / {{total}} (Tổng: {{count}})",
+      "previous": "Trước",
+      "next": "Sau"
+    },
+    "empty": {
+      "filtered": "Không tìm thấy nhân viên khảo sát nào phù hợp với bộ lọc tìm kiếm!",
+      "default": "Chưa có Nhân viên khảo sát thực địa nào trong hệ thống!",
+      "hint": "Nhấn Thêm Nhân Viên Khảo Sát ở trên để tạo tài khoản mới."
+    },
+    "form": {
+      "namePlaceholder": "Nhập họ và tên",
+      "emailPlaceholder": "Nhập email",
+      "phonePlaceholder": "Nhập số điện thoại"
+    },
+    "create": {
+      "title": "Tạo Tài Khoản Nhân Viên Khảo Sát",
+      "fullName": "Họ và Tên Nhân Viên",
+      "passwordNote": "Lưu ý: Mật khẩu sẽ được sinh tự động ngẫu nhiên và gửi tới Email trên. Nhân viên sẽ được yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.",
+      "submit": "Tạo Tài Khoản"
+    },
+    "edit": {
+      "title": "Chỉnh Sửa Nhân Viên Khảo Sát (#{{id}})",
+      "emailReadOnly": "Email (Không thể thay đổi)",
+      "accountStatus": "Trạng Thái Tài Khoản",
+      "submit": "Lưu Thay Đổi"
+    },
+    "confirm": {
+      "lockTitle": "Xác nhận Khóa tài khoản",
+      "unlockTitle": "Xác nhận Mở khóa tài khoản",
+      "resetTitle": "Đặt lại mật khẩu",
+      "lockMessage": "Bạn có chắc chắn muốn khóa tài khoản của {{name}}? Khi bị khóa, nhân viên khảo sát này sẽ ngay lập tức bị từ chối đăng nhập và không thể thực hiện khảo sát trên hệ thống.",
+      "lockWarning": "Lưu ý: Nhân viên này có thể đang được phân công phụ trách khảo sát cơ sở. Sau khi khóa, vui lòng kiểm tra và phân công lại cho nhân viên khác tiếp quản.",
+      "unlockMessage": "Bạn có chắc chắn muốn mở khóa tài khoản của {{name}}? Nhân viên sẽ có thể đăng nhập bình thường trở lại.",
+      "resetMessage": "Hệ thống sẽ tự động tạo một mật khẩu ngẫu nhiên mới và gửi thông báo qua email tới {{email}}. Nhân viên sẽ bị bắt buộc đổi mật khẩu mới ở lần đăng nhập tiếp theo."
+    },
+    "messages": {
+      "loading": "Đang tải danh sách nhân viên khảo sát...",
+      "createSuccess": "Tạo tài khoản nhân viên khảo sát thành công. Mật khẩu tạm thời đã được gửi qua email.",
+      "editSuccess": "Cập nhật thông tin thành công!",
+      "lockSuccess": "Khóa tài khoản thành công.",
+      "unlockSuccess": "Mở khóa tài khoản thành công.",
+      "resetPasswordSuccess": "Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi qua email."
+    },
+    "errors": {
+      "load": "Lỗi khi tải danh sách nhân viên khảo sát",
+      "requiredFields": "Vui lòng nhập đầy đủ Email, Họ tên và Số điện thoại!",
+      "create": "Lỗi khi tạo tài khoản nhân viên khảo sát",
+      "nameAndPhoneRequired": "Họ tên và Số điện thoại không được để trống!",
+      "edit": "Lỗi khi cập nhật thông tin",
+      "action": "Thao tác thất bại!"
+    }
   },
   "providerRevenue": {
     "title": "Doanh Thu Bãi Xe",
-    "subtitle": "Báo cáo doanh thu bãi đỗ xe và đối soát phí nền tảng"
+    "subtitle": "Báo cáo doanh thu bãi đỗ xe và đối soát phí nền tảng",
+    "ui": {
+      "title": "Thống Kê Doanh Thu Chủ Bãi Đỗ Xe",
+      "actualData": "Số liệu thực tế",
+      "forecastByContracts": "Dự kiến theo HĐ hiệu lực",
+      "subtitle": "Theo dõi và quản lý dòng tiền cho thuê theo tháng của các đối tác bãi đỗ xe trên toàn hệ thống",
+      "refresh": "Làm mới số liệu",
+      "reportYear": "Năm báo cáo",
+      "reportMonth": "Tháng xem số liệu",
+      "filterFacility": "Lọc theo bãi xe",
+      "searchLabel": "Tìm theo tên / chủ bãi",
+      "actualAmountHint": "Số tiền thực tế từ hợp đồng đang active",
+      "forecastAmountHint": "Dự kiến theo hợp đồng có hiệu lực",
+      "activeContracts": "Hợp đồng có hiệu lực",
+      "contractsUnit": "hợp đồng",
+      "activeContractsHint": "Số lượng vị trí đỗ đang có khách thuê gửi",
+      "earningFacilities": "Cơ sở phát sinh doanh thu",
+      "activityRate": "Tỷ lệ hoạt động:",
+      "averageRevenue": "Doanh thu TB / cơ sở",
+      "averageHint": "Tính trên các bãi đang phát sinh tiền thuê",
+      "chartHint": "Biểu đồ trực quan 12 tháng. Bấm vào bất kỳ cột tháng nào để nạp dữ liệu chi tiết.",
+      "actual": "Thực tế",
+      "future": "Dự kiến tương lai",
+      "facility": "Cơ sở bãi đỗ xe",
+      "provider": "Chủ bãi",
+      "occupancy": "Xe thuê / Sức chứa",
+      "occupancyRate": "Tỷ lệ lấp đầy",
+      "actions": "Thao tác",
+      "empty": "Không tìm thấy cơ sở bãi đỗ xe nào phù hợp với bộ lọc hiện tại.",
+      "notUpdated": "Chưa cập nhật",
+      "emptyContracts": "Chưa có hợp đồng nào đang có hiệu lực trong tháng này.",
+      "code": "Mã HĐ",
+      "customer": "Khách hàng",
+      "phone": "Số điện thoại",
+      "contractTerm": "Thời hạn hợp đồng",
+      "monthlyRent": "Tiền thuê / tháng",
+      "status": "Trạng thái",
+      "active": "Đang hiệu lực",
+      "terminated": "Đã chấm dứt",
+      "previous": "Trước",
+      "next": "Sau",
+      "searchPlaceholder": "Tìm tên bãi, chủ bãi, SĐT...",
+      "loadError": "Không thể tải thống kê doanh thu bãi xe.",
+      "year": "Năm {{year}}",
+      "yearFuture": "Năm {{year}} (Dự kiến)",
+      "month": "Tháng {{month}} / {{year}}",
+      "allFacilities": "Tất cả cơ sở ({{count}})",
+      "monthRevenue": "Doanh thu tháng {{month}}/{{year}}",
+      "projectedRevenue": "Doanh thu dự kiến T{{month}}/{{year}}",
+      "monthRevenueShort": "Doanh thu tháng {{month}}",
+      "projectedRevenueShort": "Doanh thu dự kiến T{{month}}",
+      "facilityCount": "{{count}} bãi xe",
+      "chartTitle": "Biểu Đồ Xu Hướng Doanh Thu Các Bãi Đỗ Xe Năm {{year}}",
+      "contractTooltip": "{{count}} HĐ - {{amount}} ({{kind}})",
+      "projected": "Dự kiến",
+      "facilityDetails": "Chi Tiết Doanh Thu Từng Cơ Sở Bãi Đỗ Xe (Tháng {{month}}/{{year}})",
+      "facilityList": "Danh sách {{count}} cơ sở bãi xe cùng hiệu suất cho thuê",
+      "capacity": "{{count}} ô đỗ",
+      "contractCount": "{{count}} HĐ",
+      "facilityContracts": "Hợp đồng có hiệu lực tại {{name}} trong tháng {{month}}/{{year}}",
+      "totalContracts": "Tổng: {{count}} hợp đồng",
+      "pageSummary": "Trang {{current}} / {{total}} (Tổng cộng {{count}} cơ sở bãi xe)",
+      "monthShort": "T{{month}}"
+    }
   },
   "reviews": {
-    "title": "Quản Lý Đánh Giá Cơ Sở",
-    "subtitle": "Theo dõi và kiểm duyệt đánh giá, nhận xét của khách hàng"
+    "title": "Quản Lý Đánh Giá",
+    "subtitle": "Theo dõi phản hồi của khách hàng và quản lý trạng thái hiển thị đánh giá.",
+    "kpis": {
+      "total": "Tổng đánh giá",
+      "totalSub": "Toàn bộ hệ thống",
+      "average": "Điểm trung bình",
+      "averageSub": "Mức độ hài lòng",
+      "flagged": "Đánh giá cần xem xét",
+      "flaggedPending": "Cần Admin kiểm tra",
+      "flaggedClear": "Không có đánh giá bị gắn cờ",
+      "hidden": "Đang bị ẩn",
+      "hiddenSub": "Không hiển thị với khách hàng"
+    },
+    "filters": {
+      "search": "Tìm theo bãi xe, khách hàng hoặc nội dung...",
+      "allStatuses": "Tất cả trạng thái",
+      "flagged": "Cần xem xét",
+      "hidden": "Đã ẩn",
+      "visible": "Đang hiển thị",
+      "allFacilities": "Tất cả cơ sở bãi xe",
+      "allRatings": "Tất cả số sao",
+      "starOption": "{{count}} sao"
+    },
+    "errors": {
+      "load": "Không thể tải danh sách đánh giá. Vui lòng thử lại."
+    },
+    "empty": {
+      "title": "Không tìm thấy đánh giá",
+      "filtered": "Không có đánh giá phù hợp với bộ lọc. Hãy thử thay đổi từ khóa hoặc bộ lọc.",
+      "default": "Hệ thống chưa có đánh giá nào từ khách hàng."
+    },
+    "pagination": {
+      "range": "Hiển thị {{from}}–{{to}} / {{total}}",
+      "previous": "Trang trước",
+      "next": "Trang sau"
+    },
+    "card": {
+      "facilityFallback": "Bãi xe #{{id}}",
+      "addressFallback": "Chưa cập nhật địa chỉ",
+      "hide": "Ẩn vĩnh viễn",
+      "hideTitle": "Ẩn đánh giá này khỏi hệ thống",
+      "unhide": "Bỏ ẩn đánh giá",
+      "unhideTitle": "Hiển thị lại đánh giá này",
+      "dismissFlag": "Gỡ cờ",
+      "dismissFlagTitle": "Xác nhận đánh giá an toàn và hiển thị lại",
+      "confirmViolation": "Ẩn vĩnh viễn",
+      "confirmViolationTitle": "Xác nhận vi phạm và ẩn đánh giá này",
+      "defaultCustomer": "Khách hàng",
+      "noEmail": "Không có",
+      "reviewReason": "Nội dung cần xem xét:",
+      "defaultReason": "Nội dung có thể không phù hợp."
+    },
+    "toasts": {
+      "dismissSuccess": "Đã gỡ cờ và hiển thị lại đánh giá.",
+      "dismissError": "Không thể gỡ cờ đánh giá.",
+      "unhideSuccess": "Đã hiển thị lại đánh giá.",
+      "unhideError": "Không thể bỏ ẩn đánh giá.",
+      "hideSuccess": "Đã ẩn đánh giá vĩnh viễn.",
+      "hideError": "Không thể ẩn đánh giá."
+    },
+    "confirm": {
+      "unhideTitle": "Xác nhận bỏ ẩn đánh giá",
+      "unhideMessage": "Bạn có chắc muốn hiển thị lại đánh giá của khách hàng {{customer}} không?",
+      "unhideFallback": "Bạn có chắc muốn hiển thị lại đánh giá này không?",
+      "unhideConfirm": "Bỏ ẩn",
+      "hideTitle": "Xác nhận ẩn đánh giá",
+      "hideMessage": "Bạn có chắc muốn ẩn vĩnh viễn đánh giá của khách hàng {{customer}} không?",
+      "hideFallback": "Bạn có chắc muốn ẩn vĩnh viễn đánh giá này không?",
+      "hideConfirm": "Ẩn vĩnh viễn",
+      "cancel": "Hủy"
+    }
   },
   "platformFees": {
     "title": "Cấu Hình Phí Nền Tảng",
     "subtitle": "Quản lý mức phí hoa hồng và biểu phí dịch vụ ParkLink"
   },
   "vehicleTypes": {
-    "title": "Loại Phương Tiện Hỗ Trợ",
-    "subtitle": "Quản lý danh mục loại xe và kích thước vị trí đỗ"
+    "title": "Quản Lý Danh Mục Loại Phương Tiện",
+    "subtitle": "Quản trị các loại phương tiện mà hệ thống hỗ trợ kết nối và tính toán vị trí đỗ xe.",
+    "refreshTitle": "Làm mới danh sách",
+    "addNew": "Thêm Loại Phương Tiện Mới",
+    "searchPlaceholder": "Tìm theo tên, mã (type_code)...",
+    "stats": {
+      "total": "Tổng Số Loại Phương Tiện",
+      "active": "Đang Hoạt Động (Active)",
+      "inactive": "Đã Vô Hiệu Hóa (Inactive)"
+    },
+    "filters": {
+      "all": "Tất Cả",
+      "active": "Hoạt Động",
+      "inactive": "Đã Vô Hiệu Hóa"
+    },
+    "table": {
+      "code": "Mã Loại (Code)",
+      "name": "Tên Loại Phương Tiện",
+      "description": "Mô Tả Chi Tiết",
+      "facilities": "Bãi Xe Áp Dụng",
+      "status": "Trạng Thái",
+      "actions": "Thao Tác",
+      "noDescription": "Chưa có mô tả",
+      "facilityCount": "{{count}} bãi xe"
+    },
+    "actions": {
+      "editTitle": "Chỉnh sửa thông tin loại phương tiện",
+      "deactivateTitle": "Vô hiệu hóa loại xe này",
+      "activateTitle": "Kích hoạt lại loại xe này"
+    },
+    "messages": {
+      "loadError": "Không thể tải danh mục loại phương tiện",
+      "loading": "Đang tải danh mục loại phương tiện...",
+      "empty": "Không tìm thấy loại phương tiện nào",
+      "emptyHint": "Thử thay đổi từ khóa tìm kiếm hoặc bấm Thêm Loại Phương Tiện Mới.",
+      "deactivateSuccess": "Đã vô hiệu hóa loại phương tiện \"{{name}}\" thành công!",
+      "activateSuccess": "Đã kích hoạt loại phương tiện \"{{name}}\" thành công!",
+      "toggleError": "Không thể thay đổi trạng thái loại phương tiện"
+    },
+    "confirm": {
+      "deactivateTitle": "Xác Nhận Vô Hiệu Hóa Loại Phương Tiện",
+      "activateTitle": "Xác Nhận Kích Hoạt Lại Loại Phương Tiện",
+      "deactivateMessage": "Bạn có chắc chắn muốn vô hiệu hóa loại phương tiện \"{{name}}\"? Các bãi xe mới sẽ không thể lựa chọn loại phương tiện này khi đăng ký.",
+      "activateMessage": "Bạn có muốn kích hoạt lại loại phương tiện \"{{name}}\" để các bãi xe có thể đăng ký dịch vụ?",
+      "deactivate": "Vô Hiệu Hóa",
+      "activate": "Kích Hoạt Lại",
+      "cancel": "Bỏ Qua"
+    },
+    "form": {
+      "category": "Danh mục loại phương tiện",
+      "editTitle": "Chỉnh sửa loại phương tiện",
+      "createTitle": "Thêm loại phương tiện",
+      "editDescription": "Cập nhật thông tin hiển thị trong danh mục.",
+      "createDescription": "Nhập thông tin cho loại phương tiện mới.",
+      "close": "Đóng",
+      "code": "Mã loại phương tiện",
+      "codePlaceholder": "Ví dụ: CAR_16_SEATER",
+      "codeHint": "Viết hoa, không dấu, dùng dấu gạch dưới để ngăn cách.",
+      "name": "Tên loại phương tiện",
+      "namePlaceholder": "Ví dụ: Xe khách 16 chỗ",
+      "description": "Mô tả",
+      "optional": "không bắt buộc",
+      "descriptionPlaceholder": "Thông tin nhận biết hoặc các mẫu xe thuộc loại này",
+      "characterCount": "{{count}}/500 ký tự",
+      "active": "Đang hoạt động",
+      "activeHint": "Chủ bãi xe có thể chọn loại phương tiện này.",
+      "inactiveHint": "Ẩn khỏi danh mục đăng ký mới.",
+      "cancel": "Hủy",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu thay đổi",
+      "addVehicleType": "Thêm loại phương tiện",
+      "updateSuccess": "Cập nhật loại phương tiện \"{{name}}\" thành công!",
+      "createSuccess": "Tạo mới loại phương tiện \"{{name}}\" thành công!",
+      "errors": {
+        "codeRequired": "Vui lòng nhập mã loại phương tiện (VD: CAR_16_SEATER).",
+        "codeInvalid": "Mã loại phương tiện chỉ được chứa chữ cái, số, gạch dưới (_) và từ 2-50 ký tự.",
+        "nameRequired": "Vui lòng nhập tên loại phương tiện.",
+        "nameInvalid": "Tên loại phương tiện phải có độ dài từ 2 đến 100 ký tự.",
+        "descriptionTooLong": "Mô tả không được vượt quá 500 ký tự.",
+        "saveFailed": "Đã xảy ra lỗi khi lưu thông tin loại phương tiện."
+      }
+    }
   },
   "amenities": {
     "title": "Quản Lý Tiện Ích Cơ Sở",
@@ -183,15 +772,201 @@
   },
   "broadcast": {
     "title": "Phát Thông Báo Toàn Hệ Thống",
-    "subtitle": "Gửi thông báo khẩn cấp hoặc tin tức đến toàn bộ người dùng ParkLink"
+    "subtitle": "Gửi thông báo khẩn cấp hoặc tin tức đến toàn bộ người dùng ParkLink",
+    "tabs": {
+      "web": "Thông báo trên Web",
+      "email": "Thông báo qua Email"
+    },
+    "web": {
+      "headerTitle": "Gửi thông báo trên hệ thống",
+      "headerSubtitle": "Gửi thông báo trực tiếp đến người dùng đang hoạt động trên nền tảng",
+      "liveBadge": "Thông báo trực tuyến",
+      "targetLabel": "Đối tượng nhận thông báo",
+      "targets": {
+        "ALL": "Tất cả người dùng",
+        "CUSTOMER": "Khách hàng thuê bãi",
+        "PROVIDER": "Chủ bãi đỗ xe"
+      },
+      "categoryLabel": "Loại thông báo",
+      "categories": {
+        "maintenance": "Bảo trì hệ thống",
+        "policy": "Cập nhật chính sách & Điều khoản",
+        "promo": "Khuyến mãi & Tin tức nền tảng",
+        "general": "Thông báo chung"
+      },
+      "priorityLabel": "Mức độ ưu tiên",
+      "priorities": {
+        "normal": "Bình thường",
+        "important": "Quan trọng",
+        "urgent": "Khẩn cấp"
+      },
+      "titleLabel": "Tiêu đề thông báo",
+      "titleCounter": "{{count}}/120 ký tự",
+      "titlePlaceholder": "VD: Thông báo bảo trì nâng cấp hệ thống 00:00 - 02:00 ngày 25/11",
+      "contentLabel": "Nội dung thông báo",
+      "contentCounter": "{{count}}/500 ký tự",
+      "contentPlaceholder": "Nhập nội dung thông báo chi tiết gửi tới người dùng...",
+      "optionsLabel": "Tùy chọn hiển thị:",
+      "showToastOption": "Hiển thị thông báo nổi trên màn hình",
+      "saveToDbOption": "Lưu vào lịch sử thông báo",
+      "summary": {
+        "title": "Gửi thông báo thành công!",
+        "taskId": "Mã tác vụ:",
+        "recipients": "Số người nhận:",
+        "recipientsValue": "{{count}} người dùng",
+        "time": "Thời gian:"
+      },
+      "reset": "Làm mới",
+      "testButton": "Gửi thử cho tôi",
+      "submitButton": "Gửi thông báo",
+      "validation": {
+        "titleRequired": "Tiêu đề thông báo không được để trống!",
+        "contentRequired": "Nội dung thông báo không được để trống!",
+        "testSuccess": "Đã gửi thông báo thử nghiệm thành công!",
+        "sendSuccess": "Đã gửi thông báo thành công tới {{count}} người dùng!",
+        "allUsers": "tất cả",
+        "sendError": "Lỗi gửi thông báo!"
+      }
+    },
+    "email": {
+      "headerTitle": "Gửi thông báo qua Email",
+      "headerSubtitle": "Soạn thảo và gửi thông báo trực tiếp tới email người dùng",
+      "serviceBadge": "Dịch vụ Email",
+      "targetLabel": "Đối tượng nhận email",
+      "categoryLabel": "Loại thông báo",
+      "categories": {
+        "maintenance": "Bảo trì & Cập nhật kỹ thuật",
+        "policy": "Thông báo Thay đổi chính sách",
+        "newsletter": "Bản tin ParkLink & Khuyến mãi"
+      },
+      "subjectLabel": "Tiêu đề Email",
+      "subjectCounter": "{{count}}/120 ký tự",
+      "subjectPlaceholder": "VD: [ParkLink] Thông báo cập nhật chính sách và lịch bảo trì hệ thống",
+      "contentLabel": "Nội dung Email",
+      "contentCounter": "{{count}}/5,000 ký tự",
+      "contentPlaceholder": "<p>Kính gửi Quý người dùng và Quý Đối tác ParkLink,</p><p>ParkLink trân trọng thông báo lịch nâng cấp định kỳ hạ tầng cổng thanh toán và quản lý dữ liệu bãi xe...</p>",
+      "htmlHint": "Hỗ trợ nội dung văn bản hoặc thẻ định dạng HTML cơ bản (<p>, <strong>, <ul>, <li>, <a>, <br>...)",
+      "optionsLabel": "Tùy chọn bổ sung:",
+      "attachSignature": "Đính kèm chữ ký ParkLink & Hotline 1900",
+      "privacyNote": "Đính kèm thông tin bảo mật & quyền riêng tư",
+      "summary": {
+        "title": "Đã khởi tạo tác vụ gửi Email!",
+        "taskId": "Mã tác vụ:",
+        "queued": "Số lượng email dự kiến gửi:",
+        "queuedValue": "{{count}} địa chỉ",
+        "time": "Thời gian tạo:"
+      },
+      "reset": "Làm mới",
+      "testPlaceholder": "Email nhận thử (VD: test@gmail.com)...",
+      "testButton": "Gửi thử nghiệm",
+      "submitButton": "Gửi Email thông báo",
+      "validation": {
+        "subjectRequired": "Tiêu đề Email không được để trống!",
+        "contentRequired": "Nội dung thư không được để trống!",
+        "invalidTestEmail": "Địa chỉ email nhận thử nghiệm không hợp lệ (cần chứa ký tự @)!",
+        "testSuccess": "Đã gửi email thử nghiệm thành công tới hộp thư {{email}}!",
+        "sendSuccess": "Đã khởi tạo tác vụ gửi email tới {{count}} người dùng!",
+        "sendError": "Lỗi gửi email thông báo!"
+      }
+    }
   },
   "timelineSettings": {
-    "title": "Cấu Hình Thời Hạn Hệ Thống",
-    "subtitle": "Thiết lập thời hạn tự động hủy yêu cầu, hạn thanh toán và gia hạn"
+    "badge": "Quản Trị Hệ Thống",
+    "title": "Cấu Hình Thời Hạn Quy Trình Thuê Bãi Xe",
+    "subtitle": "Thiết lập thời hạn tự động xử lý cho chu trình thuê bãi xe: thời gian phản hồi yêu cầu đặt chỗ, lập hợp đồng điện tử, ký hợp đồng và thời hạn báo trước khi hủy.",
+    "lastUpdated": "Cập nhật gần nhất:",
+    "by": "bởi {{name}}",
+    "system": "Hệ thống",
+    "you": "Bạn",
+    "loading": "Đang tải cấu hình thời hạn...",
+    "duration": "Thời lượng:",
+    "unit": "Đơn vị:",
+    "units": {
+      "MINUTES": "Phút",
+      "HOURS": "Giờ",
+      "DAYS": "Ngày"
+    },
+    "targets": {
+      "provider": "Áp dụng cho chủ bãi xe",
+      "customer": "Áp dụng cho khách thuê",
+      "both": "Áp dụng cho cả hai bên"
+    },
+    "fields": {
+      "reservationResponse": {
+        "title": "Thời hạn phản hồi yêu cầu đặt chỗ",
+        "description": "Thời gian tối đa để chủ bãi phản hồi (Chấp nhận hoặc Từ chối) yêu cầu thuê của khách. Nếu quá thời gian này, hệ thống sẽ tự động hủy yêu cầu."
+      },
+      "contractCreation": {
+        "title": "Thời hạn lập hợp đồng sau khi duyệt",
+        "description": "Thời gian để chủ bãi khởi tạo hợp đồng điện tử sau khi đã chấp nhận yêu cầu. Nếu quá hạn này, yêu cầu thuê sẽ tự động hủy."
+      },
+      "contractSigning": {
+        "title": "Thời hạn khách hàng ký hợp đồng",
+        "description": "Thời gian để khách hàng kiểm tra và ký xác nhận hợp đồng điện tử. Quá hạn này mà khách chưa ký, hợp đồng và yêu cầu thuê sẽ tự động hủy."
+      },
+      "terminationNotice": {
+        "title": "Thời hạn báo trước khi chấm dứt hợp đồng",
+        "description": "Khoảng thời gian tối thiểu một bên cần gửi thông báo trước khi muốn chấm dứt hợp đồng thuê trước thời hạn thỏa thuận."
+      }
+    },
+    "buttons": {
+      "resetDefaults": "Khôi phục mặc định",
+      "saving": "Đang lưu cấu hình...",
+      "save": "Lưu Cấu Hình Thời Hạn"
+    },
+    "messages": {
+      "loadError": "Không thể tải cấu hình thời hạn hệ thống!",
+      "resetSuccess": "Đã đặt lại các giá trị mặc định. Nhấn \"Lưu Cấu Hình Thời Hạn\" để xác nhận.",
+      "validationError": "Các giá trị thời hạn phải là số dương lớn hơn 0!",
+      "updateSuccess": "Cập nhật cấu hình thời hạn hệ thống thành công!",
+      "updateError": "Lỗi khi lưu cấu hình thời hạn!"
+    }
   },
   "policies": {
     "title": "Chính Sách & Điều Khoản Hệ Thống",
-    "subtitle": "Quản lý các điều khoản sử dụng, chính sách bảo mật và quy định bãi xe"
+    "subtitle": "Quản lý các điều khoản sử dụng, chính sách bảo mật và quy định bãi xe",
+    "ui": {
+      "loadError": "Không thể tải danh sách chính sách từ máy chủ!",
+      "total": "Tổng cộng: {{count}} chính sách",
+      "loading": "Đang tải danh sách chính sách...",
+      "type": "Loại Chính Sách",
+      "policyTitle": "Tiêu Đề",
+      "status": "Trạng Thái",
+      "updatedBy": "Người Cập Nhật",
+      "lastUpdated": "Cập Nhật Lần Cuối",
+      "inactive": "Vô hiệu hóa",
+      "system": "Hệ thống",
+      "editTitle": "Chỉnh sửa chính sách",
+      "edit": "Chỉnh Sửa"
+    },
+    "edit": {
+      "notFound": "Không tìm thấy chính sách được yêu cầu.",
+      "loadError": "Không thể tải nội dung chính sách.",
+      "required": "Vui lòng điền đầy đủ tiêu đề và nội dung điều khoản!",
+      "savedAndNotified": "Cập nhật chính sách và gửi thông báo thành công.",
+      "saved": "Cập nhật chính sách thành công.",
+      "saveError": "Lỗi khi cập nhật chính sách hệ thống!",
+      "loading": "Đang tải thông tin chính sách...",
+      "back": "Quay lại Quản Lý Chính Sách",
+      "title": "Cập Nhật Chính Sách Hệ Thống",
+      "subtitle": "Biên tập các điều khoản pháp lý, quy chế vận hành nền tảng ParkLink",
+      "customer": "Áp dụng cho Khách Hàng",
+      "provider": "Áp dụng cho Chủ Bãi Xe",
+      "policyTitle": "Tiêu đề chính sách",
+      "policyContent": "Nội dung điều khoản",
+      "mandatory": "Chính sách bắt buộc (Luôn kích hoạt)",
+      "platform": "Áp dụng toàn sàn ParkLink",
+      "notifyCustomer": "Gửi thông báo In-app tự động tới toàn bộ Khách hàng",
+      "notifyProvider": "Gửi thông báo In-app tự động tới toàn bộ Chủ bãi đỗ xe",
+      "notifyCustomerHint": "Chuông thông báo của toàn bộ tài khoản Khách hàng sẽ nhận được thông tin về chính sách mới.",
+      "notifyProviderHint": "Chuông thông báo của toàn bộ tài khoản Chủ bãi xe sẽ nhận được thông tin về quy định mới.",
+      "changesHint": "Thay đổi sẽ được áp dụng trực tiếp lên hệ thống ParkLink.",
+      "cancel": "Hủy Bỏ",
+      "saving": "Đang lưu...",
+      "save": "Lưu Thay Đổi",
+      "titlePlaceholder": "Nhập tiêu đề hiển thị...",
+      "contentPlaceholder": "Nhập nội dung các điều khoản, quy định dịch vụ..."
+    }
   },
   "userDetail": {
     "backToList": "Quay lại danh sách người dùng",
@@ -303,6 +1078,242 @@
       "viewReservationsDesc": "Theo dõi lịch sử gửi xe theo tháng của người dùng",
       "manageFacilities": "Quản lý cơ sở bãi xe",
       "manageFacilitiesDesc": "Kiểm duyệt và thiết lập danh sách cơ sở bãi xe"
+    }
+  },
+  "amenitySettings": {
+    "title": "Quản Lý Tiện Ích Bãi Xe",
+    "subtitle": "Danh mục các tiện ích cho phép cơ sở bãi đỗ xe lựa chọn khi đăng ký trong hệ thống ParkLink.",
+    "totalCount": "Tổng cộng: {{count}} tiện ích",
+    "addBtn": "Thêm tiện ích",
+    "searchPlaceholder": "Tìm theo tên tiện ích, nhóm phân loại...",
+    "reloadTooltip": "Tải lại dữ liệu",
+    "appliedFacilities": "{{count}} bãi xe",
+    "statuses": {
+      "all": "Tất cả trạng thái",
+      "visible": "Đang hiển thị",
+      "hidden": "Đang ẩn",
+      "active": "Hiển thị"
+    },
+    "types": {
+      "all": "Tất cả nhóm",
+      "SECURITY": "An ninh & An toàn",
+      "SERVICE": "Dịch vụ tiện ích",
+      "INFRASTRUCTURE": "Cơ sở hạ tầng",
+      "CONVENIENCE": "Tiện nghi bổ sung",
+      "GENERAL": "Chung"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Tên tiện ích",
+      "category": "Nhóm danh mục",
+      "facilities": "Bãi xe áp dụng",
+      "status": "Trạng thái",
+      "actions": "Thao tác"
+    },
+    "empty": {
+      "loading": "Đang tải danh sách tiện ích...",
+      "noData": "Không tìm thấy tiện ích nào phù hợp",
+      "noDataDesc": "Thử thay đổi từ khóa tìm kiếm hoặc lọc theo trạng thái khác"
+    },
+    "tooltips": {
+      "edit": "Chỉnh sửa thông tin",
+      "hide": "Ẩn tiện ích này",
+      "show": "Hiện lại tiện ích này"
+    },
+    "confirm": {
+      "hideTitle": "Xác nhận ẩn tiện ích",
+      "showTitle": "Xác nhận kích hoạt tiện ích",
+      "hideMessage": "Bạn có chắc muốn ẩn tiện ích \"{{name}}\"? Tiện ích này sẽ không xuất hiện để bãi xe mới lựa chọn.",
+      "showMessage": "Kích hoạt lại tiện ích \"{{name}}\" để các cơ sở bãi xe có thể chọn?",
+      "hideBtn": "Ẩn tiện ích",
+      "showBtn": "Kích hoạt",
+      "cancelBtn": "Bỏ qua"
+    },
+    "modal": {
+      "categoryBadge": "Danh mục tiện ích",
+      "createTitle": "Thêm Tiện Ích Mới",
+      "editTitle": "Chỉnh Sửa Tiện Ích",
+      "nameLabel": "Tên tiện ích",
+      "namePlaceholder": "VD: Mái che mưa nắng, Camera an ninh...",
+      "categoryLabel": "Nhóm danh mục",
+      "iconLabel": "Biểu tượng hiển thị",
+      "activeCheckbox": "Kích hoạt hiển thị cho các cơ sở bãi xe lựa chọn",
+      "activeCheckboxDesc": "Cho phép chủ bãi xe lựa chọn tiện ích này khi thiết lập tiện nghi cơ sở.",
+      "cancelBtn": "Hủy",
+      "createBtn": "Tạo tiện ích",
+      "saveBtn": "Lưu thay đổi",
+      "close": "Đóng"
+    },
+    "icons": {
+      "shieldCheck": "Bảo vệ / An toàn",
+      "camera": "Camera an ninh",
+      "umbrella": "Mái che mưa nắng",
+      "userCheck": "Bảo vệ trực trực tiếp",
+      "sun": "Hệ thống chiếu sáng",
+      "flame": "PCCC đạt chuẩn",
+      "batteryCharging": "Trạm sạc xe điện",
+      "zap": "Nguồn điện sạc",
+      "wifi": "Wifi miễn phí",
+      "car": "Chỗ đỗ cố định",
+      "coffee": "Phòng chờ / Nghỉ ngơi",
+      "lock": "Khóa an ninh",
+      "clock": "Hoạt động 24/7",
+      "mapPin": "Vị trí thuận tiện",
+      "wrench": "Hỗ trợ cứu hộ / Bảo dưỡng",
+      "default": "Tiện ích chung"
+    },
+    "messages": {
+      "loadError": "Không thể tải danh sách tiện ích",
+      "updateStatusSuccess": "Đã cập nhật trạng thái tiện ích \"{{name}}\"!",
+      "updateStatusError": "Lỗi khi thay đổi trạng thái tiện ích",
+      "nameRequired": "Vui lòng nhập tên tiện ích.",
+      "nameLength": "Tên tiện ích phải từ 2 đến 100 ký tự.",
+      "createSuccess": "Tạo mới tiện ích thành công!",
+      "updateSuccess": "Cập nhật tiện ích thành công!",
+      "actionFailed": "Thao tác không thành công!"
+    }
+  },
+  "registrationDetail": {
+    "backToInspections": "Quay lại Công Việc Khảo Sát",
+    "backToRegistrations": "Quay lại Danh Sách Duyệt Bãi Đỗ Xe",
+    "registrationId": "Mã hồ sơ:",
+    "recordBadge": "HỒ SƠ #{{id}}",
+    "submittedOn": "Gửi ngày:",
+    "statuses": {
+      "pendingReview": "Chờ duyệt sơ bộ",
+      "preparing": "Đang chờ khảo sát thực địa",
+      "inspected": "Đã khảo sát - Chờ duyệt",
+      "approved": "Đã phê duyệt chính thức",
+      "rejected": "Đã từ chối",
+      "unknown": "Không xác định"
+    },
+    "stepper": {
+      "title": "Tiến trình xét duyệt hồ sơ",
+      "step1Title": "Tiếp nhận hồ sơ",
+      "step1Desc": "Provider gửi thông tin ban đầu",
+      "step2Title": "Duyệt sơ bộ",
+      "step2Desc": "Admin kiểm tra hồ sơ hợp lệ",
+      "step3Title": "Khảo sát thực địa",
+      "step3Desc": "Kiểm tra mặt bằng & chụp ảnh",
+      "step4Title": "Duyệt chính thức",
+      "step4Desc": "Kích hoạt tài khoản bãi xe"
+    },
+    "facilityInfo": {
+      "title": "Chi Tiết Cơ Sở Bãi Đỗ Xe",
+      "facilityName": "Tên cơ sở",
+      "capacityAfterSurvey": "Sức chứa sau khảo sát",
+      "capacityProposed": "Sức chứa đề xuất ban đầu",
+      "capacityUnit": "{{count}} vị trí đỗ xe",
+      "desiredPrice": "Giá thuê mong muốn",
+      "priceUnit": "{{price}} VNĐ / tháng",
+      "platformFee": "Phí nền tảng",
+      "feeUnit": "{{fee}} VNĐ",
+      "addressAfterSurvey": "Địa chỉ sau khảo sát",
+      "addressRegistered": "Địa chỉ đã khai báo",
+      "gps": "Tọa độ GPS",
+      "openGoogleMaps": "Mở Google Maps →",
+      "amenities": "Tiện ích đi kèm",
+      "defaultAmenity": "Tiện ích"
+    },
+    "surveyReport": {
+      "title": "Báo Cáo Kết Quả Khảo Sát Thực Địa",
+      "subtitle": "Nhập sức chứa, xác định vị trí thực tế và đính kèm 4 hình ảnh hiện trạng bắt buộc của bãi xe",
+      "capacityLabel": "Sức chứa thực tế (Số xe)",
+      "capacityPlaceholder": "Ví dụ: 30",
+      "capacityHint": "Số chỗ đỗ xe thực tế bạn đo đạc, kiểm tra tại hiện trường.",
+      "locationLabel": "Vị trí thực tế của bãi xe",
+      "locationHint": "Kiểm tra địa chỉ đã khai báo, rồi kéo ghim hoặc chọn lại vị trí chính xác trên bản đồ.",
+      "photosLabel": "Hình ảnh hiện trạng thực tế (Bắt buộc 4 góc độ)",
+      "photo1Title": "1. Đường vào bãi xe",
+      "photo1Hint": "Chụp rõ lối đi, độ rộng đường vào",
+      "photo2Title": "2. Toàn cảnh bãi đỗ xe",
+      "photo2Hint": "Chụp bao quát mặt bằng, sức chứa",
+      "photo3Title": "3. Cổng bãi đỗ xe",
+      "photo3Hint": "Chụp cổng ra vào, biển báo nếu có",
+      "photo4Title": "4. Góc độ khác / Mặt bằng",
+      "photo4Hint": "Góc chụp bổ sung mặt sàn, mái che",
+      "selected": "Đã chọn",
+      "changePhoto": "Đổi ảnh",
+      "deletePhoto": "Xóa",
+      "choosePhoto": "Chọn ảnh hoặc chụp ảnh",
+      "photoTypes": "PNG, JPG, JPEG",
+      "additionalTitle": "5. Hình ảnh bổ sung (Tùy chọn)",
+      "additionalHint": "Tải thêm nhiều hình ảnh góc chụp khác nếu cần",
+      "additionalCount": "{{count}} ảnh",
+      "addMorePhoto": "Thêm ảnh",
+      "submitting": "Đang tải lên Cloudinary & Gửi...",
+      "submit": "Gửi Kết Quả Khảo Sát"
+    },
+    "gallery": {
+      "title": "Hình Ảnh Cơ Sở & Khảo Sát Thực Địa",
+      "totalPhotos": "Tổng: {{count}} ảnh",
+      "primary": "Ảnh chính",
+      "viewZoom": "Xem ảnh phóng to",
+      "noPhotos": "Chưa có hình ảnh được tải lên cho bãi đỗ xe này.",
+      "inspectorWillUpdate": "Nhân viên khảo sát sẽ cập nhật ảnh sau khi hoàn tất kiểm tra thực địa tại biểu mẫu bên trên."
+    },
+    "provider": {
+      "title": "Thông Tin Chủ Bãi",
+      "role": "Đối tác Chủ Bãi Xe",
+      "unupdated": "Chưa cập nhật",
+      "emailNA": "N/A"
+    },
+    "inspector": {
+      "title": "NV Khảo Sát Thực Địa",
+      "unassigned": "Chưa phân công",
+      "notSpecified": "Chưa chỉ định",
+      "change": "Đổi NV",
+      "assign": "Phân công",
+      "addressNA": "Chưa cập nhật địa chỉ",
+      "waitingAssignment": "Hồ sơ đang chờ duyệt sơ bộ và phân công nhân viên khảo sát thực tế.",
+      "noInspectorNotice": "Bãi xe chưa có nhân viên khảo sát phụ trách cụ thể. Bạn có thể phân công ngay."
+    },
+    "actions": {
+      "titleInspector": "Nhiệm Vụ Khảo Sát",
+      "titleAdmin": "Quyết Định Xét Duyệt",
+      "surveyWorkflowTitle": "Quy trình thực địa:",
+      "surveyStep1": "Kiểm tra thông tin vị trí & độ rộng lối đi",
+      "surveyStep2": "Đo đạc sức chứa thực tế",
+      "surveyStep3": "Chụp 4 ảnh hiện trạng bắt buộc",
+      "surveyStep4": "Điền biểu mẫu báo cáo bên trái và gửi kết quả",
+      "goToReportForm": "Đến Biểu Mẫu Báo Cáo ↓",
+      "fillReport": "Điền Báo Cáo Thực Địa",
+      "surveyReportSubmitted": "Đã nộp báo cáo khảo sát",
+      "surveyCompleted": "Đã hoàn thành khảo sát",
+      "waitingAdminApproval": "Báo cáo thực địa đã được gửi thành công. Đang chờ Ban Quản Trị (Admin) xem xét và phê duyệt chính thức.",
+      "approvedNotice": "Bãi xe đã được duyệt!",
+      "currentStatus": "Trạng thái hiện tại:",
+      "pendingNotice": "Admin cần kiểm tra tính hợp lệ của thông tin và chọn nhân viên khảo sát thực địa phụ trách.",
+      "pendingPreliminary": "Hồ sơ đang chờ duyệt sơ bộ:",
+      "preliminaryAndAssign": "Duyệt sơ bộ & Giao khảo sát",
+      "rejectApplication": "Từ chối hồ sơ này",
+      "inSurveyNotice": "Đang khảo sát thực địa:",
+      "assignedTo": "Nhân viên phụ trách: {{name}} (SĐT: {{phone}}).",
+      "noInspectorAssignedYet": "Chưa có nhân viên khảo sát nào được chỉ định.",
+      "changeInspector": "Đổi nhân viên khảo sát",
+      "assignInspector": "Gán nhân viên khảo sát",
+      "surveyDoneNotice": "Dữ liệu thực địa đã được tải lên đầy đủ. Admin có thể xem xét và nhấn Duyệt chính thức để cấp mật khẩu và thông báo thanh toán cho Provider.",
+      "finalizeAndIssue": "Hoàn tất duyệt & Cấp mật khẩu",
+      "finalizeTitle": "Duyệt chính thức & Cấp mật khẩu",
+      "approvedDesc": "Cơ sở đã được duyệt và tài khoản Provider đã được cấp quyền truy cập hệ thống.",
+      "rejectedTitle": "Hồ sơ bị từ chối",
+      "rejectedDesc": "Yêu cầu đăng ký đã bị từ chối và email lý do đã được chuyển đến Provider."
+    },
+    "loading": "Đang tải chi tiết hồ sơ...",
+    "notFoundTitle": "Không tìm thấy thông tin",
+    "notFoundDesc": "Hồ sơ đăng ký không tồn tại hoặc đã bị xóa.",
+    "backToList": "Quay lại danh sách",
+    "retry": "Thử lại",
+    "alerts": {
+      "reportSuccess": "Gửi báo cáo khảo sát thực địa thành công! Đã cập nhật dữ liệu cơ sở.",
+      "reportError": "Lỗi gửi báo cáo: {{message}}",
+      "finalizeSuccess": "Đã duyệt chính thức! Email kèm thông tin thanh toán đã gửi cho Provider.",
+      "rejectReasonRequired": "Vui lòng nhập lý do từ chối!",
+      "rejectSuccess": "Đã từ chối hồ sơ đăng ký thành công!",
+      "actionFailed": "Thao tác thất bại: {{message}}",
+      "preliminarySuccess": "Đã duyệt sơ bộ và phân công nhân viên khảo sát! Email thông báo đã gửi cho Provider.",
+      "reassignSuccess": "Đã phân công lại nhân viên khảo sát thành công!",
+      "generalError": "Có lỗi xảy ra khi xử lý!"
     }
   }
 }

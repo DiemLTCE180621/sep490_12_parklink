@@ -23,7 +23,8 @@
   },
   "fields": {
     "email": {
-      "label": "Email Address (Cannot be changed)"
+      "label": "Email Address (Cannot be changed)",
+      "cannotChange": "Cannot be changed"
     },
     "fullName": {
       "label": "Full Name",
@@ -36,7 +37,9 @@
     },
     "assignedAddress": {
       "label": "ASSIGNED ADDRESS",
+      "badge": "Fixed",
       "empty": "Address not set",
+      "emptyFallback": "Address not set",
       "note": "Assigned by Administrator"
     },
     "address": {
@@ -44,12 +47,22 @@
       "formatHint": "Administrative format",
       "areaLabel": "Administrative Area",
       "streetDetailLabel": "House number, street name, alley details",
-      "streetDetailPlaceholder": "e.g., No. 123/45, 30 Thang 4 Street",
+      "streetDetailPlaceholder": "Enter house number, street name, alley details",
       "contractPreview": "Full address on contract: ",
+      "customerPreview": "Address on rental contract: ",
+      "providerPreview": "Contact address: ",
       "notSet": "Not set"
     },
     "accountRole": {
       "label": "System Account Role:"
+    },
+    "accountStatus": {
+      "label": "Account Status",
+      "active": "Active"
+    },
+    "security": {
+      "title": "ParkLink Information Security",
+      "desc": "Your personal details and phone number are used to verify electronic contracts and securely connect with parking partners."
     },
     "authMethod": {
       "label": "Sign-In Method:",

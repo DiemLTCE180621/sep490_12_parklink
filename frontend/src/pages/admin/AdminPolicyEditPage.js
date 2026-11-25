@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ShieldCheck, Save, Loader2,
@@ -8,6 +9,7 @@ import policyService from '../../services/policyService';
 import Toast from '../../components/common/Toast';
 
 const AdminPolicyEditPage = () => {
+  const { t } = useTranslation('admin');
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -31,7 +33,7 @@ const AdminPolicyEditPage = () => {
         const data = res?.data?.policy || res?.data;
 
         if (!data) {
-          setToast({ message: 'Không tìm thấy chính sách được yêu cầu.', type: 'error' });
+          setToast({ message: t('policies.edit.notFound'), type: 'error' });
           return;
         }
 
@@ -43,7 +45,7 @@ const AdminPolicyEditPage = () => {
           notifyUsers: false
         });
       } catch (err) {
-        setToast({ message: err?.response?.data?.message || 'Không thể tải nội dung chính sách.', type: 'error' });
+        setToast({ message: t('policies.edit.loadError'), type: 'error' });
       } finally {
         setLoading(false);
       }
@@ -52,13 +54,13 @@ const AdminPolicyEditPage = () => {
     if (id) {
       loadPolicy();
     }
-  }, [id]);
+  }, [id, t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title.trim() || !formData.content.trim()) {
-      setToast({ message: 'Vui lòng điền đầy đủ tiêu đề và nội dung điều khoản!', type: 'error' });
+      setToast({ message: t('policies.edit.required'), type: 'error' });
       return;
     }
 
@@ -76,14 +78,14 @@ const AdminPolicyEditPage = () => {
         state: {
           adminTab: 'policies',
           message: formData.notifyUsers
-            ? 'Cập nhật chính sách và gửi thông báo thành công.'
-            : 'Cập nhật chính sách thành công.',
+            ? t('policies.edit.savedAndNotified')
+            : t('policies.edit.saved'),
           type: 'success'
         }
       });
     } catch (err) {
       setToast({
-        message: err?.response?.data?.message || 'Lỗi khi cập nhật chính sách hệ thống!',
+        message: t('policies.edit.saveError'),
         type: 'error'
       });
     } finally {
@@ -95,7 +97,7 @@ const AdminPolicyEditPage = () => {
     return (
       <div className="py-24 bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-500">
         <Loader2 className="w-9 h-9 animate-spin text-teal-600 mb-3" />
-        <p className="font-semibold text-sm">Đang tải thông tin chính sách...</p>
+        <p className="font-semibold text-sm">{t('policies.edit.loading')}</p>
       </div>
     );
   }
@@ -119,7 +121,7 @@ const AdminPolicyEditPage = () => {
           onClick={() => navigate('/dashboard', { state: { adminTab: 'policies' } })}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-teal-700 transition"
         >
-          <ArrowLeft className="w-4 h-4" /> Quay lại Quản Lý Chính Sách
+          <ArrowLeft className="w-4 h-4" /> {t('policies.edit.back')}
         </button>
 
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-md overflow-hidden w-full">
@@ -130,33 +132,33 @@ const AdminPolicyEditPage = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2 flex-wrap">
-                  <span>Cập Nhật Chính Sách Hệ Thống</span>
+                  <span>{t('policies.edit.title')}</span>
                   <span className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
                     {policy?.policy_type}
                   </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Biên tập các điều khoản pháp lý, quy chế vận hành nền tảng ParkLink
+                  {t('policies.edit.subtitle')}
                 </p>
               </div>
             </div>
 
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 rounded-xl text-xs font-bold text-slate-700 border border-slate-200 self-start sm:self-auto shrink-0">
               {isCustomer ? <User className="w-4 h-4 text-teal-600" /> : <Building2 className="w-4 h-4 text-teal-600" />}
-              <span>{isCustomer ? 'Áp dụng cho Khách Hàng' : 'Áp dụng cho Chủ Bãi Xe'}</span>
+              <span>{t(isCustomer ? 'policies.edit.customer' : 'policies.edit.provider')}</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 block">
-                Tiêu đề chính sách <span className="text-red-500">*</span>
+                {t('policies.edit.policyTitle')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Nhập tiêu đề hiển thị..."
+                placeholder={t('policies.edit.titlePlaceholder')}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
               />
@@ -164,13 +166,13 @@ const AdminPolicyEditPage = () => {
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 block">
-                Nội dung điều khoản <span className="text-red-500">*</span>
+                {t('policies.edit.policyContent')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 rows={18}
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Nhập nội dung các điều khoản, quy định dịch vụ..."
+                placeholder={t('policies.edit.contentPlaceholder')}
                 required
                 className="w-full px-4 py-3.5 rounded-2xl border border-slate-300 text-sm font-sans focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none leading-relaxed"
               />
@@ -180,10 +182,10 @@ const AdminPolicyEditPage = () => {
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                  Chính sách bắt buộc (Luôn kích hoạt)
+                  {t('policies.edit.mandatory')}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium">
-                  Áp dụng toàn sàn ParkLink
+                  {t('policies.edit.platform')}
                 </span>
               </div>
 
@@ -199,13 +201,13 @@ const AdminPolicyEditPage = () => {
                     <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                       <Bell className="w-3.5 h-3.5 text-amber-500" />
                       {isCustomer
-                        ? 'Gửi thông báo In-app tự động tới toàn bộ Khách hàng'
-                        : 'Gửi thông báo In-app tự động tới toàn bộ Chủ bãi đỗ xe'}
+                        ? t('policies.edit.notifyCustomer')
+                        : t('policies.edit.notifyProvider')}
                     </span>
                     <p className="text-[11px] text-slate-500 mt-0.5">
                       {isCustomer
-                        ? 'Chuông thông báo của toàn bộ tài khoản Khách hàng sẽ nhận được thông tin về chính sách mới.'
-                        : 'Chuông thông báo của toàn bộ tài khoản Chủ bãi xe sẽ nhận được thông tin về quy định mới.'}
+                        ? t('policies.edit.notifyCustomerHint')
+                        : t('policies.edit.notifyProviderHint')}
                     </p>
                   </div>
                 </label>
@@ -214,7 +216,7 @@ const AdminPolicyEditPage = () => {
 
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
               <span className="text-xs text-slate-500 hidden sm:inline">
-                Thay đổi sẽ được áp dụng trực tiếp lên hệ thống ParkLink.
+                {t('policies.edit.changesHint')}
               </span>
               <div className="flex items-center gap-3 ml-auto">
                 <button
@@ -222,7 +224,7 @@ const AdminPolicyEditPage = () => {
                   onClick={() => navigate('/dashboard', { state: { adminTab: 'policies' } })}
                   className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs transition"
                 >
-                  Hủy Bỏ
+                  {t('policies.edit.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -232,12 +234,12 @@ const AdminPolicyEditPage = () => {
                   {saving ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white" />
-                      <span>Đang lưu...</span>
+                      <span>{t('policies.edit.saving')}</span>
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      <span>Lưu Thay Đổi</span>
+                      <span>{t('policies.edit.save')}</span>
                     </>
                   )}
                 </button>

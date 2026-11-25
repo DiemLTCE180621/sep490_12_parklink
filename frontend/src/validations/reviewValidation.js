@@ -10,13 +10,13 @@ export const validateReviewForm = (rating, comment) => {
   return null;
 };
 
-export const validateReplyForm = (reply) => {
+export const validateReplyForm = (reply, messages = {}) => {
   if (!reply || !reply.trim()) {
-    return 'Vui lòng nhập nội dung phản hồi.';
+    return messages.required || 'Vui lòng nhập nội dung phản hồi.';
   }
 
   if (reply.trim().length > 1000) {
-    return 'Nội dung phản hồi không được vượt quá 1000 ký tự.';
+    return messages.maxLength || 'Nội dung phản hồi không được vượt quá 1000 ký tự.';
   }
 
   return null;

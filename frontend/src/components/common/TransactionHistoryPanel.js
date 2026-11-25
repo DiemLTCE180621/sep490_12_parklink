@@ -5,10 +5,10 @@ import transactionService from '../../services/transactionService';
 
 const TransactionHistoryPanel = ({ role }) => {
   const { t, i18n } = useTranslation('provider');
-  const isProviderEn = role !== 'ADMIN' && i18n.language?.startsWith('en');
-  const tp = (viText, key, opts) => (role !== 'ADMIN' ? t(key, opts) : viText);
-  const money = (value) => `${Number(value || 0).toLocaleString('vi-VN')} ${tp('đ', 'transactions.currency')}`;
-  const dateTime = (value) => new Date(value).toLocaleString(isProviderEn ? 'en-GB' : 'vi-VN', { timeZone: 'Asia/Bangkok' });
+  const isEnglish = i18n.language?.startsWith('en');
+  const tp = (_viText, key, opts) => t(key, opts);
+  const money = (value) => `${Number(value || 0).toLocaleString(isEnglish ? 'en-US' : 'vi-VN')} ${tp('đ', 'transactions.currency')}`;
+  const dateTime = (value) => new Date(value).toLocaleString(isEnglish ? 'en-GB' : 'vi-VN', { timeZone: 'Asia/Bangkok' });
   const statusLabels = {
     COMPLETED: tp('Thành công', 'transactions.statuses.COMPLETED'),
     PENDING: tp('Đang xử lý', 'transactions.statuses.PENDING'),
@@ -32,7 +32,7 @@ const TransactionHistoryPanel = ({ role }) => {
     transactionService.getHistory(role, { ...appliedFilters, page, limit: 10 }, controller.signal)
       .then((response) => { if (!controller.signal.aborted) setData(response.data); })
       .catch((requestError) => {
-        if (!controller.signal.aborted) setError(requestError.response?.data?.message || requestError.message || 'LOAD_ERROR');
+        if (!controller.signal.aborted) setError('__LOAD_ERROR__');
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
@@ -53,7 +53,7 @@ const TransactionHistoryPanel = ({ role }) => {
       <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900">{tp('Lịch sử giao dịch thanh toán', 'transactions.title')}</h2>
-          <p className="text-xs text-gray-500 mt-1">{role === 'ADMIN' ? 'Theo dõi các giao dịch phí nền tảng trên hệ thống.' : t('transactions.providerSubtitle')}</p>
+          <p className="text-xs text-gray-500 mt-1">{role === 'ADMIN' ? t('transactions.adminSubtitle') : t('transactions.providerSubtitle')}</p>
         </div>
         <button type="button" onClick={() => setRefresh((value) => value + 1)} disabled={loading}
           className="px-3.5 py-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-lg border border-gray-300 flex items-center gap-1.5 self-start sm:self-auto">
@@ -93,7 +93,7 @@ const TransactionHistoryPanel = ({ role }) => {
           <thead className="bg-gray-50 text-gray-600">
             <tr>
               <th className="px-4 py-3">{tp('Mã GD', 'transactions.table.transactionId')}</th><th className="px-4 py-3">{tp('Thời gian', 'transactions.table.paymentTime')}</th>
-              {role === 'ADMIN' && <th className="px-4 py-3">Chủ bãi</th>}
+              {role === 'ADMIN' && <th className="px-4 py-3">{t('transactions.table.provider')}</th>}
               <th className="px-4 py-3">{tp('Bãi xe', 'transactions.table.facilityName')}</th><th className="px-4 py-3">{tp('Loại', 'transactions.table.transactionType')}</th>
               <th className="px-4 py-3 text-right">{tp('Số tiền', 'transactions.table.amount')}</th><th className="px-4 py-3">{tp('Trạng thái', 'transactions.table.status')}</th>
             </tr>

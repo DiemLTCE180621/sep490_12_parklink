@@ -256,8 +256,8 @@ const CustomerComplaintsPage = () => {
 
                   <div className="pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     {item.status === 'PENDING_ADMIN' || item.status === 'PENDING' || item.status === 'OPEN' ? (
-                      <div className="inline-flex items-center gap-2 text-xs font-medium text-amber-800 bg-amber-50 px-3.5 py-2.5 rounded-xl border border-amber-200 w-full">
-                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                      <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-700 bg-slate-50 px-3.5 py-2.5 rounded-xl border border-slate-200 w-full">
+                        <Clock className="w-4 h-4 text-teal-600 shrink-0" />
                         <span>{t('complaints.progress.pending')}</span>
                       </div>
                     ) : item.status === 'WAITING_PROVIDER' ? (

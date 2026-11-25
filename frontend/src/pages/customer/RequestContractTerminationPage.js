@@ -269,6 +269,40 @@ const RequestContractTerminationPage = () => {
     );
   }
 
+  if (snapshot.extension_request?.status === 'APPROVED') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-xl border border-slate-200 p-8 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-900">{t('contracts.card.hasBeenRenewedSimple', 'Đã gia hạn tạo HĐ mới')}</h2>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            {snapshot.extension_request?.new_contract_code
+              ? t('contracts.card.hasBeenRenewed', { code: snapshot.extension_request.new_contract_code, defaultValue: `Hợp đồng này đã được gia hạn sang hợp đồng mới (${snapshot.extension_request.new_contract_code}). Không thể yêu cầu trả chỗ cho hợp đồng cũ.` })
+              : t('contracts.card.renewedDisabledTooltip', 'Hợp đồng này đã được gia hạn tạo hợp đồng mới.')}
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-3">
+            <button
+              onClick={() => navigate(isProvider ? '/provider/dashboard?tab=contracts' : '/my-contracts')}
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg transition"
+            >
+              {t('contractTerminate.inactiveScreen.backToList', 'Quay lại danh sách')}
+            </button>
+            {snapshot.extension_request?.new_contract_id && (
+              <button
+                onClick={() => navigate(isProvider ? `/contracts/${snapshot.extension_request.new_contract_id}` : `/my-contracts/${snapshot.extension_request.new_contract_id}`)}
+                className="px-5 py-2.5 bg-neighbor-600 hover:bg-neighbor-700 text-white text-xs font-semibold rounded-lg transition"
+              >
+                {t('contractDetail.banners.viewNewContract', 'Xem HĐ mới')}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const facility = contract.reservation?.facility;
   const currentVeh = snapshot.vehicle_info || {};
   const todayStr = new Date().toISOString().slice(0, 10);

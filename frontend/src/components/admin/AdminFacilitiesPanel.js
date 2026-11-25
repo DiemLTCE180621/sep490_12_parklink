@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -24,6 +25,7 @@ import adminService from '../../services/adminService';
 import FacilityDetailsModal from '../modals/FacilityDetailsModal';
 
 const AdminFacilitiesPanel = () => {
+  const { t } = useTranslation('admin');
   const navigate = useNavigate();
 
   const [facilities, setFacilities] = useState([]);
@@ -63,7 +65,7 @@ const AdminFacilitiesPanel = () => {
       }
     } catch (err) {
       console.error('Lỗi khi lấy danh sách cơ sở:', err);
-      setError(err.response?.data?.message || err.message || 'Lỗi khi tải danh sách cơ sở bãi đỗ xe');
+      setError(t('facilities.loadError'));
     } finally {
       setLoading(false);
     }
@@ -84,7 +86,7 @@ const AdminFacilitiesPanel = () => {
   
   const handleOpenToggleLock = (facility) => {
     if (facility.verification_status !== 'APPROVED') {
-      setError('Chỉ có thể khóa/mở khóa các cơ sở đã được phê duyệt.');
+      setError(t('facilities.approvedOnly'));
       return;
     }
 
@@ -106,20 +108,18 @@ const AdminFacilitiesPanel = () => {
       const res = await adminService.toggleLockFacility(facility.id);
       if (res && (res.status === 'success' || !res.status)) {
         const nextStatus = type === 'LOCK' ? 'HIDDEN' : 'VISIBLE';
-        const actionMsg =
-          res.message ||
-          (type === 'LOCK' ? 'Đã khóa cơ sở bãi xe thành công!' : 'Đã mở khóa cơ sở bãi xe thành công!');
+        const actionMsg = t(type === 'LOCK' ? 'facilities.lockSuccess' : 'facilities.unlockSuccess');
         setSuccessMessage(actionMsg);
         setFacilities((prev) =>
           prev.map((f) => (f.id === facility.id ? { ...f, visibility_status: nextStatus } : f))
         );
       } else {
-        setError(res?.message || 'Thao tác thất bại!');
+        setError(t('facilities.actionError'));
       }
       setConfirmDialog({ isOpen: false, type: '', facility: null });
     } catch (err) {
       console.error('Lỗi khi thay đổi trạng thái:', err);
-      setError(err.response?.data?.message || err.message || 'Thao tác thất bại!');
+      setError(t('facilities.actionError'));
     } finally {
       setActionLoading(false);
     }
@@ -159,25 +159,25 @@ const AdminFacilitiesPanel = () => {
       case 'APPROVED':
         return (
           <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Đã duyệt
+            <CheckCircle2 className="w-3 h-3" /> {t('statuses.approved')}
           </span>
         );
       case 'PENDING_REVIEW':
         return (
           <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-            <Clock className="w-3 h-3" /> Chờ duyệt
+            <Clock className="w-3 h-3" /> {t('statuses.pendingReview')}
           </span>
         );
       case 'PREPARING':
         return (
           <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-            <Clock className="w-3 h-3" /> Đang chuẩn bị
+            <Clock className="w-3 h-3" /> {t('facilities.preparing')}
           </span>
         );
       case 'REJECTED':
         return (
           <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-            <AlertTriangle className="w-3 h-3" /> Đã từ chối
+            <AlertTriangle className="w-3 h-3" /> {t('statuses.rejected')}
           </span>
         );
       default:
@@ -190,13 +190,13 @@ const AdminFacilitiesPanel = () => {
     if (v === 'VISIBLE') {
       return (
         <span className="bg-neighbor-100 text-neighbor-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-          <Eye className="w-3 h-3" /> Hiện
+          <Eye className="w-3 h-3" /> {t('facilities.visible')}
         </span>
       );
     }
     return (
       <span className="bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-        <EyeOff className="w-3 h-3" /> Ẩn (Khóa)
+        <EyeOff className="w-3 h-3" /> {t('facilities.hiddenLocked')}
       </span>
     );
   };
@@ -207,14 +207,14 @@ const AdminFacilitiesPanel = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-neighbor-600" /> Quản Lý Tất Cả Cơ Sở
+            <Building2 className="w-6 h-6 text-neighbor-600" /> {t('facilities.title')}
           </h2>
           <p className="text-gray-500 text-xs mt-1">
-            Danh sách toàn bộ cơ sở bãi đỗ xe và trạng thái hoạt động trong hệ thống ParkLink
+            {t('facilities.subtitle')}
           </p>
         </div>
         <div className="text-xs font-semibold bg-gray-100 px-3 py-1.5 rounded-xl text-gray-700">
-          Tổng cộng: <strong className="text-neighbor-700 font-extrabold">{filteredFacilities.length}</strong> cơ sở
+          {t('facilities.totalCount', { count: filteredFacilities.length })}
         </div>
       </div>
 
@@ -255,7 +255,7 @@ const AdminFacilitiesPanel = () => {
               setSearch(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Tìm theo tên cơ sở, địa chỉ, chủ bãi hoặc số điện thoại..."
+            placeholder={t('facilities.searchPlaceholder')}
             className="w-full pl-9 pr-4 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 transition"
           />
         </div>
@@ -271,11 +271,11 @@ const AdminFacilitiesPanel = () => {
             }}
             className="px-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700"
           >
-            <option value="ALL">Tất cả trạng thái duyệt</option>
-            <option value="APPROVED">Đã duyệt</option>
-            <option value="PENDING_REVIEW">Chờ duyệt</option>
-            <option value="PREPARING">Đang chuẩn bị</option>
-            <option value="REJECTED">Đã từ chối</option>
+            <option value="ALL">{t('facilities.allApprovalStatuses')}</option>
+            <option value="APPROVED">{t('statuses.approved')}</option>
+            <option value="PENDING_REVIEW">{t('statuses.pendingReview')}</option>
+            <option value="PREPARING">{t('facilities.preparing')}</option>
+            <option value="REJECTED">{t('statuses.rejected')}</option>
           </select>
 
           {}
@@ -287,18 +287,18 @@ const AdminFacilitiesPanel = () => {
             }}
             className="px-3 py-2.5 text-xs border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-neighbor-500 bg-white font-medium text-gray-700"
           >
-            <option value="ALL">Tất cả hiển thị</option>
-            <option value="VISIBLE">Hiện</option>
-            <option value="HIDDEN">Ẩn (Khóa)</option>
+            <option value="ALL">{t('facilities.allVisibilityStatuses')}</option>
+            <option value="VISIBLE">{t('facilities.visible')}</option>
+            <option value="HIDDEN">{t('facilities.hiddenLocked')}</option>
           </select>
 
           <button
             type="button"
             onClick={handleResetFilters}
             className="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border border-gray-200"
-            title="Đặt lại bộ lọc & Tải lại danh sách"
+            title={t('facilities.resetAndRefresh')}
           >
-            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> Làm mới
+            <RotateCcw className="w-3.5 h-3.5 text-gray-600" /> {t('common.refresh')}
           </button>
         </div>
       </div>
@@ -307,12 +307,12 @@ const AdminFacilitiesPanel = () => {
       {loading ? (
         <div className="py-16 text-center text-gray-500 text-sm flex flex-col items-center justify-center gap-3">
           <RefreshCw className="w-8 h-8 animate-spin text-neighbor-600" />
-          <span>Đang tải danh sách cơ sở...</span>
+          <span>{t('facilities.loading')}</span>
         </div>
       ) : filteredFacilities.length === 0 ? (
         <div className="py-16 text-center text-gray-400">
           <Building2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p className="font-semibold text-sm">Không tìm thấy cơ sở nào phù hợp!</p>
+          <p className="font-semibold text-sm">{t('facilities.empty')}</p>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -320,11 +320,11 @@ const AdminFacilitiesPanel = () => {
             <thead>
               <tr className="bg-gray-50 text-gray-600 font-bold border-b border-gray-200">
                 <th className="py-3 px-4">ID</th>
-                <th className="py-3 px-4">Cơ sở</th>
-                <th className="py-3 px-4">Chủ bãi</th>
-                <th className="py-3 px-4">Trạng thái duyệt</th>
-                <th className="py-3 px-4">Hiển thị (Visibility)</th>
-                <th className="py-3 px-4 text-center">Thao tác</th>
+                <th className="py-3 px-4">{t('facilities.facility')}</th>
+                <th className="py-3 px-4">{t('facilities.provider')}</th>
+                <th className="py-3 px-4">{t('facilities.approvalStatus')}</th>
+                <th className="py-3 px-4">{t('facilities.visibility')}</th>
+                <th className="py-3 px-4 text-center">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-700">
@@ -385,7 +385,7 @@ const AdminFacilitiesPanel = () => {
                         {}
                         <button
                           onClick={() => setSelectedFacilityForView(facility)}
-                          title="Xem chi tiết cơ sở"
+                          title={t('facilities.viewDetails')}
                           className="p-1.5 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-800 rounded-lg border border-neighbor-200 transition"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -394,7 +394,7 @@ const AdminFacilitiesPanel = () => {
                         {}
                         <button
                           onClick={() => navigate(`/admin/facilities/${facility.id}/edit`)}
-                          title="Cập nhật thông tin cơ sở"
+                          title={t('facilities.editDetails')}
                           className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg border border-blue-200 transition"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -406,10 +406,10 @@ const AdminFacilitiesPanel = () => {
                           disabled={!isApproved}
                           title={
                             !isApproved
-                              ? 'Chỉ có thể khóa/mở khóa cơ sở đã duyệt'
+                              ? t('facilities.approvedOnly')
                               : isHidden
-                              ? 'Mở khóa cơ sở'
-                              : 'Khóa cơ sở'
+                              ? t('facilities.unlockFacility')
+                              : t('facilities.lockFacility')
                           }
                           className={`p-1.5 rounded-lg border transition ${
                             !isApproved
@@ -435,8 +435,7 @@ const AdminFacilitiesPanel = () => {
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-xs text-gray-600">
           <div>
-            Trang <strong>{currentPage}</strong> / {totalPages} (Tổng cộng{' '}
-            <strong className="text-neighbor-700">{filteredFacilities.length}</strong> cơ sở)
+            {t('facilities.pageSummary', { current: currentPage, total: totalPages, count: filteredFacilities.length })}
           </div>
           <div className="flex gap-2">
             <button
@@ -444,14 +443,14 @@ const AdminFacilitiesPanel = () => {
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
-              <ChevronLeft className="w-4 h-4" /> Trước
+              <ChevronLeft className="w-4 h-4" /> {t('facilities.previous')}
             </button>
             <button
               disabled={currentPage >= totalPages || loading}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition disabled:opacity-40 flex items-center gap-1 font-semibold"
             >
-              Sau <ChevronRight className="w-4 h-4" />
+              {t('facilities.next')} <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -462,7 +461,7 @@ const AdminFacilitiesPanel = () => {
         <FacilityDetailsModal
           facility={selectedFacilityForView}
           onClose={() => setSelectedFacilityForView(null)}
-          title="Chi Tiết Cơ Sở Bãi Đỗ Xe"
+          title={t('facilities.detailsTitle')}
         />
       )}
 
@@ -487,8 +486,8 @@ const AdminFacilitiesPanel = () => {
               <div>
                 <h3 className="text-xl font-bold text-gray-900">
                   {confirmDialog.type === 'LOCK'
-                    ? 'Xác nhận Khóa cơ sở'
-                    : 'Xác nhận Mở khóa cơ sở'}
+                    ? t('facilities.confirmLockTitle')
+                    : t('facilities.confirmUnlockTitle')}
                 </h3>
                 <p className="text-sm text-gray-500 mt-0.5">
                   #{confirmDialog.facility.id} — {confirmDialog.facility.name}
@@ -499,11 +498,11 @@ const AdminFacilitiesPanel = () => {
             <div className="text-base text-gray-700 leading-relaxed bg-gray-50 p-5 rounded-xl border border-gray-200">
               {confirmDialog.type === 'LOCK' ? (
                 <p>
-                  Bạn có chắc chắn muốn <strong>khóa cơ sở</strong> "<strong>{confirmDialog.facility.name}</strong>"? Khi bị khóa, cơ sở này sẽ chuyển sang trạng thái <strong>Ẩn</strong> và tạm thời không xuất hiện trên hệ thống tìm kiếm cho khách thuê.
+                  {t('facilities.confirmLockMessage', { name: confirmDialog.facility.name })}
                 </p>
               ) : (
                 <p>
-                  Bạn có chắc chắn muốn <strong>mở khóa cơ sở</strong> "<strong>{confirmDialog.facility.name}</strong>"? Cơ sở này sẽ chuyển sang trạng thái <strong>Hiện</strong> và hiển thị công khai bình thường trên hệ thống ParkLink.
+                  {t('facilities.confirmUnlockMessage', { name: confirmDialog.facility.name })}
                 </p>
               )}
             </div>
@@ -515,7 +514,7 @@ const AdminFacilitiesPanel = () => {
                 disabled={actionLoading}
                 className="px-6 py-2.5 border border-gray-200 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 transition"
               >
-                Hủy
+                {t('facilities.cancel')}
               </button>
               <button
                 type="button"
@@ -528,7 +527,7 @@ const AdminFacilitiesPanel = () => {
                 }`}
               >
                 {actionLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
-                {confirmDialog.type === 'LOCK' ? 'Khóa Cơ Sở' : 'Mở Khóa Cơ Sở'}
+                {t(confirmDialog.type === 'LOCK' ? 'facilities.lockFacility' : 'facilities.unlockFacility')}
               </button>
             </div>
           </div>

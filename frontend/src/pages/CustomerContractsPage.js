@@ -15,7 +15,8 @@ import {
   Loader2,
   Eye,
   PenTool,
-  Clock
+  Clock,
+  Check
 } from 'lucide-react';
 
 const CustomerContractsPage = () => {
@@ -99,6 +100,48 @@ const CustomerContractsPage = () => {
   const terminatedCount = contracts.filter((c) => c.status === 'TERMINATED' || c.status === 'CANCELLED').length;
   const dateLocale = i18n.language?.startsWith('en') ? 'en-GB' : 'vi-VN';
   const numberLocale = i18n.language?.startsWith('en') ? 'en-US' : 'vi-VN';
+
+  const getContractRenewalInfo = (contractItem) => {
+    let snapshot = contractItem.contract_snapshot || {};
+    if (typeof snapshot === 'string') {
+      try {
+        snapshot = JSON.parse(snapshot);
+      } catch (e) {
+        snapshot = {};
+      }
+    }
+    const ext = snapshot.extension_request;
+    if (ext && ext.status === 'APPROVED') {
+      return {
+        isRenewed: true,
+        newContractId: ext.new_contract_id,
+        newContractCode: ext.new_contract_code,
+      };
+    }
+    const child = contracts.find((c) => {
+      let childSnap = c.contract_snapshot || {};
+      if (typeof childSnap === 'string') {
+        try {
+          childSnap = JSON.parse(childSnap);
+        } catch (e) {
+          childSnap = {};
+        }
+      }
+      return (
+        c.parent_contract_id === contractItem.id ||
+        childSnap.contract_info?.renewed_from_contract_id === contractItem.id ||
+        c.renewed_from_contract_id === contractItem.id
+      );
+    });
+    if (child) {
+      return {
+        isRenewed: true,
+        newContractId: child.id,
+        newContractCode: child.contract_code,
+      };
+    }
+    return { isRenewed: false, newContractId: null, newContractCode: null };
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 w-full">
@@ -209,7 +252,9 @@ const CustomerContractsPage = () => {
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 shadow-xs divide-y divide-gray-100 overflow-hidden">
-            {filteredContracts.map((item) => (
+            {filteredContracts.map((item) => {
+              const { isRenewed, newContractCode } = getContractRenewalInfo(item);
+              return (
               <div
                 key={item.id}
                 onClick={() => handleOpenDetail(item.id)}
@@ -255,7 +300,17 @@ const CustomerContractsPage = () => {
                       </span>
                     )}
 
-                    {item.contract_snapshot?.extension_request?.status === 'PENDING' && (
+                    {isRenewed ? (
+                      <>
+                        <span>•</span>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                          <Check className="w-3 h-3 text-blue-600" />
+                          {newContractCode
+                            ? t('contracts.card.hasBeenRenewed', { code: newContractCode, defaultValue: `Đã gia hạn (HĐ mới: ${newContractCode})` })
+                            : t('contracts.card.hasBeenRenewedSimple', 'Đã gia hạn tạo HĐ mới')}
+                        </span>
+                      </>
+                    ) : item.contract_snapshot?.extension_request?.status === 'PENDING' ? (
                       <>
                         <span>•</span>
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">
@@ -263,7 +318,7 @@ const CustomerContractsPage = () => {
                           {t('contracts.card.extensionPending', { months: item.contract_snapshot.extension_request.extension_months })}
                         </span>
                       </>
-                    )}
+                    ) : null}
 
                     {item.contract_snapshot?.termination_request?.status === 'PENDING' && (
                       <>
@@ -325,82 +380,163 @@ const CustomerContractsPage = () => {
                         {t('contracts.card.viewAndConfirm')}
                       </button>
                     ) : item.status === 'ACTIVE' ? (
-                      <>
-                        {item.contract_snapshot?.extension_request?.status === 'PENDING' ? (
+                      isRenewed ? (
+                        <>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            title={t('contracts.card.renewedDisabledTooltip')}
+                            className="cursor-not-allowed inline-block"
+                          >
+                            <button
+                              type="button"
+                              disabled
+                              className="pointer-events-none px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-lg border border-gray-200 inline-flex items-center gap-1.5 opacity-60"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-gray-400" />
+                              {t('contracts.card.extend')}
+                            </button>
+                          </span>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            title={t('contracts.card.renewedDisabledTooltip')}
+                            className="cursor-not-allowed inline-block"
+                          >
+                            <button
+                              type="button"
+                              disabled
+                              className="pointer-events-none px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-lg border border-gray-200 opacity-60"
+                            >
+                              {t('contracts.card.terminate')}
+                            </button>
+                          </span>
+                          <span
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                            }}
+                            title={t('contracts.card.renewedDisabledTooltip')}
+                            className="cursor-not-allowed inline-block"
+                          >
+                            <button
+                              type="button"
+                              disabled
+                              className="pointer-events-none px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-lg border border-gray-200 opacity-60"
+                            >
+                              {t('contracts.card.complaint')}
+                            </button>
+                          </span>
                           <button
                             type="button"
-                            onClick={(e) => handleOpenExtension(item, e)}
-                            className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition inline-flex items-center gap-1.5"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDetail(item.id);
+                            }}
+                            className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
                           >
-                            <Clock className="w-3.5 h-3.5 text-amber-600" />
-                            {t('contracts.card.viewExtension')}
+                            <Eye className="w-3.5 h-3.5" />
+                            {t('contracts.card.details')}
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenExtension(item, e)}
-                            className="px-3 py-1.5 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-700 text-xs font-medium rounded-lg border border-neighbor-200 transition inline-flex items-center gap-1.5"
-                          >
-                            <Clock className="w-3.5 h-3.5 text-neighbor-600" />
-                            {t('contracts.card.extend')}
-                          </button>
-                        )}
+                        </>
+                      ) : (
+                        <>
+                          {item.contract_snapshot?.extension_request?.status === 'PENDING' ? (
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenExtension(item, e)}
+                              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold rounded-lg border border-amber-300 transition inline-flex items-center gap-1.5"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-amber-600" />
+                              {t('contracts.card.viewExtension')}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenExtension(item, e)}
+                              className="px-3 py-1.5 bg-neighbor-50 hover:bg-neighbor-100 text-neighbor-700 text-xs font-medium rounded-lg border border-neighbor-200 transition inline-flex items-center gap-1.5"
+                            >
+                              <Clock className="w-3.5 h-3.5 text-neighbor-600" />
+                              {t('contracts.card.extend')}
+                            </button>
+                          )}
 
-                        {item.contract_snapshot?.termination_request?.status === 'PENDING' ? (
+                          {item.contract_snapshot?.termination_request?.status === 'PENDING' ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/contracts/${item.id}/terminate`);
+                              }}
+                              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition inline-flex items-center gap-1.5"
+                            >
+                              <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                              {item.contract_snapshot?.termination_request?.requested_by === 'PROVIDER'
+                                ? t('contracts.card.viewTerminationProvider')
+                                : t('contracts.card.viewTerminationCustomer')}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/contracts/${item.id}/terminate`);
+                              }}
+                              className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
+                            >
+                              {t('contracts.card.terminate')}
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/contracts/${item.id}/terminate`);
-                            }}
-                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold rounded-lg border border-rose-300 transition inline-flex items-center gap-1.5"
-                          >
-                            <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-                            {item.contract_snapshot?.termination_request?.requested_by === 'PROVIDER'
-                              ? t('contracts.card.viewTerminationProvider')
-                              : t('contracts.card.viewTerminationCustomer')}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/contracts/${item.id}/terminate`);
-                            }}
-                            className="px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-700 text-xs font-medium rounded-lg border border-rose-200 transition"
-                          >
-                            {t('contracts.card.terminate')}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenComplaint(item.reservation?.facility_id, e)}
-                          className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
-                        >
-                          {t('contracts.card.complaint')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenDetail(item.id);
-                          }}
-                          className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          {t('contracts.card.details')}
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        {['ACTIVE', 'COMPLETED'].includes(item.status) && (
-                          <button
-                            type="button"
-                            onClick={(e) => handleOpenComplaint(item.reservation_id, e)}
+                            onClick={(e) => handleOpenComplaint(item.reservation?.id, e)}
                             className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
                           >
                             {t('contracts.card.complaint')}
                           </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenDetail(item.id);
+                            }}
+                            className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition inline-flex items-center gap-1.5"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            {t('contracts.card.details')}
+                          </button>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        {['ACTIVE', 'COMPLETED'].includes(item.status) && (
+                          <span
+                            onClick={(e) => {
+                              if (isRenewed) {
+                                e.stopPropagation();
+                                e.preventDefault();
+                              }
+                            }}
+                            title={isRenewed ? t('contracts.card.renewedDisabledTooltip') : undefined}
+                            className={isRenewed ? 'cursor-not-allowed inline-block' : 'inline-block'}
+                          >
+                            <button
+                              type="button"
+                              disabled={isRenewed}
+                              onClick={(e) => handleOpenComplaint(item.reservation_id, e)}
+                              className={
+                                isRenewed
+                                  ? "pointer-events-none px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-medium rounded-lg border border-gray-200 opacity-60"
+                                  : "px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 transition"
+                              }
+                            >
+                              {t('contracts.card.complaint')}
+                            </button>
+                          </span>
                         )}
                         <button
                           type="button"
@@ -418,7 +554,8 @@ const CustomerContractsPage = () => {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

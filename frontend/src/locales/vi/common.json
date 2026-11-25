@@ -1,5 +1,6 @@
 {
   "app": {
+    "title": "ParkLink - Nền Tảng Cho Thuê Bãi Đỗ Xe Theo Tháng",
     "loading": "Đang tải ứng dụng ParkLink...",
     "tagline": "Thuê Bãi Đỗ Xe Theo Tháng"
   },
@@ -35,6 +36,7 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "confirm": "Xác nhận",
+    "processing": "Đang Xử Lý...",
     "close": "Đóng",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",

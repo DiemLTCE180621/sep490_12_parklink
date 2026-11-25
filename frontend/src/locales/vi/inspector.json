@@ -13,7 +13,7 @@
   "table": {
     "id": "ID",
     "facility": "Cơ sở bãi đỗ xe",
-    "provider": "Chủ bãi (Provider)",
+    "provider": "Chủ bãi",
     "proposal": "Đề xuất ban đầu",
     "status": "Trạng thái",
     "actions": "Thao tác"

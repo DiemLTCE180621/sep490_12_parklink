@@ -449,7 +449,6 @@
     "tabs": {
       "ALL": "Tất cả",
       "WAITING_PROVIDER": "Cần giải trình",
-      "PROVIDER_REPLIED": "Đã giải trình",
       "RESOLVED": "Đã giải quyết"
     },
     "statuses": {
@@ -486,7 +485,19 @@
     },
     "actions": {
       "updateReply": "Cập nhật phản hồi",
-      "submitReply": "Gửi bản giải trình"
+      "submitReply": "Gửi phản hồi"
+    },
+    "replyModal": {
+      "title": "Phản hồi khiếu nại",
+      "subtitle": "Gửi trực tiếp cho khách hàng · Khiếu nại #{{id}}",
+      "notice": "Phản hồi và phương án hỗ trợ của bạn sẽ được gửi trực tiếp cho khách hàng.",
+      "responseLabel": "Nội dung phản hồi",
+      "responsePlaceholder": "Nhập phản hồi hoặc phương án hỗ trợ cho khách hàng...",
+      "errors": {
+        "required": "Vui lòng nhập nội dung phản hồi.",
+        "tooShort": "Phản hồi cần ít nhất 5 ký tự.",
+        "tooLong": "Phản hồi không được vượt quá 3000 ký tự."
+      }
     }
   },
   "reviews": {
@@ -520,7 +531,11 @@
       "cancel": "Hủy",
       "sending": "Đang gửi...",
       "sendReply": "Gửi phản hồi",
-      "replyAction": "Phản hồi đánh giá này"
+      "replyAction": "Phản hồi đánh giá này",
+      "validation": {
+        "required": "Vui lòng nhập nội dung phản hồi.",
+        "maxLength": "Nội dung phản hồi không được vượt quá 1000 ký tự."
+      }
     },
     "toasts": {
       "replySuccess": "Gửi phản hồi thành công!",
@@ -552,11 +567,13 @@
       "transactionId": "Mã GD",
       "paymentTime": "Thời gian",
       "facilityName": "Bãi xe",
+      "provider": "Chủ bãi",
       "transactionType": "Loại",
       "amount": "Số tiền",
       "status": "Trạng thái"
     },
     "providerSubtitle": "Theo dõi các giao dịch phí nền tảng của bãi xe bạn quản lý.",
+    "adminSubtitle": "Theo dõi các giao dịch phí nền tảng trên hệ thống.",
     "currency": "đ",
     "errors": {
       "loadFailed": "Không tải được lịch sử giao dịch.",
@@ -577,13 +594,17 @@
     "subtitle": "Phí nền tảng thu 1 lần dựa trên quy mô bãi đỗ (Khung Min – Max) sau khi khảo sát thực địa",
     "refresh": "Làm mới",
     "refreshTitle": "Làm mới danh sách",
+    "create": "Thêm gói biểu phí",
+    "createTitle": "Tạo gói biểu phí mới",
     "bannerNote": "Thu 1 lần khi duyệt đưa cơ sở lên sàn",
     "loadError": "Không thể tải danh sách biểu phí nền tảng",
+    "toggleError": "Không thể thay đổi trạng thái gói phí.",
     "columns": {
       "nameAndDesc": "Tên Gói & Mô Tả",
       "slotTier": "Khung Quy Mô Slot",
       "oneTimeFee": "Mức Phí Thu 1 Lần",
-      "status": "Trạng Thái"
+      "status": "Trạng Thái",
+      "actions": "Thao tác"
     },
     "loading": "Đang tải danh sách biểu phí nền tảng...",
     "empty": "Chưa có gói biểu phí nào được tạo trên hệ thống.",
@@ -591,6 +612,146 @@
     "slotFrom": "Từ {{min}} chỗ trở lên",
     "currency": "VNĐ",
     "active": "Đang áp dụng",
-    "inactive": "Tạm ngưng"
+    "inactive": "Tạm ngưng",
+    "editTitle": "Chỉnh sửa trên trang riêng",
+    "activateTitle": "Kích hoạt gói phí",
+    "deactivateTitle": "Ngừng áp dụng gói phí",
+    "toast": {
+      "activated": "Đã kích hoạt gói \"{{name}}\".",
+      "deactivated": "Đã ngừng áp dụng gói \"{{name}}\"."
+    },
+    "confirm": {
+      "activateTitle": "Kích hoạt gói biểu phí",
+      "deactivateTitle": "Ngừng áp dụng gói biểu phí",
+      "message": "Bạn có chắc muốn {{action}} gói biểu phí \"{{name}}\" không?",
+      "activate": "Kích hoạt",
+      "deactivate": "Ngừng áp dụng",
+      "cancel": "Hủy"
+    }
+  },
+  "createContract": {
+    "breadcrumbs": {
+      "dashboard": "Bảng Điều Khiển",
+      "reservations": "Duyệt Yêu Cầu Thuê",
+      "current": "Thiết Lập Hợp Đồng"
+    },
+    "back": "Quay Lại",
+    "loading": "Đang tải dữ liệu yêu cầu thuê xe #{{id}}...",
+    "error": {
+      "notFound": "Không tìm thấy thông tin yêu cầu thuê xe này.",
+      "loadFailed": "Không thể tải thông tin yêu cầu thuê!",
+      "title": "Không tìm thấy yêu cầu thuê",
+      "retry": "Thử Lại"
+    },
+    "cancelled": {
+      "title": "Đã hết thời hạn làm hợp đồng – Yêu cầu đặt chỗ đã tự động hủy!",
+      "desc": "Quá thời hạn {{duration}} kể từ khi chấp nhận yêu cầu đặt chỗ mà chưa hoàn tất tạo hợp đồng điện tử, hệ thống đã tự động hủy yêu cầu đặt chỗ này.",
+      "defaultDuration": "quy định",
+      "backToList": "Quay Lại Danh Sách Yêu Cầu"
+    },
+    "alreadyExists": {
+      "title": "Yêu cầu thuê này đã có hợp đồng điện tử!",
+      "desc": "Hợp đồng cho yêu cầu thuê này đã được khởi tạo trước đó. Bạn có thể xem chi tiết văn bản hợp đồng hoặc theo dõi trạng thái ký kết.",
+      "viewContract": "Xem Hợp Đồng #{{id}}"
+    },
+    "notApproved": {
+      "title": "Yêu cầu thuê chưa được phê duyệt chấp nhận",
+      "descBefore": "Hợp đồng điện tử chỉ có thể thiết lập sau khi yêu cầu thuê được phê duyệt (Trạng thái hiện tại:",
+      "viewDetail": "Xem Chi Tiết Yêu Cầu Để Phê Duyệt"
+    },
+    "header": {
+      "title": "Thiết Lập Hợp Đồng Gửi Giữ Xe Ô Tô",
+      "badge": "Hợp đồng dịch vụ điện tử",
+      "facilityLabel": "Cơ sở bãi xe:",
+      "customerLabel": "Khách thuê:"
+    },
+    "parties": {
+      "sectionTitle": "I. Thông Tin Các Bên Giao Dịch",
+      "autoExtracted": "Tự động trích xuất từ tài khoản",
+      "partyATitle": "Bên A (Chủ Bãi Đỗ Xe)",
+      "partyABadge": "Bên Cho Thuê",
+      "representative": "Đại diện:",
+      "ownerFallback": "Chủ cơ sở",
+      "phone": "SĐT:",
+      "email": "Email:",
+      "notUpdated": "Chưa cập nhật",
+      "partyBTitle": "Bên B (Khách Hàng Thuê)",
+      "partyBBadge": "Bên Thuê",
+      "customerId": "Mã khách hàng:",
+      "customerPhone": "Số điện thoại:",
+      "customerEmail": "Email trực tuyến:",
+      "idCardLabel": "Số CMND / Thẻ Căn cước công dân (CCCD) Bên B",
+      "idCardPlaceholder": "Chưa có thông tin CCCD",
+      "addressLabel": "Địa chỉ thường trú / liên hệ Bên B",
+      "addressPlaceholder": "Chưa có thông tin địa chỉ"
+    },
+    "article1": {
+      "title": "Điều 1: Đối Tượng Gửi, Giữ",
+      "badge": "Phương tiện đăng ký",
+      "vehicleTypeLabel": "Loại phương tiện / Hãng xe",
+      "vehicleTypePlaceholder": "VD: Ô tô (4-7 chỗ)",
+      "vehicleTypeHint": "Chủng loại xe khách hàng đã đăng ký khi gửi yêu cầu thuê chỗ.",
+      "plateLabel": "Biển kiểm soát / Biển số xe đăng ký",
+      "platePlaceholder": "VD: 65A-563.94",
+      "plateHint": "Biển số kiểm soát xe gửi giữ tại bãi theo đăng ký của khách hàng."
+    },
+    "article2": {
+      "title": "Điều 2: Giá Cả Và Phương Thức Và Thời Hạn Thanh Toán",
+      "durationBadge": "Thời hạn: {{duration}}",
+      "durationValue": "{{months}} tháng ({{days}} ngày)",
+      "priceLabel": "Giá dịch vụ trông giữ xe thỏa thuận (VNĐ)",
+      "pricePlaceholder": "VD: 850000",
+      "priceUnit": "VNĐ / tháng",
+      "pricePreview": "Bằng chữ: {{price}} VNĐ / tháng",
+      "deadlineLabel": "Hạn thanh toán hàng tháng (Ngày 1 - 31)",
+      "deadlinePlaceholder": "Mặc định trước ngày 5 hoặc 10 hàng tháng",
+      "deadlineHint": "Định kỳ thanh toán từ ngày 01 đến ngày {{day}} mỗi tháng.",
+      "startDateLabel": "Thời gian gửi: Ngày bắt đầu hiệu lực",
+      "endDateLabel": "Thời gian gửi: Ngày kết thúc hợp đồng",
+      "spotLabel": "Vị trí gửi / Ô đỗ phân công trong bãi",
+      "spotPlaceholder": "VD: Bãi xe Trung tâm hoặc Slot #A-12",
+      "spotHint": "Vị trí ô đỗ cụ thể được phân công cho Bên B tại khuôn viên bãi xe của Bên A.",
+      "paymentMethodsTitle": "Phương thức thanh toán áp dụng trong hợp đồng:",
+      "bankTransferBefore": "Chuyển khoản",
+      "bankTransferMid": "vào tài khoản Bên A: Nội dung chuyển khoản ghi rõ",
+      "bankTransferNote": "Họ tên, Biển số xe, Tháng đóng tiền",
+      "cashBefore": "Tiền mặt",
+      "cashAfter": ": Nộp trực tiếp tại bộ phận Văn thư - Thủ quỹ / Ban Quản lý bãi xe."
+    },
+    "terms": {
+      "title": "Các Điều Khoản Thỏa Thuận (Điều 3 - Điều 6)",
+      "infoNoticeBefore": "Điều 1",
+      "infoNoticeMid1": "(Đối tượng xe gửi) và",
+      "infoNoticeMid2": "Điều 2",
+      "infoNoticeMid3": "(Giá cả, phương thức & thời hạn thanh toán) đã được thiết lập ở 2 mục phía trên. Dưới đây là nội dung chi tiết của",
+      "infoNoticeEnd": "Điều 3, 4, 5 và 6 (nội dung hợp đồng mặc định bằng tiếng Việt):",
+      "tabOwner": "Điều 3. Nghĩa vụ Bên A (Chủ Bãi)",
+      "tabCustomer": "Điều 4. Nghĩa vụ Bên B (Khách Thuê)",
+      "tabDispute": "Điều 5. Giải Quyết Tranh Chấp",
+      "tabTermination": "Điều 6. Hiệu Lực Của Hợp Đồng",
+      "ownerLabel": "Điều 3: Quyền và nghĩa vụ của Bên A (Bên giữ xe ô tô):",
+      "customerLabel": "Điều 4: Quyền và nghĩa vụ của Bên B (Bên gửi xe ô tô):",
+      "disputeLabel": "Điều 5: Cơ chế giải quyết tranh chấp:",
+      "terminationLabel": "Điều 6: Hiệu lực và điều kiện chấm dứt hợp đồng:"
+    },
+    "pendingNotice": {
+      "before": "Hợp đồng sau khi tạo sẽ được lưu trữ với trạng thái",
+      "status": "CHỜ KÝ (PENDING_SIGNATURE)",
+      "after": ". Khách hàng thuê sẽ nhận được thông báo để kiểm tra toàn bộ điều khoản và ký xác nhận điện tử trước khi hợp đồng chính thức có hiệu lực thi hành."
+    },
+    "actions": {
+      "cancelBack": "Hủy Bỏ / Quay Lại",
+      "submitting": "Đang Khởi Tạo Hợp Đồng...",
+      "submit": "Tạo & Gửi Hợp Đồng Điện Tử"
+    },
+    "validation": {
+      "invalidPrice": "Vui lòng nhập giá thuê thỏa thuận hợp lệ (lớn hơn 0 VNĐ)!",
+      "datesRequired": "Vui lòng chọn ngày bắt đầu và ngày kết thúc hợp đồng!",
+      "endAfterStart": "Ngày kết thúc hợp đồng phải diễn ra sau ngày bắt đầu!",
+      "idCardRequired": "Vui lòng nhập Số CMND hoặc Căn cước công dân (CCCD) của Bên B để lập hợp đồng!",
+      "addressRequired": "Vui lòng nhập Địa chỉ liên hệ / thường trú của Bên B để lập hợp đồng!",
+      "createSuccess": "Tạo và gửi hợp đồng điện tử thành công! Đang chuyển đến văn bản hợp đồng...",
+      "createError": "Không thể tạo hợp đồng điện tử. Vui lòng thử lại!"
+    }
   }
 }
