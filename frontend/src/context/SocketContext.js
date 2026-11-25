@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import api from '../services/api';
 
 const SocketContext = createContext();
 
@@ -23,7 +24,8 @@ export const SocketProvider = ({ children }) => {
         }
 
         // Tạo kết nối một lần duy nhất, gửi kèm Token
-        const newSocket = io('http://localhost:5000', {
+        const socketOrigin = new URL(api.defaults.baseURL, window.location.origin).origin;
+        const newSocket = io(socketOrigin, {
             auth: {
                 token: localStorage.getItem('parklink_token') // Gửi token lên backend để bảo mật
             },

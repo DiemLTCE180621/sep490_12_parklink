@@ -85,7 +85,8 @@
       "noRecentRequest": "No pending rental requests at the moment.",
       "viewRequestDetail": "View Request Details",
       "submittedDate": "Submitted date",
-      "vehicle": "Vehicle"
+      "vehicle": "Vehicle",
+      "parkingSpot": "Parking Spot"
     }
   },
   "reservations": {
@@ -726,7 +727,7 @@
       "policyCustomerBefore": "Under Article 6 of the Parking Confirmation Record, Customers must notify the Parking Provider at least",
       "policyCustomerAfter": "prior to the expected stop date. Please arrange handover and vacate the parking spot on schedule.",
       "step1TitleProvider": "1. Proposed Stop & Slot Reclamation Date",
-      "step1TitleCustomer": "1. Proposed Slot Return & Stop Date",
+      "step1TitleCustomer": "1. Proposed Stop & Slot Return Date",
       "step1DescProvider": "Choose the date by which the Customer must move their vehicle out of the facility.",
       "step1DescCustomer": "Choose the date you will vacate the facility and complete slot handover.",
       "step1LabelProvider": "Proposed Stop Date",
