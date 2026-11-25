@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   Mail,
   Phone,
@@ -692,7 +692,7 @@ const AdminUserDetailPage = () => {
               {confirmDialog.type === 'LOCK' && (
                 <div className="space-y-2">
                   <p>
-                    {t('admin:userDetail.dialogs.lockPrompt', { name: user.full_name })}
+                    <Trans i18nKey="userDetail.dialogs.lockPrompt" ns="admin" values={{ name: user.full_name }} />
                   </p>
                   {user.role?.name === 'PROVIDER' && user.facility && (
                     <p className="text-rose-600 font-semibold">
@@ -713,12 +713,12 @@ const AdminUserDetailPage = () => {
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>
-                  {t('admin:userDetail.dialogs.unlockPrompt', { name: user.full_name })}
+                  <Trans i18nKey="userDetail.dialogs.unlockPrompt" ns="admin" values={{ name: user.full_name }} />
                 </p>
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  {t('admin:userDetail.dialogs.resetPrompt', { email: user.email })}
+                  <Trans i18nKey="userDetail.dialogs.resetPrompt" ns="admin" values={{ email: user.email }} />
                 </p>
               )}
             </div>

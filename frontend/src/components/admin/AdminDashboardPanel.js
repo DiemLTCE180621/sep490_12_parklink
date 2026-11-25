@@ -15,47 +15,50 @@ import {
 import adminService from '../../services/adminService';
 
 const STAT_CARDS = [
-  { key: 'totalUsers', label: 'Tổng người dùng', icon: Users, color: 'text-blue-600 bg-blue-50' },
-  { key: 'activeFacilities', label: 'Bãi xe đang hoạt động', icon: Building2, color: 'text-emerald-600 bg-emerald-50' },
-  { key: 'pendingFacilities', label: 'Bãi xe đăng ký chưa được duyệt', icon: Clock3, color: 'text-amber-600 bg-amber-50' },
-  { key: 'totalReservations', label: 'Tổng yêu cầu thuê', icon: CalendarDays, color: 'text-violet-600 bg-violet-50' },
-  { key: 'totalContracts', label: 'Tổng hợp đồng thuê', icon: FileText, color: 'text-indigo-600 bg-indigo-50' },
-  { key: 'pendingComplaints', label: 'Khiếu nại chờ tiếp nhận', icon: MessageCircle, color: 'text-rose-600 bg-rose-50' },
-  { key: 'paidPlatformFees', label: 'Phí nền tảng đã thu', icon: DollarSign, color: 'text-neighbor-600 bg-neighbor-50', currency: true }
+  { key: 'totalUsers', icon: Users, color: 'text-blue-600 bg-blue-50' },
+  { key: 'activeFacilities', icon: Building2, color: 'text-emerald-600 bg-emerald-50' },
+  { key: 'pendingFacilities', icon: Clock3, color: 'text-amber-600 bg-amber-50' },
+  { key: 'totalReservations', icon: CalendarDays, color: 'text-violet-600 bg-violet-50' },
+  { key: 'totalContracts', icon: FileText, color: 'text-indigo-600 bg-indigo-50' },
+  { key: 'pendingComplaints', icon: MessageCircle, color: 'text-rose-600 bg-rose-50' },
+  { key: 'paidPlatformFees', icon: DollarSign, color: 'text-neighbor-600 bg-neighbor-50', currency: true }
 ];
 
 const ACTIVITY_SERIES = [
-  { key: 'facilities', label: 'Bãi xe đăng ký', color: 'bg-neighbor-500', chartColor: '#14b8a6' },
-  { key: 'reservations', label: 'Yêu cầu thuê', color: 'bg-indigo-500', chartColor: '#6366f1' },
-  { key: 'contracts', label: 'Hợp đồng thuê', color: 'bg-blue-500', chartColor: '#3b82f6' },
-  { key: 'complaints', label: 'Khiếu nại', color: 'bg-amber-500', chartColor: '#f59e0b' }
+  { key: 'facilities', color: 'bg-neighbor-500', chartColor: '#14b8a6' },
+  { key: 'reservations', color: 'bg-indigo-500', chartColor: '#6366f1' },
+  { key: 'contracts', color: 'bg-blue-500', chartColor: '#3b82f6' },
+  { key: 'complaints', color: 'bg-amber-500', chartColor: '#f59e0b' }
 ];
 
-const formatNumber = (value) => {
-  const number = Number(value);
-  return Number.isFinite(number) ? new Intl.NumberFormat('vi-VN').format(number) : '—';
-};
-const formatCurrency = (value) => {
-  const formatted = formatNumber(value);
-  return formatted === '—' ? formatted : `${formatted} VNĐ`;
-};
-const formatDateTime = (value) => {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : date.toLocaleString('vi-VN', {
-      timeZone: 'Asia/Ho_Chi_Minh',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-};
-const formatMonthLabel = (month) => `T${Number(month.slice(5, 7))}`;
-
 const AdminDashboardPanel = () => {
-  const { t } = useTranslation(['admin', 'common']);
+  const { t, i18n } = useTranslation(['admin', 'common']);
+  const isEnglish = i18n.resolvedLanguage === 'en';
+  const locale = isEnglish ? 'en-GB' : 'vi-VN';
+  const numbers = new Intl.NumberFormat(locale);
+  const shortMonth = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' });
+  const monthAndYear = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const transactionDateTime = new Intl.DateTimeFormat(locale, {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  const formatNumber = (value) => Number.isFinite(Number(value)) ? numbers.format(value) : '—';
+  const formatCurrency = (value) => Number.isFinite(Number(value))
+    ? t('dashboard.currency', { amount: formatNumber(value) })
+    : '—';
+  const formatDateTime = (value) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '—' : transactionDateTime.format(date);
+  };
+  const formatMonthLabel = (month) => t('dashboard.feeChart.shortMonth', {
+    month: Number(month.slice(5, 7)),
+    name: shortMonth.format(new Date(`${month}-01T00:00:00Z`))
+  });
+  const formatMonthAndYear = (month) => monthAndYear.format(new Date(`${month}-01T00:00:00Z`));
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -153,6 +156,7 @@ const AdminDashboardPanel = () => {
   });
   const activityTotals = ACTIVITY_SERIES.map((series) => ({
     ...series,
+    label: t(`dashboard.activitySeries.${series.key}`),
     value: (overview?.monthlyActivity || []).reduce(
       (total, month) => total + (Number(month[series.key]) || 0),
       0
@@ -177,6 +181,9 @@ const AdminDashboardPanel = () => {
     ? `conic-gradient(${activitySlices.map((slice) => `${slice.chartColor} ${slice.start}% ${slice.end}%`).join(', ')})`
     : 'conic-gradient(#e2e8f0 0% 100%)';
   const selectedActivity = activityTotals.find((series) => series.key === selectedActivityKey);
+  const selectedActivityPercentage = selectedActivity && totalActivity
+    ? Math.round((selectedActivity.value / totalActivity) * 100)
+    : 0;
 
   return (
     <section className="flex flex-col gap-6">
@@ -202,7 +209,7 @@ const AdminDashboardPanel = () => {
             className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Làm mới
+            {t('dashboard.refreshBtn')}
           </button>
         </div>
       </div>
@@ -211,10 +218,10 @@ const AdminDashboardPanel = () => {
         <div role="alert" className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           <span className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            {exportError}
+            {isEnglish ? t('dashboard.exportError') : exportError}
           </span>
           <button type="button" onClick={() => setExportError('')} className="shrink-0 font-semibold underline">
-            Đóng
+            {t('common:actions.close')}
           </button>
         </div>
       )}
@@ -223,20 +230,20 @@ const AdminDashboardPanel = () => {
         <div role="alert" className="flex items-center justify-between gap-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           <span className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            {error}
+            {isEnglish ? t('dashboard.loadError') : error}
           </span>
           <button type="button" onClick={loadOverview} className="shrink-0 font-semibold underline">
-            Thử lại
+            {t('dashboard.retry')}
           </button>
         </div>
       )}
 
       <div className="order-1 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 shadow-sm sm:grid-cols-2 xl:grid-cols-4">
-        {STAT_CARDS.map(({ key, label, icon: Icon, color, currency }) => (
+        {STAT_CARDS.map(({ key, icon: Icon, color, currency }) => (
           <article key={key} className={`p-4 sm:p-5 ${currency ? 'bg-neighbor-50/70' : 'bg-white'}`}>
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="min-h-9 text-xs font-medium leading-4 text-gray-500">{t(`admin:dashboard.statCards.${key}`, label)}</p>
+                <p className="min-h-9 text-xs font-medium leading-4 text-gray-500">{t(`dashboard.statCards.${key}`)}</p>
                 <p className={`mt-2 font-bold text-gray-900 ${currency ? 'text-xl' : 'text-2xl'}`}>
                   {overview ? (currency ? formatCurrency(overview[key]) : formatNumber(overview[key])) : '—'}
                 </p>
@@ -252,8 +259,8 @@ const AdminDashboardPanel = () => {
       <section className="order-3 rounded-xl border border-gray-200 bg-gray-50/50 p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 border-b border-gray-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Hoạt động hệ thống</h3>
-            <p className="mt-1 text-sm text-gray-500">Tỷ trọng 6 tháng gần nhất · Chọn loại để xem số liệu ở giữa</p>
+            <h3 className="text-base font-bold text-gray-900">{t('dashboard.activity.title')}</h3>
+            <p className="mt-1 text-sm text-gray-500">{t('dashboard.activity.subtitle')}</p>
           </div>
         </div>
 
@@ -262,8 +269,8 @@ const AdminDashboardPanel = () => {
             <div
               role="img"
               aria-label={selectedActivity
-                ? `${selectedActivity.label}: ${totalActivity ? Math.round((selectedActivity.value / totalActivity) * 100) : 0}%`
-                : `Tổng ${formatNumber(totalActivity)} hoạt động trong 6 tháng gần nhất`}
+                ? `${selectedActivity.label}: ${selectedActivityPercentage}%`
+                : t('dashboard.activity.totalAria', { total: formatNumber(totalActivity) })}
               className="relative mx-auto h-44 w-44 rounded-full"
               style={{ backgroundImage: activityGradient }}
             >
@@ -271,17 +278,17 @@ const AdminDashboardPanel = () => {
                 {selectedActivity ? (
                   <>
                     <span className="text-2xl font-extrabold text-gray-900">
-                      {totalActivity ? `${Math.round((selectedActivity.value / totalActivity) * 100)}%` : '0%'}
+                      {selectedActivityPercentage}%
                     </span>
                     <span className="mt-1 px-2 text-xs font-semibold text-gray-700">{selectedActivity.label}</span>
                     <span className="mt-0.5 text-[11px] text-gray-500">
-                      {formatNumber(selectedActivity.value)} phát sinh
+                      {t('dashboard.activity.entries', { count: selectedActivity.value, total: formatNumber(selectedActivity.value) })}
                     </span>
                   </>
                 ) : (
                   <>
                     <span className="text-2xl font-extrabold text-gray-900">{formatNumber(totalActivity)}</span>
-                    <span className="mt-1 text-xs font-medium text-gray-500">Tổng hoạt động</span>
+                    <span className="mt-1 text-xs font-medium text-gray-500">{t('dashboard.activity.total')}</span>
                   </>
                 )}
               </div>
@@ -315,7 +322,7 @@ const AdminDashboardPanel = () => {
           </div>
         ) : (
           <div className="flex h-48 items-center justify-center text-sm text-gray-500">
-            {loading ? 'Đang tải biểu đồ...' : 'Chưa có dữ liệu hoạt động trong giai đoạn này.'}
+            {t(loading ? 'dashboard.activity.loading' : 'dashboard.activity.empty')}
           </div>
         )}
       </section>
@@ -328,15 +335,15 @@ const AdminDashboardPanel = () => {
             </span>
             <div>
               <h3 className="text-lg font-extrabold text-gray-900">
-                Phí nền tảng đã thu
+                {t('dashboard.statCards.paidPlatformFees')}
               </h3>
               <p className="mt-1 max-w-3xl text-sm leading-5 text-gray-600">
-                Tổng giao dịch phí thành công, phân theo tháng thanh toán. Bấm vào cột để xem chi tiết.
+                {t('dashboard.feeChart.subtitle')}
               </p>
             </div>
           </div>
           <div className="rounded-xl border border-neighbor-200 bg-white/90 px-4 py-2.5 shadow-sm sm:min-w-[13rem] sm:text-right">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-neighbor-700">Tổng giao dịch thành công</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-neighbor-700">{t('dashboard.feeChart.total')}</p>
             <p className="mt-0.5 text-base font-extrabold text-neighbor-950 sm:text-lg">
               {overview ? formatCurrency(overview.paidPlatformFees) : '—'}
             </p>
@@ -357,7 +364,7 @@ const AdminDashboardPanel = () => {
               <div className="mt-4">
                 <div className="mb-2 flex flex-wrap items-center justify-end gap-3 text-[11px]">
                   <label className="flex items-center gap-2 font-semibold text-gray-600">
-                    Năm
+                    {t('dashboard.feeChart.year')}
                     <select
                       value={displayedFeeYear}
                       onChange={(event) => {
@@ -392,8 +399,11 @@ const AdminDashboardPanel = () => {
                               type="button"
                               onClick={() => loadFeeTransactions(month.month)}
                               aria-pressed={selectedFeeMonth === month.month}
-                              aria-label={`Tháng ${Number(month.month.slice(5, 7))} năm ${displayedFeeYear}: ${formatCurrency(value)}. Xem giao dịch`}
-                              title={`Xem giao dịch tháng ${formatMonthLabel(month.month)} năm ${displayedFeeYear}`}
+                              aria-label={t('dashboard.feeChart.monthAction', {
+                                month: formatMonthAndYear(month.month),
+                                amount: formatCurrency(value)
+                              })}
+                              title={t('dashboard.feeChart.monthTooltip', { month: formatMonthAndYear(month.month) })}
                               className={`flex h-full w-full flex-col items-center rounded-lg px-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neighbor-600 ${selectedFeeMonth === month.month ? 'bg-neighbor-50 ring-1 ring-neighbor-200' : 'hover:bg-neighbor-50/60'}`}
                             >
                               <div className="flex h-[calc(100%-1.5rem)] w-full items-end justify-center">
@@ -417,7 +427,7 @@ const AdminDashboardPanel = () => {
           })()
         ) : (
           <div className="flex h-48 items-center justify-center text-sm text-gray-500">
-            {loading ? 'Đang tải biểu đồ phí...' : 'Chưa có dữ liệu phí nền tảng.'}
+            {t(loading ? 'dashboard.feeChart.loading' : 'dashboard.feeChart.empty')}
           </div>
         )}
 
@@ -427,10 +437,12 @@ const AdminDashboardPanel = () => {
               <div className="flex shrink-0 flex-wrap items-start justify-between gap-2 border-b border-gray-200 pb-2">
                 <div>
                   <h4 className="text-sm font-bold text-gray-800">
-                    Giao dịch phí nền tảng tháng {Number(selectedFeeMonth.slice(5, 7))}
+                    {t('dashboard.feeChart.transactionsTitle', { month: formatMonthAndYear(selectedFeeMonth) })}
                   </h4>
                   {!feeDetailLoading && !feeDetailError && (
-                    <p className="mt-0.5 text-xs text-gray-500">{feeTransactions.length} giao dịch thành công</p>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {t('dashboard.feeChart.successfulCount', { count: feeTransactions.length, total: formatNumber(feeTransactions.length) })}
+                    </p>
                   )}
                 </div>
                 {!feeDetailLoading && !feeDetailError && (
@@ -440,12 +452,14 @@ const AdminDashboardPanel = () => {
 
               <div className="min-h-0 flex-1 overflow-y-auto">
                 {feeDetailLoading ? (
-                  <p className="flex h-full items-center justify-center text-sm text-gray-500">Đang tải giao dịch...</p>
+                  <p className="flex h-full items-center justify-center text-sm text-gray-500">{t('dashboard.feeChart.loadingTransactions')}</p>
                 ) : feeDetailError ? (
-                  <p role="alert" className="py-3 text-sm text-red-600">{feeDetailError}</p>
+                  <p role="alert" className="py-3 text-sm text-red-600">
+                    {isEnglish ? t('dashboard.feeChart.loadTransactionsError') : feeDetailError}
+                  </p>
                 ) : feeTransactions.length === 0 ? (
                   <p className="flex h-full items-center justify-center text-center text-sm text-gray-500">
-                    Tháng này chưa có giao dịch phí nền tảng thành công.
+                    {t('dashboard.feeChart.emptyTransactions')}
                   </p>
                 ) : (
                   <div className="divide-y divide-gray-100">
@@ -466,7 +480,7 @@ const AdminDashboardPanel = () => {
             </>
           ) : (
             <p className="flex h-full items-center justify-center text-center text-sm text-gray-400">
-              Bấm vào một tháng trên biểu đồ để xem giao dịch.
+              {t('dashboard.feeChart.selectMonth')}
             </p>
           )}
         </div>
