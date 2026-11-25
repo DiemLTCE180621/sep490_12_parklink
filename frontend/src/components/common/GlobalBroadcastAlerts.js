@@ -28,20 +28,32 @@ const GlobalBroadcastAlerts = () => {
     const trimmed = typeof rawCategory === 'string' ? rawCategory.trim() : '';
     if (!trimmed) return t(`notifications.broadcast.categories.${fallbackKey}`);
 
-    const normalized = trimmed.toUpperCase();
-    if (normalized === 'THÔNG BÁO CHUNG') return t('notifications.broadcast.categories.general');
-    if (normalized === 'THÔNG BÁO KHẨN CẤP') return t('notifications.broadcast.categories.urgent');
-    if (normalized === 'THÔNG BÁO QUAN TRỌNG' || normalized === 'QUAN TRỌNG') {
+    const normalized = trimmed
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/gi, 'd')
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
+
+    if (normalized.includes('THONG BAO CHUNG') || normalized === 'GENERAL') {
+      return t('notifications.broadcast.categories.general');
+    }
+    if (normalized.includes('THONG BAO KHAN CAP') || normalized === 'KHAN CAP') {
+      return t('notifications.broadcast.categories.urgent');
+    }
+    if (normalized.includes('THONG BAO QUAN TRONG') || normalized === 'QUAN TRONG') {
       return t('notifications.broadcast.categories.important');
     }
-    if (normalized === 'HỆ THỐNG') return t('notifications.broadcast.categories.system');
-    if (normalized.includes('BẢO TRÌ') || normalized.includes('MAINTENANCE')) {
+    if (normalized === 'HE THONG' || normalized === 'SYSTEM') {
+      return t('notifications.broadcast.categories.system');
+    }
+    if (normalized.includes('BAO TRI') || normalized.includes('MAINTENANCE')) {
       return t('notifications.broadcast.categories.maintenance');
     }
-    if (normalized.includes('CHÍNH SÁCH') || normalized.includes('ĐIỀU KHOẢN')) {
+    if (normalized.includes('CHINH SACH') || normalized.includes('DIEU KHOAN') || normalized.includes('POLICY')) {
       return t('notifications.broadcast.categories.policy');
     }
-    if (normalized.includes('KHUYẾN MÃI') || normalized.includes('SỰ KIỆN')) {
+    if (normalized.includes('KHUYEN MAI') || normalized.includes('SU KIEN') || normalized.includes('TIN TUC') || normalized.includes('PROMO')) {
       return t('notifications.broadcast.categories.promotion');
     }
 
