@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Plus,
@@ -10,6 +11,7 @@ import Toast from '../../components/common/Toast';
 
 const AdminPlatformFeeCreatePage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation('admin', { keyPrefix: 'platformFees.form' });
 
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
@@ -48,34 +50,34 @@ const AdminPlatformFeeCreatePage = () => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setToast({ message: 'Vui lòng nhập tên gói biểu phí.', type: 'error' });
+      setToast({ key: 'errors.name', type: 'error' });
       return;
     }
 
     const minSlots = parseInt(formData.min_slots, 10);
     if (isNaN(minSlots) || minSlots < 1) {
-      setToast({ message: 'Số lượng slot tối thiểu (Min) phải là số nguyên lớn hơn hoặc bằng 1.', type: 'error' });
+      setToast({ key: 'errors.minSlots', type: 'error' });
       return;
     }
 
     if (minSlots > 15) {
-      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      setToast({ key: 'errors.slotLimit', type: 'error' });
       return;
     }
 
     if (!formData.max_slots) {
-      setToast({ message: 'Vui lòng nhập số lượng slot tối đa (Max).', type: 'error' });
+      setToast({ key: 'errors.maxSlotsRequired', type: 'error' });
       return;
     }
 
     const maxSlots = parseInt(formData.max_slots, 10);
     if (isNaN(maxSlots) || maxSlots < minSlots) {
-      setToast({ message: `Số lượng slot tối đa (Max) phải lớn hơn hoặc bằng slot tối thiểu (${minSlots}).`, type: 'error' });
+      setToast({ message: t('errors.slotOrder', { min: minSlots }), type: 'error' });
       return;
     }
 
     if (maxSlots > 15) {
-      setToast({ message: 'Mô hình hộ gia đình chỉ hỗ trợ tối đa 15 chỗ đỗ.', type: 'error' });
+      setToast({ key: 'errors.slotLimit', type: 'error' });
       return;
     }
 
@@ -87,7 +89,7 @@ const AdminPlatformFeeCreatePage = () => {
       // Công thức kiểm tra giao thoa: minA <= maxB && maxA >= minB
       if (minSlots <= existingMax && maxSlots >= existingMin) {
         setToast({
-          message: `Khung quy mô (${minSlots} - ${maxSlots} chỗ) bị trùng với gói "${fee.name}" (${existingMin} - ${existingMax} chỗ). Vui lòng điều chỉnh lại!`,
+          message: t('errors.overlap', { min: minSlots, max: maxSlots, name: fee.name, existingMin, existingMax }),
           type: 'error'
         });
         return;
@@ -96,7 +98,7 @@ const AdminPlatformFeeCreatePage = () => {
 
     const amount = parseFloat(formData.fee_amount);
     if (isNaN(amount) || amount < 0) {
-      setToast({ message: 'Mức phí nền tảng phải là số dương hợp lệ.', type: 'error' });
+      setToast({ key: 'errors.amount', type: 'error' });
       return;
     }
 
@@ -117,12 +119,12 @@ const AdminPlatformFeeCreatePage = () => {
         replace: true,
         state: {
           adminTab: 'platform-fees',
-          message: `Thêm mới gói biểu phí "${payload.name}" thành công!`,
+          message: t('created', { name: payload.name }),
           type: 'success'
         }
       });
     } catch (err) {
-      setToast({ message: err.message || 'Lỗi khi tạo mới gói biểu phí', type: 'error' });
+      setToast({ key: 'errors.create', detail: err.message, type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -131,12 +133,16 @@ const AdminPlatformFeeCreatePage = () => {
   const parsedAmount = parseFloat(formData.fee_amount) || 0;
   const parsedMin = parseInt(formData.min_slots, 10);
   const parsedMax = parseInt(formData.max_slots, 10);
+  const amountLabel = parsedAmount.toLocaleString(i18n.resolvedLanguage === 'en' ? 'en-GB' : 'vi-VN');
+  const slotLabel = parsedMin === parsedMax
+    ? t('ruleExactSlots', { count: parsedMin })
+    : t('ruleSlotRange', { min: parsedMin, max: Number.isNaN(parsedMax) ? '…' : parsedMax });
 
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8 bg-slate-50 w-full min-h-[calc(100vh-70px)] flex flex-col justify-between">
       {toast && (
         <Toast
-          message={toast.message}
+          message={toast.message || (i18n.resolvedLanguage === 'vi' && toast.detail) || t(toast.key)}
           type={toast.type}
           onClose={() => setToast(null)}
           duration={2500}
@@ -150,7 +156,7 @@ const AdminPlatformFeeCreatePage = () => {
           onClick={() => navigate('/dashboard', { state: { adminTab: 'platform-fees' } })}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-teal-700 transition w-fit"
         >
-          <ArrowLeft className="w-4 h-4" /> Quay lại Quản lý Biểu Phí
+          <ArrowLeft className="w-4 h-4" /> {t('back')}
         </button>
 
         {/* Khung Form Duy Nhất Trải Rộng Toàn Màn Hình */}
@@ -163,10 +169,10 @@ const AdminPlatformFeeCreatePage = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                  Tạo Mới Gói Biểu Phí Nền Tảng
+                  {t('createTitle')}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                  Cấu hình mức phí nền tảng thu 1 lần theo quy mô chỗ đỗ hộ gia đình (Tối đa 15 chỗ)
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
@@ -178,36 +184,38 @@ const AdminPlatformFeeCreatePage = () => {
               {/* Hàng 1: Tên Gói & Mức Phí Nền Tảng */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Tên Gói Biểu Phí <span className="text-red-500">*</span>
+                  <label htmlFor="platform-fee-name" className="block text-xs font-bold text-slate-700 mb-2">
+                    {t('name')} <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="platform-fee-name"
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
-                    placeholder="Ví dụ: Gói Bãi Xe Nhỏ (1 - 3 chỗ)"
+                    placeholder={t('namePlaceholder')}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 text-sm font-semibold transition bg-slate-50/40 focus:bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
-                    Mức Phí Nền Tảng (Thu 1 lần) <span className="text-red-500">*</span>
+                  <label htmlFor="platform-fee-amount" className="block text-xs font-bold text-slate-700 mb-2">
+                    {t('amount')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
+                      id="platform-fee-amount"
                       type="number"
                       step="50000"
                       min="0"
                       required
                       value={formData.fee_amount}
                       onChange={(e) => handleChange('fee_amount', e.target.value)}
-                      placeholder="Ví dụ: 2000000"
+                      placeholder={t('amountPlaceholder')}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 text-sm font-extrabold transition pr-16 bg-slate-50/40 focus:bg-white"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-slate-400">
-                      VNĐ
+                      {t('currency')}
                     </span>
                   </div>
                 </div>
@@ -217,55 +225,58 @@ const AdminPlatformFeeCreatePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-slate-700">
-                      Slot Tối Thiểu (Min) <span className="text-red-500">*</span>
+                    <label htmlFor="platform-fee-minSlots" className="text-xs font-bold text-slate-700">
+                      {t('minSlots')} <span className="text-red-500">*</span>
                     </label>
-                    <span className="text-[11px] font-semibold text-slate-400">Từ 1 đến 15 chỗ</span>
+                    <span className="text-[11px] font-semibold text-slate-400">{t('slotRangeHint')}</span>
                   </div>
                   <input
+                    id="platform-fee-minSlots"
                     type="number"
                     min="1"
                     max="15"
                     required
                     value={formData.min_slots}
                     onChange={(e) => handleChange('min_slots', e.target.value)}
-                    placeholder="Ví dụ: 1"
+                    placeholder={t('minSlotsExample')}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 text-sm font-bold transition bg-slate-50/40 focus:bg-white"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-slate-700">
-                      Slot Tối Đa (Max) <span className="text-red-500">*</span>
+                    <label htmlFor="platform-fee-maxSlots" className="text-xs font-bold text-slate-700">
+                      {t('maxSlots')} <span className="text-red-500">*</span>
                     </label>
                     <span className="text-[11px] font-semibold text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
-                      Tối đa 15 chỗ
+                      {t('maxSlotsHint')}
                     </span>
                   </div>
                   <input
+                    id="platform-fee-maxSlots"
                     type="number"
                     min={!isNaN(parsedMin) && parsedMin >= 1 ? parsedMin : 1}
                     max="15"
                     required
                     value={formData.max_slots}
                     onChange={(e) => handleChange('max_slots', e.target.value)}
-                    placeholder="Ví dụ: 3 (tối đa 15)"
+                    placeholder={t('maxSlotsExample')}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm font-bold transition bg-slate-50/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
               </div>
 
-              {/* Hàng 3: Trạng Thái Áp Dụng */}
+              {/* Hàng 3: Trạng thái áp dụng */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">
-                  Trạng Thái Áp Dụng <span className="text-slate-400 font-normal">(Thiết lập hiệu lực áp dụng của gói biểu phí)</span>
+                  {t('status')} <span className="text-slate-400 font-normal">{t('statusHint')}</span>
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Card Kích hoạt */}
                   <button
                     type="button"
                     onClick={() => handleChange('is_active', true)}
+                    aria-pressed={formData.is_active}
                     className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${formData.is_active
                       ? 'border-emerald-500 bg-emerald-50/70 shadow-sm ring-1 ring-emerald-500/20'
                       : 'border-slate-200 hover:border-slate-300 bg-slate-50/30 text-slate-600'
@@ -278,10 +289,10 @@ const AdminPlatformFeeCreatePage = () => {
                       </div>
                       <div>
                         <div className={`text-sm font-bold ${formData.is_active ? 'text-emerald-950 font-extrabold' : 'text-slate-800'}`}>
-                          Kích Hoạt Ngay
+                          {t('active')}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          Gói biểu phí sẵn sàng áp dụng cho đối tác đăng ký bãi xe
+                          {t('activeHint')}
                         </div>
                       </div>
                     </div>
@@ -295,6 +306,7 @@ const AdminPlatformFeeCreatePage = () => {
                   <button
                     type="button"
                     onClick={() => handleChange('is_active', false)}
+                    aria-pressed={!formData.is_active}
                     className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between text-left ${!formData.is_active
                       ? 'border-amber-500 bg-amber-50/70 shadow-sm ring-1 ring-amber-500/20'
                       : 'border-slate-200 hover:border-slate-300 bg-slate-50/30 text-slate-600'
@@ -307,10 +319,10 @@ const AdminPlatformFeeCreatePage = () => {
                       </div>
                       <div>
                         <div className={`text-sm font-bold ${!formData.is_active ? 'text-amber-950 font-extrabold' : 'text-slate-800'}`}>
-                          Tạm Ngưng Áp Dụng
+                          {t('inactive')}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5">
-                          Lưu dạng tạm hoãn, chưa đưa vào tính toán phí trên hệ thống
+                          {t('inactiveHint')}
                         </div>
                       </div>
                     </div>
@@ -328,31 +340,31 @@ const AdminPlatformFeeCreatePage = () => {
                   <div className="flex items-center gap-2.5 text-teal-950 font-medium">
                     <Calculator className="w-5 h-5 text-teal-600 shrink-0" />
                     <span>
-                      Quy tắc áp dụng: Áp dụng mức phí cố định{' '}
-                      <strong className="text-teal-900 font-extrabold">{parsedAmount.toLocaleString('vi-VN')} VNĐ</strong> cho bãi xe{' '}
-                      <strong className="text-teal-900 font-extrabold">
-                        {!isNaN(parsedMax) && parsedMin === parsedMax
-                          ? `đúng ${parsedMin} chỗ`
-                          : `từ ${parsedMin} – ${!isNaN(parsedMax) ? parsedMax : '...'} chỗ`}
-                      </strong>.
+                      <Trans
+                        ns="admin"
+                        i18nKey="platformFees.form.rule"
+                        values={{ fee: t('ruleFee', { amount: amountLabel }), slots: slotLabel }}
+                        components={{ strong: <strong className="text-teal-900 font-extrabold" /> }}
+                      />
                     </span>
                   </div>
                   <span className="font-extrabold text-teal-800 bg-white px-3.5 py-1.5 rounded-xl border border-teal-200 shadow-2xs shrink-0 self-start sm:self-auto text-xs">
-                    {parsedAmount.toLocaleString('vi-VN')} VNĐ / bãi
+                    {t('feePerFacility', { amount: amountLabel })}
                   </span>
                 </div>
               )}
 
               {/* Mô Tả Gói Phí */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">
-                  Mô Tả Chi Tiết <span className="text-slate-400 font-normal">(Tùy chọn)</span>
+                <label htmlFor="platform-fee-description" className="block text-xs font-bold text-slate-700 mb-2">
+                  {t('description')} <span className="text-slate-400 font-normal">{t('optional')}</span>
                 </label>
                 <textarea
+                  id="platform-fee-description"
                   rows="3"
                   value={formData.description}
                   onChange={(e) => handleChange('description', e.target.value)}
-                  placeholder="Nhập ghi chú hoặc mô tả về gói biểu phí này..."
+                  placeholder={t('descriptionPlaceholder')}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 font-medium text-sm transition resize-none bg-slate-50/40 focus:bg-white"
                 />
               </div>
@@ -366,7 +378,7 @@ const AdminPlatformFeeCreatePage = () => {
                 onClick={() => navigate('/dashboard', { state: { adminTab: 'platform-fees' } })}
                 className="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-sm transition"
               >
-                Hủy Bỏ
+                {t('cancel')}
               </button>
 
               <button
@@ -377,12 +389,12 @@ const AdminPlatformFeeCreatePage = () => {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Đang Tạo Gói Phí...</span>
+                    <span>{t('creating')}</span>
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    <span>Tạo Gói Biểu Phí</span>
+                    <span>{t('create')}</span>
                   </>
                 )}
               </button>

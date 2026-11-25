@@ -227,9 +227,11 @@ const NotificationDropdown = () => {
     if (activeTab === 'UNREAD') return !item.is_read;
     return true;
   });
+  const displayedUnreadCount = unreadCount > 99 ? '99+' : unreadCount;
+  const unreadLabel = t('notifications.unreadBadge', { count: unreadCount });
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="md:relative" ref={dropdownRef}>
       {toast && (
         <Toast
           message={toast.message}
@@ -243,41 +245,36 @@ const NotificationDropdown = () => {
         className="relative p-2.5 rounded-xl text-slate-600 hover:text-teal-600 hover:bg-slate-100 transition duration-150 focus:outline-none"
         title={t('notifications.title')}
         aria-label={t('notifications.title')}
+        aria-expanded={isOpen}
       >
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] bg-rose-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm ring-2 ring-white animate-pulse">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {displayedUnreadCount}
           </span>
         )}
       </button>
 
       {/* noti dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-84 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 top-full mt-3 w-96 max-w-full md:max-w-none bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header */}
           <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-800 text-base">{t('notifications.title')}</h3>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100">
-                  {t('notifications.unreadBadge', { count: unreadCount })}
-                </span>
-              </div>
-              {unreadCount > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition"
-                >
-                  <CheckCheck className="w-3.5 h-3.5" />
-                  {t('notifications.markAllRead')}
-                </button>
-              )}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h3 className="font-bold text-slate-800 text-base">{t('notifications.title')}</h3>
+              <span
+                title={unreadLabel}
+                className="shrink-0 whitespace-nowrap tabular-nums text-xs font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-100"
+              >
+                <span aria-hidden="true">{t('notifications.unreadBadge', { count: displayedUnreadCount })}</span>
+                <span className="sr-only">{unreadLabel}</span>
+              </span>
             </div>
 
             {/* filter */}
-            <div className="flex gap-2 mt-3">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
               <button
+                type="button"
                 onClick={() => setActiveTab('ALL')}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition ${activeTab === 'ALL'
                   ? 'bg-teal-600 text-white shadow-sm'
@@ -287,14 +284,25 @@ const NotificationDropdown = () => {
                 {t('notifications.tabAll', { count: notifications.length })}
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab('UNREAD')}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition ${activeTab === 'UNREAD'
                   ? 'bg-teal-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
               >
-                {t('notifications.tabUnread', { count: unreadCount })}
+                {t('notifications.tabUnread', { count: displayedUnreadCount })}
               </button>
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllAsRead}
+                  className="ml-auto whitespace-nowrap text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1 transition"
+                >
+                  <CheckCheck className="w-3.5 h-3.5 shrink-0" />
+                  {t('notifications.markAllRead')}
+                </button>
+              )}
             </div>
           </div>
 

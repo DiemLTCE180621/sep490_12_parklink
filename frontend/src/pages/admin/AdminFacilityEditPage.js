@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeft, Building2, Save } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import adminService from '../../services/adminService';
 import FacilityLocationPicker from '../../components/common/FacilityLocationPicker';
 
 const AdminFacilityEditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['admin', 'common']);
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const errorMessage = error && (
+    (i18n.resolvedLanguage === 'vi' && error.message) || t(error.key)
+  );
 
   useEffect(() => {
     const loadFacility = async () => {
@@ -18,7 +23,7 @@ const AdminFacilityEditPage = () => {
         const response = await adminService.getAllFacilities();
         const facility = (response.data || []).find((item) => String(item.id) === String(id));
         if (!facility) {
-          setError('Không tìm thấy cơ sở cần cập nhật.');
+          setError({ key: 'facilities.edit.notFound' });
           return;
         }
         setForm({
@@ -31,7 +36,7 @@ const AdminFacilityEditPage = () => {
           system_fee: facility.system_fee ?? '',
         });
       } catch (loadError) {
-        setError(loadError.message || 'Không thể tải thông tin cơ sở.');
+        setError({ key: 'facilities.edit.loadError', message: loadError.message });
       } finally {
         setLoading(false);
       }
@@ -51,27 +56,30 @@ const AdminFacilityEditPage = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
-    setError('');
+    setError(null);
     try {
       await adminService.updateFacility(id, form);
       navigate('/dashboard', { replace: true, state: { adminTab: 'facilities' } });
     } catch (saveError) {
-      setError(saveError.message || 'Không thể cập nhật cơ sở.');
+      setError({
+        key: saveError.status === 404 ? 'facilities.edit.notFound' : 'facilities.actionError',
+        message: saveError.message,
+      });
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="py-20 text-center text-slate-600">Đang tải thông tin cơ sở...</div>;
+    return <div role="status" className="py-20 text-center text-slate-600">{t('facilities.edit.loading')}</div>;
   }
 
   if (!form) {
     return (
       <div className="max-w-3xl mx-auto py-16 px-4">
-        <p className="text-red-600 mb-4">{error}</p>
-        <button onClick={() => navigate('/dashboard')} className="text-teal-700 font-bold">
-          Quay lại dashboard
+        <p role="alert" className="text-red-600 mb-4">{errorMessage}</p>
+        <button type="button" onClick={() => navigate('/dashboard')} className="text-teal-700 font-bold">
+          {t('facilities.edit.backToDashboard')}
         </button>
       </div>
     );
@@ -85,7 +93,7 @@ const AdminFacilityEditPage = () => {
           onClick={() => navigate('/dashboard', { state: { adminTab: 'facilities' } })}
           className="mb-5 inline-flex items-center gap-2 text-slate-600 hover:text-teal-700 font-bold"
         >
-          <ArrowLeft className="w-5 h-5" /> Quay lại danh sách cơ sở
+          <ArrowLeft className="w-5 h-5" /> {t('facilities.edit.backToList')}
         </button>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 shadow-xl p-6 sm:p-9 space-y-6">
@@ -94,16 +102,19 @@ const AdminFacilityEditPage = () => {
               <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900">Cập Nhật Thông Tin Cơ Sở</h1>
-              <p className="text-sm text-slate-500">Cập nhật thông tin và vị trí trên bản đồ.</p>
+              <h1 className="text-2xl font-extrabold text-slate-900">{t('facilities.edit.title')}</h1>
+              <p className="text-sm text-slate-500">{t('facilities.edit.subtitle')}</p>
             </div>
           </div>
 
-          {error && <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
+          {error && <div role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">{errorMessage}</div>}
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Tên bãi đỗ xe</label>
+            <label htmlFor="facility-edit-name" className="block text-sm font-semibold text-slate-700 mb-2">
+              {t('facilities.details.name')}
+            </label>
             <input
+              id="facility-edit-name"
               value={form.name}
               onChange={(event) => updateField('name', event.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none"
@@ -111,8 +122,8 @@ const AdminFacilityEditPage = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Địa chỉ và vị trí GPS</label>
+          <fieldset className="min-w-0">
+            <legend className="block text-sm font-semibold text-slate-700 mb-2">{t('facilities.edit.location')}</legend>
             <FacilityLocationPicker
               address={form.address}
               latitude={form.latitude}
@@ -120,17 +131,16 @@ const AdminFacilityEditPage = () => {
               onChange={handleLocationChange}
               required
             />
-          </div>
+          </fieldset>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              ['capacity', 'Sức chứa (slots)'],
-              ['price_per_month', 'Giá thuê/tháng (VNĐ)'],
-              ['system_fee', 'Phí nền tảng (VNĐ)'],
-            ].map(([field, label]) => (
+            {['capacity', 'price_per_month', 'system_fee'].map((field) => (
               <div key={field}>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">{label}</label>
+                <label htmlFor={`facility-edit-${field}`} className="block text-sm font-semibold text-slate-700 mb-2">
+                  {t(`facilities.edit.fields.${field}`)}
+                </label>
                 <input
+                  id={`facility-edit-${field}`}
                   type="number"
                   min="0"
                   value={form[field]}
@@ -144,10 +154,10 @@ const AdminFacilityEditPage = () => {
 
           <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
             <button type="button" onClick={() => navigate('/dashboard', { state: { adminTab: 'facilities' } })} className="px-5 py-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100">
-              Hủy
+              {t('common:actions.cancel')}
             </button>
             <button type="submit" disabled={saving} className="px-5 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold inline-flex items-center gap-2 disabled:opacity-60">
-              <Save className="w-5 h-5" /> {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+              <Save className="w-5 h-5" /> {t(saving ? 'facilities.edit.saving' : 'facilities.edit.save')}
             </button>
           </div>
         </form>

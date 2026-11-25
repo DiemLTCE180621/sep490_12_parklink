@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -123,16 +123,14 @@ const AdminUsersPanel = () => {
       setError('');
 
       if (type === 'LOCK' || type === 'UNLOCK') {
-        const res = await userService.toggleUserStatus(user.id);
-        const actionMsg = res.message || (type === 'LOCK' ? 'Khóa tài khoản thành công.' : 'Mở khóa tài khoản thành công.');
-        setSuccessMessage(actionMsg);
+        await userService.toggleUserStatus(user.id);
+        setSuccessMessage(t(type === 'LOCK' ? 'admin:userDetail.messages.lockSuccess' : 'admin:userDetail.messages.unlockSuccess'));
         setUsers((prev) =>
           prev.map((u) => (u.id === user.id ? { ...u, status: type === 'LOCK' ? 'BLOCKED' : 'ACTIVE' } : u))
         );
       } else if (type === 'RESET_PASSWORD') {
-        const res = await userService.forceResetPassword(user.id);
-        const msg = res.message || 'Đặt lại mật khẩu thành công. Mật khẩu tạm thời đã được gửi tới email.';
-        setSuccessMessage(msg);
+        await userService.forceResetPassword(user.id);
+        setSuccessMessage(t('admin:userDetail.messages.resetSuccess'));
       }
 
       setConfirmDialog({ isOpen: false, type: '', user: null });
@@ -325,7 +323,7 @@ const AdminUsersPanel = () => {
                         {!isAdmin && (
                           <button
                             onClick={() => handleOpenResetPassword(u)}
-                            title="Đặt lại mật khẩu"
+                            title={t('admin:users.actions.resetPassword')}
                             className="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg border border-amber-200 transition"
                           >
                             <KeyRound className="w-3.5 h-3.5" />
@@ -335,7 +333,7 @@ const AdminUsersPanel = () => {
                         {!isAdmin && (
                           <button
                             onClick={() => handleOpenToggleStatus(u)}
-                            title={isBlocked ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+                            title={t(isBlocked ? 'admin:users.actions.unlock' : 'admin:users.actions.lock')}
                             className={`p-1.5 rounded-lg border transition ${
                               isBlocked
                                 ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -392,7 +390,13 @@ const AdminUsersPanel = () => {
 
       {confirmDialog.isOpen && confirmDialog.user && (
         <div className="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200">
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="account-action-title"
+            aria-describedby="account-action-description"
+            className="bg-white rounded-xl max-w-xl w-full p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in duration-150 border border-gray-200"
+          >
             <div className="flex items-center gap-4">
               <div
                 className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${
@@ -412,48 +416,48 @@ const AdminUsersPanel = () => {
                 )}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 id="account-action-title" className="text-xl font-bold text-gray-900">
                   {confirmDialog.type === 'LOCK'
-                    ? 'Xác nhận Khóa tài khoản'
+                    ? t('admin:userDetail.dialogs.lockTitle')
                     : confirmDialog.type === 'UNLOCK'
-                    ? 'Xác nhận Mở khóa tài khoản'
-                    : 'Đặt lại mật khẩu'}
+                    ? t('admin:userDetail.dialogs.unlockTitle')
+                    : t('admin:userDetail.dialogs.resetTitle')}
                 </h3>
                 <p className="text-sm text-gray-500 mt-0.5">#{confirmDialog.user.id} — {confirmDialog.user.email}</p>
               </div>
             </div>
 
-            <div className="text-base text-gray-700 leading-relaxed bg-gray-50 p-5 rounded-xl border border-gray-200">
+            <div id="account-action-description" className="text-base text-gray-700 leading-relaxed bg-gray-50 p-5 rounded-xl border border-gray-200">
               {confirmDialog.type === 'LOCK' && (
                 <div>
                   <p>
-                    Bạn có chắc chắn muốn <strong>khóa tài khoản</strong> của <strong>{confirmDialog.user.full_name}</strong>? Khi bị khóa, tài khoản này sẽ ngay lập tức bị từ chối đăng nhập vào hệ thống ParkLink.
+                    <Trans i18nKey="userDetail.dialogs.lockPrompt" ns="admin" values={{ name: confirmDialog.user.full_name }} />
                   </p>
                   {confirmDialog.user.role?.name === 'PROVIDER' && (
                     <p className="text-rose-600 font-semibold text-sm mt-2">
-                      Lưu ý: Cơ sở bãi xe liên kết sẽ bị ẩn và các yêu cầu đặt chỗ đang chờ sẽ bị hủy.
+                      {t('admin:userDetail.dialogs.lockNoteProviderGeneric')}
                     </p>
                   )}
                   {confirmDialog.user.role?.name === 'CUSTOMER' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      Lưu ý: Các yêu cầu đặt chỗ đang chờ của khách hàng này sẽ bị hủy.
+                      {t('admin:userDetail.dialogs.lockNoteCustomer')}
                     </p>
                   )}
                   {confirmDialog.user.role?.name === 'FIELD_INSPECTOR' && (
                     <p className="text-amber-700 font-semibold text-sm mt-2">
-                      Lưu ý: Các cơ sở đang phân công cho nhân viên này sẽ được chuyển về chờ duyệt lại.
+                      {t('admin:userDetail.dialogs.lockNoteInspector')}
                     </p>
                   )}
                 </div>
               )}
               {confirmDialog.type === 'UNLOCK' && (
                 <p>
-                  Bạn có chắc chắn muốn <strong>mở khóa tài khoản</strong> của <strong>{confirmDialog.user.full_name}</strong>? Người dùng sẽ có thể đăng nhập bình thường trở lại.
+                  <Trans i18nKey="userDetail.dialogs.unlockPrompt" ns="admin" values={{ name: confirmDialog.user.full_name }} />
                 </p>
               )}
               {confirmDialog.type === 'RESET_PASSWORD' && (
                 <p>
-                  Hệ thống sẽ tạo mật khẩu tạm thời mới và gửi qua email tới <strong>{confirmDialog.user.email}</strong>. Người dùng sẽ đổi mật khẩu ở lần đăng nhập tiếp theo.
+                  <Trans i18nKey="userDetail.dialogs.resetPrompt" ns="admin" values={{ email: confirmDialog.user.email }} />
                 </p>
               )}
             </div>
@@ -465,7 +469,7 @@ const AdminUsersPanel = () => {
                 disabled={actionLoading}
                 className="px-6 py-2.5 border border-gray-200 text-gray-700 font-semibold text-base rounded-xl hover:bg-gray-50 transition"
               >
-                Hủy
+                {t('common:actions.cancel')}
               </button>
               <button
                 type="button"
@@ -481,10 +485,10 @@ const AdminUsersPanel = () => {
               >
                 {actionLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
                 {confirmDialog.type === 'LOCK'
-                  ? 'Khóa Tài Khoản'
+                  ? t('admin:userDetail.dialogs.confirmLock')
                   : confirmDialog.type === 'UNLOCK'
-                  ? 'Mở Khóa Tài Khoản'
-                  : 'Đặt lại mật khẩu'}
+                  ? t('admin:userDetail.dialogs.confirmUnlock')
+                  : t('admin:users.actions.resetPassword')}
               </button>
             </div>
           </div>
