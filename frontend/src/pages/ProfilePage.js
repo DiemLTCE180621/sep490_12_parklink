@@ -403,7 +403,9 @@ const ProfilePage = () => {
                       <MapPin className="w-3.5 h-3.5 text-neighbor-600 shrink-0 mt-0.5" />
                       <div>
                         <span className="font-semibold text-gray-700">
-                          {roleName === 'CUSTOMER' ? t('fields.address.customerPreview', 'Địa chỉ ghi trên thông tin thuê bãi: ') : t('fields.address.providerPreview', 'Địa chỉ liên hệ: ')}
+                          {roleName === 'CUSTOMER'
+                            ? t('fields.address.customerPreview')
+                            : t('fields.address.contactPreview')}
                         </span>
                         <span className="text-neighbor-800 font-semibold">
                           {computeFullAddress(streetDetail, administrativeAddress) || t('fields.address.notSet')}

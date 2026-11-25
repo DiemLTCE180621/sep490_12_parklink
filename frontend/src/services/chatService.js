@@ -1,46 +1,39 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api/chats'; 
+import api from './api';
 
 const chatService = {
     getUserRooms: async (token) => {
-        const response = await axios.get(API_URL, {
+        return api.get('/chats', {
             headers: { Authorization: `Bearer ${token}` }
         });
-        return response.data;
     },
 
     getRoomMessages: async (roomId, token) => {
-        const response = await axios.get(`${API_URL}/${roomId}/messages`, {
+        return api.get(`/chats/${roomId}/messages`, {
             headers: { Authorization: `Bearer ${token}` }
         });
-        return response.data;
     },
 
     getOrCreateRoom: async (customerId, providerId, facilityId, token) => {
-        const response = await axios.post(
-            `${API_URL}/room`,
+        return api.post(
+            '/chats/room',
             { customerId, providerId, facilityId },
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        return response.data;
     },
 
     markMessagesAsRead: async (roomId, token) => {
-        const response = await axios.put(
-            `${API_URL}/${roomId}/read`,
+        return api.put(
+            `/chats/${roomId}/read`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
         );
-        return response.data;
     },
 
     // Lấy tổng số tin nhắn chưa đọc
     getUnreadCount: async (token) => {
-        const response = await axios.get(`${API_URL}/unread-count`, {
+        return api.get('/chats/unread-count', {
             headers: { Authorization: `Bearer ${token}` }
         });
-        return response.data;
     }
 };
 
